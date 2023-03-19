@@ -1,4 +1,4 @@
-use rltk::{Rltk, RGB};
+use rltk::{Rltk, RGB, RandomNumberGenerator};
 use super::{Rect};
 use std::cmp::{max, min};
 
@@ -42,18 +42,44 @@ pub fn new_map_test() -> Vec<TileType> {
     map
 }
 
-pub fn new_map_rooms_and_corridors() -> Vec<TileType> {
+pub fn new_map_rooms_and_corridors() -> (Vec<Rect>, Vec<TileType>) {
     let mut map = vec![TileType::Wall; 80*50];
+    let mut rooms : Vec<Rect> = Vec::new(); 
 
-    let room1 = Rect::new(20, 15, 10, 15);
-    let room2 = Rect::new(35, 15, 10, 15);
+    const MAX_ROOMS : i32 = 30;
+    const MIN_SIZE : i32 = 6;
+    const MAX_SIZE : i32 = 10;
 
-    apply_room_to_map(&room1, &mut map);
-    apply_room_to_map(&room2, &mut map);
+    let mut rng = RandomNumberGenerator::new();
 
-    apply_horizontal_tunnel(&mut map, 25, 40, 23);
+    for _ in 0..MAX_ROOMS {
+        let w = rng.range(MIN_SIZE, MAX_SIZE);
+        let h = rng.range(MIN_SIZE, MAX_SIZE);
+        let x = rng.roll_dice(1, 80 - w - 1) - 1;
+        let y = rng.roll_dice(1, 50 - h - 1) - 1;
+        let new_room = Rect::new(x, y, w, h);
+        let mut ok = true;
+        for other_room in rooms.iter() {
+            if new_room.intersect(other_room) { ok = false }    //If intersect, then not OK to add a room on top of an existing one
+        }
+        if ok {
+            apply_room_to_map(&new_room, &mut map);        
 
-    map
+            if !rooms.is_empty() {
+                let (new_x, new_y) = new_room.center();
+                let (prev_x, prev_y) = rooms[rooms.len()-1].center();
+                if rng.range(0,2) == 1 {
+                    apply_horizontal_tunnel(&mut map, prev_x, new_x, prev_y);
+                    apply_vertical_tunnel(&mut map, prev_y, new_y, new_x);
+                } else {
+                    apply_vertical_tunnel(&mut map, prev_y, new_y, prev_x);
+                    apply_horizontal_tunnel(&mut map, prev_x, new_x, new_y);
+                }
+            }
+            rooms.push(new_room);         
+        }
+    }
+    (rooms, map)
 }
 
 fn apply_room_to_map(room : &Rect, map : &mut[TileType]) {

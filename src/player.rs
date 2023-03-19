@@ -1,6 +1,8 @@
 use rltk::{VirtualKeyCode, Rltk};
 use specs::prelude::*;
 
+use crate::RunState;
+
 use super::{Position, Player, TileType, xy_idx, State};
 use std::cmp::{max, min};
 
@@ -19,16 +21,17 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     }
 }
 
-pub fn player_input(gs: &mut State, ctx: &mut Rltk) {
+pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // Player movement
     match ctx.key {
-        None => {} // Nothing happened
+        None => { return RunState::Paused } // Turn by turn, nothing happens.
         Some(key) => match key {
             VirtualKeyCode::Left => try_move_player(-1, 0, &mut gs.ecs),
             VirtualKeyCode::Right => try_move_player(1, 0, &mut gs.ecs),
             VirtualKeyCode::Up => try_move_player(0, -1, &mut gs.ecs),
             VirtualKeyCode::Down => try_move_player(0, 1, &mut gs.ecs),
-            _ => {}
-        },
+            _ => { return RunState::Paused }
+        }
     }
+    RunState::Running
 }

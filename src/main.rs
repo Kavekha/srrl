@@ -10,8 +10,13 @@ use player::*;
 mod rect;
 pub use rect::Rect;
 
+
+#[derive(PartialEq, Copy, Clone)]
+pub enum RunState { Paused, Running }
+
 pub struct State {
-    ecs: World
+    pub ecs: World,
+    pub runstate : RunState
 }
 
 impl State {
@@ -43,18 +48,27 @@ fn main() -> rltk::BError {
     let context = RltkBuilder::simple80x50()
         .with_title("Shadowrun:poc")
         .build()?;
-    let mut gs = State{
-        ecs: World::new()
+
+    // Create the state and its current default state
+    let mut gs = State {
+        ecs: World::new(),
+        runstate : RunState::Running
     };
+
+    // Create component
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
 
-    gs.ecs.insert(new_map_rooms_and_corridors());
+    //  create map
+    let (rooms, map) = new_map_rooms_and_corridors();
+    gs.ecs.insert(map);
+    let (player_x, player_y) = rooms[0].center();   // Player will be created at the center of the first room
 
+    // create player char
     gs.ecs
     .create_entity()
-    .with(Position { x: 40, y: 25 })
+    .with(Position { x: player_x, y: player_y })
     .with(Renderable {
         glyph: rltk::to_cp437('@'),
         fg: RGB::named(rltk::YELLOW),
@@ -63,5 +77,6 @@ fn main() -> rltk::BError {
     .with(Player{})
     .build();
 
+    // Play main loop
     rltk::main_loop(context, gs)
 }
