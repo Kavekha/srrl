@@ -28,6 +28,7 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
 
 
 pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
+    let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
 
     ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "SHADOW RUN : Pieces Of Code");
@@ -39,10 +40,12 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
             ctx.print_color_centered(24, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin New Game");
         }
 
-        if selection == MainMenuSelection::LoadGame {
-            ctx.print_color_centered(25, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Load Game");
-        } else {
-            ctx.print_color_centered(25, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Load Game");
+        if save_exists {
+            if selection == MainMenuSelection::LoadGame {
+                ctx.print_color_centered(25, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Load Game");
+            } else {
+                ctx.print_color_centered(25, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Load Game");
+            }
         }
 
         if selection == MainMenuSelection::Quit {
@@ -57,20 +60,26 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
                 match key {
                     VirtualKeyCode::Escape => { return MainMenuResult::NoSelection{ selected: MainMenuSelection::Quit } }
                     VirtualKeyCode::Up => {
-                        let newselection;
+                        let mut newselection;
                         match selection {
                             MainMenuSelection::NewGame => newselection = MainMenuSelection::Quit,
                             MainMenuSelection::LoadGame => newselection = MainMenuSelection::NewGame,
                             MainMenuSelection::Quit => newselection = MainMenuSelection::LoadGame
                         }
+                        if newselection == MainMenuSelection::LoadGame && !save_exists {
+                            newselection = MainMenuSelection::NewGame;
+                        }
                         return MainMenuResult::NoSelection{ selected: newselection }
                     }
                     VirtualKeyCode::Down => {
-                        let newselection;
+                        let mut newselection;
                         match selection {
                             MainMenuSelection::NewGame => newselection = MainMenuSelection::LoadGame,
                             MainMenuSelection::LoadGame => newselection = MainMenuSelection::Quit,
                             MainMenuSelection::Quit => newselection = MainMenuSelection::NewGame
+                        }
+                        if newselection == MainMenuSelection::LoadGame && !save_exists {
+                            newselection = MainMenuSelection::Quit;
                         }
                         return MainMenuResult::NoSelection{ selected: newselection }
                     }

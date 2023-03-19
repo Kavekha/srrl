@@ -1,5 +1,7 @@
-use rltk::{GameState, Rltk, RGB};
+extern crate serde;
+use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
+use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 mod map;
 pub use map::*;
@@ -11,13 +13,17 @@ mod rect;
 pub use rect::Rect;
 mod gui;
 mod gamelog;
+mod saveload_system;
+mod spawner;
+
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { 
     PreRun,
     AwaitingInput, 
     Running,
-    MainMenu { menu_selection : gui::MainMenuSelection }
+    MainMenu { menu_selection : gui::MainMenuSelection },
+    SaveGame
  }
 
 pub struct State {
@@ -77,14 +83,24 @@ impl GameState for State {
                     gui::MainMenuResult::Selected{ selected } => {
                         match selected {
                             gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
-                            gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::LoadGame => {
+                                saveload_system::load_game(&mut self.ecs);
+                                newrunstate = RunState::AwaitingInput;
+                            }
                             gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
                         }
                     }
                 }
             }
+            RunState::SaveGame => {
+                saveload_system::save_game(&mut self.ecs);
+                //let data = serde_json::to_string(&*self.ecs.fetch::<Map>()).unwrap();
+                //println!("{}", data);
+                newrunstate = RunState::MainMenu{ menu_selection : gui::MainMenuSelection::LoadGame };
+            }
         }
 
+        // Update newrunstate
         {
             let mut runwriter = self.ecs.write_resource::<RunState>();
             *runwriter = newrunstate;
@@ -109,24 +125,26 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<Player>();
+    gs.ecs.register::<SimpleMarker<SerializeMe>>(); // save
+    gs.ecs.register::<SerializationHelper>(); // save
+
+    // save
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     //  create map
     //let (rooms, map) = new_map_rooms_and_corridors();
     let map : Map = Map::new_map_rooms_and_corridors();
     let (player_x, player_y) = map.rooms[0].center();   // Player will be created at the center of the first room
-    gs.ecs.insert(map);
 
     // create player char
-    gs.ecs
-    .create_entity()
-    .with(Position { x: player_x, y: player_y })
-    .with(Renderable {
-        glyph: rltk::to_cp437('@'),
-        fg: RGB::named(rltk::YELLOW),
-        bg: RGB::named(rltk::BLACK),
-    })
-    .with(Player{})
-    .build();
+     let player_entity = spawner::player(&mut gs.ecs, player_x, player_y);
+
+    // RandomNumber, to seed.
+    gs.ecs.insert(rltk::RandomNumberGenerator::new());
+
+    gs.ecs.insert(map);
+    gs.ecs.insert(Point::new(player_x, player_y));
+    gs.ecs.insert(player_entity);
 
     // game state
     gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
