@@ -9,6 +9,8 @@ mod player;
 use player::*;
 mod rect;
 pub use rect::Rect;
+mod gui;
+mod gamelog;
 
 
 #[derive(PartialEq, Copy, Clone)]
@@ -29,27 +31,32 @@ impl GameState for State {
     fn tick(&mut self, ctx : &mut Rltk) {
         ctx.cls();
 
-        player_input(self, ctx);
-        self.run_systems();
+        if self.runstate == RunState::Running {
+            self.run_systems();
+            self.runstate = RunState::Paused
+        } else {
+            player_input(self, ctx);
+        }
 
         draw_map(&self.ecs, ctx);
 
         let positions = self.ecs.read_storage::<Position>();
         let renderables = self.ecs.read_storage::<Renderable>();
-
-
         for (pos, render) in (&positions, &renderables).join() {
             ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
         }
+
+        gui::draw_ui(&self.ecs, ctx);
     }
 }
 
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let context = RltkBuilder::simple80x50()
+    let mut context = RltkBuilder::simple80x50()
         .with_title("Shadowrun:poc")
         .build()?;
+    context.with_post_scanlines(true);
 
     // Create the state and its current default state
     let mut gs = State {
@@ -79,6 +86,9 @@ fn main() -> rltk::BError {
     })
     .with(Player{})
     .build();
+
+    // game logs
+    gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to ShadowRun:Pieces Of Code!".to_string()] });
 
     // Play main loop
     rltk::main_loop(context, gs)

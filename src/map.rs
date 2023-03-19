@@ -4,6 +4,10 @@ use std::cmp::{max, min};
 use specs::prelude::*;
 
 
+const MAPWIDTH : usize = 80;
+const MAPHEIGHT : usize = 43;
+const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum TileType {
     Wall, Floor
@@ -19,7 +23,7 @@ pub struct Map {
 
 impl Map {
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
-        (y as usize * 80) + x as usize
+        (y as usize * self.width as usize) + x as usize
     }
 
     fn apply_room_to_map(&mut self, room : &Rect) {
@@ -34,7 +38,7 @@ impl Map {
     fn apply_horizontal_tunnel(&mut self, x1:i32, x2:i32, y:i32) {
         for x in min(x1,x2) ..= max(x1,x2) {
             let idx = self.xy_idx(x, y);
-            if idx > 0 && idx < 80*50 {
+            if idx > 0 && idx < self.width as usize * self.height as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
         }
@@ -43,7 +47,7 @@ impl Map {
     fn apply_vertical_tunnel(&mut self, y1:i32, y2:i32, x:i32) {
         for y in min(y1,y2) ..= max(y1,y2) {
             let idx = self.xy_idx(x, y);
-            if idx > 0 && idx < 80*50 {
+            if idx > 0 && idx < self.width as usize * self.height as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
         }
@@ -54,8 +58,8 @@ impl Map {
         let mut map = Map{
             tiles : vec![TileType::Wall; 80*50],
             rooms : Vec::new(),
-            width : 80,
-            height : 50
+            width : MAPWIDTH as i32,
+            height : MAPHEIGHT as i32
         };
 
         const MAX_ROOMS : i32 = 30;
@@ -67,8 +71,8 @@ impl Map {
         for _ in 0..MAX_ROOMS {
             let w = rng.range(MIN_SIZE, MAX_SIZE);
             let h = rng.range(MIN_SIZE, MAX_SIZE);
-            let x = rng.roll_dice(1, 80 - w - 1) - 1;
-            let y = rng.roll_dice(1, 50 - h - 1) - 1;
+            let x = rng.roll_dice(1, map.width - w - 1) - 1;
+            let y = rng.roll_dice(1, map.height - h - 1) - 1;
             let new_room = Rect::new(x, y, w, h);
             let mut ok = true;
             for other_room in map.rooms.iter() {
