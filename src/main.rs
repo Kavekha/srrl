@@ -12,13 +12,16 @@ pub use rect::Rect;
 mod gui;
 mod gamelog;
 
-
 #[derive(PartialEq, Copy, Clone)]
-pub enum RunState { Paused, Running }
+pub enum RunState { 
+    PreRun,
+    AwaitingInput, 
+    Running,
+    MainMenu { menu_selection : gui::MainMenuSelection }
+ }
 
 pub struct State {
-    pub ecs: World,
-    pub runstate : RunState
+    pub ecs: World
 }
 
 impl State {
@@ -29,24 +32,63 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx : &mut Rltk) {
+        let mut newrunstate;
+        {
+            let runstate = self.ecs.fetch::<RunState>();
+            newrunstate = *runstate;
+        }
+
         ctx.cls();
 
-        if self.runstate == RunState::Running {
-            self.run_systems();
-            self.runstate = RunState::Paused
-        } else {
-            player_input(self, ctx);
+        match newrunstate {
+            RunState::MainMenu { .. } => {}
+            _ => {
+                draw_map(&self.ecs, ctx);
+
+                {
+                    let positions = self.ecs.read_storage::<Position>();
+                    let renderables = self.ecs.read_storage::<Renderable>();
+                    for (pos, render) in (&positions, &renderables).join() {
+                        ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+                    }
+            
+                    gui::draw_ui(&self.ecs, ctx);
+                }
+            }
         }
 
-        draw_map(&self.ecs, ctx);
-
-        let positions = self.ecs.read_storage::<Position>();
-        let renderables = self.ecs.read_storage::<Renderable>();
-        for (pos, render) in (&positions, &renderables).join() {
-            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+        match newrunstate {
+            RunState::PreRun => {
+                self.run_systems();
+                self.ecs.maintain();
+                newrunstate = RunState::AwaitingInput;
+            }
+            RunState::AwaitingInput => {
+                newrunstate = player_input(self, ctx);
+            }
+            RunState::Running => {
+                self.run_systems();
+                newrunstate = RunState::AwaitingInput
+            }
+            RunState::MainMenu { ..} => {
+                let result = gui::main_menu(self, ctx);
+                match result {
+                    gui::MainMenuResult::NoSelection { selected } => newrunstate = RunState::MainMenu{ menu_selection: selected },
+                    gui::MainMenuResult::Selected{ selected } => {
+                        match selected {
+                            gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
+                        }
+                    }
+                }
+            }
         }
 
-        gui::draw_ui(&self.ecs, ctx);
+        {
+            let mut runwriter = self.ecs.write_resource::<RunState>();
+            *runwriter = newrunstate;
+        }
     }
 }
 
@@ -60,8 +102,7 @@ fn main() -> rltk::BError {
 
     // Create the state and its current default state
     let mut gs = State {
-        ecs: World::new(),
-        runstate : RunState::Running
+        ecs: World::new()
     };
 
     // Create component
@@ -86,6 +127,9 @@ fn main() -> rltk::BError {
     })
     .with(Player{})
     .build();
+
+    // game state
+    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
 
     // game logs
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to ShadowRun:Pieces Of Code!".to_string()] });
