@@ -8,8 +8,8 @@ use crate::{
         spawn_ascii_sprite,
         AsciiSheet
     },
-    TILE_SIZE,
-    tilemap::{TileCollider},
+    TILE_SIZE, GameState,
+    tilemap::{TileCollider, TileExit},
 };
 
 
@@ -31,7 +31,8 @@ impl Plugin for PlayerPlugin{
         app
             .add_systems(Startup, spawn_player)
             .add_systems(Update, player_input)
-            .add_systems(Update, camera_follow.after(player_input));
+            .add_systems(Update, camera_follow.after(player_input))
+            .add_systems(Update, player_step_check);
     }
 }
 
@@ -75,42 +76,56 @@ fn player_input(
 
     let mut y_delta: f32 = 0.0;
     if keys.pressed(KeyCode::Up) {
-        y_delta += stats.speed * TILE_SIZE * time.delta_seconds(); //* stats.speed 
+        y_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
     if keys.pressed(KeyCode::Down) {
-        y_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); //* stats.speed 
+        y_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
 
     let mut x_delta: f32 = 0.0;
     if keys.pressed(KeyCode::Right){
-        x_delta += stats.speed * TILE_SIZE * time.delta_seconds(); //* stats.speed * time.delta_seconds();
+        x_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
     if keys.pressed(KeyCode::Left){
-        x_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); //* stats.speed * time.delta_seconds();
+        x_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
 
     let target: Vec3 = transform.translation + Vec3::new(x_delta, y_delta, 0.0);
-    if wall_collision_check(target, &wall_query) {
-        transform.translation = target;
-    }
-}
 
-
-fn wall_collision_check(
-    target_player_pos: Vec3,
-    wall_query: &Query<&Transform, (With<TileCollider>, Without<Player>)> 
-) -> bool {
-    for wall_transform in wall_query.iter() {
-        let collision = collide(
-            target_player_pos,
-            Vec2::splat(TILE_SIZE * 0.9),
-            wall_transform.translation,
-            Vec2::splat(TILE_SIZE)
-        );
-        if collision.is_some(){
-            return false;
+    // If no collision with TileCollider..
+    if !wall_query
+        .iter()
+        .any(|&transform|tile_collision_check(target, transform.translation))
+        {
+            transform.translation = target;
         }
-    }
-    true
 }
 
+fn tile_collision_check(
+    target_player_pos: Vec3,
+    tile_translation: Vec3
+) -> bool {
+    let collision = collide(
+        target_player_pos,
+        Vec2::splat(TILE_SIZE * 0.9),
+        tile_translation,
+        Vec2::splat(TILE_SIZE)
+    );
+    collision.is_some()
+}
+
+fn player_step_check(
+    player_query: Query<(&Player, &mut Transform)>,
+    exit_query: Query<&Transform, (With<TileExit>, Without<Player>)>,
+    mut game_state: ResMut<NextState<GameState>>
+) {
+    // If player on collision with an exit...
+    let (_player, player_transform) = player_query.single();
+    if exit_query
+        .iter()
+        .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
+        {
+            println!("Exit !");      //TODO: Victory & State system    
+            game_state.set(GameState::VictoryScreen);
+        }
+}
