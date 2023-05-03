@@ -20,8 +20,17 @@ use ascii::AsciiPlugin;
 use tilemap::TileMapPlugin;
 
 
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum GameState {
+    #[default]
+    GameMap,
+    VictoryScreen
+}
+
+
 fn main() {
     App::new()
+        .insert_resource(ClearColor(CLEAR))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -39,6 +48,7 @@ fn main() {
                 )
         )
         .add_plugin(AsciiPlugin)
+        .add_state::<GameState>()
         .add_systems(Startup, spawn_camera)
         .add_plugin(TileMapPlugin)
         .add_plugin(PlayerPlugin)    

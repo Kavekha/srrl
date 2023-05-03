@@ -15,6 +15,8 @@ pub struct TileMapPlugin;
 #[derive(Component)]
 pub struct TileCollider;
 
+#[derive(Component)]
+pub struct TileExit;
 
 
 impl Plugin for TileMapPlugin {
@@ -39,6 +41,9 @@ fn create_simple_map (mut commands: Commands, ascii:Res<AsciiSheet>){
                 );
                 if char == '#' {
                     commands.entity(tile).insert(TileCollider);
+                }
+                if char == '<' {
+                    commands.entity(tile).insert(TileExit);
                 }
                 tiles.push(tile);
             }
