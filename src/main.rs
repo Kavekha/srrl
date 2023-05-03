@@ -1,157 +1,58 @@
-extern crate serde;
-use rltk::{GameState, Rltk, Point};
-use specs::prelude::*;
-use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+#![allow(clippy::redundant_field_names)]
+use bevy::{
+    prelude::*, 
+    render::camera::ScalingMode,
+    window::PresentMode::Fifo,
+};
 
-mod map;
-pub use map::*;
-mod components;
-pub use components::*;
+
+pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
+pub const RESOLUTION: f32 = 16.0 / 9.0;
+pub const TILE_SIZE: f32 = 0.1; 
+pub const HEIGHT: f32 = 900.0;
+
 mod player;
-use player::*;
-mod rect;
-pub use rect::Rect;
-mod gui;
-mod gamelog;
-mod saveload_system;
-mod spawner;
+mod ascii;
+mod tilemap;
+
+use player::PlayerPlugin;
+use ascii::AsciiPlugin;
+use tilemap::TileMapPlugin;
 
 
-#[derive(PartialEq, Copy, Clone)]
-pub enum RunState { 
-    PreRun,
-    AwaitingInput, 
-    Running,
-    MainMenu { menu_selection : gui::MainMenuSelection },
-    SaveGame
- }
-
-pub struct State {
-    pub ecs: World
-}
-
-impl State {
-    fn run_systems(&mut self) {
-        self.ecs.maintain();
-    }
-}
-
-impl GameState for State {
-    fn tick(&mut self, ctx : &mut Rltk) {
-        let mut newrunstate;
-        {
-            let runstate = self.ecs.fetch::<RunState>();
-            newrunstate = *runstate;
-        }
-
-        ctx.cls();
-
-        match newrunstate {
-            RunState::MainMenu { .. } => {}
-            _ => {
-                draw_map(&self.ecs, ctx);
-
-                {
-                    let positions = self.ecs.read_storage::<Position>();
-                    let renderables = self.ecs.read_storage::<Renderable>();
-                    for (pos, render) in (&positions, &renderables).join() {
-                        ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
-                    }
-            
-                    gui::draw_ui(&self.ecs, ctx);
-                }
-            }
-        }
-
-        match newrunstate {
-            RunState::PreRun => {
-                self.run_systems();
-                self.ecs.maintain();
-                newrunstate = RunState::AwaitingInput;
-            }
-            RunState::AwaitingInput => {
-                newrunstate = player_input(self, ctx);
-            }
-            RunState::Running => {
-                self.run_systems();
-                newrunstate = RunState::AwaitingInput
-            }
-            RunState::MainMenu { ..} => {
-                let result = gui::main_menu(self, ctx);
-                match result {
-                    gui::MainMenuResult::NoSelection { selected } => newrunstate = RunState::MainMenu{ menu_selection: selected },
-                    gui::MainMenuResult::Selected{ selected } => {
-                        match selected {
-                            gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
-                            gui::MainMenuSelection::LoadGame => {
-                                saveload_system::load_game(&mut self.ecs);
-                                newrunstate = RunState::AwaitingInput;
-                            }
-                            gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
-                        }
-                    }
-                }
-            }
-            RunState::SaveGame => {
-                saveload_system::save_game(&mut self.ecs);
-                //let data = serde_json::to_string(&*self.ecs.fetch::<Map>()).unwrap();
-                //println!("{}", data);
-                newrunstate = RunState::MainMenu{ menu_selection : gui::MainMenuSelection::LoadGame };
-            }
-        }
-
-        // Update newrunstate
-        {
-            let mut runwriter = self.ecs.write_resource::<RunState>();
-            *runwriter = newrunstate;
-        }
-    }
+fn main() {
+    App::new()
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "ShadowRun: POC".to_string(),
+                        resolution: (HEIGHT * RESOLUTION, HEIGHT).into(),
+                        present_mode: Fifo, //AutoVsync,
+                        resizable: false, 
+                        ..Default::default()
+                }),
+                ..default()
+                })
+                .set(
+                    ImagePlugin::default_nearest()
+                )
+        )
+        .add_plugin(AsciiPlugin)
+        .add_systems(Startup, spawn_camera)
+        .add_plugin(TileMapPlugin)
+        .add_plugin(PlayerPlugin)    
+        .run();
 }
 
 
-fn main() -> rltk::BError {
-    use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple80x50()
-        .with_title("Shadowrun:poc")
-        .build()?;
-    context.with_post_scanlines(true);
-
-    // Create the state and its current default state
-    let mut gs = State {
-        ecs: World::new()
+fn spawn_camera(mut commands: Commands) {
+    let camera_bundle = Camera2dBundle {
+        projection: OrthographicProjection{
+            scaling_mode: ScalingMode::WindowSize(500.0),
+            ..default()
+        },
+        ..default()
     };
-
-    // Create component
-    gs.ecs.register::<Position>();
-    gs.ecs.register::<Renderable>();
-    gs.ecs.register::<Player>();
-    gs.ecs.register::<SimpleMarker<SerializeMe>>(); // save
-    gs.ecs.register::<SerializationHelper>(); // save
-
-    // save
-    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-
-    //  create map
-    //let (rooms, map) = new_map_rooms_and_corridors();
-    let map : Map = Map::new_map_rooms_and_corridors();
-    let (player_x, player_y) = map.rooms[0].center();   // Player will be created at the center of the first room
-
-    // create player char
-     let player_entity = spawner::player(&mut gs.ecs, player_x, player_y);
-
-    // RandomNumber, to seed.
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
-
-    gs.ecs.insert(map);
-    gs.ecs.insert(Point::new(player_x, player_y));
-    gs.ecs.insert(player_entity);
-
-    // game state
-    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
-
-    // game logs
-    gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to ShadowRun:Pieces Of Code!".to_string()] });
-
-    // Play main loop
-    rltk::main_loop(context, gs)
+    commands.spawn(camera_bundle);
 }
