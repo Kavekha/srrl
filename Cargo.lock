@@ -3565,7 +3565,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "sr_poc"
+name = "sr-rl"
 version = "0.1.0"
 dependencies = [
  "bevy 0.11.0-dev",
