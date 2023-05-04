@@ -8,31 +8,32 @@ use crate::{
         spawn_ascii_sprite,
         AsciiSheet
     },
-    TILE_SIZE, GameState,
+    TILE_SIZE, GameState, despawn_screen,
     tilemap::{TileCollider, TileExit},
 };
+
+
+#[derive(Component)]
+pub struct Player;
+
+
+#[derive(Component)]
+pub struct Stats {
+    speed: f32
+}
 
 
 pub struct PlayerPlugin;
 
 
-
-#[derive(Component)]
-struct Player;
-
-
-#[derive(Component)]
-struct Stats {
-    speed: f32
-}
-
 impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Startup, spawn_player)
-            .add_systems(Update, player_input)
-            .add_systems(Update, camera_follow.after(player_input))
-            .add_systems(Update, player_step_check);
+            .add_systems(OnEnter(GameState::GameMap), spawn_player)              
+            .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Player>);  // TODO Not working?   
     }
 }
 
@@ -90,9 +91,19 @@ fn player_input(
         x_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
 
-    let target: Vec3 = transform.translation + Vec3::new(x_delta, y_delta, 0.0);
+    // We check if collision with TileColider for x and y (If both at the same time, we'll block a valid movement if x: True & y : False)
+    // TODO: how to avoid duplicate?
+    let target: Vec3 = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
 
-    // If no collision with TileCollider..
+    if !wall_query
+        .iter()
+        .any(|&transform|tile_collision_check(target, transform.translation))
+        {
+            transform.translation = target;
+        }
+
+    let target: Vec3 = transform.translation + Vec3::new(0.0, y_delta, 0.0);
+    
     if !wall_query
         .iter()
         .any(|&transform|tile_collision_check(target, transform.translation))
@@ -101,13 +112,14 @@ fn player_input(
         }
 }
 
+
 fn tile_collision_check(
     target_player_pos: Vec3,
     tile_translation: Vec3
 ) -> bool {
     let collision = collide(
         target_player_pos,
-        Vec2::splat(TILE_SIZE * 0.9),
+        Vec2::splat(TILE_SIZE * 0.9),   //On reduit la box de collision pour ne pas être au pixel pret
         tile_translation,
         Vec2::splat(TILE_SIZE)
     );
@@ -125,7 +137,7 @@ fn player_step_check(
         .iter()
         .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
         {
-            println!("Exit !");      //TODO: Victory & State system    
+            println!("Exit !");      //TOLOG   
             game_state.set(GameState::VictoryScreen);
         }
 }

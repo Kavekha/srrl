@@ -7,11 +7,44 @@ pub struct AsciiPlugin;
 # [derive(Resource)]
 pub struct AsciiSheet(Handle<TextureAtlas>);
 
+#[derive(Component)]
+pub struct AsciiText;
+
 impl Plugin for AsciiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(PreStartup, load_ascii);
     }
 }
+
+pub fn spawn_ascii_text(
+    commands: &mut Commands,
+    ascii: &AsciiSheet,
+    to_print: &str,
+    left_center: Vec3
+) -> Entity {
+    let color = Color::rgb(0.8, 0.8, 0.8);
+
+    let mut character_sprites = Vec::new();
+    for (i, char) in to_print.chars().enumerate(){
+        assert!(char as usize <= 256);
+        character_sprites.push(spawn_ascii_sprite(
+            commands,
+            ascii, 
+            char as usize, 
+            color,
+            Vec3::new(i as f32 * TILE_SIZE, 0.0, 0.0)));
+    }
+    commands
+    .spawn(Name::new(format!("text: {}", to_print)))
+    .insert(AsciiText)
+    .insert(SpatialBundle{
+        transform: Transform::from_translation(left_center),
+        ..default()
+    })
+    .push_children(&character_sprites)
+    .id()
+}
+
 
 pub fn spawn_ascii_sprite(
     commands: &mut Commands,

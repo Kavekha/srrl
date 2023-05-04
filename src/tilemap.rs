@@ -7,10 +7,9 @@ use bevy::{prelude::*};
 
 use crate::{
     ascii::{spawn_ascii_sprite, AsciiSheet},
-    TILE_SIZE,
+    TILE_SIZE, despawn_screen, GameState,
 };
 
-pub struct TileMapPlugin;
 
 #[derive(Component)]
 pub struct TileCollider;
@@ -18,10 +17,17 @@ pub struct TileCollider;
 #[derive(Component)]
 pub struct TileExit;
 
+#[derive(Component)]
+pub struct Map;
+
+pub struct TileMapPlugin;
 
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
-        app.add_systems(Startup, create_simple_map);
+        app
+            //.add_systems(Startup, create_simple_map.run_if(in_state(GameState::GameMap)))
+            .add_systems(OnEnter(GameState::GameMap), create_simple_map)
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Map>);     
     }
 }
 
@@ -52,11 +58,10 @@ fn create_simple_map (mut commands: Commands, ascii:Res<AsciiSheet>){
 
     commands
         .spawn(Name::new("Map"))
+        .insert(Map)
         .insert(SpatialBundle{
             ..default()
         })
-        //.insert(Transform::default())
-        //.insert(GlobalTransform::default())
         .push_children(&tiles);
 
 }
