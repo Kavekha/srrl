@@ -9,15 +9,17 @@ use bevy::{
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const TILE_SIZE: f32 = 0.1; 
-pub const HEIGHT: f32 = 900.0;
+pub const HEIGHT: f32 = 600.0;
 
 mod player;
 mod ascii;
 mod tilemap;
+mod victory;
 
 use player::PlayerPlugin;
 use ascii::AsciiPlugin;
 use tilemap::TileMapPlugin;
+use victory::VictoryPlugin;
 
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
@@ -52,6 +54,9 @@ fn main() {
         .add_systems(Startup, spawn_camera)
         .add_plugin(TileMapPlugin)
         .add_plugin(PlayerPlugin)    
+        .add_plugin(VictoryPlugin)   
+           
+
         .run();
 }
 
@@ -65,4 +70,11 @@ fn spawn_camera(mut commands: Commands) {
         ..default()
     };
     commands.spawn(camera_bundle);
+}
+
+
+pub fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
+    for entity in &to_despawn {
+        commands.entity(entity).despawn_recursive();
+    }
 }
