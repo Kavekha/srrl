@@ -16,6 +16,18 @@ impl Plugin for AsciiPlugin {
     }
 }
 
+#[warn(dead_code)]
+pub struct NineSliceIndices {
+    center: usize,
+    upper_left_index: usize,
+    upper_right_index: usize,
+    lower_left_index: usize,
+    lower_right_index: usize,
+    horizontal_index: usize,
+    vertical_index: usize
+}
+
+
 pub fn spawn_ascii_text(
     commands: &mut Commands,
     ascii: &AsciiSheet,

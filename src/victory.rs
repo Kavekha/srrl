@@ -1,12 +1,12 @@
 use bevy::{prelude::*};
 
 use crate::{
-    GameState, despawn_screen,
+    GameState, AppState, despawn_screen,
     ascii::{spawn_ascii_text, AsciiSheet},
+    mainmenu::{menu_camera, OnScreenMenu}
 };
 
-#[derive(Component)]
-pub struct OnScreenMenu;
+
 
 pub struct VictoryPlugin;
 
@@ -20,13 +20,7 @@ impl Plugin for VictoryPlugin {
     }
 }
 
-fn menu_camera(
-    mut camera_query: Query<&mut Transform, With<Camera>>
-){
-    let mut camera_transform = camera_query.single_mut();
-    camera_transform.translation.x = 0.0;
-    camera_transform.translation.y = 0.0;
-}
+
 
 fn display_victory_screen(
     mut commands: Commands,

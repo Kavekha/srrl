@@ -25,7 +25,6 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
-            //.add_systems(Startup, create_simple_map.run_if(in_state(GameState::GameMap)))
             .add_systems(OnEnter(GameState::GameMap), create_simple_map)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Map>);     
     }
