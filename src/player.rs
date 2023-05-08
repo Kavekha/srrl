@@ -33,7 +33,7 @@ impl Plugin for PlayerPlugin{
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Player>);  // TODO Not working?   
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Player>);  
     }
 }
 
@@ -44,7 +44,8 @@ fn spawn_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
         &ascii,
         1,
         Color::rgb(0.3, 0.3, 0.9),
-        Vec3::new(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0)
+        Vec3::new(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
+        Vec3::splat(1.0)
     );
 
     commands 

@@ -8,26 +8,36 @@ use bevy::{
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
-pub const TILE_SIZE: f32 = 0.1; 
+pub const TILE_SIZE: f32 = 0.05;  
 pub const HEIGHT: f32 = 600.0;
 
 mod player;
 mod ascii;
 mod tilemap;
 mod victory;
+mod mainmenu;
 
 use player::PlayerPlugin;
 use ascii::AsciiPlugin;
 use tilemap::TileMapPlugin;
 use victory::VictoryPlugin;
+use mainmenu::MainMenuPlugin;
 
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum AppState {
+    #[default]
+    MainMenu,
+    Game
+}
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum GameState {
     #[default]
+    Disabled,
     GameMap,
     VictoryScreen
-}
+}   //To move elsewhere.
 
 
 fn main() {
@@ -50,8 +60,10 @@ fn main() {
                 )
         )
         .add_plugin(AsciiPlugin)
-        .add_state::<GameState>()
+        .add_state::<AppState>()
+        .add_state::<GameState>()   //TO MOVE elsewhere (game thingy)
         .add_systems(Startup, spawn_camera)
+        .add_plugin(MainMenuPlugin)
         .add_plugin(TileMapPlugin)
         .add_plugin(PlayerPlugin)    
         .add_plugin(VictoryPlugin)   

@@ -25,7 +25,6 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
-            //.add_systems(Startup, create_simple_map.run_if(in_state(GameState::GameMap)))
             .add_systems(OnEnter(GameState::GameMap), create_simple_map)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Map>);     
     }
@@ -44,6 +43,7 @@ fn create_simple_map (mut commands: Commands, ascii:Res<AsciiSheet>){
                     char as usize,
                     Color::rgb(0.9, 0.9, 0.9),
                     Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                    Vec3::splat(1.0)
                 );
                 if char == '#' {
                     commands.entity(tile).insert(TileCollider);
