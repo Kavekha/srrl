@@ -18,7 +18,7 @@ pub fn xy_idx(x: i32, y: i32) -> usize {
     (y as usize * map_width as usize) + x as usize      //TO CHANGE: we want to be able to choose height and width of the map
 }
 
-pub fn create_map_from_text() -> Vec<TileType>{
+pub fn create_map_from_text() -> Vec<TileType> {
     let map_width = MAP_WIDTH;
     let map_height = MAP_HEIGHT;
 
@@ -28,20 +28,17 @@ pub fn create_map_from_text() -> Vec<TileType>{
 
     for (y, line) in BufReader::new(file).lines().enumerate(){
         if let Ok(line)= line {
-            for (x, char) in line.chars().enumerate(){
-                 if char == '#' {
-                    map[xy_idx(x as i32, y as i32)] = TileType::Wall;
-                }
-                if char == '<' {
-                    map[xy_idx(x as i32, y as i32)] = TileType::Exit;
-                } else {
-                    map[xy_idx(x as i32, y as i32)] = TileType::Floor;
+            for (x, character) in line.chars().enumerate(){
+                match character {
+                    // TOREMEMBER : fun story : "#" is a &str, but '#' is a char.
+                    '<' => { map[xy_idx(x as i32, y as i32)] = TileType::Exit; }
+                    '#' => { map[xy_idx(x as i32, y as i32)] = TileType::Wall; }
+                    _   => { map[xy_idx(x as i32, y as i32)] = TileType::Floor;}
                 }
             }
         }
     }
-
-    map 
+    map
 }
 
 

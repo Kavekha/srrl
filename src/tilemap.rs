@@ -2,7 +2,7 @@ use bevy::{prelude::*};
 
 use crate::{
     ascii::{spawn_ascii_sprite, AsciiSheet},
-    TILE_SIZE, despawn_screen, GameState,
+    TILE_SIZE, despawn_screen, GameState, map_builders::map::MAP_WIDTH, map_builders::map::TileType,
 };
 
 
@@ -31,17 +31,76 @@ fn create_simple_map (
     mut commands: Commands, 
     ascii:Res<AsciiSheet>
 ) {
+
+    let map_width = MAP_WIDTH;
+
     //we get map (vecTile) from a text file.
-    let mut map = crate::map_builders::map::create_map_from_text();
+    let map = crate::map_builders::map::create_map_from_text();
 
     //All tiles created will go there
     let mut tiles:Vec<Entity> = Vec::new();
 
     //We create entities from this map.
-    for x in map.iter(){
-        println!("Dans Map il y a {:?}", x)
-    }
+    let mut x = 0;
+    let mut y = 0;
+    for (_idx, tile_info) in map.iter().enumerate(){
+
+        //tiles.push(tile);     // Obligé de le faire dans chaque match car hors du scope :-()
+
+        match tile_info {
+            TileType::Wall => {
+                let tile = spawn_ascii_sprite(
+                    &mut commands, 
+                    &ascii, 
+                    '#' as usize,
+                    Color::rgb(0.9, 0.9, 0.9),
+                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                    Vec3::splat(1.0)
+                );
+                commands.entity(tile).insert(TileCollider);
+                tiles.push(tile); 
+            }
+            TileType::Exit => {
+                let tile = spawn_ascii_sprite(
+                    &mut commands, 
+                    &ascii, 
+                    '<' as usize,
+                    Color::rgb(0.9, 0.9, 0.9),
+                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                    Vec3::splat(1.0)
+                );
+                commands.entity(tile).insert(TileExit);
+                tiles.push(tile); 
+            }
+            TileType::Floor => {
+                let tile = spawn_ascii_sprite(
+                    &mut commands, 
+                    &ascii, 
+                    '.' as usize,
+                    Color::rgb(0.9, 0.9, 0.9),
+                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                    Vec3::splat(1.0)
+                );
+                tiles.push(tile); 
+            }
+        }            
+        x += 1;
+        if x > map_width as i32 - 1 {
+            x = 0;
+            y += 1;
+        }
+    }    
+    commands
+        .spawn(Name::new("Map"))
+        .insert(Map)
+        .insert(SpatialBundle{
+            ..default()
+        })
+        .push_children(&tiles);
+
 }
+
+
     /*
     for (y, line) in map.iter() {
        for (x, tile) in line.iter(){
