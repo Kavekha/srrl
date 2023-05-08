@@ -39,7 +39,7 @@ pub struct NineSliceIndices {
 }
 
 #[derive(Component)]
-struct NineSlice;
+pub struct NineSlice;
 
 pub fn spawn_nine_slice(
     commands: &mut Commands,

@@ -1,8 +1,8 @@
-use bevy::{prelude::*};
+use bevy::{prelude::*, app::AppExit};
 
 use crate::{
-    despawn_screen, AppState, GameState, TILE_SIZE, HEIGHT,
-    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice}
+    despawn_screen, AppState, GameState, TILE_SIZE,
+    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice}
 };
 
 
@@ -26,8 +26,10 @@ impl Plugin for MainMenuPlugin{
         app
             .add_state::<MenuState>()
             .add_systems(OnEnter(MenuState::MainMenu), spawn_title)
-            .add_systems(OnEnter(MenuState::MainMenu), spawn_main_menu)            
+            .add_systems(OnEnter(MenuState::MainMenu), spawn_main_menu)      
+            .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
             .add_systems(Update, main_menu_input.run_if(in_state(MenuState::MainMenu)))
+            .add_systems(Update, hightligh_menu_button.run_if(in_state(MenuState::MainMenu)))
             .add_systems(OnExit(MenuState::MainMenu), despawn_screen::<OnScreenMenu>);
     }
 }
@@ -41,10 +43,42 @@ pub fn menu_camera(
     camera_transform.translation.y = 0.0;
 }
 
-#[derive(Component)]
+pub const MAIN_MENU_OPTIONS_COUNT: isize = 2;  //Necessaire pour la selection d'une option dans l'input.
+
+#[derive(Component, PartialEq, Clone, Copy)]
 pub enum MainMenuOptions {
     StartGame,
     Quit
+}
+
+
+#[derive(Resource)]
+pub struct MainMenuSelection {
+    selected: MainMenuOptions
+}
+
+fn hightligh_menu_button(
+    menu_state: Res<MainMenuSelection>,
+    button_query: Query<(&Children, &MainMenuOptions)>,
+    nine_slice_query: Query<&Children, With<NineSlice>>,
+    mut sprites_query: Query<&mut TextureAtlasSprite>
+){
+    // On se balade dans la hierarchie du menu pour choisir la couleur du bouton selon que son id = menu_state.selected
+    for (button_children, button_id) in button_query.iter() {
+        for button_child in button_children.iter() {
+            if let Ok(nine_slice_children) = nine_slice_query.get(*button_child) {
+                for nine_slice_child in nine_slice_children.iter() {
+                    if let Ok(mut sprite) = sprites_query.get_mut(*nine_slice_child){
+                        if menu_state.selected == *button_id {
+                            sprite.color = Color::RED;
+                        } else {
+                            sprite.color = Color::WHITE;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn spawn_menu_button(
@@ -122,9 +156,11 @@ fn spawn_title(
     let title_drop = "SHADOWRUN";
     //let title_width = (title_drop.len()+ 2) as f32; 
 
+    //TODO: Where the f is this? 0.0 = Center, -1.0 ==> totaly out of scope. There is a modifier somewhere? Tilesize?
+
     let text_placement= Vec3::new(
-        0.0,
-        0.0,
+        -0.2,
+        0.3,
         0.0);
 
     let ascii_text = spawn_ascii_text(
@@ -143,12 +179,39 @@ fn main_menu_input(
     keys: Res<Input<KeyCode>>,
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MenuState>>
+    mut menu_state: ResMut<NextState<MenuState>>,
+    mut menu_selection: ResMut<MainMenuSelection>,
+    mut app_exit_events: EventWriter<AppExit>
 ) {
-    if keys.pressed(KeyCode::Space) {
-        println!("Go to game !");      //TOLOG
-        app_state.set(AppState::Game);
-        game_state.set(GameState::GameMap);
-        menu_state.set(MenuState::Disabled);
+    let mut current_selection = menu_selection.selected as isize;
+    if keys.just_pressed(KeyCode::Up) {
+        current_selection -=1;
+    }
+    if keys.just_pressed(KeyCode::Down) {
+        current_selection -=1;
+    }
+
+    current_selection = (current_selection + MAIN_MENU_OPTIONS_COUNT) % MAIN_MENU_OPTIONS_COUNT;
+
+    menu_selection.selected = match current_selection {
+        0 => MainMenuOptions::StartGame,
+        1 => MainMenuOptions::Quit,
+        _ => unreachable!("Bad Main menu selection")
+    };
+
+
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+        match menu_selection.selected {
+            MainMenuOptions::StartGame => {
+                println!("Go to game !");
+                app_state.set(AppState::Game);
+                game_state.set(GameState::GameMap);
+                menu_state.set(MenuState::Disabled);
+            }
+            MainMenuOptions::Quit => {
+                println!("Quit App");   //TODO
+                app_exit_events.send(AppExit);
+            }
+        }
     }
 }
