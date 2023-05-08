@@ -17,6 +17,8 @@ mod tilemap;
 mod victory;
 mod mainmenu;
 
+mod map_builders;   //mod
+
 use player::PlayerPlugin;
 use ascii::AsciiPlugin;
 use tilemap::TileMapPlugin;

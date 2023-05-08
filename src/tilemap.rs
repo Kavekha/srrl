@@ -1,14 +1,11 @@
-use std::{
-    fs::File,
-    io::{BufReader, BufRead},
-};
-
 use bevy::{prelude::*};
 
 use crate::{
     ascii::{spawn_ascii_sprite, AsciiSheet},
     TILE_SIZE, despawn_screen, GameState,
 };
+
+
 
 
 #[derive(Component)]
@@ -30,7 +27,70 @@ impl Plugin for TileMapPlugin {
     }
 }
 
-fn create_simple_map (mut commands: Commands, ascii:Res<AsciiSheet>){
+fn create_simple_map (
+    mut commands: Commands, 
+    ascii:Res<AsciiSheet>
+) {
+    //we get map (vecTile) from a text file.
+    let mut map = crate::map_builders::map::create_map_from_text();
+
+    //All tiles created will go there
+    let mut tiles:Vec<Entity> = Vec::new();
+
+    //We create entities from this map.
+    for x in map.iter(){
+        println!("Dans Map il y a {:?}", x)
+    }
+}
+    /*
+    for (y, line) in map.iter() {
+       for (x, tile) in line.iter(){
+        if tile == crate::map_builders::map::TileType::Wall {
+            let tile = spawn_ascii_sprite(
+                &mut commands, 
+                &ascii, 
+                '#' as usize,
+                Color::rgb(0.9, 0.9, 0.9),
+                Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                Vec3::splat(1.0)
+            );
+            commands.entity(tile).insert(TileCollider);
+        }
+        if tile = TileType::Exit {
+            let tile = spawn_ascii_sprite(
+                &mut commands, 
+                &ascii, 
+                '<' as usize,
+                Color::rgb(0.9, 0.9, 0.9),
+                Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                Vec3::splat(1.0)
+            );
+            commands.entity(tile).insert(TileExit);
+        } else {
+            let tile = spawn_ascii_sprite(
+                &mut commands, 
+                &ascii, 
+                '.' as usize,
+                Color::rgb(0.9, 0.9, 0.9),
+                Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                Vec3::splat(1.0)
+            );
+        }
+        tiles.push(tile);
+       }
+    }
+    commands
+    .spawn(Name::new("Map"))
+    .insert(Map)
+    .insert(SpatialBundle{
+        ..default()
+    })
+    .push_children(&tiles);
+}
+*/
+
+/*
+fn create_map_from_text (mut commands: Commands, ascii:Res<AsciiSheet>){
     let file = File::open("assets/map.txt").expect("No map found");
     let mut tiles = Vec::new();
 
@@ -64,4 +124,4 @@ fn create_simple_map (mut commands: Commands, ascii:Res<AsciiSheet>){
         })
         .push_children(&tiles);
 
-}
+} */
