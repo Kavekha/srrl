@@ -55,9 +55,10 @@ pub fn spawn_nine_slice(
     let mut sprites = Vec::new();
 
     let left = (-width / 2.0 + 0.5) * TILE_SIZE;
-    let right = - left;
+    let right = (width / 2.0 - 0.5) * TILE_SIZE;
+    let up = (height/2.0 - 0.5) * TILE_SIZE;
     let down = (-height/2.0 + 0.5) * TILE_SIZE;
-    let up = -down;
+
 
     sprites.push(spawn_ascii_sprite(
         commands,

@@ -1,8 +1,8 @@
 use bevy::{prelude::*};
 
 use crate::{
-    despawn_screen, AppState, GameState, TILE_SIZE, RESOLUTION,
-    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice},
+    despawn_screen, AppState, GameState, TILE_SIZE, HEIGHT,
+    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice}
 };
 
 
@@ -25,7 +25,7 @@ impl Plugin for MainMenuPlugin{
     fn build(&self, app: &mut App) {
         app
             .add_state::<MenuState>()
-            //.add_systems(OnEnter(MenuState::MainMenu), menu_setup)
+            .add_systems(OnEnter(MenuState::MainMenu), spawn_title)
             .add_systems(OnEnter(MenuState::MainMenu), spawn_main_menu)            
             .add_systems(Update, main_menu_input.run_if(in_state(MenuState::MainMenu)))
             .add_systems(OnExit(MenuState::MainMenu), despawn_screen::<OnScreenMenu>);
@@ -64,6 +64,7 @@ fn spawn_menu_button(
         .spawn(Name::new("Button"))
         .insert(OnScreenMenu)
         .insert(SpatialBundle{
+            transform: Transform::from_translation(translation),
             ..default()
         })
         .insert(id)
@@ -75,54 +76,67 @@ fn spawn_menu_button(
 fn spawn_main_menu(
     mut commands: Commands,
     ascii: Res<AsciiSheet>,
-    nine_slices_indices: Res<NineSliceIndices>
+    nine_slice_indices: Res<NineSliceIndices>
 ){
     let box_height = 3.0;
-    let box_center_y = -1.0 + box_height * TILE_SIZE / 2.0;
+    let box_center_x = 0.0;
 
+    let mut box_center_y = box_height * TILE_SIZE / 2.0;
+
+    // Start game button
     let start_game_text = "Start game";
-    let start_game_width = (start_game_text.len()+ 2) as f32;
-    let start_game_center_x = RESOLUTION - (start_game_width * TILE_SIZE) / 2.0;
+    let start_game_width = (start_game_text.len()+ 2) as f32;  
 
     spawn_menu_button(
         &mut commands, 
         &ascii, 
-        &nine_slices_indices, 
-        Vec3::new(start_game_center_x, box_center_y, 100.0),
+        &nine_slice_indices, 
+        Vec3::new(box_center_x, box_center_y, 100.0),
         start_game_text, 
         MainMenuOptions::StartGame,
         Vec2::new(start_game_width, box_height)
-    );
+    ); 
+ 
+     // Quit game button.
+
+     let quit_app_text = "Quit";
+     let quit_app_width = (quit_app_text.len()+ 2) as f32;
+     box_center_y -= box_height * TILE_SIZE;
+
+     spawn_menu_button(
+        &mut commands, 
+        &ascii, 
+        &nine_slice_indices, 
+        Vec3::new(box_center_x, box_center_y, 100.0),
+        quit_app_text, 
+        MainMenuOptions::Quit,
+        Vec2::new(quit_app_width, box_height)
+    ); 
+
 }
 
-fn menu_setup(
+fn spawn_title(
     mut commands: Commands,
     ascii: Res<AsciiSheet>
 ) {
     let title_drop = "SHADOWRUN";
-    let x: f32 = 0.0;
-    let mut y: f32 = 0.0;
+    //let title_width = (title_drop.len()+ 2) as f32; 
 
-    let text_to_display = vec![title_drop];
+    let text_placement= Vec3::new(
+        0.0,
+        0.0,
+        0.0);
 
-    for text in text_to_display{
-        //TODO : Ce qui suit est dégueu, et utilisé pour centrer le texte.
-        let ox = (text.len()/2) as f32; 
-        let mo = ox /10.0;      // Je le divise par 10 car trop gros mais impossible à diviser par 20 auparavant car arrondi à 0.
-        let final_x: f32 = x - mo;
-        
-        let text_placement= Vec3::new(final_x, y, 0.0);
-        let ascii_text = spawn_ascii_text(
-            &mut commands,
-            &ascii,
-            &text,
-            text_placement
-        );
-        commands.entity(ascii_text)
-        .insert(OnScreenMenu);
+    let ascii_text = spawn_ascii_text(
+        &mut commands,
+        &ascii,
+        &title_drop,
+        text_placement
+    );
 
-        y -= 0.2
-    }
+    commands.entity(ascii_text)
+    .insert(OnScreenMenu);
+
 }
 
 fn main_menu_input(
