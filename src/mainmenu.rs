@@ -30,8 +30,17 @@ impl Plugin for MainMenuPlugin{
             .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
             .add_systems(Update, main_menu_input.run_if(in_state(MenuState::MainMenu)))
             .add_systems(Update, hightligh_menu_button.run_if(in_state(MenuState::MainMenu)))
-            .add_systems(OnExit(MenuState::MainMenu), despawn_screen::<OnScreenMenu>);
+            .add_systems(OnExit(MenuState::MainMenu), despawn_screen::<OnScreenMenu>)
+            .add_systems(OnEnter(MenuState::MainMenu), play_music); //TEST AUDIO
     }
+}
+
+
+//TEST AUDIO ok with Cargo Run, not with Visual Code...... ONLY .OGG WORKING wat???
+pub fn play_music(asset_server: Res<AssetServer>, audio: Res<Audio>) {
+    //let music = asset_server.load("audios/01 Seattle 2050 (American).mp3");
+    let music = asset_server.load("audios/Windless Slopes.ogg");
+    audio.play(music);
 }
 
 

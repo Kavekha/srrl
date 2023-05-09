@@ -2727,7 +2727,7 @@ dependencies = [
 
 [[package]]
 name = "sr-rl"
-version = "0.3.0-release-0.1"
+version = "0.4.0"
 dependencies = [
  "bevy",
  "rand",
