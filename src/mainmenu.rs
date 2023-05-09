@@ -184,10 +184,10 @@ fn main_menu_input(
     mut app_exit_events: EventWriter<AppExit>
 ) {
     let mut current_selection = menu_selection.selected as isize;
-    if keys.just_pressed(KeyCode::Up) {
+    if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
         current_selection -=1;
     }
-    if keys.just_pressed(KeyCode::Down) {
+    if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
         current_selection -=1;
     }
 
