@@ -65,7 +65,7 @@ fn spawn_player(
         .entity(player)
         .insert(Player)
         .insert(Name::new("Player"))
-        .insert(Stats {speed: 3.0});
+        .insert(Stats {speed: 6.0});
 }
 
 
@@ -90,18 +90,18 @@ fn player_input(
     let (_player, mut transform, stats) = player_query.single_mut();
 
     let mut y_delta: f32 = 0.0;
-    if keys.pressed(KeyCode::Up) {
+    if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
         y_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
-    if keys.pressed(KeyCode::Down) {
+    if keys.any_pressed([KeyCode::Down, KeyCode::S]) {
         y_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
 
     let mut x_delta: f32 = 0.0;
-    if keys.pressed(KeyCode::Right){
+    if keys.any_pressed([KeyCode::Right, KeyCode::D]){
         x_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
-    if keys.pressed(KeyCode::Left){
+    if keys.any_pressed([KeyCode::Left, KeyCode::Q]){
         x_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
 
