@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 #![allow(clippy::redundant_field_names)]
 use bevy::{
     prelude::*, 
