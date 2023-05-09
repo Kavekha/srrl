@@ -205,7 +205,7 @@ fn main_menu_input(
             MainMenuOptions::StartGame => {
                 println!("Go to game !");
                 app_state.set(AppState::Game);
-                game_state.set(GameState::characterCreation);
+                game_state.set(GameState::CharacterCreation);
                 menu_state.set(MenuState::Disabled);
             }
             MainMenuOptions::Quit => {

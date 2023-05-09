@@ -29,7 +29,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::characterCreation), character_creation)              
+            .add_systems(OnEnter(GameState::CharacterCreation), character_creation)              
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
@@ -38,7 +38,7 @@ impl Plugin for PlayerPlugin{
 }
 
 fn character_creation(    
-    mut commands: Commands, 
+    commands: Commands, 
     ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>
 ){
