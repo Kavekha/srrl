@@ -38,7 +38,7 @@ pub enum AppState {
 pub enum GameState {
     #[default]
     Disabled,
-    characterCreation,
+    CharacterCreation,
     GameMap,
     VictoryScreen
 }   //To move elsewhere.
