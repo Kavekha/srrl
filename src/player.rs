@@ -29,7 +29,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::GameMap), spawn_player)              
+            .add_systems(OnEnter(GameState::characterCreation), character_creation)              
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
@@ -37,8 +37,21 @@ impl Plugin for PlayerPlugin{
     }
 }
 
+fn character_creation(    
+    mut commands: Commands, 
+    ascii: Res<AsciiSheet>,
+    mut game_state: ResMut<NextState<GameState>>
+){
+    spawn_player(commands, ascii);
+    
+    //Change game state after player creation:
+    game_state.set(GameState::GameMap);
+}
 
-fn spawn_player(mut commands: Commands, ascii: Res<AsciiSheet>) {
+fn spawn_player(
+    mut commands: Commands, 
+    ascii: Res<AsciiSheet>
+) {
     let player = spawn_ascii_sprite(
         &mut commands,
         &ascii,

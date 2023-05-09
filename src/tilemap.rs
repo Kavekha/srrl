@@ -2,9 +2,10 @@ use bevy::{prelude::*};
 
 use crate::{
     ascii::{spawn_ascii_sprite, AsciiSheet},
-    TILE_SIZE, despawn_screen, GameState, map_builders::map::MAP_WIDTH, map_builders::map::TileType,
+    player::{Player},
+    TILE_SIZE, despawn_screen, GameState, 
+    map_builders::{MAP_WIDTH, TileType},
 };
-
 
 
 
@@ -22,20 +23,51 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(GameState::GameMap), create_simple_map)
+            //.add_systems(OnEnter(GameState::GameMap), create_map_from_text)
+            .add_systems(OnEnter(GameState::GameMap), create_simple_random_map)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Map>);     
     }
 }
 
-fn create_simple_map (
-    mut commands: Commands, 
-    ascii:Res<AsciiSheet>
-) {
+fn create_simple_random_map(
+    mut commands: Commands,
+    ascii: Res<AsciiSheet>,
+    mut player_query: Query<&mut Transform, With<Player>>,
+){
+    //let map = crate::map_builders::map::create_simple_map();
+    let (rooms, map) = crate::map_builders::map::new_map_rooms_and_corridors();
 
-    let map_width = MAP_WIDTH;
+    // Modify Player position.
+    let mut player_transform = player_query.single_mut();       //TODO check si Player existe.
+    let (x, y) = rooms[0].center();
 
+    println!("room center : {},{}", x, y);  //DEBUG
+    println!("player original position : {},{}", player_transform.translation.x, player_transform.translation.y);   //DEBUG
+    player_transform.translation.x = x as f32 * TILE_SIZE;
+    player_transform.translation.y = -(y as f32) * TILE_SIZE;   //TODO : Pas relou déjà d'avoir du negatif qui se balade ici et là. OSKOUR.
+    println!("player new position : {},{}", player_transform.translation.x, player_transform.translation.y);    //DEBUG
+    
+    create_map_from_map(commands, ascii, map);
+}
+
+
+fn create_map_from_text(
+    mut commands: Commands,
+    ascii: Res<AsciiSheet>
+){
     //we get map (vecTile) from a text file.
     let map = crate::map_builders::map::create_map_from_text();
+
+    create_map_from_map(commands, ascii, map);
+}
+
+
+fn create_map_from_map (
+    mut commands: Commands, 
+    ascii:Res<AsciiSheet>,
+    map: Vec<TileType>
+) {   
+    let map_width = MAP_WIDTH;
 
     //All tiles created will go there
     let mut tiles:Vec<Entity> = Vec::new();
@@ -71,6 +103,8 @@ fn create_simple_map (
                 );
                 commands.entity(tile).insert(TileExit);
                 tiles.push(tile); 
+                println!("Tile exit a les coordonnées de base {}, {}", x, y);   //DEBUG
+                println!("Tile exit a les coordonnées de translation de {}, {}", x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE); //DEBUG
             }
             TileType::Floor => {
                 let tile = spawn_ascii_sprite(
@@ -100,87 +134,3 @@ fn create_simple_map (
 
 }
 
-
-    /*
-    for (y, line) in map.iter() {
-       for (x, tile) in line.iter(){
-        if tile == crate::map_builders::map::TileType::Wall {
-            let tile = spawn_ascii_sprite(
-                &mut commands, 
-                &ascii, 
-                '#' as usize,
-                Color::rgb(0.9, 0.9, 0.9),
-                Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
-                Vec3::splat(1.0)
-            );
-            commands.entity(tile).insert(TileCollider);
-        }
-        if tile = TileType::Exit {
-            let tile = spawn_ascii_sprite(
-                &mut commands, 
-                &ascii, 
-                '<' as usize,
-                Color::rgb(0.9, 0.9, 0.9),
-                Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
-                Vec3::splat(1.0)
-            );
-            commands.entity(tile).insert(TileExit);
-        } else {
-            let tile = spawn_ascii_sprite(
-                &mut commands, 
-                &ascii, 
-                '.' as usize,
-                Color::rgb(0.9, 0.9, 0.9),
-                Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
-                Vec3::splat(1.0)
-            );
-        }
-        tiles.push(tile);
-       }
-    }
-    commands
-    .spawn(Name::new("Map"))
-    .insert(Map)
-    .insert(SpatialBundle{
-        ..default()
-    })
-    .push_children(&tiles);
-}
-*/
-
-/*
-fn create_map_from_text (mut commands: Commands, ascii:Res<AsciiSheet>){
-    let file = File::open("assets/map.txt").expect("No map found");
-    let mut tiles = Vec::new();
-
-    for (y, line) in BufReader::new(file).lines().enumerate(){
-        if let Ok(line)= line {
-            for (x, char) in line.chars().enumerate(){
-                let tile = spawn_ascii_sprite(
-                    &mut commands, 
-                    &ascii, 
-                    char as usize,
-                    Color::rgb(0.9, 0.9, 0.9),
-                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
-                    Vec3::splat(1.0)
-                );
-                if char == '#' {
-                    commands.entity(tile).insert(TileCollider);
-                }
-                if char == '<' {
-                    commands.entity(tile).insert(TileExit);
-                }
-                tiles.push(tile);
-            }
-        }
-    }
-
-    commands
-        .spawn(Name::new("Map"))
-        .insert(Map)
-        .insert(SpatialBundle{
-            ..default()
-        })
-        .push_children(&tiles);
-
-} */

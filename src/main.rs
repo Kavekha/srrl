@@ -5,12 +5,6 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
-
-pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
-pub const RESOLUTION: f32 = 16.0 / 9.0;
-pub const TILE_SIZE: f32 = 0.05;  
-pub const HEIGHT: f32 = 600.0;
-
 mod player;
 mod ascii;
 mod tilemap;
@@ -26,6 +20,13 @@ use victory::VictoryPlugin;
 use mainmenu::MainMenuPlugin;
 
 
+
+pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
+pub const RESOLUTION: f32 = 16.0 / 9.0;
+pub const TILE_SIZE: f32 = 0.05;  
+pub const HEIGHT: f32 = 600.0;
+
+
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum AppState {
     #[default]
@@ -37,6 +38,7 @@ pub enum AppState {
 pub enum GameState {
     #[default]
     Disabled,
+    characterCreation,
     GameMap,
     VictoryScreen
 }   //To move elsewhere.
