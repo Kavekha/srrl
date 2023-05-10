@@ -7,6 +7,8 @@ use crate::{
 
 
 
+// ENUMS
+
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum MenuState {
     #[default]
@@ -14,11 +16,25 @@ pub enum MenuState {
     Disabled
 }
 
+#[derive(Component, PartialEq, Clone, Copy)]
+pub enum MainMenuOptions {
+    StartGame,
+    Quit
+}
 
+// COMPONENTS & RESOURCES
 #[derive(Component)]
 pub struct OnScreenMenu;
 
+pub const MAIN_MENU_OPTIONS_COUNT: isize = 2;  //Necessaire pour la selection d'une option dans l'input.
 
+#[derive(Resource)]
+pub struct MainMenuSelection {
+    selected: MainMenuOptions
+}
+
+
+// PLUGIN
 pub struct MainMenuPlugin;
 
 impl Plugin for MainMenuPlugin{
@@ -35,26 +51,23 @@ impl Plugin for MainMenuPlugin{
 }
 
 
+/// Lance une nouvelle partie depuis le menu. 
+// TODO : Deplacer dans Game Mod?
+fn start_new_game(
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    app_state.set(AppState::Game);
+    game_state.set(GameState::CharacterCreation);
+}
+
+/// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
 pub fn menu_camera(
     mut camera_query: Query<&mut Transform, With<Camera>>
 ){
     let mut camera_transform = camera_query.single_mut();
     camera_transform.translation.x = 0.0;
     camera_transform.translation.y = 0.0;
-}
-
-pub const MAIN_MENU_OPTIONS_COUNT: isize = 2;  //Necessaire pour la selection d'une option dans l'input.
-
-#[derive(Component, PartialEq, Clone, Copy)]
-pub enum MainMenuOptions {
-    StartGame,
-    Quit
-}
-
-
-#[derive(Resource)]
-pub struct MainMenuSelection {
-    selected: MainMenuOptions
 }
 
 fn hightligh_menu_button(
@@ -175,10 +188,11 @@ fn spawn_title(
 
 }
 
+// TODO : Deplacer avec meilleure visibilité dans un Mod menu?
 fn main_menu_input(
     keys: Res<Input<KeyCode>>,
-    mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+    app_state: ResMut<NextState<AppState>>,
+    game_state: ResMut<NextState<GameState>>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut menu_selection: ResMut<MainMenuSelection>,
     mut app_exit_events: EventWriter<AppExit>
@@ -204,8 +218,7 @@ fn main_menu_input(
         match menu_selection.selected {
             MainMenuOptions::StartGame => {
                 println!("Go to game !");
-                app_state.set(AppState::Game);
-                game_state.set(GameState::CharacterCreation);
+                start_new_game(app_state, game_state);
                 menu_state.set(MenuState::Disabled);
             }
             MainMenuOptions::Quit => {
@@ -215,3 +228,4 @@ fn main_menu_input(
         }
     }
 }
+

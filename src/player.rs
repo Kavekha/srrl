@@ -37,6 +37,7 @@ impl Plugin for PlayerPlugin{
     }
 }
 
+// TODO : Deplacer dans Game pour la création.
 fn character_creation(    
     commands: Commands, 
     ascii: Res<AsciiSheet>,

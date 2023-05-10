@@ -6,7 +6,6 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
-
 mod player;
 mod ascii;
 mod tilemap;
@@ -15,6 +14,7 @@ mod mainmenu;
 mod audio;
 
 mod map_builders;   //mod
+mod game;           //mod
 
 use player::PlayerPlugin;
 use ascii::AsciiPlugin;
@@ -23,6 +23,7 @@ use victory::VictoryPlugin;
 use mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
 
+use game::GameState;
 
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
@@ -39,14 +40,7 @@ pub enum AppState {
     Game
 }
 
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum GameState {
-    #[default]
-    Disabled,
-    CharacterCreation,
-    GameMap,
-    VictoryScreen
-}   //To move elsewhere.
+
 
 
 fn main() {
