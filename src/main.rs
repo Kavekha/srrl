@@ -6,6 +6,7 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
+
 mod player;
 mod ascii;
 mod tilemap;
@@ -26,8 +27,9 @@ use audio::GameAudioPlugin;
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
+pub const HEIGHT: f32 = 800.0;
 pub const TILE_SIZE: f32 = 0.05;  
-pub const HEIGHT: f32 = 600.0;
+
 
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]

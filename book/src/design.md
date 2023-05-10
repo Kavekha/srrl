@@ -63,6 +63,9 @@ Maybe some place to rent where they could statch their stuff, with hidden places
 # Challenge
 Missions will be harder and harder if the player is looking for Reputation or money, and require more preparation and exit plans.  
 As the player does missions, a lot of heat will come on them since any target may want to exact vengeance or show the world that you can't take on them.  
+Betrayal may happens if relationships are not taken care of.  
+
+
 
 
 
