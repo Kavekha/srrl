@@ -124,6 +124,7 @@ impl Map {
         map
     }
 
+    #[warn(dead_code)]
     pub fn new_map_from_textfile(
         file_name: &str
     ) -> Map {

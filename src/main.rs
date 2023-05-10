@@ -11,7 +11,7 @@ mod ascii;
 mod tilemap;
 mod victory;
 mod mainmenu;
-//mod audio;
+mod audio;
 
 mod map_builders;   //mod
 
@@ -20,7 +20,7 @@ use ascii::AsciiPlugin;
 use tilemap::TileMapPlugin;
 use victory::VictoryPlugin;
 use mainmenu::MainMenuPlugin;
-//use audio::GameAudioPlugin;
+use audio::GameAudioPlugin;
 
 
 
@@ -74,7 +74,7 @@ fn main() {
         .add_plugin(TileMapPlugin)
         .add_plugin(PlayerPlugin)    
         .add_plugin(VictoryPlugin)    
-        //.add_plugin(GameAudioPlugin)     
+        .add_plugin(GameAudioPlugin)     
         .run();
 }
 

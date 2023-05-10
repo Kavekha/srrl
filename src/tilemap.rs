@@ -31,12 +31,15 @@ impl Plugin for TileMapPlugin {
     }
 }
 
+
 fn create_simple_random_map(
     commands: Commands,
     ascii: Res<AsciiSheet>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<&mut Transform, With<Player>>
 ){
     let map: Map = Map::new_map_rooms_and_corridors();
+
+    //TO REFACTO: Should be done elsewhere.
 
     // Modify Player position.
     let mut player_transform = player_query.single_mut();       //TODO check si Player existe.
@@ -45,10 +48,11 @@ fn create_simple_random_map(
     player_transform.translation.x = x as f32 * TILE_SIZE;
     player_transform.translation.y = -(y as f32) * TILE_SIZE;   //TODO : Pas relou déjà d'avoir du negatif qui se balade ici et là. OSKOUR.
     println!("player new position : {},{}", player_transform.translation.x, player_transform.translation.y); 
-    
+
     create_gamemap(commands, ascii, map);
 }
 
+#[warn(dead_code)]
 fn create_map_from_text(
     commands: Commands,
     ascii: Res<AsciiSheet>
