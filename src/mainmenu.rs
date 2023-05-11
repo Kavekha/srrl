@@ -7,43 +7,7 @@ use crate::{
 
 
 
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum MenuState {
-    #[default]
-    MainMenu,
-    Disabled
-}
-
-
-#[derive(Component)]
-pub struct OnScreenMenu;
-
-
-pub struct MainMenuPlugin;
-
-impl Plugin for MainMenuPlugin{
-    fn build(&self, app: &mut App) {
-        app
-            .add_state::<MenuState>()
-            .add_systems(OnEnter(MenuState::MainMenu), spawn_title)
-            .add_systems(OnEnter(MenuState::MainMenu), spawn_main_menu)      
-            .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
-            .add_systems(Update, main_menu_input.run_if(in_state(MenuState::MainMenu)))
-            .add_systems(Update, hightligh_menu_button.run_if(in_state(MenuState::MainMenu)))
-            .add_systems(OnExit(MenuState::MainMenu), despawn_screen::<OnScreenMenu>);
-    }
-}
-
-
-pub fn menu_camera(
-    mut camera_query: Query<&mut Transform, With<Camera>>
-){
-    let mut camera_transform = camera_query.single_mut();
-    camera_transform.translation.x = 0.0;
-    camera_transform.translation.y = 0.0;
-}
-
-pub const MAIN_MENU_OPTIONS_COUNT: isize = 2;  //Necessaire pour la selection d'une option dans l'input.
+// ENUMS
 
 #[derive(Component, PartialEq, Clone, Copy)]
 pub enum MainMenuOptions {
@@ -51,10 +15,51 @@ pub enum MainMenuOptions {
     Quit
 }
 
+// COMPONENTS & RESOURCES
+#[derive(Component)]
+pub struct OnScreenMenu;
+
+pub const MAIN_MENU_OPTIONS_COUNT: isize = 2;  //Necessaire pour la selection d'une option dans l'input.
 
 #[derive(Resource)]
 pub struct MainMenuSelection {
     selected: MainMenuOptions
+}
+
+
+// PLUGIN
+pub struct MainMenuPlugin;
+
+impl Plugin for MainMenuPlugin{
+    fn build(&self, app: &mut App) {
+        app
+            .add_systems(OnEnter(AppState::MainMenu), spawn_title)
+            .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)      
+            .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
+            .add_systems(Update, main_menu_input.run_if(in_state(AppState::MainMenu)))
+            .add_systems(Update, hightligh_menu_button.run_if(in_state(AppState::MainMenu)))
+            .add_systems(OnExit(AppState::MainMenu), despawn_screen::<OnScreenMenu>);
+    }
+}
+
+
+/// Lance une nouvelle partie depuis le menu. 
+// TODO : Deplacer dans Game Mod?
+fn start_new_game(
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    app_state.set(AppState::Game);
+    game_state.set(GameState::NewGame);
+}
+
+/// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
+pub fn menu_camera(
+    mut camera_query: Query<&mut Transform, With<Camera>>
+){
+    let mut camera_transform = camera_query.single_mut();
+    camera_transform.translation.x = 0.0;
+    camera_transform.translation.y = 0.0;
 }
 
 fn hightligh_menu_button(
@@ -175,11 +180,11 @@ fn spawn_title(
 
 }
 
+// TODO : Deplacer avec meilleure visibilité dans un Mod menu?
 fn main_menu_input(
     keys: Res<Input<KeyCode>>,
-    mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MenuState>>,
+    app_state: ResMut<NextState<AppState>>,
+    game_state: ResMut<NextState<GameState>>,
     mut menu_selection: ResMut<MainMenuSelection>,
     mut app_exit_events: EventWriter<AppExit>
 ) {
@@ -204,9 +209,7 @@ fn main_menu_input(
         match menu_selection.selected {
             MainMenuOptions::StartGame => {
                 println!("Go to game !");
-                app_state.set(AppState::Game);
-                game_state.set(GameState::CharacterCreation);
-                menu_state.set(MenuState::Disabled);
+                start_new_game(app_state, game_state);
             }
             MainMenuOptions::Quit => {
                 println!("Quit App");   //TODO
@@ -215,3 +218,4 @@ fn main_menu_input(
         }
     }
 }
+

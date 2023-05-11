@@ -5,9 +5,11 @@ use std::{
 };
 
 use::rand::prelude::*;
+use::bevy::prelude::*;
 
 use super::TileType;
 use crate::map_builders::rectangle::{Rectangle};
+
 
 pub struct Map {
     pub tiles: Vec<TileType>,

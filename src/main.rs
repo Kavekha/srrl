@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
     prelude::*, 
@@ -6,23 +6,19 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
-
-mod player;
 mod ascii;
-mod tilemap;
-mod victory;
 mod mainmenu;
 mod audio;
 
 mod map_builders;   //mod
+mod game;           //mod
 
-use player::PlayerPlugin;
 use ascii::AsciiPlugin;
-use tilemap::TileMapPlugin;
-use victory::VictoryPlugin;
 use mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
 
+use game::GameState;
+use game::GamePlugin;
 
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
@@ -39,24 +35,19 @@ pub enum AppState {
     Game
 }
 
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum GameState {
-    #[default]
-    Disabled,
-    CharacterCreation,
-    GameMap,
-    VictoryScreen
-}   //To move elsewhere.
+
 
 
 fn main() {
+    println!("App launched");
+
     App::new()
         .insert_resource(ClearColor(CLEAR))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "ShadowRun: POC".to_string(),
+                        title: "ShadowRun:RL".to_string(),
                         resolution: (HEIGHT * RESOLUTION, HEIGHT).into(),
                         present_mode: Fifo, //AutoVsync,
                         resizable: false, 
@@ -73,11 +64,9 @@ fn main() {
         .add_state::<GameState>()   //TO MOVE elsewhere (game thingy)
         .add_systems(Startup, spawn_camera)
         .add_plugin(MainMenuPlugin)
-        .add_plugin(TileMapPlugin)
-        .add_plugin(PlayerPlugin)    
-        .add_plugin(VictoryPlugin)    
         .add_plugin(GameAudioPlugin)     
-        .run();
+        .add_plugin(GamePlugin)
+        .run(); 
 }
 
 

@@ -9,18 +9,9 @@ use crate::{
         AsciiSheet
     },
     TILE_SIZE, GameState, despawn_screen,
-    tilemap::{TileCollider, TileExit},
+    game::{Player, Stats, TileCollider, TileExit},
 };
 
-
-#[derive(Component)]
-pub struct Player;
-
-
-#[derive(Component)]
-pub struct Stats {
-    speed: f32
-}
 
 
 pub struct PlayerPlugin;
@@ -29,7 +20,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::CharacterCreation), character_creation)              
+            //.add_systems(OnEnter(GameState::NewGame), character_creation)              
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
@@ -37,6 +28,7 @@ impl Plugin for PlayerPlugin{
     }
 }
 
+// TODO : Deplacer dans Game pour la création.
 fn character_creation(    
     commands: Commands, 
     ascii: Res<AsciiSheet>,
@@ -48,7 +40,7 @@ fn character_creation(
     game_state.set(GameState::GameMap);
 }
 
-fn spawn_player(
+pub fn spawn_player(
     mut commands: Commands, 
     ascii: Res<AsciiSheet>
 ) {

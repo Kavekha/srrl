@@ -49,14 +49,3 @@ Cela signifie qu'un personnage à la position 12.0,14.0 est à la grille [int(12
 | Ascii Text + Space | 0.9 | Oui | 0.09 |
 | Ascii Sprite | 0.9 | Non | 0.9 |
 
-
-
-
-
-
-
-
-
-
-
-
