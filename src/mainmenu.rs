@@ -9,13 +9,6 @@ use crate::{
 
 // ENUMS
 
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum MenuState {
-    #[default]
-    MainMenu,
-    Disabled
-}
-
 #[derive(Component, PartialEq, Clone, Copy)]
 pub enum MainMenuOptions {
     StartGame,
@@ -40,13 +33,12 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_state::<MenuState>()
-            .add_systems(OnEnter(MenuState::MainMenu), spawn_title)
-            .add_systems(OnEnter(MenuState::MainMenu), spawn_main_menu)      
+            .add_systems(OnEnter(AppState::MainMenu), spawn_title)
+            .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)      
             .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
-            .add_systems(Update, main_menu_input.run_if(in_state(MenuState::MainMenu)))
-            .add_systems(Update, hightligh_menu_button.run_if(in_state(MenuState::MainMenu)))
-            .add_systems(OnExit(MenuState::MainMenu), despawn_screen::<OnScreenMenu>);
+            .add_systems(Update, main_menu_input.run_if(in_state(AppState::MainMenu)))
+            .add_systems(Update, hightligh_menu_button.run_if(in_state(AppState::MainMenu)))
+            .add_systems(OnExit(AppState::MainMenu), despawn_screen::<OnScreenMenu>);
     }
 }
 
@@ -58,7 +50,7 @@ fn start_new_game(
     mut game_state: ResMut<NextState<GameState>>,
 ) {
     app_state.set(AppState::Game);
-    game_state.set(GameState::CharacterCreation);
+    game_state.set(GameState::NewGame);
 }
 
 /// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
@@ -193,7 +185,6 @@ fn main_menu_input(
     keys: Res<Input<KeyCode>>,
     app_state: ResMut<NextState<AppState>>,
     game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MenuState>>,
     mut menu_selection: ResMut<MainMenuSelection>,
     mut app_exit_events: EventWriter<AppExit>
 ) {
@@ -219,7 +210,6 @@ fn main_menu_input(
             MainMenuOptions::StartGame => {
                 println!("Go to game !");
                 start_new_game(app_state, game_state);
-                menu_state.set(MenuState::Disabled);
             }
             MainMenuOptions::Quit => {
                 println!("Quit App");   //TODO

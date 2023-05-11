@@ -14,15 +14,13 @@ use crate::{
 
 
 
-
-
 pub struct PlayerPlugin;
 
 
 impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(GameState::CharacterCreation), character_creation)              
+            //.add_systems(OnEnter(GameState::NewGame), character_creation)              
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
@@ -42,7 +40,7 @@ fn character_creation(
     game_state.set(GameState::GameMap);
 }
 
-fn spawn_player(
+pub fn spawn_player(
     mut commands: Commands, 
     ascii: Res<AsciiSheet>
 ) {

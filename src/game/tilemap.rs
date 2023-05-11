@@ -7,7 +7,7 @@ use crate::{
         TileType,
         map::{Map}
     },
-    game::{GameState, GameMap, Player, TileCollider, TileExit}
+    game::{GameState, GameMap, Player, TileCollider, TileExit, Game}
 };
 
 
@@ -27,8 +27,10 @@ impl Plugin for TileMapPlugin {
 fn create_simple_random_map(
     commands: Commands,
     ascii: Res<AsciiSheet>,
-    mut player_query: Query<&mut Transform, With<Player>>
+    //mut player_query: Query<&mut Transform, With<Player>>
+    game: Res<Game>
 ){
+    /* DONE IN GAME.MOD
     let map: Map = Map::new_map_rooms_and_corridors();
 
     //TO REFACTO: Should be done elsewhere.
@@ -40,8 +42,9 @@ fn create_simple_random_map(
     player_transform.translation.x = x as f32 * TILE_SIZE;
     player_transform.translation.y = -(y as f32) * TILE_SIZE;   //TODO : Pas relou déjà d'avoir du negatif qui se balade ici et là. OSKOUR.
     println!("player new position : {},{}", player_transform.translation.x, player_transform.translation.y); 
-
-    create_gamemap(commands, ascii, map);
+    */
+    let new_map = &game.map;
+    create_gamemap(commands, ascii, &new_map);
 }
 
 #[warn(dead_code)]
@@ -52,13 +55,13 @@ fn create_map_from_text(
     //we get map (vecTile) from a text file.
     let map: Map = Map::new_map_from_textfile("map.txt");
 
-    create_gamemap(commands, ascii, map);
+    create_gamemap(commands, ascii, &map);
 }
 
-fn create_gamemap (
+pub fn create_gamemap (
     mut commands: Commands, 
     ascii:Res<AsciiSheet>,
-    map: Map
+    map: &Map
 ) {   
     //All tiles entities created will go there
     let mut tiles:Vec<Entity> = Vec::new();

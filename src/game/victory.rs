@@ -63,6 +63,6 @@ fn victory_menu_input(
 ) {
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
         println!("Back to game from Victory Screen !");      //TOLOG
-        game_state.set(GameState::CharacterCreation);
+        game_state.set(GameState::NewGame);
     }
 }

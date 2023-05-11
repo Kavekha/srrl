@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::{
-    mainmenu::MenuState,
+    AppState,
     GameState
 };
 
@@ -24,8 +24,8 @@ impl Plugin for GameAudioPlugin{
             .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
             .add_systems(OnExit(GameState::VictoryScreen), stop_music)
             //Main Menu
-            .add_systems(OnEnter(MenuState::MainMenu), setup_audio_mainmenu)
-            .add_systems(OnExit(MenuState::MainMenu), stop_music);           
+            .add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)
+            .add_systems(OnExit(AppState::MainMenu), stop_music);           
     }
 }
 

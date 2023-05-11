@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+//#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
     prelude::*, 
@@ -39,13 +39,15 @@ pub enum AppState {
 
 
 fn main() {
+    println!("App launched");
+
     App::new()
         .insert_resource(ClearColor(CLEAR))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "ShadowRun: POC".to_string(),
+                        title: "ShadowRun:RL".to_string(),
                         resolution: (HEIGHT * RESOLUTION, HEIGHT).into(),
                         present_mode: Fifo, //AutoVsync,
                         resizable: false, 
@@ -64,7 +66,7 @@ fn main() {
         .add_plugin(MainMenuPlugin)
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
-        .run();
+        .run(); 
 }
 
 
