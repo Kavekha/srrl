@@ -9,18 +9,11 @@ use crate::{
         AsciiSheet
     },
     TILE_SIZE, GameState, despawn_screen,
-    tilemap::{TileCollider, TileExit},
+    game::{Player, Stats, TileCollider, TileExit},
 };
 
 
-#[derive(Component)]
-pub struct Player;
 
-
-#[derive(Component)]
-pub struct Stats {
-    speed: f32
-}
 
 
 pub struct PlayerPlugin;

@@ -2,26 +2,15 @@ use bevy::{prelude::*};
 
 use crate::{
     ascii::{spawn_ascii_sprite, AsciiSheet},
-    player::{Player},
     TILE_SIZE, despawn_screen,
     map_builders::{
         TileType,
         map::{Map}
     },
-    game::{
-        GameState, 
-    }
+    game::{GameState, GameMap, Player, TileCollider, TileExit}
 };
 
 
-#[derive(Component)]
-pub struct TileCollider;
-
-#[derive(Component)]
-pub struct TileExit;
-
-#[derive(Component)]
-pub struct GameMap;
 
 pub struct TileMapPlugin;
 

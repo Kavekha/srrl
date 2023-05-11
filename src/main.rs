@@ -6,24 +6,19 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
-mod player;
 mod ascii;
-mod tilemap;
-mod victory;
 mod mainmenu;
 mod audio;
 
 mod map_builders;   //mod
 mod game;           //mod
 
-use player::PlayerPlugin;
 use ascii::AsciiPlugin;
-use tilemap::TileMapPlugin;
-use victory::VictoryPlugin;
 use mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
 
 use game::GameState;
+use game::GamePlugin;
 
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
@@ -67,10 +62,8 @@ fn main() {
         .add_state::<GameState>()   //TO MOVE elsewhere (game thingy)
         .add_systems(Startup, spawn_camera)
         .add_plugin(MainMenuPlugin)
-        .add_plugin(TileMapPlugin)
-        .add_plugin(PlayerPlugin)    
-        .add_plugin(VictoryPlugin)    
         .add_plugin(GameAudioPlugin)     
+        .add_plugin(GamePlugin)
         .run();
 }
 
