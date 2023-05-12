@@ -7,7 +7,7 @@ use crate::{
         TileType,
         map::{Map}
     },
-    game::{GameState, GameMap, Player, TileCollider, TileExit, Game}
+    game::{GameState, GameMap, TileCollider, TileExit, Game}
 };
 
 
@@ -24,25 +24,12 @@ impl Plugin for TileMapPlugin {
 }
 
 
+/// Deprecated, equivalent dans Game pour l'Init.   //TODO Refacto
 fn create_simple_random_map(
     commands: Commands,
     ascii: Res<AsciiSheet>,
-    //mut player_query: Query<&mut Transform, With<Player>>
     game: Res<Game>
-){
-    /* DONE IN GAME.MOD
-    let map: Map = Map::new_map_rooms_and_corridors();
-
-    //TO REFACTO: Should be done elsewhere.
-
-    // Modify Player position.
-    let mut player_transform = player_query.single_mut();       //TODO check si Player existe.
-    let (x, y) = map.rooms[0].center();
-
-    player_transform.translation.x = x as f32 * TILE_SIZE;
-    player_transform.translation.y = -(y as f32) * TILE_SIZE;   //TODO : Pas relou déjà d'avoir du negatif qui se balade ici et là. OSKOUR.
-    println!("player new position : {},{}", player_transform.translation.x, player_transform.translation.y); 
-    */
+) {
     let new_map = &game.map;
     create_gamemap(commands, ascii, &new_map);
 }

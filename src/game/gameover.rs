@@ -36,12 +36,6 @@ fn display_gameover_screen(
     let text_to_display = vec![gameover_message, gameover_description];
 
     for text in text_to_display{
-        //TODO : Ce qui suit est dégueu, et utilisé pour centrer le texte.
-        //let ox = (text.len()/2) as f32; 
-        //let mo = ox /10.0;      // Je le divise par 10 car trop gros mais impossible à diviser par 20 auparavant car arrondi à 0.
-        //let final_x: f32 = x - mo;
-        
-        //let text_placement= Vec3::new(final_x, y, 0.0);
         let text_placement = Vec3::new(x, y, 0.0);
         let ascii_text = spawn_ascii_text(
             &mut commands,
@@ -52,10 +46,8 @@ fn display_gameover_screen(
         commands.entity(ascii_text)
         .insert(OnScreenMenu);
 
-        y -= 0.1    //0.2
+        y -= 0.1    
     }
-    println!("Le message est affiché");
-
 
 }
 
@@ -64,8 +56,6 @@ fn gameover_menu_input(
     mut game_state: ResMut<NextState<GameState>>
 ) {
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
-        println!("Back to game from Game Over Screen !");      //TOLOG
         game_state.set(GameState::NewGame);
     }
-    println!("Dans le Game Over Screen!")
 }

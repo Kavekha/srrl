@@ -34,12 +34,6 @@ fn display_victory_screen(
     let text_to_display = vec![victory_message, victory_description];
 
     for text in text_to_display{
-        //TODO : Ce qui suit est dégueu, et utilisé pour centrer le texte.
-        //let ox = (text.len()/2) as f32; 
-        //let mo = ox /10.0;      // Je le divise par 10 car trop gros mais impossible à diviser par 20 auparavant car arrondi à 0.
-        //let final_x: f32 = x - mo;
-        
-        //let text_placement= Vec3::new(final_x, y, 0.0);
         let text_placement = Vec3::new(x, y, 0.0);
         let ascii_text = spawn_ascii_text(
             &mut commands,
@@ -62,7 +56,6 @@ fn victory_menu_input(
     mut game_state: ResMut<NextState<GameState>>
 ) {
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
-        println!("Back to game from Victory Screen !");      //TOLOG
         game_state.set(GameState::NewGame);
     }
 }

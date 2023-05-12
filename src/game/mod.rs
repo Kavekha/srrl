@@ -107,23 +107,19 @@ pub enum GameState {
     NewGame,    // Nouvelle partie, creation perso
     Setup,      // Nouvelle map generée
     Prerun,     // Placement du personnage. TODO : Dans Tilemap avec la creation "physique"?
-    GameMap,
+    GameMap,    // La map et le perso qui s'y balade.
     GameOverScreen,
     VictoryScreen,
 }  
 
 
-// Resource
 #[derive(Resource)]
 pub struct Game {
     map: Map
 }
 
-
-// Components
 #[derive(Component)]
 pub struct Player;
-
 
 #[derive(Component)]
 pub struct Stats {
