@@ -108,14 +108,14 @@ fn player_input(
 }
 
 
-fn tile_collision_check(
-    target_player_pos: Vec3,
-    tile_translation: Vec3
+pub fn tile_collision_check(
+    target_pos: Vec3,
+    some_translation: Vec3
 ) -> bool {
     let collision = collide(
-        target_player_pos,
+        target_pos,
         Vec2::splat(TILE_SIZE * 0.9),   //On reduit la box de collision pour ne pas être au pixel pret
-        tile_translation,
+        some_translation,
         Vec2::splat(TILE_SIZE)
     );
     collision.is_some()
@@ -133,6 +133,6 @@ fn player_step_check(
         .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
         {
             println!("Exit !");      //TOLOG   
-            game_state.set(GameState::VictoryScreen);
+            game_state.set(GameState::VictoryScreen); 
         }
 }

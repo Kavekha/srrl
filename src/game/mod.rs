@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use self::tilemap::TileMapPlugin;
 use self::player::PlayerPlugin;
 use self::victory::VictoryPlugin;
+use self::gameover::GameOverPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
@@ -18,6 +19,7 @@ pub mod player;
 pub mod tilemap;
 pub mod victory;
 pub mod npc;
+pub mod gameover;
 
 
 pub struct GamePlugin;
@@ -28,10 +30,9 @@ impl Plugin for GamePlugin {
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
             .add_plugin(TileMapPlugin)
-            //.add_plugin(NpcPlugin)
+            .add_plugin(NpcPlugin)
+            .add_plugin(GameOverPlugin)
 
-            //TODO : Will have GameState problems....
-            // REMEMBER : Commands are played LAST.
             //Character creation.
             .add_systems(OnEnter(GameState::NewGame), create_new_game_entities)
             //Map creation.
@@ -107,7 +108,8 @@ pub enum GameState {
     Setup,      // Nouvelle map generée
     Prerun,     // Placement du personnage. TODO : Dans Tilemap avec la creation "physique"?
     GameMap,
-    VictoryScreen
+    GameOverScreen,
+    VictoryScreen,
 }  
 
 
