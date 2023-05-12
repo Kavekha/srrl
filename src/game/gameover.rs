@@ -7,31 +7,33 @@ use crate::{
 };
 
 
+// TODO: Refacto Victory & GameOver en un seul: Recap Screen?
 
-pub struct VictoryPlugin;
+pub struct GameOverPlugin;
 
-impl Plugin for VictoryPlugin {
+impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(GameState::VictoryScreen), display_victory_screen)
-            .add_systems(OnEnter(GameState::VictoryScreen), menu_camera)
-            .add_systems(Update, victory_menu_input.run_if(in_state(GameState::VictoryScreen)))
-            .add_systems(OnExit(GameState::VictoryScreen), despawn_screen::<OnScreenMenu>); 
+            .add_systems(OnEnter(GameState::GameOverScreen), display_gameover_screen)
+            .add_systems(OnEnter(GameState::GameOverScreen), menu_camera)
+            .add_systems(Update, gameover_menu_input.run_if(in_state(GameState::GameOverScreen)))
+            .add_systems(OnExit(GameState::GameOverScreen), despawn_screen::<OnScreenMenu>); 
     }
 }
 
 
 
-fn display_victory_screen(
+fn display_gameover_screen(
     mut commands: Commands,
     ascii: Res<AsciiSheet>
 ){
-    let victory_message = "VICTORY !";
-    let victory_description= "You flee the place.";
+    println!("Afficher YOU DIED"); //DEBUG
+    let gameover_message = "YOU DIED.";
+    let gameover_description= "A ghoul has eaten you.";
     let x: f32 = -0.2; //0.0;
     let mut y: f32 = 0.0;
 
-    let text_to_display = vec![victory_message, victory_description];
+    let text_to_display = vec![gameover_message, gameover_description];
 
     for text in text_to_display{
         let text_placement = Vec3::new(x, y, 0.0);
@@ -44,14 +46,12 @@ fn display_victory_screen(
         commands.entity(ascii_text)
         .insert(OnScreenMenu);
 
-        y -= 0.1    //0.2
+        y -= 0.1    
     }
-
 
 }
 
-
-fn victory_menu_input(
+fn gameover_menu_input(
     keys: Res<Input<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>
 ) {

@@ -25,7 +25,11 @@ impl Plugin for GameAudioPlugin{
             .add_systems(OnExit(GameState::VictoryScreen), stop_music)
             //Main Menu
             .add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)
-            .add_systems(OnExit(AppState::MainMenu), stop_music);           
+            .add_systems(OnExit(AppState::MainMenu), stop_music)           
+            //Death
+            .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
+            .add_systems(OnExit(GameState::GameOverScreen), stop_music)
+            ;         
     }
 }
 
@@ -37,6 +41,20 @@ fn stop_music(
     if let Some(sink) = audio_sinks.get(&music_controller.0){
         sink.stop()
     }
+}
+
+pub fn setup_audio_death(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    audio: Res<Audio>,
+    audio_sinks: Res<Assets<AudioSink>>,
+){
+    let music = audio.play_with_settings(
+        asset_server.load("audios/Dead.ogg"),
+        PlaybackSettings::LOOP,
+    );
+    let handle = audio_sinks.get_handle(music);
+    commands.insert_resource(MusicController(handle));
 }
 
 pub fn setup_audio_victory(
@@ -81,6 +99,7 @@ pub fn setup_audio_mainmenu(
     commands.insert_resource(MusicController(handle));
 }
 
+/*
 #[warn(dead_code)]
 fn pause_audio(
     audio_sinks: Res<Assets<AudioSink>>,
@@ -92,3 +111,4 @@ fn pause_audio(
         }
     }
 }
+*/

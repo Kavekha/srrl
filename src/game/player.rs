@@ -28,21 +28,10 @@ impl Plugin for PlayerPlugin{
     }
 }
 
-// TODO : Deplacer dans Game pour la création.
-fn character_creation(    
-    commands: Commands, 
-    ascii: Res<AsciiSheet>,
-    mut game_state: ResMut<NextState<GameState>>
-){
-    spawn_player(commands, ascii);
-    
-    //Change game state after player creation:
-    game_state.set(GameState::GameMap);
-}
 
 pub fn spawn_player(
-    mut commands: Commands, 
-    ascii: Res<AsciiSheet>
+    mut commands: &mut Commands, 
+    ascii: &AsciiSheet
 ) {
     let player = spawn_ascii_sprite(
         &mut commands,
@@ -119,14 +108,14 @@ fn player_input(
 }
 
 
-fn tile_collision_check(
-    target_player_pos: Vec3,
-    tile_translation: Vec3
+pub fn tile_collision_check(
+    target_pos: Vec3,
+    some_translation: Vec3
 ) -> bool {
     let collision = collide(
-        target_player_pos,
+        target_pos,
         Vec2::splat(TILE_SIZE * 0.9),   //On reduit la box de collision pour ne pas être au pixel pret
-        tile_translation,
+        some_translation,
         Vec2::splat(TILE_SIZE)
     );
     collision.is_some()
@@ -144,6 +133,6 @@ fn player_step_check(
         .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
         {
             println!("Exit !");      //TOLOG   
-            game_state.set(GameState::VictoryScreen);
+            game_state.set(GameState::VictoryScreen); 
         }
 }

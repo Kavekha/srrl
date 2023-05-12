@@ -25,7 +25,7 @@ impl Map {
         x: i32, 
         y: i32
     ) -> usize {
-        (y as usize * self.width as usize) + x as usize      //TO CHANGE: we want to be able to choose height and width of the map
+        (y as usize * self.width as usize) + x as usize
     }
 
     pub fn apply_room_to_map(
@@ -71,7 +71,7 @@ impl Map {
     pub fn new_map_rooms_and_corridors() -> Map {
         let mut map = Map{
             tiles: vec![TileType::Wall; 80 * 50],
-            rooms: Vec::new(),      //Vec<Rectangle> = Vec::new();
+            rooms: Vec::new(),      
             width: 80,
             height: 50
         };
@@ -81,8 +81,6 @@ impl Map {
         const MAX_SIZE : i32 = 10;
 
         let mut rng = rand::thread_rng();
-
-        //let mut last_room_center_idx: usize = 0;  //We want to know center of the last room to put an exit tile on it.
     
         for _ in 0..MAX_ROOMS {
             // generate a room as a Rectangle
@@ -145,7 +143,6 @@ impl Map {
                 for (x, character) in line.chars().enumerate(){
                     let idx = map.xy_idx(x as i32, y as i32);
                     match character {
-                        // TOREMEMBER : fun story : "#" is a &str, but '#' is a char.
                         '<' => { map.tiles[idx] = TileType::Exit; }
                         '#' => { map.tiles[idx] = TileType::Wall; }
                         '.' => { map.tiles[idx] = TileType::Floor;}
