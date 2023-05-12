@@ -28,21 +28,10 @@ impl Plugin for PlayerPlugin{
     }
 }
 
-// TODO : Deplacer dans Game pour la création.
-fn character_creation(    
-    commands: Commands, 
-    ascii: Res<AsciiSheet>,
-    mut game_state: ResMut<NextState<GameState>>
-){
-    spawn_player(commands, ascii);
-    
-    //Change game state after player creation:
-    game_state.set(GameState::GameMap);
-}
 
 pub fn spawn_player(
-    mut commands: Commands, 
-    ascii: Res<AsciiSheet>
+    mut commands: &mut Commands, 
+    ascii: &AsciiSheet
 ) {
     let player = spawn_ascii_sprite(
         &mut commands,
