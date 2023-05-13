@@ -62,41 +62,58 @@ pub fn spawn_npc(
 }
 
 
-/// IA chasse la cible.
+/// IA chasse la cible. Player as target, npc as hostile.   //TODO: More flexible maybe, for IA vs IA. Later.
 fn hostile_ia_decision(
-    map: Res<Map>   //TODO : Map en resources
+    map: Res<Map>,
+    player_query: Query<(&Player, &mut Transform)>,
+    npc_query: Query<(&Npc, (&mut Transform, Without<Player>))>,
 ) {
     // TODO : Pathfinding, work in progress.
-    let hostile_pos = Position(10, 10);
-    let target_pos = Position(5,5);
-
-    let start = hostile_pos;
+    let (_player, player_transform) = player_query.single();
+    let target_pos = Position(player_transform.translation.x, player_transform.translation.y);   //TODO : Transformer valeur World Unit en Grid Unit.
     let goal = target_pos;
 
-    let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
-    let mut step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
+    for (_npc, npc_transform) in npc_query.iter() {
+        let hostile_pos = Position(npc_transform.translation.x, npc_transform.translation.y);   //TODO : Transformer valeur World Unit en Grid Unit.
+        let start = hostile_pos;
 
-    let result = astar(
-        &start,
-        |position| {
-            map.get_successors(position)
-                .iter()
-                .map(|successor| (successor.position, successor.cost))
-                .collect::<Vec<_>>()
-        },
-        |position| position.distance(&goal),
-        |position| *position == goal,
-    );
-    if let Some(result) = result {
-        println!("Path: {:?}", result.0);
-        println!("Cost: {:?}", result.1);
-        path = result.0;
-        step = path.len();
-    } else {
-        println!("No Path Found!");
-        path = Vec::new();
-        step = 0;
+        let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
+        let mut step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
+    
+        // Let's ask for a path to the player
+        let result = astar(
+            &start,
+            |position| {
+                map.get_successors(position)
+                    .iter()
+                    .map(|successor| (successor.position, successor.cost))
+                    .collect::<Vec<_>>()
+            },
+            |position| position.distance(&goal),
+            |position| *position == goal,
+        );
+        // Let's do thing with the result.
+        if let Some(result) = result {
+            println!("Path: {:?}", result.0);
+            println!("Cost: {:?}", result.1);
+            path = result.0;
+            step = path.len();
+        } else {
+            println!("No Path Found!");
+            path = Vec::new();
+            step = 0;
+        }
+
+        // J'ai un chemin.
+        if step >= 1 {
+            let npc_idx = path[0];      //TODO: Convert idx / Map to World Unit.
+
+            //npc_transform => Movement?    //TODO : Deplacer le NPC.
+        } else {
+            println!("NPC has no way to attack the player");
+        }
     }
+  
 
     // STEP:
     //https://github.com/frederickjjoubert/bevy-pathfinding/blob/6fa935f1a1d9fb848455c738b4e2bb41163450f5/src/game.rs#L159
