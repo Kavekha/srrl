@@ -24,13 +24,15 @@ pub fn world_to_grid_position(
     (x_index.abs() as i32, y_index.abs() as i32)
 }
 
-/*
+
 pub fn grid_to_world_position(
-    position: Vec2
+    x: i32,
+    y: i32
 ) -> (f32, f32) {
-    (position.x as f32, position.y as f32)
+    (x as f32 * TILE_SIZE,
+    -(y as f32) * TILE_SIZE)
 }
-*/
+
 /*
 pub fn index_to_world_position(x: i32, y: i32) -> Vec2 {
     let x_offset = (x * TILE_SIZE) + TILE_SIZE / 2;

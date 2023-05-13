@@ -1,3 +1,5 @@
+use std::path;
+
 use bevy::{
     prelude::*
 };
@@ -13,12 +15,12 @@ use crate::{
     game::{Player, Stats, TileCollider},
     game::player::{tile_collision_check},
     map_builders::{
-        pathfinding::{Position, Successor, world_to_grid_position},
+        pathfinding::{Position, Successor, world_to_grid_position, grid_to_world_position},
         map::{Map},
     }
 };
 
-const FIXED_TIMESTEP: f32 = 2.0;
+const FIXED_TIMESTEP: f32 = 0.5;
 
 
 pub struct NpcPlugin;
@@ -31,6 +33,7 @@ impl Plugin for NpcPlugin{
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
             .add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
             .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
+            .add_systems(Update, move_to_system.run_if(in_state(GameState::GameMap)))            
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             ;         
     }
@@ -42,9 +45,16 @@ pub struct Npc;
 
 #[derive(Component)]
 pub struct Pathfinding{
+    pub start: Position,
     pub goal: Position,
     pub path: Vec<Position>,
     pub step: usize,
+}
+
+#[derive(Component)]
+pub struct MoveTo{
+    pub x: f32,
+    pub y: f32
 }
 
 
@@ -86,7 +96,8 @@ fn hostile_ia_decision(
     let (_player, player_transform) = player_query.single();
 
     let (target_pos_x, target_pos_y) = world_to_grid_position(player_transform.translation.x, player_transform.translation.y);
-     let target_pos = Position(target_pos_x, target_pos_y);
+    let target_pos = Position(target_pos_x, target_pos_y);
+
     let goal = target_pos;
 
     // Est-ce qu'il a deja un component Pathfinding?
@@ -98,16 +109,36 @@ fn hostile_ia_decision(
             commands.entity(entity).remove::<Pathfinding>();
             // Calculer nouveau Pathfinding.
             println!("Entity {} doit calculer un nouveau Pathfinding car pathfinding.goal != goal ", {entity_nb});
+            continue;
         } else {
-            // Je suis à jour, je me deplace.
-            let (move_to_x, move_to_y) = (pathfinding.path[0].0, pathfinding.path[0].1);
-            println!("Entity {} se rends à {},{}", entity_nb, move_to_x, move_to_y);
-            pathfinding.path.remove(0);
-            pathfinding.step -= 1;
-            if pathfinding.step == 0 {
-                commands.entity(entity).remove::<Pathfinding>();
-                // Calculer nouveau Pathfinding.
-            }
+            if goal.distance(&pathfinding.start) > 10 {
+                //Trop loin!
+                println!("Entity {} est trop loin de sa cible.", {entity_nb});
+                continue;
+            } else {
+                // Je suis à jour, je me deplacerai.      
+                    // Convertir en World Units.
+                    println!("Player is at world: {},{} AND grid {},{}", player_transform.translation.x, player_transform.translation.y, target_pos_x, target_pos_y);
+                    println!("Goal is now : {:?}", target_pos);
+
+                let (move_to_x_grid, move_to_y_grid) = (pathfinding.path[0].0, pathfinding.path[0].1);
+                println!("Entity {} se rends à {},{} - Grid units", entity_nb, move_to_x_grid, move_to_y_grid);
+                println!("Entity {} : pathfinding is {:?}", entity_nb, pathfinding.path);
+                let (move_to_x, move_to_y) = grid_to_world_position(pathfinding.path[0].0, pathfinding.path[0].1);
+                println!("Entity {} se rends à {},{} - World Units", entity_nb, move_to_x, move_to_y);
+                //DEBUG : Back to grid unit pour confirmer
+                let (move_to_x_grid_back, move_to_y_grid_back) = world_to_grid_position(move_to_x, move_to_y);
+                println!("CHECK : Entity {} va se rendre à {},{} - Grid units", entity_nb, move_to_x_grid_back, move_to_y_grid_back);
+                println!("CHECK: Goal is grid: {:?}, world: {:?}", (pathfinding.goal.0, pathfinding.goal.1), grid_to_world_position(pathfinding.goal.0, pathfinding.goal.1));
+                pathfinding.path.remove(0);
+                pathfinding.step -= 1;
+                commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+
+                if pathfinding.step == 0 {
+                    commands.entity(entity).remove::<Pathfinding>();
+                    // Calculer nouveau Pathfinding.
+                }
+            }   
         }
     }
 
@@ -147,6 +178,7 @@ fn hostile_ia_decision(
         // Je créé un componant Pathfinding et je me l'ajoute.
         if step >= 1 {
             commands.entity(entity).insert(Pathfinding{
+                start,
                 goal,
                 path,
                 step
@@ -162,6 +194,24 @@ fn hostile_ia_decision(
 
 }
 
+fn move_to_system(
+    mut commands: Commands,
+    mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
+    time: Res<Time>
+){
+    for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
+        let x_delta = destination.x;
+        let y_delta = destination.y;
+
+        //No check, Pathfinding already did it. TileSize utilisé avant. //TODO : Refacto pour être plus coherent
+        transform.translation.x += x_delta * stats.speed * time.delta_seconds();
+        transform.translation.y += y_delta * stats.speed * time.delta_seconds();
+
+        commands.entity(entity).remove::<MoveTo>();
+    }
+}
+
+/// Deprecated. Ne prends pas en compte Pathfinding.
 fn npc_movement(
     mut npc_query: Query<(&Npc, &mut Transform, &Stats)>,
     wall_query: Query<&Transform, (With<TileCollider>, Without<Npc>)>,
