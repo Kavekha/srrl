@@ -52,37 +52,38 @@ impl Map {
         let mut successors = Vec::new();
         
         println!("----get successors----");
-
+        let mut nb_successors = 0;
         for dy in -1..=1 {
-            println!("dy is {}", dy);
+            //println!("dy is {}", dy);
             for dx in -1..=1 {
-                println!("dx is {}", dx);
+                nb_successors += 1;
+                //println!("dx is {}", dx);
                 let x = position.0 + dx;
                 let y = position.1 + dy;
-                println!("x and y are: {},{}", x, y);
+                //println!("x and y are: {},{}", x, y);
                 if dx == 0 && dy == 0 {
-                    println!("dx & dy = 0, out");
+                    //println!("dx & dy = 0, out");
                     continue;
                 } // Exclude current position.
                 if x < 0 || x > self.width - 1 {
-                    println!("width bound nok, out");
+                    //println!("width bound nok, out");
                     continue;
                 } // Make sure we are within width bounds.
                 if y < 0 || y > self.height - 1 {
-                    println!("Is y < 0 ? {} < 0", y);
-                    println!("Is y > self height? {} > {}", y, self.height - 1);
-                    println!("height bound nok, continue");
+                    //println!("Is y < 0 ? {} < 0", y);
+                    //println!("Is y > self height? {} > {}", y, self.height - 1);
+                    //println!("height bound nok, continue");
                     continue;
                 } // Make sure we are within height bounds.
 
-                println!("All check OK");
+                //println!("All check OK");
 
                 let neighbor_position = Position(x, y);
-                println!("neigbhor position : {},{}", x, y);
+                //println!("neigbhor position : {},{}", x, y);
                 let neighbor_index = self.xy_idx(x, y);
-                println!("neighbor_index is {}", neighbor_index);
+                //println!("neighbor_index is {}", neighbor_index);
                 if self.blocked[neighbor_index] {
-                    println!("neighbor index is blocked, nok");
+                    //println!("neighbor index is blocked, nok");
                     continue;
                 }
                 successors.push(Successor {
@@ -91,6 +92,7 @@ impl Map {
                 })
             }            
         }
+        println!("Nb de successors testés: {}", nb_successors);
         successors
     }
 
@@ -131,6 +133,21 @@ impl Map {
             if idx > 0 && idx < self.width as usize * self.height as usize {
                 self.tiles[idx as usize] = TileType::Floor;
             }
+        }
+    }
+
+    pub fn is_blocked(
+        &self,
+        x: i32,
+        y: i32
+    ) -> bool {
+        let idx = self.xy_idx(x, y);
+        self.blocked[idx]   
+    }
+
+    pub fn populate_blocked(&mut self) {
+        for (i,tile) in self.tiles.iter_mut().enumerate() {
+            self.blocked[i] = *tile == TileType::Wall;
         }
     }
 
@@ -181,6 +198,9 @@ impl Map {
         let exit_position = map.rooms[map.rooms.len()-1].center();
         let exit_idx = map.xy_idx(exit_position.0, exit_position.1);
         map.tiles[exit_idx] = TileType::Exit;
+
+        // On calcule les Blocked.
+        //map.populate_blocked();   //TODO reactivate after fixing framerate for Pathfinding
 
         map
     }

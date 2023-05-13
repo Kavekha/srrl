@@ -20,7 +20,7 @@ use crate::{
     }
 };
 
-const FIXED_TIMESTEP: f32 = 0.5;
+//const FIXED_TIMESTEP: f32 = 0.5;
 
 
 pub struct NpcPlugin;
@@ -31,8 +31,9 @@ impl Plugin for NpcPlugin{
         app         
             //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
-            .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
+            //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        
+            .add_systems(Update, hostile_ia_decision.run_if(in_state(GameState::GameMap)))  
+            //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             .add_systems(Update, move_to_system.run_if(in_state(GameState::GameMap)))            
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             ;         
@@ -79,6 +80,51 @@ pub fn spawn_npc(
         .insert(Name::new("Npc"))
         .insert(Stats {speed: 6.0});
 }
+
+
+fn refacto_decision(){
+    //Start: Ma position de NPC
+    //Goal : La position du joueur.
+    
+    //Est-ce que je suis à une distance suffisante de lui?
+        //NON ==> J'attends.
+        //OUI ==>
+            // est ce que j'ai deja un Pathfinding?
+                // NON =>
+                    // Je calcule mon Pathfinding jusqu'à lui.      // FONCTION 1.
+                    // Est ce que je peux l'atteindre?
+                        //NON => /!\ Je vais refaire ce calcul à chaque fois.   /!\
+                            // Je me deplace aleatoirement au cas ou? // HORS SCOPE, faisons avec. //
+                        //OUI =>
+                            // Pathfinding est créé
+                // OUI =>
+                    // Est- ce que Goal == Pathfinding.goal ? Le Goal est tjrs à la meme place?
+                        // NON => Je supprime Pathfinding.
+                            // Je calcule mon pathfinding jusqu'à lui.  // FONCTION 1 ou Attendre prochaine iteration : Pas de Pathfinding.
+                        // OUI =>
+                            // Est-ce que Step >= path.len()?
+                                // OUI => Je n'ai plus de trajet, je suis sur ma cible. /!\
+                                // NON =>  Je suis à jour, je poursuis normalement.
+
+    // J'ai un pathfinding normalement valide, je peux agir.
+    //  Est-ce que j'ai un Step 1+ ?
+        // NON  => /!\ Je suis normalement sur lui, la partie est finie./!\
+        // OUI  => 
+            // Je recois un MoveTo avec ma destination path[step], forcement valide car Blocked checké dans Pathfinding.
+            // Step est augmenté de 1.
+            // REFLEXION : Peut être que Step = Etape à aller, plutot que de supprimer? Si Step > path.len() alors j'ai fini mon voyage.
+
+    // J'ai un MoveTo.
+        // Je me deplace dans la direction, comme demandé.
+
+    // FONCTION 1 : Calcul du Pathfinding.
+        // Je retourne les infos necessaires : 
+            // ==> Success : Path & Step 
+            // ==> Nok: Pas de chemin.
+
+
+}
+
 
 
 /// IA chasse la cible. Player as target, npc as hostile.   //TODO: More flexible maybe, for IA vs IA. Later.
@@ -200,14 +246,16 @@ fn move_to_system(
     time: Res<Time>
 ){
     for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
-        let x_delta = destination.x;
-        let y_delta = destination.y;
+        // We want the delta for modifications.
+        let x_delta = (destination.x -transform.translation.x) * stats.speed * time.delta_seconds();
+        let y_delta = (destination.y -transform.translation.y) * stats.speed * time.delta_seconds();
 
-        //No check, Pathfinding already did it. TileSize utilisé avant. //TODO : Refacto pour être plus coherent
-        transform.translation.x += x_delta * stats.speed * time.delta_seconds();
-        transform.translation.y += y_delta * stats.speed * time.delta_seconds();
+        //No check, Pathfinding already did it. //TODO : Refacto pour être plus coherent
+        transform.translation.x += x_delta; // * stats.speed * time.delta_seconds();
+        transform.translation.y += y_delta; // * stats.speed * time.delta_seconds();
 
         commands.entity(entity).remove::<MoveTo>();
+        //TODO: Je supprime Pathfinding.path[0] & Step[0] ?     //REFACTO : Mieux gerer la mise à jour des steps.
     }
 }
 
