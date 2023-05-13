@@ -2,6 +2,7 @@ use bevy::{
     prelude::*
 };
 use::rand::prelude::*;
+use pathfinding::prelude::astar;
 
 use crate::{
     ascii::{
@@ -10,7 +11,11 @@ use crate::{
     },
     TILE_SIZE, GameState, despawn_screen,
     game::{Player, Stats, TileCollider},
-    game::player::{tile_collision_check}
+    game::player::{tile_collision_check},
+    map_builders::{
+        pathfinding::{Position, Successor},
+        map::{Map},
+    }
 };
 
 
@@ -23,6 +28,7 @@ impl Plugin for NpcPlugin{
         app         
             .add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
+            //.add_systems(Update, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             ;         
     }
@@ -53,6 +59,48 @@ pub fn spawn_npc(
         .insert(Stats {speed: 6.0});
 }
 
+
+/// IA chasse la cible.
+fn hostile_ia_decision(
+    map: Res<Map>   //TODO : Map en resources
+) {
+    // TODO : Pathfinding, work in progress.
+    let hostile_pos = Position(10, 10);
+    let target_pos = Position(5,5);
+
+    let start = hostile_pos;
+    let goal = target_pos;
+
+    let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
+    let mut step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
+
+    let result = astar(
+        &start,
+        |position| {
+            map.get_successors(position)
+                .iter()
+                .map(|successor| (successor.position, successor.cost))
+                .collect::<Vec<_>>()
+        },
+        |position| position.distance(&goal),
+        |position| *position == goal,
+    );
+    if let Some(result) = result {
+        println!("Path: {:?}", result.0);
+        println!("Cost: {:?}", result.1);
+        path = result.0;
+        step = path.len();
+    } else {
+        println!("No Path Found!");
+        path = Vec::new();
+        step = 0;
+    }
+
+    // STEP:
+    //https://github.com/frederickjjoubert/bevy-pathfinding/blob/6fa935f1a1d9fb848455c738b4e2bb41163450f5/src/game.rs#L159
+
+
+}
 
 fn npc_movement(
     mut npc_query: Query<(&Npc, &mut Transform, &Stats)>,

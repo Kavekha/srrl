@@ -1,3 +1,6 @@
+//TODO : Refacto conversion Map > Tilemap: Check this: https://github.com/frederickjjoubert/bevy-pathfinding/blob/main/src/tilemap.rs
+
+
 use bevy::{prelude::*};
 
 use crate::{

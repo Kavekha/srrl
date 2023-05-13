@@ -8,14 +8,19 @@ use::rand::prelude::*;
 use::bevy::prelude::*;
 
 use super::TileType;
-use crate::map_builders::rectangle::{Rectangle};
+use crate::map_builders::{
+    rectangle::{Rectangle},
+    pathfinding::{Position, Successor}
+};
 
 
+#[derive(Resource)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rectangle>,
     pub width: i32,
-    pub height: i32
+    pub height: i32,
+    pub blocked: Vec<bool>,
 }
 
 impl Map {
@@ -26,6 +31,39 @@ impl Map {
         y: i32
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
+    }
+    pub fn get_successors(
+        &self, 
+        position: &Position
+     ) -> Vec<Successor> {
+        let mut successors = Vec::new();
+
+        for dy in -1..=1 {
+            for dx in -1..=1 {
+                let x = position.0 + dx;
+                let y = position.1 + dy;
+                if dx == 0 && dy == 0 {
+                    continue;
+                } // Exclude current position.
+                if x < 0 || x > self.width - 1 {
+                    continue;
+                } // Make sure we are within width bounds.
+                if y < 0 || y > self.height - 1 {
+                    continue;
+                } // Make sure we are within height bounds.
+
+                let neighbor_position = Position(x, y);
+                let neighbor_index = self.xy_idx(x, y);
+                if self.blocked[neighbor_index] {
+                    continue;
+                }
+                successors.push(Successor {
+                    position: neighbor_position,
+                    cost: 1,
+                })
+            }            
+        }
+        successors
     }
 
     pub fn apply_room_to_map(
@@ -73,7 +111,8 @@ impl Map {
             tiles: vec![TileType::Wall; 80 * 50],
             rooms: Vec::new(),      
             width: 80,
-            height: 50
+            height: 50,
+            blocked: vec![false; 80 * 50],
         };
 
         const MAX_ROOMS : i32 = 30;
@@ -128,11 +167,12 @@ impl Map {
     pub fn new_map_from_textfile(
         file_name: &str
     ) -> Map {
-        let mut map = Map{
+        let mut map = Map {
             tiles: vec![TileType::Wall; 80 * 50],
             rooms: Vec::new(),      //Vec<Rectangle> = Vec::new();
             width: 80,
-            height: 50
+            height: 50,
+            blocked: vec![false; 80 * 50],
         };
 
         let path = format!("assets/{}", file_name);
