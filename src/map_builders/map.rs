@@ -32,6 +32,19 @@ impl Map {
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
+
+    /// Default map.
+    pub fn new() -> Map {
+        let mut map = Map{
+            tiles: vec![TileType::Wall; 80 * 50],
+            rooms: Vec::new(),      
+            width: 80,
+            height: 50,
+            blocked: vec![false; 80 * 50],
+        };
+        map
+    }
+
     pub fn get_successors(
         &self, 
         position: &Position
@@ -107,13 +120,7 @@ impl Map {
     }
 
     pub fn new_map_rooms_and_corridors() -> Map {
-        let mut map = Map{
-            tiles: vec![TileType::Wall; 80 * 50],
-            rooms: Vec::new(),      
-            width: 80,
-            height: 50,
-            blocked: vec![false; 80 * 50],
-        };
+        let mut map = Map::new();
 
         const MAX_ROOMS : i32 = 30;
         const MIN_SIZE : i32 = 6;

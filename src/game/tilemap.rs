@@ -10,7 +10,7 @@ use crate::{
         TileType,
         map::{Map}
     },
-    game::{GameState, GameMap, TileCollider, TileExit, Game}
+    game::{GameState, GameMap, TileCollider, TileExit}
 };
 
 
@@ -31,10 +31,9 @@ impl Plugin for TileMapPlugin {
 fn create_simple_random_map(
     commands: Commands,
     ascii: Res<AsciiSheet>,
-    game: Res<Game>
+    map: Res<Map>
 ) {
-    let new_map = &game.map;
-    create_gamemap(commands, ascii, &new_map);
+    create_gamemap(commands, ascii, &map);
 }
 
 #[warn(dead_code)]

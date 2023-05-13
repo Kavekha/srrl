@@ -27,75 +27,55 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
+            .insert_resource(Map::new())
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
             .add_plugin(TileMapPlugin)
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
 
-            //Character creation.
-            .add_systems(OnEnter(GameState::NewGame), create_new_game_entities)
-            //Map creation.
-            .add_systems(OnEnter(GameState::Setup),create_new_game_map) 
-            //Char placement.
-            .add_systems(OnEnter(GameState::Prerun), create_new_game_positioning_entities  
-            );
+            .add_systems(OnEnter(GameState::NewGame), init_new_game)
+            ;
     }
 }
 
-fn create_new_game_entities (
+fn init_new_game(
     mut commands: Commands, 
     ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>
 ){
-    spawn_player(&mut commands, &ascii);
-
-    for _x in 0.. 10{
-        spawn_npc(&mut commands, &ascii);          
-    }
-
-    game_state.set(GameState::Setup);  
-}
-
-fn create_new_game_map(
-    mut commands: Commands,
-    mut game_state: ResMut<NextState<GameState>>
-){
-    println!("Create new game debut");
+    println!("Create new map");
     //We create the map.
     let map = Map::new_map_rooms_and_corridors();
-    commands.insert_resource(Game {map: map });   
-    println!("Map creee et inseree comme ressource");
-    game_state.set(GameState::Prerun);  
-}
+ 
+    //spawn player
+    // How to do this with no player_x, player_y?
+    let (x, y) = map.rooms[0].center();  
+    let player_x = x as f32* TILE_SIZE;
+    let player_y = -(y as f32) * TILE_SIZE;
 
-fn create_new_game_positioning_entities(    
-    mut player_query: Query<&mut Transform, With<Player>>,
-    mut game_state: ResMut<NextState<GameState>>,
-    mut npc_query: Query<&mut Transform, (With<Npc>, Without<Player>)>,
-    game: Res<Game>
-) {
-    //We give the player a position from the first room center.
-    let mut player_transform = player_query.single_mut();       //TODO check si Player existe. Querry faites avant la creation?
-    let (x, y) = game.map.rooms[0].center();                        // TODO check si Map existe. On l'a placé dans la resource avant.
-    player_transform.translation.x = x as f32 * TILE_SIZE;
-    player_transform.translation.y = -(y as f32) * TILE_SIZE;
-    println!("player new position : {},{}", player_transform.translation.x, player_transform.translation.y); 
+    spawn_player(&mut commands, &ascii, player_x, player_y);
 
-    let mut rooms = game.map.rooms.len() - 2;   // -1 car 0 based, -1 car player deja à 0....
-    for mut npc_transform in npc_query.iter_mut(){
+    //spawn enemies
+    let mut rooms = map.rooms.len() - 2; 
+    for _i in 0.. 10{
         if rooms <= 0 {
             break;
         } else {
-        let (x, y) = game.map.rooms[rooms].center();
-        npc_transform.translation.x = x as f32 * TILE_SIZE;
-        npc_transform.translation.y = -(y as f32) * TILE_SIZE;
-        println!("NPC new position : {},{}", npc_transform.translation.x, npc_transform.translation.y); 
-        rooms -= 1;
-        }
+            let (x, y) = map.rooms[rooms].center();
+            let npc_x = x as f32 * TILE_SIZE;
+            let npc_y = -(y as f32) * TILE_SIZE;
+            spawn_npc(&mut commands, &ascii, npc_x, npc_y);  
+
+            rooms -= 1;
+        }        
     }
 
-    game_state.set(GameState::GameMap); 
+    // We don't need the map, let's make it a resource for the others.
+    commands.insert_resource(map);   
+    println!("Map creee et inseree comme ressource");
+    game_state.set(GameState::GameMap);  
+
 }
 
 
@@ -104,19 +84,11 @@ fn create_new_game_positioning_entities(
 pub enum GameState {
     #[default]
     Disabled,
-    NewGame,    // Nouvelle partie, creation perso
-    Setup,      // Nouvelle map generée
-    Prerun,     // Placement du personnage. TODO : Dans Tilemap avec la creation "physique"?
+    NewGame,    // Nouvelle partie, setup Map & player creation
     GameMap,    // La map et le perso qui s'y balade.
     GameOverScreen,
     VictoryScreen,
 }  
-
-
-#[derive(Resource)]
-pub struct Game {
-    map: Map
-}
 
 #[derive(Component)]
 pub struct Player;

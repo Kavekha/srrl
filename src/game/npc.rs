@@ -41,14 +41,16 @@ pub struct Npc;
 
 pub fn spawn_npc(
     mut commands: &mut Commands, 
-    ascii: &AsciiSheet
+    ascii: &AsciiSheet,
+    x: f32,
+    y: f32
 ) {
     let npc = spawn_ascii_sprite(
         &mut commands,
         &ascii,
         2,
         Color::rgb(0.3, 0.9, 0.4),
-        Vec3::new(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
+        Vec3::new(x, y, 900.0), //(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
         Vec3::splat(1.0)
     );
 
