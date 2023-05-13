@@ -40,6 +40,13 @@ impl Plugin for NpcPlugin{
 #[derive(Component)]
 pub struct Npc;
 
+#[derive(Component)]
+pub struct Pathfinding{
+    pub goal: Position,
+    pub path: Vec<Position>,
+    pub step: usize,
+}
+
 
 pub fn spawn_npc(
     mut commands: &mut Commands, 
@@ -65,10 +72,15 @@ pub fn spawn_npc(
 
 
 /// IA chasse la cible. Player as target, npc as hostile.   //TODO: More flexible maybe, for IA vs IA. Later.
+/// L'IA supprime son Pathfinding si Obsolete ou bien se deplace.
 fn hostile_ia_decision(
+    mut commands: Commands,
     map: Res<Map>,
     player_query: Query<(&Player, &mut Transform)>,
-    npc_query: Query<(&Npc, &mut Transform), Without<Player>> //, Without<Player>)>,
+    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding),With<Npc>>, // Donne moi Entité + Pathfinding des entités avec Npc.
+    //pathfinding_query: Query<(&Npc, &mut Pathfinding)>,
+    entity_transform_query: Query<(Entity, &mut Transform), (Without<Player>, Without<Pathfinding>, With<Npc>)>,
+    //transform_query: Query<(&Npc, &mut Transform), (Without<Player>, Without<Pathfinding>)>, 
 ) {
     // TODO : Pathfinding, work in progress.
     let (_player, player_transform) = player_query.single();
@@ -77,8 +89,30 @@ fn hostile_ia_decision(
      let target_pos = Position(target_pos_x, target_pos_y);
     let goal = target_pos;
 
+    // Est-ce qu'il a deja un component Pathfinding?
+    let mut entity_nb = 0;  //DEBUG
+    for (entity, mut pathfinding) in entity_pathfinding_query.iter_mut(){
+        entity_nb += 1;     //DEBUG
+        // Goal pas à jour.
+        if pathfinding.goal != goal {
+            commands.entity(entity).remove::<Pathfinding>();
+            // Calculer nouveau Pathfinding.
+            println!("Entity {} doit calculer un nouveau Pathfinding car pathfinding.goal != goal ", {entity_nb});
+        } else {
+            // Je suis à jour, je me deplace.
+            let (move_to_x, move_to_y) = (pathfinding.path[0].0, pathfinding.path[0].1);
+            println!("Entity {} se rends à {},{}", entity_nb, move_to_x, move_to_y);
+            pathfinding.path.remove(0);
+            pathfinding.step -= 1;
+            if pathfinding.step == 0 {
+                commands.entity(entity).remove::<Pathfinding>();
+                // Calculer nouveau Pathfinding.
+            }
+        }
+    }
 
-    for (_npc, npc_transform) in npc_query.iter() {
+    // Pas de component Pathfinding:  
+    for (entity, npc_transform) in entity_transform_query.iter() {
         let (hostile_pos_x, hostile_pos_y) = world_to_grid_position(npc_transform.translation.x, npc_transform.translation.y);
         let hostile_pos = Position(hostile_pos_x, hostile_pos_y);
         let start = hostile_pos;
@@ -110,12 +144,13 @@ fn hostile_ia_decision(
             step = 0;
         }
 
-        // J'ai un chemin.
+        // Je créé un componant Pathfinding et je me l'ajoute.
         if step >= 1 {
-            let npc_idx = path[0];      //TODO: Convert idx / Map to World Unit.
-            println!("Path 0 is {:?}", path[0]) //DEBUG
-
-            //npc_transform => Movement?    //TODO : Deplacer le NPC.
+            commands.entity(entity).insert(Pathfinding{
+                goal,
+                path,
+                step
+            });
         } else {
             println!("NPC has no way to attack the player");
         }
