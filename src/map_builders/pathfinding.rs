@@ -18,9 +18,10 @@ pub fn world_to_grid_position(
     x: f32,
     y: f32 
 ) -> (i32, i32) {
+    //value.abs()
     let x_index = x / TILE_SIZE as f32;
     let y_index = y / TILE_SIZE as f32;
-    (x_index as i32, y_index as i32)
+    (x_index.abs() as i32, y_index.abs() as i32)
 }
 
 /*

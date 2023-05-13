@@ -50,24 +50,39 @@ impl Map {
         position: &Position
      ) -> Vec<Successor> {
         let mut successors = Vec::new();
+        
+        println!("----get successors----");
 
         for dy in -1..=1 {
+            println!("dy is {}", dy);
             for dx in -1..=1 {
+                println!("dx is {}", dx);
                 let x = position.0 + dx;
                 let y = position.1 + dy;
+                println!("x and y are: {},{}", x, y);
                 if dx == 0 && dy == 0 {
+                    println!("dx & dy = 0, out");
                     continue;
                 } // Exclude current position.
                 if x < 0 || x > self.width - 1 {
+                    println!("width bound nok, out");
                     continue;
                 } // Make sure we are within width bounds.
                 if y < 0 || y > self.height - 1 {
+                    println!("Is y < 0 ? {} < 0", y);
+                    println!("Is y > self height? {} > {}", y, self.height - 1);
+                    println!("height bound nok, continue");
                     continue;
                 } // Make sure we are within height bounds.
 
+                println!("All check OK");
+
                 let neighbor_position = Position(x, y);
+                println!("neigbhor position : {},{}", x, y);
                 let neighbor_index = self.xy_idx(x, y);
+                println!("neighbor_index is {}", neighbor_index);
                 if self.blocked[neighbor_index] {
+                    println!("neighbor index is blocked, nok");
                     continue;
                 }
                 successors.push(Successor {

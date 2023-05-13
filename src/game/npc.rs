@@ -18,6 +18,7 @@ use crate::{
     }
 };
 
+const FIXED_TIMESTEP: f32 = 2.0;
 
 
 pub struct NpcPlugin;
@@ -28,7 +29,8 @@ impl Plugin for NpcPlugin{
         app         
             //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
+            .add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
+            .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             ;         
     }
