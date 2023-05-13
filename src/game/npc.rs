@@ -13,7 +13,7 @@ use crate::{
     game::{Player, Stats, TileCollider},
     game::player::{tile_collision_check},
     map_builders::{
-        pathfinding::{Position, Successor},
+        pathfinding::{Position, Successor, world_to_grid_position},
         map::{Map},
     }
 };
@@ -26,9 +26,9 @@ pub struct NpcPlugin;
 impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
-            .add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))
+            //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            //.add_systems(Update, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
+            .add_systems(Update, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        //TODO : Map doit être en resource. REFACTO init Map.
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             ;         
     }
@@ -66,21 +66,25 @@ pub fn spawn_npc(
 fn hostile_ia_decision(
     map: Res<Map>,
     player_query: Query<(&Player, &mut Transform)>,
-    npc_query: Query<(&Npc, (&mut Transform, Without<Player>))>,
+    npc_query: Query<(&Npc, &mut Transform), Without<Player>> //, Without<Player>)>,
 ) {
     // TODO : Pathfinding, work in progress.
     let (_player, player_transform) = player_query.single();
-    let target_pos = Position(player_transform.translation.x, player_transform.translation.y);   //TODO : Transformer valeur World Unit en Grid Unit.
+
+    let (target_pos_x, target_pos_y) = world_to_grid_position(player_transform.translation.x, player_transform.translation.y);
+     let target_pos = Position(target_pos_x, target_pos_y);
     let goal = target_pos;
 
+
     for (_npc, npc_transform) in npc_query.iter() {
-        let hostile_pos = Position(npc_transform.translation.x, npc_transform.translation.y);   //TODO : Transformer valeur World Unit en Grid Unit.
+        let (hostile_pos_x, hostile_pos_y) = world_to_grid_position(npc_transform.translation.x, npc_transform.translation.y);
+        let hostile_pos = Position(hostile_pos_x, hostile_pos_y);
         let start = hostile_pos;
 
         let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
         let mut step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
     
-        // Let's ask for a path to the player
+        // Let's ask for a path to the player   //TODO: Maybe in another function
         let result = astar(
             &start,
             |position| {
@@ -107,13 +111,13 @@ fn hostile_ia_decision(
         // J'ai un chemin.
         if step >= 1 {
             let npc_idx = path[0];      //TODO: Convert idx / Map to World Unit.
+            println!("Path 0 is {:?}", path[0]) //DEBUG
 
             //npc_transform => Movement?    //TODO : Deplacer le NPC.
         } else {
             println!("NPC has no way to attack the player");
         }
-    }
-  
+    }  
 
     // STEP:
     //https://github.com/frederickjjoubert/bevy-pathfinding/blob/6fa935f1a1d9fb848455c738b4e2bb41163450f5/src/game.rs#L159
