@@ -8,14 +8,19 @@ use::rand::prelude::*;
 use::bevy::prelude::*;
 
 use super::TileType;
-use crate::map_builders::rectangle::{Rectangle};
+use crate::map_builders::{
+    rectangle::{Rectangle},
+    pathfinding::{Position, Successor}
+};
 
 
+#[derive(Resource)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rectangle>,
     pub width: i32,
-    pub height: i32
+    pub height: i32,
+    pub blocked: Vec<bool>,
 }
 
 impl Map {
@@ -26,6 +31,69 @@ impl Map {
         y: i32
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
+    }
+
+    /// Default map.
+    pub fn new() -> Map {
+        let mut map = Map{
+            tiles: vec![TileType::Wall; 80 * 50],
+            rooms: Vec::new(),      
+            width: 80,
+            height: 50,
+            blocked: vec![false; 80 * 50],
+        };
+        map
+    }
+
+    pub fn get_successors(
+        &self, 
+        position: &Position
+     ) -> Vec<Successor> {
+        let mut successors = Vec::new();
+        
+        println!("----get successors----");
+        let mut nb_successors = 0;
+        for dy in -1..=1 {
+            //println!("dy is {}", dy);
+            for dx in -1..=1 {
+                nb_successors += 1;
+                //println!("dx is {}", dx);
+                let x = position.0 + dx;
+                let y = position.1 + dy;
+                //println!("x and y are: {},{}", x, y);
+                if dx == 0 && dy == 0 {
+                    //println!("dx & dy = 0, out");
+                    continue;
+                } // Exclude current position.
+                if x < 0 || x > self.width - 1 {
+                    //println!("width bound nok, out");
+                    continue;
+                } // Make sure we are within width bounds.
+                if y < 0 || y > self.height - 1 {
+                    //println!("Is y < 0 ? {} < 0", y);
+                    //println!("Is y > self height? {} > {}", y, self.height - 1);
+                    //println!("height bound nok, continue");
+                    continue;
+                } // Make sure we are within height bounds.
+
+                //println!("All check OK");
+
+                let neighbor_position = Position(x, y);
+                //println!("neigbhor position : {},{}", x, y);
+                let neighbor_index = self.xy_idx(x, y);
+                //println!("neighbor_index is {}", neighbor_index);
+                if self.blocked[neighbor_index] {
+                    //println!("neighbor index is blocked, nok");
+                    continue;
+                }
+                successors.push(Successor {
+                    position: neighbor_position,
+                    cost: 1,
+                })
+            }            
+        }
+        println!("Nb de successors testés: {}", nb_successors);
+        successors
     }
 
     pub fn apply_room_to_map(
@@ -68,13 +136,23 @@ impl Map {
         }
     }
 
+    pub fn is_blocked(
+        &self,
+        x: i32,
+        y: i32
+    ) -> bool {
+        let idx = self.xy_idx(x, y);
+        self.blocked[idx]   
+    }
+
+    pub fn populate_blocked(&mut self) {
+        for (i,tile) in self.tiles.iter_mut().enumerate() {
+            self.blocked[i] = *tile == TileType::Wall;
+        }
+    }
+
     pub fn new_map_rooms_and_corridors() -> Map {
-        let mut map = Map{
-            tiles: vec![TileType::Wall; 80 * 50],
-            rooms: Vec::new(),      
-            width: 80,
-            height: 50
-        };
+        let mut map = Map::new();
 
         const MAX_ROOMS : i32 = 30;
         const MIN_SIZE : i32 = 6;
@@ -121,6 +199,9 @@ impl Map {
         let exit_idx = map.xy_idx(exit_position.0, exit_position.1);
         map.tiles[exit_idx] = TileType::Exit;
 
+        // On calcule les Blocked.
+        //map.populate_blocked();   //TODO reactivate after fixing framerate for Pathfinding
+
         map
     }
 
@@ -128,11 +209,12 @@ impl Map {
     pub fn new_map_from_textfile(
         file_name: &str
     ) -> Map {
-        let mut map = Map{
+        let mut map = Map {
             tiles: vec![TileType::Wall; 80 * 50],
             rooms: Vec::new(),      //Vec<Rectangle> = Vec::new();
             width: 80,
-            height: 50
+            height: 50,
+            blocked: vec![false; 80 * 50],
         };
 
         let path = format!("assets/{}", file_name);

@@ -1,5 +1,6 @@
 pub mod map;
 pub mod rectangle;
+pub mod pathfinding;
 
 
 #[derive(PartialEq, Copy, Clone, Debug)]

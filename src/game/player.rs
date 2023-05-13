@@ -31,14 +31,16 @@ impl Plugin for PlayerPlugin{
 
 pub fn spawn_player(
     mut commands: &mut Commands, 
-    ascii: &AsciiSheet
-) {
+    ascii: &AsciiSheet,
+    x: f32,
+    y: f32
+) -> Entity {
     let player = spawn_ascii_sprite(
         &mut commands,
         &ascii,
         1,
         Color::rgb(0.3, 0.3, 0.9),
-        Vec3::new(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
+        Vec3::new(x, y, 900.0), //(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
         Vec3::splat(1.0)
     );
 
@@ -47,6 +49,8 @@ pub fn spawn_player(
         .insert(Player)
         .insert(Name::new("Player"))
         .insert(Stats {speed: 6.0});
+
+    player
 }
 
 

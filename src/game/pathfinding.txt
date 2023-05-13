@@ -1,0 +1,51 @@
+// https://docs.rs/pathfinding/latest/pathfinding/directed/astar/fn.astar.html
+
+/*
+This code is released under a dual Apache 2.0 / MIT free software license.
+https://github.com/samueltardieu/pathfinding
+by Samuel Tardieu
+ */
+
+use pathfinding::prelude::astar;
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct Pos(i32, i32);
+
+impl Pos {
+  fn distance(&self, other: &Pos) -> u32 {
+    (self.0.abs_diff(other.0) + self.1.abs_diff(other.1)) as u32
+  }
+
+  fn successors(&self) -> Vec<(Pos, u32)> {
+    let &Pos(x, y) = self;
+    vec![Pos(x+1,y+2), Pos(x+1,y-2), Pos(x-1,y+2), Pos(x-1,y-2),
+         Pos(x+2,y+1), Pos(x+2,y-1), Pos(x-2,y+1), Pos(x-2,y-1)]
+         .into_iter().map(|p| (p, 1)).collect()
+  }
+}
+
+fn astar_example(    
+){
+    static GOAL: Pos = Pos(4, 6);
+    let result = astar(&Pos(1, 1), |p| p.successors(), |p| p.distance(&GOAL) / 3,
+                   |p| *p == GOAL);
+    assert_eq!(result.expect("no path found").1, 4);
+}
+
+
+/* 
+ALSO USED: 
+
+https://github.com/frederickjjoubert/bevy-pathfinding/blob/main/src/game.rs 
+
+MIT License
+
+Copyright (c) 2022 Jacques Joubert
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
