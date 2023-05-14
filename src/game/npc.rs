@@ -10,8 +10,8 @@ use crate::{
         AsciiSheet
     },
     GameState, despawn_screen,
-    game::{Player, Stats},
-    game::player::{tile_collision_check},
+    game::{Player, Stats, TileCollider},
+    commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position, grid_to_world_position},
         map::{Map},
@@ -191,8 +191,10 @@ fn next_step_destination(
 fn move_to_next_step(
     mut commands: Commands,
     mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
+    wall_query: Query<&Transform, (With<TileCollider>, Without<MoveTo>)>,
     time: Res<Time>
 ){
+    //TODO: Collision for soft movements.
     for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
         // We want the delta for modifications.
         let mut x_delta = destination.x - transform.translation.x;
@@ -202,9 +204,23 @@ fn move_to_next_step(
         x_delta *= stats.speed * time.delta_seconds();
         y_delta *= stats.speed * time.delta_seconds();
 
-        //No check, Pathfinding already did it. //TODO : Refacto pour être plus coherent
-        transform.translation.x += x_delta; 
-        transform.translation.y += y_delta;
+        //Collision check before moving:
+        //TODO: Refacto : Duplicate code with various colliding tests! (Check exit, check player, check eaten by ghouls)
+        let target_x = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
+        if !wall_query
+        .iter()
+        .any(|&transform|tile_collision_check(target_x, transform.translation))
+        {
+            transform.translation = target_x;
+        }
+
+        let target_y = transform.translation + Vec3::new(0.0, y_delta, 0.0);
+        if !wall_query
+        .iter()
+        .any(|&transform|tile_collision_check(target_y, transform.translation))
+        {
+            transform.translation = target_y;
+        }
 
         commands.entity(entity).remove::<MoveTo>();
     }

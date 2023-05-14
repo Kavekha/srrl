@@ -1,15 +1,15 @@
 use bevy::{
-    prelude::*,
-    sprite::collide_aabb::collide
+    prelude::*
 };
 
 use crate::{
+    commons::{tile_collision_check},
     ascii::{
         spawn_ascii_sprite,
         AsciiSheet
     },
     TILE_SIZE, GameState, despawn_screen,
-    game::{Player, Stats, TileCollider, TileExit},
+    game::{Player, Stats, TileCollider, TileExit},    
 };
 
 
@@ -109,20 +109,6 @@ fn player_input(
         {
             transform.translation = target;
         }
-}
-
-
-pub fn tile_collision_check(
-    target_pos: Vec3,
-    some_translation: Vec3
-) -> bool {
-    let collision = collide(
-        target_pos,
-        Vec2::splat(TILE_SIZE * 0.9),   //On reduit la box de collision pour ne pas être au pixel pret
-        some_translation,
-        Vec2::splat(TILE_SIZE)
-    );
-    collision.is_some()
 }
 
 fn player_step_check(
