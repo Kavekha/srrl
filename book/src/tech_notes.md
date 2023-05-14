@@ -40,6 +40,17 @@ Le positionnement se fait à x * TILE_SIZE et -y * TILE_SIZE.
 Une grille de [0..10][0..10] placera donc la grille [0][0] à 0.0,0.0, la grille [0][1] à 0.0,-0.9 etc.  
 Cela signifie qu'un personnage à la position 12.0,14.0 est à la grille [int(12.0 / TILE_SIZE)][int(14.0 / TILE_SIZE)] soit [13][15], 
 
+# Deplacement
+Très contre-intuitif pour le moment.  
+Je suis à 38,22 (grid unit).  
+Je me deplace vers le bas : +0, -1y.  
+J'arrive à 38, 23.  
+Pour descendre, je vais donc vers le negatif (Monde), ce qui se traduit par une augmentation sur la map (Grid).  
+Je me deplace vers la gauche : -1, +0.
+J'arrive à 37, 23.
+Pour aller à gauche je vais donc vers le negatif (Monde), ce qui se traduit par une réduction sur la map (Grid).
+BAS / HAUT sont donc inversés entre Grid et Monde.  
+
 
 # Tableau
 || Element | World Unit | Modified by TILE_SIZE? | Final Result ||

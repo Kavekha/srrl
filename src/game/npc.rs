@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::*, ecs::world
+    prelude::*
 };
 
 use pathfinding::prelude::astar;
@@ -9,7 +9,7 @@ use crate::{
         spawn_ascii_sprite,
         AsciiSheet
     },
-    GameState, despawn_screen,
+    GameState, despawn_screen, TILE_SIZE,
     game::{Player, Stats, TileCollider},
     commons::tile_collision_check,
     map_builders::{
@@ -19,7 +19,7 @@ use crate::{
 };
 
 //const FIXED_TIMESTEP: f32 = 0.5;
-const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+const BASE_RANGED_VIEW:i32 = 8;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
 
 pub struct NpcPlugin;
 
@@ -32,7 +32,7 @@ impl Plugin for NpcPlugin{
             .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
             .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
             .add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))       //DEBUG
-            //.add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))            
             //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
             //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
@@ -62,8 +62,9 @@ pub struct Pathfinding{
 
 #[derive(Component)]
 pub struct MoveTo{
-    pub x: f32,
-    pub y: f32
+    pub x: i32, //f32,
+    pub y: i32, //f32,
+    pub destination: Position
 }
 
 
@@ -88,7 +89,7 @@ pub fn spawn_npc(
         .entity(npc)
         .insert(Npc)
         .insert(Name::new(name))
-        .insert(Stats {speed: 4.0});
+        .insert(Stats {speed: 2.0});
 
     npc
 }
@@ -233,7 +234,7 @@ fn display_pathfinding(
 }
 
 
-fn next_step_destination(
+fn next_step_destination_old(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding, &Transform),With<Npc>>,
 ){
@@ -248,8 +249,9 @@ fn next_step_destination(
 
         // Je choisi l'etape actuel de mon chemin:
         let destination = pathfinding.path[pathfinding.step];
-        let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
-        commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+        commands.entity(entity).insert(MoveTo{x:destination.0, y:destination.1, destination:destination});
+        //let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
+        //commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
 
         // J'augmente Step pour la prochaine fois.
         pathfinding.step += 1;
@@ -258,7 +260,7 @@ fn next_step_destination(
 
 // TODO !
 /// Take an Entity owner of a Pathfinding to the next step of its goal. WORK IN PROGRESS.
-fn next_step_destination_wip(
+fn next_step_destination(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding, &Transform),With<Npc>>,
 ){
@@ -266,11 +268,26 @@ fn next_step_destination_wip(
         if !pathfinding.dirty {
             println!("{:?} : Step {} - Allons à la nouvelle destination ! ", entity, pathfinding.step);
             println!("{:?} : Path {:?}", entity, pathfinding.path);
+
             let destination = pathfinding.path[pathfinding.step];   // Nouveau step.
-            println!("{:?} : Nouvelle destination: {},{}", entity, destination.0, destination.1);
-            let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
-            commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
-            println!("{:?}: moveto inserted : {},{}", entity, move_to_x, move_to_y);
+
+            let (x, y) = (destination.0, destination.1);
+            let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
+            println!("Entity is at {:?}", world_to_grid_position(transform.translation.x, transform.translation.y));
+
+            let mut x_delta= x - current_x;
+            let mut y_delta = y - current_y;
+
+            println!("{:?} : Deplacement : {},{}", entity, x_delta, y_delta);
+
+            //let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
+            //commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+            commands.entity(entity).insert(MoveTo{
+                x:x_delta as i32,
+                y:y_delta as i32, 
+                destination: destination
+            });
+            //println!("{:?}: moveto inserted : {},{}", entity, move_to_x, move_to_y);
 
             // On passe en dirty:True pour checker si j'ai atteint ma position.
             pathfinding.dirty = true;
@@ -356,15 +373,62 @@ fn move_to_next_step(
     time: Res<Time>
 ){
     //TODO: Collision for soft movements.
-    for (entity, destination, mut transform, stats, pathfind) in moveto_query.iter_mut(){
+    for (entity, moveto, mut transform, stats, pathfind) in moveto_query.iter_mut(){
 
-        /* 
-        //TOTEST:
-        // QUICK & DIRTY FIX : on se teleporte à la destination....
+        // QUICK & DIRTY FIX : on se teleporte à la destination.... ==> SUPER RAPIDE.
+        /*
         transform.translation.x = destination.x;
         transform.translation.y = destination.y;
         */
 
+        // Est-ce que je suis arrivé?
+        if (moveto.destination.0, moveto.destination.1) != world_to_grid_position(transform.translation.x, transform.translation.y) {
+            // OLD 
+            /*
+            let (x, y) = (destination.x, destination.y);
+            let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
+            println!("Entity is at {:?}", world_to_grid_position(transform.translation.x, transform.translation.y));
+
+            let mut x_delta= current_x as f32 - x as f32;
+            let mut y_delta = current_y as f32 - y as f32;
+            */
+
+            let mut x_delta= moveto.x as f32;
+            let mut y_delta = 0.0 - moveto.y as f32;      // To go down the grid, you have to +y. To go up, you have to -y. Counter-intuitive,
+
+            println!("delta are : {},{}", x_delta, y_delta);
+
+            x_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
+            y_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
+            println!("delta modified are now: {},{}", x_delta, y_delta);
+
+            //Collision check before moving:
+            //TODO: Refacto : Duplicate code with various colliding tests! (Check exit, check player, check eaten by ghouls)
+            let target_x = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
+            if !wall_query
+            .iter()
+            .any(|&transform|tile_collision_check(target_x, transform.translation))
+            {
+                transform.translation = target_x;
+            }
+
+            let target_y = transform.translation + Vec3::new(0.0, y_delta, 0.0);
+            if !wall_query
+            .iter()
+            .any(|&transform|tile_collision_check(target_y, transform.translation))
+            {
+                transform.translation = target_y;
+            }      
+
+            println!("{:?} : ordre de mouvement vers world {},{}", entity, transform.translation.x, transform.translation.y);
+            println!("{:?} : ordre de mouvement vers grid : {:?}", entity, world_to_grid_position(transform.translation.x, transform.translation.y));
+
+        } else {
+            commands.entity(entity).remove::<MoveTo>();
+        }
+
+        /*
+        // OLD VERSION
         // We want the delta for modifications.
         let mut x_delta = destination.x - transform.translation.x;
         let mut y_delta = destination.y - transform.translation.y;
@@ -372,6 +436,8 @@ fn move_to_next_step(
         // On prends en compte stats.speed & delta
         x_delta *= stats.speed * time.delta_seconds();
         y_delta *= stats.speed * time.delta_seconds();
+
+        
 
         //Collision check before moving:
         //TODO: Refacto : Duplicate code with various colliding tests! (Check exit, check player, check eaten by ghouls)
@@ -389,17 +455,16 @@ fn move_to_next_step(
         .any(|&transform|tile_collision_check(target_y, transform.translation))
         {
             transform.translation = target_y;
-        }
-
-        //QUICK & DIRTY FIX : à cause des calculs de mouvement, l'arrivée peut ne pas correspondre à l'endroit souhaité. On supprime alors Pathfinding pour en recreer un autre.
-        if world_to_grid_position(destination.x, destination.y) != world_to_grid_position(transform.translation.x, transform.translation.y){
-            println!("{:?} : Destination vs Position differente! Remove Pathfinding!", entity);
-            commands.entity(entity).remove::<Pathfinding>();
-        }
+        }        
 
         println!("{:?} : ordre de mouvement vers world {},{}", entity, transform.translation.x, transform.translation.y);
         println!("{:?} : ordre de mouvement vers grid : {:?}", entity, world_to_grid_position(transform.translation.x, transform.translation.y));
-        commands.entity(entity).remove::<MoveTo>();
+        // Atteint la demande?
+        if (destination.x, destination.y) == (transform.translation.x, transform.translation.y)
+        {
+            commands.entity(entity).remove::<MoveTo>();
+        }
+        */
     }
 }
 
