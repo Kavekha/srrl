@@ -62,8 +62,8 @@ pub struct Pathfinding{
 
 #[derive(Component)]
 pub struct MoveTo{
-    pub x: i32, //f32,
-    pub y: i32, //f32,
+    //pub x: i32, //f32,
+    //pub y: i32, //f32,
     pub destination: Position
 }
 
@@ -233,7 +233,7 @@ fn display_pathfinding(
     }
 }
 
-
+/* 
 fn next_step_destination_old(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding, &Transform),With<Npc>>,
@@ -257,6 +257,7 @@ fn next_step_destination_old(
         pathfinding.step += 1;
     }
 }
+*/
 
 // TODO !
 /// Take an Entity owner of a Pathfinding to the next step of its goal. WORK IN PROGRESS.
@@ -283,8 +284,8 @@ fn next_step_destination(
             //let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
             //commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
             commands.entity(entity).insert(MoveTo{
-                x:x_delta as i32,
-                y:y_delta as i32, 
+                //x:x_delta as i32,
+                //y:y_delta as i32, 
                 destination: destination
             });
             //println!("{:?}: moveto inserted : {},{}", entity, move_to_x, move_to_y);
@@ -374,12 +375,53 @@ fn move_to_next_step(
 ){
     //TODO: Collision for soft movements.
     for (entity, moveto, mut transform, stats, pathfind) in moveto_query.iter_mut(){
+        // Suis-je arrivé?
+        let (target_x, target_y) = (moveto.destination.0, moveto.destination.1);
+        let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
+
+        if (target_x, target_y) != (current_x, current_y) {
+            println!("Je ne suis pas arrivé à destination : je suis à {:?}, je vais à {:?}", (current_x, current_y), (target_x, target_y));
+            let mut x_delta= target_x as f32 - current_x as f32;
+            let mut y_delta = 0.0 - (target_y as f32 - current_y as f32);      // To go down the grid, you have to +y. To go up, you have to -y. Counter-intuitive,
+            
+            println!("delta are : {},{}", x_delta, y_delta);
+            x_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
+            y_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
+            println!("delta modified are now: {},{}", x_delta, y_delta);
+
+            // Collision
+            let target_x = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
+            if !wall_query
+            .iter()
+            .any(|&transform|tile_collision_check(target_x, transform.translation))
+            {
+                transform.translation = target_x;
+            }
+
+            let target_y = transform.translation + Vec3::new(0.0, y_delta, 0.0);
+            if !wall_query
+            .iter()
+            .any(|&transform|tile_collision_check(target_y, transform.translation))
+            {
+                transform.translation = target_y;
+            }      
+
+            println!("{:?} : ordre de mouvement vers world {},{}", entity, transform.translation.x, transform.translation.y);
+            println!("{:?} : ordre de mouvement vers grid : {:?}", entity, world_to_grid_position(transform.translation.x, transform.translation.y));
+        } else {
+            // Je suis arrivé où je voulais aller.
+            commands.entity(entity).remove::<MoveTo>();
+        }
+    }
 
         // QUICK & DIRTY FIX : on se teleporte à la destination.... ==> SUPER RAPIDE.
         /*
         transform.translation.x = destination.x;
         transform.translation.y = destination.y;
         */
+
+        // OLD 2
+        /*
 
         // Est-ce que je suis arrivé?
         if (moveto.destination.0, moveto.destination.1) != world_to_grid_position(transform.translation.x, transform.translation.y) {
@@ -466,6 +508,7 @@ fn move_to_next_step(
         }
         */
     }
+    */
 }
 
 fn monster_step_check(
