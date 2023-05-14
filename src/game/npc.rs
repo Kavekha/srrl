@@ -77,7 +77,7 @@ pub fn spawn_npc(
         .entity(npc)
         .insert(Npc)
         .insert(Name::new("Npc"))
-        .insert(Stats {speed: 6.0});
+        .insert(Stats {speed: 3.0});
 }
 
 /// Update, remove or add a new Pathfinding Component.
@@ -90,6 +90,9 @@ fn behavior_decision(
 ) {
     // TODO REFACTO : Etre utilisable avec un but autre que Player? Par exemple si Clic souris pour deplacer son propre perso. LATER !
     // TODO REFACTO : Cas de merde: Je peux pas atteindre la cible, je ne bouge pas, elle ne bouge pas, mais je continue à calculer des Path. Dirty flag? /!\ TODO !
+    // TODO: Si !distance & Pathfinding: Je poursuis jusqu'au goal car dernier point où target vue.
+    // TODO: Si !distance & !Pathfinding: Plus de cible, je retourne au Home.
+    // TODO: Si distance & Pathfinding No Way : Je ne peux plus atteindre ma cible. Je retourne à Home à la place.
     // Player is the Monster goal.
     let (_player, player_transform) = player_query.single();
     // Pathfinding operations are made with map.tiles.
