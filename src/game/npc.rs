@@ -1,9 +1,7 @@
-use std::path;
-
 use bevy::{
     prelude::*
 };
-use::rand::prelude::*;
+
 use pathfinding::prelude::astar;
 
 use crate::{
@@ -11,11 +9,11 @@ use crate::{
         spawn_ascii_sprite,
         AsciiSheet
     },
-    TILE_SIZE, GameState, despawn_screen,
-    game::{Player, Stats, TileCollider},
+    GameState, despawn_screen,
+    game::{Player, Stats},
     game::player::{tile_collision_check},
     map_builders::{
-        pathfinding::{Position, Successor, world_to_grid_position, grid_to_world_position},
+        pathfinding::{Position, world_to_grid_position, grid_to_world_position},
         map::{Map},
     }
 };
@@ -87,10 +85,11 @@ fn behavior_decision(
     mut commands: Commands,
     map: Res<Map>,
     player_query: Query<(&Player, &mut Transform)>,
-    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding),With<Npc>>,
+    entity_pathfinding_query: Query<(Entity, &Pathfinding),With<Npc>>,
     entity_transform_query: Query<(Entity, &mut Transform), (Without<Player>, Without<Pathfinding>, With<Npc>)>,
 ) {
-    // TODO REFACTO : Peut être regarder dés le debut si Pathfinding ou pathfinding obsolete?
+    // TODO REFACTO : Etre utilisable avec un but autre que Player? Par exemple si Clic souris pour deplacer son propre perso. LATER !
+    // TODO REFACTO : Cas de merde: Je peux pas atteindre la cible, je ne bouge pas, elle ne bouge pas, mais je continue à calculer des Path. Dirty flag? /!\ TODO !
     // Player is the Monster goal.
     let (_player, player_transform) = player_query.single();
     // Pathfinding operations are made with map.tiles.
@@ -130,8 +129,6 @@ fn behavior_decision(
         // J'ai pas de Pathfinding, il m'en faut un.
         // TODO : Fonction à part?
         // ---- PATHFINDING REQUESTED -----
-        let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
-        let step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
     
         // Let's ask for a path to the player
         // TODO : Improvement : La Map peut être un Extrait "visible" de la Map, dans une distance de BASE_RANGED_VIEW.
@@ -150,19 +147,18 @@ fn behavior_decision(
         if let Some(result) = result {
             println!("Path: {:?}", result.0);
             println!("Cost: {:?}", result.1);
-            path = result.0;        // Liste des positions successives à suivre.
+            let path = result.0;        // Liste des positions successives à suivre.
             println!("Path len is {}", path.len());
             commands.entity(entity).insert(Pathfinding{
                 start,
                 goal,
                 path,
-                step        // Always 0... refacto car deprecated: logique changée.
+                step:0       // Always 0... refacto car deprecated: logique changée.
             });
             continue;   // AU SUIVANT !
         } else {
             //TODO : Cas de merde, car on va revenir sur lui alors qu'il ne sert à rien, et tout recalculer !
             println!("No Path Found!");
-            path = Vec::new();
         }
     }
 }
@@ -179,8 +175,6 @@ fn next_step_destination(
             continue;
         }
         // Je choisi l'etape actuel de mon chemin:
-        println!("Path is {:?}, step is {}.", pathfinding.path, pathfinding.step);
-        println!("Path[step] is {:?}", pathfinding.path[pathfinding.step]);
         let destination = pathfinding.path[pathfinding.step];
         let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
         commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
@@ -210,198 +204,6 @@ fn move_to_next_step(
         transform.translation.y += y_delta;
 
         commands.entity(entity).remove::<MoveTo>();
-    }
-}
-
-
-    //Start: Ma position de NPC
-    //Goal : La position du joueur.
-    
-    //Est-ce que je suis à une distance suffisante de lui?
-        //NON ==> J'attends.
-        //OUI ==>
-            // est ce que j'ai deja un Pathfinding?
-                // NON =>
-                    // Je calcule mon Pathfinding jusqu'à lui.      // FONCTION 1.
-                    // Est ce que je peux l'atteindre?
-                        //NON => /!\ Je vais refaire ce calcul à chaque fois.   /!\
-                            // Je me deplace aleatoirement au cas ou? // HORS SCOPE, faisons avec. //
-                        //OUI =>
-                            // Pathfinding vient d'être créé, je peux commencer ma traque.
-                // OUI =>
-                    // Est- ce que Goal == Pathfinding.goal ? Le Goal est tjrs à la meme place?
-                        // NON => Je supprime Pathfinding.
-                            // Je calcule mon pathfinding jusqu'à lui.  // FONCTION 1 ou Attendre prochaine iteration : Pas de Pathfinding.
-                        // OUI =>
-                            // Est-ce que Step >= path.len()?
-                                // OUI => Je n'ai plus de trajet, je suis sur ma cible. /!\
-                                // NON =>  Je suis à jour, je poursuis normalement.
-
-    // J'ai un pathfinding normalement valide, je peux agir.
-    //  Est-ce que j'ai un Step 1+ ?
-        // NON  => /!\ Je suis normalement sur lui, la partie est finie./!\
-        // OUI  => 
-            // Je recois un MoveTo avec ma destination path[step], forcement valide car Blocked checké dans Pathfinding.
-            // Step est augmenté de 1.
-            // REFLEXION : Peut être que Step = Etape à aller, plutot que de supprimer? Si Step > path.len() alors j'ai fini mon voyage.
-
-    // J'ai un MoveTo.
-        // Je me deplace dans la direction, comme demandé.
-
-    // FONCTION 1 : Calcul du Pathfinding.
-        // Je retourne les infos necessaires : 
-            // ==> Success : Path & Step 
-            // ==> Nok: Pas de chemin.
-
-
-
-
-/// IA chasse la cible. Player as target, npc as hostile.   //TODO: More flexible maybe, for IA vs IA. Later.
-/// L'IA supprime son Pathfinding si Obsolete ou bien se deplace.
-fn hostile_ia_decision(
-    mut commands: Commands,
-    map: Res<Map>,
-    player_query: Query<(&Player, &mut Transform)>,
-    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding),With<Npc>>, // Donne moi Entité + Pathfinding des entités avec Npc.
-    //pathfinding_query: Query<(&Npc, &mut Pathfinding)>,
-    entity_transform_query: Query<(Entity, &mut Transform), (Without<Player>, Without<Pathfinding>, With<Npc>)>,
-    //transform_query: Query<(&Npc, &mut Transform), (Without<Player>, Without<Pathfinding>)>, 
-) {
-    // TODO : Pathfinding, work in progress.
-    let (_player, player_transform) = player_query.single();
-
-    let (target_pos_x, target_pos_y) = world_to_grid_position(player_transform.translation.x, player_transform.translation.y);
-    let target_pos = Position(target_pos_x, target_pos_y);
-
-    let goal = target_pos;
-
-    // Est-ce qu'il a deja un component Pathfinding?
-    let mut entity_nb = 0;  //DEBUG
-    for (entity, mut pathfinding) in entity_pathfinding_query.iter_mut(){
-        entity_nb += 1;     //DEBUG
-        // Goal pas à jour.
-        if pathfinding.goal != goal {
-            commands.entity(entity).remove::<Pathfinding>();
-            // Calculer nouveau Pathfinding.
-            println!("Entity {} doit calculer un nouveau Pathfinding car pathfinding.goal != goal ", {entity_nb});
-            continue;
-        } else {
-            if goal.distance(&pathfinding.start) > 10 {
-                //Trop loin!
-                println!("Entity {} est trop loin de sa cible.", {entity_nb});
-                continue;
-            } else {
-                // Je suis à jour, je me deplacerai.      
-                    // Convertir en World Units.
-                    println!("Player is at world: {},{} AND grid {},{}", player_transform.translation.x, player_transform.translation.y, target_pos_x, target_pos_y);
-                    println!("Goal is now : {:?}", target_pos);
-
-                let (move_to_x_grid, move_to_y_grid) = (pathfinding.path[0].0, pathfinding.path[0].1);
-                println!("Entity {} se rends à {},{} - Grid units", entity_nb, move_to_x_grid, move_to_y_grid);
-                println!("Entity {} : pathfinding is {:?}", entity_nb, pathfinding.path);
-                let (move_to_x, move_to_y) = grid_to_world_position(pathfinding.path[0].0, pathfinding.path[0].1);
-                println!("Entity {} se rends à {},{} - World Units", entity_nb, move_to_x, move_to_y);
-                //DEBUG : Back to grid unit pour confirmer
-                let (move_to_x_grid_back, move_to_y_grid_back) = world_to_grid_position(move_to_x, move_to_y);
-                println!("CHECK : Entity {} va se rendre à {},{} - Grid units", entity_nb, move_to_x_grid_back, move_to_y_grid_back);
-                println!("CHECK: Goal is grid: {:?}, world: {:?}", (pathfinding.goal.0, pathfinding.goal.1), grid_to_world_position(pathfinding.goal.0, pathfinding.goal.1));
-                pathfinding.path.remove(0);
-                pathfinding.step -= 1;
-                commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
-
-                if pathfinding.step == 0 {
-                    commands.entity(entity).remove::<Pathfinding>();
-                    // Calculer nouveau Pathfinding.
-                }
-            }   
-        }
-    }
-
-    // Pas de component Pathfinding:  
-    for (entity, npc_transform) in entity_transform_query.iter() {
-        let (hostile_pos_x, hostile_pos_y) = world_to_grid_position(npc_transform.translation.x, npc_transform.translation.y);
-        let hostile_pos = Position(hostile_pos_x, hostile_pos_y);
-        let start = hostile_pos;
-
-        let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
-        let mut step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
-    
-        // Let's ask for a path to the player   //TODO: Maybe in another function
-        let result = astar(
-            &start,
-            |position| {
-                map.get_successors(position)
-                    .iter()
-                    .map(|successor| (successor.position, successor.cost))
-                    .collect::<Vec<_>>()
-            },
-            |position| position.distance(&goal),
-            |position| *position == goal,
-        );
-        // Let's do thing with the result.
-        if let Some(result) = result {
-            println!("Path: {:?}", result.0);
-            println!("Cost: {:?}", result.1);
-            path = result.0;
-            step = path.len();
-        } else {
-            println!("No Path Found!");
-            path = Vec::new();
-            step = 0;
-        }
-
-        // Je créé un componant Pathfinding et je me l'ajoute.
-        if step >= 1 {
-            commands.entity(entity).insert(Pathfinding{
-                start,
-                goal,
-                path,
-                step
-            });
-        } else {
-            println!("NPC has no way to attack the player");
-        }
-    }  
-
-    // STEP:
-    //https://github.com/frederickjjoubert/bevy-pathfinding/blob/6fa935f1a1d9fb848455c738b4e2bb41163450f5/src/game.rs#L159
-
-
-}
-
-
-/// Deprecated. Ne prends pas en compte Pathfinding.
-fn npc_movement(
-    mut npc_query: Query<(&Npc, &mut Transform, &Stats)>,
-    wall_query: Query<&Transform, (With<TileCollider>, Without<Npc>)>,
-    time: Res<Time>
-) {
-    let mut rng = rand::thread_rng();
-    for (_npc, mut npc_transform, stats) in npc_query.iter_mut(){
-        // Random direction
-        let mut x_delta = rng.gen_range(-1.. 2) as f32;
-        let mut y_delta = rng.gen_range(-1.. 2) as f32;
-
-        // How much will they move
-        x_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
-        y_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
-
-        // Can they move to it?
-        let target:Vec3 = npc_transform.translation + Vec3::new(x_delta, 0.0, 0.0);
-        if !wall_query
-        .iter()
-        .any(|&npc_transform|tile_collision_check(target, npc_transform.translation))
-        {
-            npc_transform.translation = target;
-        }
-
-        let target:Vec3 = npc_transform.translation + Vec3::new(0.0, y_delta, 0.0);
-        if !wall_query
-        .iter()
-        .any(|&npc_transform|tile_collision_check(target, npc_transform.translation))
-        {
-            npc_transform.translation = target;
-        }
     }
 }
 
