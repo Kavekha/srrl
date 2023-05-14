@@ -13,7 +13,7 @@ use crate::{
     map_builders::pathfinding::world_to_grid_position,
     game::player::spawn_player, 
     ascii::AsciiSheet,
-    game::npc::{spawn_npc, Npc},
+    game::npc::spawn_npc,
 };
 
 pub mod player;

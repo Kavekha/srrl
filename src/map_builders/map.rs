@@ -35,7 +35,7 @@ impl Map {
 
     /// Default map.
     pub fn new() -> Map {
-        let mut map = Map{
+        let map = Map{
             tiles: vec![TileType::Wall; 80 * 50],
             rooms: Vec::new(),      
             width: 80,
@@ -51,12 +51,9 @@ impl Map {
      ) -> Vec<Successor> {
         let mut successors = Vec::new();
         
-        println!("----get successors----");
-        let mut nb_successors = 0;
         for dy in -1..=1 {
             //println!("dy is {}", dy);
             for dx in -1..=1 {
-                nb_successors += 1;
                 //println!("dx is {}", dx);
                 let x = position.0 + dx;
                 let y = position.1 + dy;
@@ -92,7 +89,6 @@ impl Map {
                 })
             }            
         }
-        println!("Nb de successors testés: {}", nb_successors);
         successors
     }
 
@@ -200,7 +196,7 @@ impl Map {
         map.tiles[exit_idx] = TileType::Exit;
 
         // On calcule les Blocked.
-        //map.populate_blocked();   //TODO reactivate after fixing framerate for Pathfinding
+        map.populate_blocked();   //TODO FYI : This will blow the pathfinding calculation....
 
         map
     }
