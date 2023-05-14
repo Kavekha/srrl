@@ -193,6 +193,7 @@ fn move_to_next_step(
     mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
     time: Res<Time>
 ){
+    //TODO: Collision for soft movements.
     for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
         // We want the delta for modifications.
         let mut x_delta = destination.x - transform.translation.x;
