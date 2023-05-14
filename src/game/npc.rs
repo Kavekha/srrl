@@ -21,7 +21,7 @@ use crate::{
 };
 
 //const FIXED_TIMESTEP: f32 = 0.5;
-
+const BASE_RANGED_VIEW:i32 = 8;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
 
 pub struct NpcPlugin;
 
@@ -29,13 +29,14 @@ pub struct NpcPlugin;
 impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
-            //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))        
-            .add_systems(Update, hostile_ia_decision.run_if(in_state(GameState::GameMap)))  
-            //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
-            .add_systems(Update, move_to_system.run_if(in_state(GameState::GameMap)))            
+            .add_systems(Update, behavior_decision.run_if(in_state(GameState::GameMap)))  
+            .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
+            .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
+            //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))            
+            //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
+            //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             ;         
     }
 }
@@ -81,8 +82,138 @@ pub fn spawn_npc(
         .insert(Stats {speed: 6.0});
 }
 
+/// Update, remove or add a new Pathfinding Component.
+fn behavior_decision(
+    mut commands: Commands,
+    map: Res<Map>,
+    player_query: Query<(&Player, &mut Transform)>,
+    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding),With<Npc>>,
+    entity_transform_query: Query<(Entity, &mut Transform), (Without<Player>, Without<Pathfinding>, With<Npc>)>,
+) {
+    // TODO REFACTO : Peut être regarder dés le debut si Pathfinding ou pathfinding obsolete?
+    // Player is the Monster goal.
+    let (_player, player_transform) = player_query.single();
+    // Pathfinding operations are made with map.tiles.
+    let (goal_pos_x, goal_pos_y) = world_to_grid_position(player_transform.translation.x, player_transform.translation.y);
+    let goal = Position(goal_pos_x, goal_pos_y);
 
-fn refacto_decision(){
+    for (entity, &npc_transform) in entity_transform_query.iter() {
+        //as a NPC, where do I start?
+        let (start_pos_x, start_pos_y) = world_to_grid_position(npc_transform.translation.x, npc_transform.translation.y);
+        let start = Position(start_pos_x, start_pos_y);
+
+        // Est ce que je vois ma cible?
+        if start.distance(&goal) > BASE_RANGED_VIEW {
+            continue;   // Nope, donc j'ai pas d'avis.
+        }
+
+        // Est ce que j'ai un pathfinding?
+        let mut have_pathfinding = false;
+        for (pathfinding_entity, pathfinding) in entity_pathfinding_query.iter() {
+            if entity != pathfinding_entity {
+                // Cette entity n'est pas moi.
+                continue;
+            } else {
+                // C'est moi! Mon Goal est-il à jour?
+                if goal != pathfinding.goal {
+                    commands.entity(entity).remove::<Pathfinding>();
+                    break;
+                }
+                have_pathfinding = true;    //Pathfinding à jour.
+                break;  // J'ai fais mon traitement sur le NPC.
+            } 
+        }
+
+        if have_pathfinding{
+            continue;   // Plus rien à faire ici.
+        }
+        // J'ai pas de Pathfinding, il m'en faut un.
+        // TODO : Fonction à part?
+        // ---- PATHFINDING REQUESTED -----
+        let mut path:Vec<Position> = Vec::new();    //Empty. Serie de positions pour se rendre au goal.
+        let step = 0;   // Le nombre de pas à faire avant d'atteindre le goal.
+    
+        // Let's ask for a path to the player
+        // TODO : Improvement : La Map peut être un Extrait "visible" de la Map, dans une distance de BASE_RANGED_VIEW.
+        let result = astar(
+            &start,
+            |position| {
+                map.get_successors(position)
+                    .iter()
+                    .map(|successor| (successor.position, successor.cost))
+                    .collect::<Vec<_>>()
+            },
+            |position| position.distance(&goal),
+            |position| *position == goal,
+        );
+        // Let's do thing with the result.
+        if let Some(result) = result {
+            println!("Path: {:?}", result.0);
+            println!("Cost: {:?}", result.1);
+            path = result.0;        // Liste des positions successives à suivre.
+            println!("Path len is {}", path.len());
+            commands.entity(entity).insert(Pathfinding{
+                start,
+                goal,
+                path,
+                step        // Always 0... refacto car deprecated: logique changée.
+            });
+            continue;   // AU SUIVANT !
+        } else {
+            //TODO : Cas de merde, car on va revenir sur lui alors qu'il ne sert à rien, et tout recalculer !
+            println!("No Path Found!");
+            path = Vec::new();
+        }
+    }
+}
+
+/// Take an Entity owner of a Pathfinding to the next step of its goal.
+fn next_step_destination(
+    mut commands: Commands,
+    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding),With<Npc>>,
+){
+    for (entity, mut pathfinding) in entity_pathfinding_query.iter_mut() {
+        // J'ai fini mon path, plus besoin de lui.
+        if pathfinding.step > pathfinding.path.len() -1 {         // If 4 entrys in 'Path', path.len() will be 4. But the first entry is 0 (path[0]), not path[1].
+            commands.entity(entity).remove::<Pathfinding>();
+            continue;
+        }
+        // Je choisi l'etape actuel de mon chemin:
+        println!("Path is {:?}, step is {}.", pathfinding.path, pathfinding.step);
+        println!("Path[step] is {:?}", pathfinding.path[pathfinding.step]);
+        let destination = pathfinding.path[pathfinding.step];
+        let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
+        commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+
+        // J'augmente Step pour la prochaine fois.
+        pathfinding.step += 1;
+    }
+}
+
+/// Deplace le Transform vers la position transmise.
+fn move_to_next_step(
+    mut commands: Commands,
+    mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
+    time: Res<Time>
+){
+    for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
+        // We want the delta for modifications.
+        let mut x_delta = destination.x - transform.translation.x;
+        let mut y_delta = destination.y - transform.translation.y;
+
+        // On prends en compte stats.speed & delta
+        x_delta *= stats.speed * time.delta_seconds();
+        y_delta *= stats.speed * time.delta_seconds();
+
+        //No check, Pathfinding already did it. //TODO : Refacto pour être plus coherent
+        transform.translation.x += x_delta; 
+        transform.translation.y += y_delta;
+
+        commands.entity(entity).remove::<MoveTo>();
+    }
+}
+
+
     //Start: Ma position de NPC
     //Goal : La position du joueur.
     
@@ -96,7 +227,7 @@ fn refacto_decision(){
                         //NON => /!\ Je vais refaire ce calcul à chaque fois.   /!\
                             // Je me deplace aleatoirement au cas ou? // HORS SCOPE, faisons avec. //
                         //OUI =>
-                            // Pathfinding est créé
+                            // Pathfinding vient d'être créé, je peux commencer ma traque.
                 // OUI =>
                     // Est- ce que Goal == Pathfinding.goal ? Le Goal est tjrs à la meme place?
                         // NON => Je supprime Pathfinding.
@@ -122,8 +253,6 @@ fn refacto_decision(){
             // ==> Success : Path & Step 
             // ==> Nok: Pas de chemin.
 
-
-}
 
 
 
@@ -240,24 +369,6 @@ fn hostile_ia_decision(
 
 }
 
-fn move_to_system(
-    mut commands: Commands,
-    mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
-    time: Res<Time>
-){
-    for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
-        // We want the delta for modifications.
-        let x_delta = (destination.x -transform.translation.x) * stats.speed * time.delta_seconds();
-        let y_delta = (destination.y -transform.translation.y) * stats.speed * time.delta_seconds();
-
-        //No check, Pathfinding already did it. //TODO : Refacto pour être plus coherent
-        transform.translation.x += x_delta; // * stats.speed * time.delta_seconds();
-        transform.translation.y += y_delta; // * stats.speed * time.delta_seconds();
-
-        commands.entity(entity).remove::<MoveTo>();
-        //TODO: Je supprime Pathfinding.path[0] & Step[0] ?     //REFACTO : Mieux gerer la mise à jour des steps.
-    }
-}
 
 /// Deprecated. Ne prends pas en compte Pathfinding.
 fn npc_movement(
