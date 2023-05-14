@@ -13,7 +13,7 @@ use crate::{
     map_builders::pathfinding::world_to_grid_position,
     game::player::spawn_player, 
     ascii::AsciiSheet,
-    game::npc::spawn_npc,
+    game::npc::{spawn_npc, Monster},
 };
 
 pub mod player;
@@ -65,12 +65,9 @@ fn init_new_game(
         } else {
             let (x, y) = map.rooms[rooms].center();
             let npc_x = x as f32 * TILE_SIZE;
-            let npc_y = -(y as f32) * TILE_SIZE;
-            println!("NPC from {},{} has been spawned in world units {},{}", x, y, npc_x, npc_y);
-            let (world_to_grid_x, world_to_grid_y) = world_to_grid_position(npc_x, npc_y);
-            println!("Conversion world_to_grid_position donne : {},{}", world_to_grid_x, world_to_grid_y);
-
-            spawn_npc(&mut commands, &ascii, npc_x, npc_y);  
+            let npc_y = -(y as f32) * TILE_SIZE;         
+            let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
+            commands.entity(ghoul).insert(Monster);
 
             rooms -= 1;
         }        

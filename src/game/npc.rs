@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::*
+    prelude::*, ecs::world
 };
 
 use pathfinding::prelude::astar;
@@ -19,7 +19,7 @@ use crate::{
 };
 
 //const FIXED_TIMESTEP: f32 = 0.5;
-const BASE_RANGED_VIEW:i32 = 8;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
 
 pub struct NpcPlugin;
 
@@ -31,7 +31,8 @@ impl Plugin for NpcPlugin{
             .add_systems(Update, behavior_decision.run_if(in_state(GameState::GameMap)))  
             .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
             .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
+            .add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))       //DEBUG
+            //.add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?
             //.add_systems(Update, npc_movement.run_if(in_state(GameState::GameMap)))            
             //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
             //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
@@ -44,11 +45,19 @@ impl Plugin for NpcPlugin{
 pub struct Npc;
 
 #[derive(Component)]
+pub struct Monster;
+
+#[derive(Component)]
+pub struct DisplayedPath;
+
+#[derive(Component)]
 pub struct Pathfinding{
     pub start: Position,
     pub goal: Position,
     pub path: Vec<Position>,
     pub step: usize,
+    pub dirty: bool,    //Si True, verifie la position vs Step Destination pour savoir si chemin atteint et next ordre de mouvement necessaire.
+    pub debug: bool,
 }
 
 #[derive(Component)]
@@ -62,12 +71,14 @@ pub fn spawn_npc(
     mut commands: &mut Commands, 
     ascii: &AsciiSheet,
     x: f32,
-    y: f32
-) {
+    y: f32,
+    name: String,
+    glyph: usize,
+) -> Entity {
     let npc = spawn_ascii_sprite(
         &mut commands,
         &ascii,
-        2,
+        glyph as usize,
         Color::rgb(0.3, 0.9, 0.4),
         Vec3::new(x, y, 900.0), //(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
         Vec3::splat(1.0)
@@ -76,8 +87,10 @@ pub fn spawn_npc(
     commands 
         .entity(npc)
         .insert(Npc)
-        .insert(Name::new("Npc"))
-        .insert(Stats {speed: 3.0});
+        .insert(Name::new(name))
+        .insert(Stats {speed: 4.0});
+
+    npc
 }
 
 /// Update, remove or add a new Pathfinding Component.
@@ -152,12 +165,15 @@ fn behavior_decision(
             println!("Cost: {:?}", result.1);
             let path = result.0;        // Liste des positions successives à suivre.
             println!("Path len is {}", path.len());
-            commands.entity(entity).insert(Pathfinding{
+            let pathfind = Pathfinding{
                 start,
                 goal,
                 path,
-                step:0       // Always 0... refacto car deprecated: logique changée.
-            });
+                step:0,       // Always 0... refacto car deprecated: logique changée.
+                dirty:false,
+                debug:false       //debug : Display path false
+            };
+            commands.entity(entity).insert(pathfind);
             continue;   // AU SUIVANT !
         } else {
             //TODO : Cas de merde, car on va revenir sur lui alors qu'il ne sert à rien, et tout recalculer !
@@ -166,17 +182,70 @@ fn behavior_decision(
     }
 }
 
-/// Take an Entity owner of a Pathfinding to the next step of its goal.
+/// display Pathfinding
+/// TO REWORK
+
+fn display_pathfinding(
+    mut commands: Commands,
+    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding)>,
+    ascii: Res<AsciiSheet>, //ascii: &AsciiSheet,
+    keys: Res<Input<KeyCode>>,
+    entity_displayedpath_query: Query<(Entity, &DisplayedPath)>,    
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        //toggle on / off.
+        println!("Clic: Espace!");
+        let mut delete_all = false;
+        for (_entity, mut pathfinder) in entity_pathfinding_query.iter_mut() {
+            if !pathfinder.debug {
+                let mut current_step = 0;
+                for path in pathfinder.path.iter() {
+                    if current_step > pathfinder.step {
+                        println!("Current step {}> pathfinder step", current_step);
+                        let path_destination = (path.0, path.1);
+                        let (npc_x, npc_y) = grid_to_world_position(path_destination.0, path_destination.1);
+                        println!("npc x, y are : {},{}",npc_x, npc_y);
+
+                        let displayed_path = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Path"), '*' as usize); 
+                        commands.entity(displayed_path).insert(DisplayedPath);
+
+                        current_step += 1;
+                    }                  
+                }     
+                pathfinder.debug = true;    
+            } else {
+                pathfinder.debug = false;
+                delete_all = true;
+            }
+        } 
+        if delete_all {
+            // On supprime les path displayed.
+            for (displayed_path_entity, _displayed_path) in entity_displayedpath_query.iter(){
+                commands.entity(displayed_path_entity).despawn_recursive();
+            }
+        }
+        if delete_all{
+            println!("-- display off --");
+        } else {
+            println!("-- display on --");
+        }
+    }
+}
+
+
 fn next_step_destination(
     mut commands: Commands,
-    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding),With<Npc>>,
+    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding, &Transform),With<Npc>>,
 ){
-    for (entity, mut pathfinding) in entity_pathfinding_query.iter_mut() {
+    for (entity, mut pathfinding, &transform) in entity_pathfinding_query.iter_mut() {
+        println!("Next step for entity {:?}", entity);
         // J'ai fini mon path, plus besoin de lui.
         if pathfinding.step > pathfinding.path.len() -1 {         // If 4 entrys in 'Path', path.len() will be 4. But the first entry is 0 (path[0]), not path[1].
+            println!("Pathfinding.step > pathfinding.path.len()");
             commands.entity(entity).remove::<Pathfinding>();
             continue;
         }
+
         // Je choisi l'etape actuel de mon chemin:
         let destination = pathfinding.path[pathfinding.step];
         let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
@@ -187,15 +256,115 @@ fn next_step_destination(
     }
 }
 
+// TODO !
+/// Take an Entity owner of a Pathfinding to the next step of its goal. WORK IN PROGRESS.
+fn next_step_destination_wip(
+    mut commands: Commands,
+    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding, &Transform),With<Npc>>,
+){
+    for (entity, mut pathfinding, &transform) in entity_pathfinding_query.iter_mut() {
+        if !pathfinding.dirty {
+            println!("{:?} : Step {} - Allons à la nouvelle destination ! ", entity, pathfinding.step);
+            println!("{:?} : Path {:?}", entity, pathfinding.path);
+            let destination = pathfinding.path[pathfinding.step];   // Nouveau step.
+            println!("{:?} : Nouvelle destination: {},{}", entity, destination.0, destination.1);
+            let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
+            commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+            println!("{:?}: moveto inserted : {},{}", entity, move_to_x, move_to_y);
+
+            // On passe en dirty:True pour checker si j'ai atteint ma position.
+            pathfinding.dirty = true;
+        } else {
+            let destination = pathfinding.path[pathfinding.step];       //Grid value
+            let current_position = world_to_grid_position(transform.translation.x, transform.translation.y); 
+            println!("{:?} : Current position vs destination : {:?} vs {:?}", entity, current_position, destination);
+            // J'ai atteint ma position?
+            if (current_position.0, current_position.1) == (destination.0, destination.1)
+            {
+                println!("{:?} : Step completé", entity);
+                // Step atteint.    //DOUBLON Debut de la boucle TODO refacto
+                pathfinding.step += 1;
+                // J'ai atteint la fin du Path?
+                if pathfinding.step > pathfinding.path.len() -1 {   
+                    println!("{:?} : Step > len : objectif atteint.", entity);
+                    commands.entity(entity).remove::<Pathfinding>();
+                    continue;
+                } else {
+                    pathfinding.dirty = false;  // Donne moi un move au prochain cycle. //TODO: Je perds un cycle.
+                }
+            }
+            // Je reste en dirty True pour qu'on check si je me deplace.
+        }
+    }
+}
+
+
+
+
+/*
+        println!("Next step for entity {:?}", entity);
+        // J'ai fini mon path, plus besoin de lui.
+        if pathfinding.step > pathfinding.path.len() -1 {         // If 4 entrys in 'Path', path.len() will be 4. But the first entry is 0 (path[0]), not path[1].
+            println!("Pathfinding.step > pathfinding.path.len()");
+            commands.entity(entity).remove::<Pathfinding>();
+            continue;
+        }
+
+        // ORIGINAL: Is working.
+        /*
+        // Je choisi l'etape actuel de mon chemin:
+        let destination = pathfinding.path[pathfinding.step];
+        let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
+        commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+
+        // J'augmente Step pour la prochaine fois.
+        pathfinding.step += 1;
+        */
+        
+        // ATTENTION: Ca, ca casse tout.
+        // Si j'ai atteint l'etape souhaitée, je passe à la suivante.
+        
+        if pathfinding.step > 0 {
+            let mut destination = pathfinding.path[pathfinding.step];       //Grid value
+            let current_position = world_to_grid_position(transform.translation.x, transform.translation.y); 
+            println!("Current position vs destination : {:?} vs {:?}", current_position, destination);
+            if (current_position.0, current_position.1) == (destination.0, destination.1)
+            {
+                println!("Step completé");
+                // Step atteint.    //DOUBLON Debut de la boucle TODO refacto
+                pathfinding.step += 1;
+                if pathfinding.step > pathfinding.path.len() -1 {   // Objectif atteint.
+                    println!("Step > len : objectif atteint.");
+                    continue;
+                }
+            }
+        }
+        println!("Allons à la nouvelle destination ! ");
+        let destination = pathfinding.path[pathfinding.step];   // Nouveau step.
+        println!("Nouvelle destination: {},{}", destination.0, destination.1);
+        let (move_to_x, move_to_y) = grid_to_world_position(destination.0, destination.1);
+        commands.entity(entity).insert(MoveTo{x:move_to_x as f32, y:move_to_y as f32});
+    }
+}
+*/
+
 /// Deplace le Transform vers la position transmise.
 fn move_to_next_step(
     mut commands: Commands,
-    mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
+    mut moveto_query: Query<(Entity, &MoveTo, &mut Transform, &Stats, &Pathfinding)>,
     wall_query: Query<&Transform, (With<TileCollider>, Without<MoveTo>)>,
     time: Res<Time>
 ){
     //TODO: Collision for soft movements.
-    for (entity, destination, mut transform, stats) in moveto_query.iter_mut(){
+    for (entity, destination, mut transform, stats, pathfind) in moveto_query.iter_mut(){
+
+        /* 
+        //TOTEST:
+        // QUICK & DIRTY FIX : on se teleporte à la destination....
+        transform.translation.x = destination.x;
+        transform.translation.y = destination.y;
+        */
+
         // We want the delta for modifications.
         let mut x_delta = destination.x - transform.translation.x;
         let mut y_delta = destination.y - transform.translation.y;
@@ -222,13 +391,21 @@ fn move_to_next_step(
             transform.translation = target_y;
         }
 
+        //QUICK & DIRTY FIX : à cause des calculs de mouvement, l'arrivée peut ne pas correspondre à l'endroit souhaité. On supprime alors Pathfinding pour en recreer un autre.
+        if world_to_grid_position(destination.x, destination.y) != world_to_grid_position(transform.translation.x, transform.translation.y){
+            println!("{:?} : Destination vs Position differente! Remove Pathfinding!", entity);
+            commands.entity(entity).remove::<Pathfinding>();
+        }
+
+        println!("{:?} : ordre de mouvement vers world {},{}", entity, transform.translation.x, transform.translation.y);
+        println!("{:?} : ordre de mouvement vers grid : {:?}", entity, world_to_grid_position(transform.translation.x, transform.translation.y));
         commands.entity(entity).remove::<MoveTo>();
     }
 }
 
 fn monster_step_check(
     player_query: Query<(&Player, &mut Transform)>,
-    npc_query: Query<&Transform, (With<Npc>, Without<Player>)>,
+    npc_query: Query<&Transform, (With<Monster>, Without<Player>)>,
     mut game_state: ResMut<NextState<GameState>>
 ) {
     // If player on collision with a ghoul...
