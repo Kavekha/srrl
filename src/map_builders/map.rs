@@ -20,7 +20,7 @@ pub struct Map {
     pub rooms: Vec<Rectangle>,
     pub width: i32,
     pub height: i32,
-    pub blocked: Vec<bool>,
+    pub blocked: Vec<bool>
 }
 
 impl Map {
@@ -40,7 +40,7 @@ impl Map {
             rooms: Vec::new(),      
             width: 80,
             height: 50,
-            blocked: vec![false; 80 * 50],
+            blocked: vec![false; 80 * 50]
         };
         map
     }
@@ -50,8 +50,7 @@ impl Map {
         position: &Position
      ) -> Vec<Successor> {
         let mut successors = Vec::new();
-        
-        for dy in -1..=1 {
+         for dy in -1..=1 {
             //println!("dy is {}", dy);
             for dx in -1..=1 {
                 //println!("dx is {}", dx);
@@ -143,7 +142,7 @@ impl Map {
 
     pub fn populate_blocked(&mut self) {
         for (i,tile) in self.tiles.iter_mut().enumerate() {
-            self.blocked[i] = *tile == TileType::Wall;
+            self.blocked[i] = *tile == TileType::Wall;  //self.blocked[i] = le resultat de tile == TileType::Wall
         }
     }
 

@@ -10,7 +10,6 @@ use self::npc::NpcPlugin;
 use crate::{
     TILE_SIZE,
     map_builders::map::Map,
-    map_builders::pathfinding::world_to_grid_position,
     game::player::spawn_player, 
     ascii::AsciiSheet,
     game::npc::{spawn_npc, Monster},
@@ -56,6 +55,14 @@ fn init_new_game(
     let player_y = -(y as f32) * TILE_SIZE;
 
     spawn_player(&mut commands, &ascii, player_x, player_y);
+    
+    /*
+    let (x, y) = map.rooms[1].center();
+            let npc_x = x as f32 * TILE_SIZE;
+            let npc_y = -(y as f32) * TILE_SIZE; 
+    let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
+    commands.entity(ghoul).insert(Monster);
+    */
 
     //spawn enemies
     let mut rooms = map.rooms.len() - 2; 
