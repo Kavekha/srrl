@@ -10,6 +10,7 @@ use crate::{
     },
     TILE_SIZE, GameState, despawn_screen,
     game::{Player, Stats, TileCollider, TileExit},    
+    //map_builders::pathfinding::{world_to_grid_position, grid_to_world_position} //DEBUG
 };
 
 
@@ -90,8 +91,6 @@ fn player_input(
         x_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
     }
 
-    // We check if collision with TileColider for x and y (If both at the same time, we'll block a valid movement if x: True & y : False)
-    // TODO: how to avoid duplicate?
     let target: Vec3 = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
 
     if !wall_query
@@ -100,7 +99,6 @@ fn player_input(
         {
             transform.translation = target;
         }
-
     let target: Vec3 = transform.translation + Vec3::new(0.0, y_delta, 0.0);
     
     if !wall_query
@@ -109,6 +107,7 @@ fn player_input(
         {
             transform.translation = target;
         }
+
 }
 
 fn player_step_check(

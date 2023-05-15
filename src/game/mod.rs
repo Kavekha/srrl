@@ -10,10 +10,9 @@ use self::npc::NpcPlugin;
 use crate::{
     TILE_SIZE,
     map_builders::map::Map,
-    map_builders::pathfinding::world_to_grid_position,
-    game::player::spawn_player, 
     ascii::AsciiSheet,
-    game::npc::spawn_npc,
+    game::spawners::{spawn_npc, spawn_player},
+    map_builders::pathfinding::Position,
 };
 
 pub mod player;
@@ -21,6 +20,7 @@ pub mod tilemap;
 pub mod victory;
 pub mod npc;
 pub mod gameover;
+pub mod spawners;
 
 
 pub struct GamePlugin;
@@ -34,7 +34,6 @@ impl Plugin for GamePlugin {
             .add_plugin(TileMapPlugin)
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
-
             .add_systems(OnEnter(GameState::NewGame), init_new_game)
             ;
     }
@@ -54,8 +53,16 @@ fn init_new_game(
     let (x, y) = map.rooms[0].center();  
     let player_x = x as f32* TILE_SIZE;
     let player_y = -(y as f32) * TILE_SIZE;
-
     spawn_player(&mut commands, &ascii, player_x, player_y);
+    
+    /*
+    let (x, y) = map.rooms[1].center();
+            let npc_x = x as f32 * TILE_SIZE;
+            let npc_y = -(y as f32) * TILE_SIZE; 
+    let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
+    commands.entity(ghoul).insert(Monster);
+    */
+
 
     //spawn enemies
     let mut rooms = map.rooms.len() - 2; 
@@ -65,12 +72,9 @@ fn init_new_game(
         } else {
             let (x, y) = map.rooms[rooms].center();
             let npc_x = x as f32 * TILE_SIZE;
-            let npc_y = -(y as f32) * TILE_SIZE;
-            println!("NPC from {},{} has been spawned in world units {},{}", x, y, npc_x, npc_y);
-            let (world_to_grid_x, world_to_grid_y) = world_to_grid_position(npc_x, npc_y);
-            println!("Conversion world_to_grid_position donne : {},{}", world_to_grid_x, world_to_grid_y);
-
-            spawn_npc(&mut commands, &ascii, npc_x, npc_y);  
+            let npc_y = -(y as f32) * TILE_SIZE;         
+            let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
+            commands.entity(ghoul).insert(Monster);
 
             rooms -= 1;
         }        
@@ -111,3 +115,11 @@ pub struct TileExit;
 
 #[derive(Component)]
 pub struct GameMap;
+
+#[derive(Component)]
+pub struct Npc{
+    pub home: Position,
+}
+
+#[derive(Component)]
+pub struct Monster;
