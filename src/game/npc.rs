@@ -157,10 +157,13 @@ fn behavior_decision(
         let mut goal = Position(goal_pos_x, goal_pos_y);
 
         // Suis-je à sa portée?
-        if start.distance(&goal) > BASE_RANGED_VIEW {
+        let mut can_chase_target = false;
+        if start.distance(&goal) < BASE_RANGED_VIEW {
+            can_chase_target = true;
+        } else {
             //println!("{:?}: behavior: Mon goal est trop loin: {:?} vs {:?}", entity, start, goal);
-            // Je rentre à la maison
-            goal = Position(npc.home.0, npc.home.1);
+            //J'ai besoin de savoir si j'avais deja un goal avant de perdre ma cible de vue, pour aller au moins au dernier endroit avant de rentrer chez moi.
+            //goal = Position(npc.home.0, npc.home.1);  //AVANT : on rentrait à la maison.
         }
 
         // Gerer le pathfinding existant.
@@ -169,17 +172,25 @@ fn behavior_decision(
             // Est-ce de moi dont il s'agit?
             if entity_with_path != entity{
                 continue;
-            }            
-            // Non : je supprime. Je n'ai plus de Pathfinding. Je supprime aussi mon Move en cours.
-            if pathfinding.goal != goal {
-                //println!("{:?} : behavior: Mon goal {:?} est different de mon pathfinding: {:?}. Il me faut un nouveau Pathfinding.", entity, goal, pathfinding.path);
-                commands.entity(entity_with_path).remove::<Pathfinding>();
-                commands.entity(entity_with_path).remove::<MoveTo>();
+            }   
+
+            // Est-ce que mon objectif a changé de position?
+            if pathfinding.goal != goal{
+                // Si je peux encore le voir, je dois recalculer mon pathfinding pour avoir un nouveau chemin.
+                if can_chase_target {
+                    //println!("{:?} : behavior: Mon goal {:?} est different de mon pathfinding: {:?}. Il me faut un nouveau Pathfinding.", entity, goal, pathfinding.path);
+                    commands.entity(entity_with_path).remove::<Pathfinding>();
+                    commands.entity(entity_with_path).remove::<MoveTo>();
+                    break;
+                } else {
+                    // Je ne le vois plus: Je poursuis jusqu'au dernier endroit où je l'ai apperçu.
+                    dirty_pathfinding = false;
+                }
             } else {
                 //Mon goal n'a pas changé, donc mon path est tjrs à jour.
                 dirty_pathfinding = false;
-                break;
             }
+            break;
         }  
         if !dirty_pathfinding {
             // J'ai un pathfinding à jour, pas la peine de refaire des calculs.
@@ -280,7 +291,7 @@ fn next_step_destination(
 
 // TODO: Parfois, NPC va dans un mur. Cela peut être dû à:
     //- un probleme de calcul dans l'affichage du mouvement,
-    //- une mauvaise estimation du BlockedTile dans le Pathfinding.
+    //- une mauvaise estimation du BlockedTile dans le Pathfinding. ==> Verifié : OK. Donc NPC dans le mur n'a rien a voir avec qualité du pathfinding retourné.
 fn move_to_next_step(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
