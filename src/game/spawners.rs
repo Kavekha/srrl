@@ -1,4 +1,6 @@
 
+// Spawners receive x,y positions WORLD based.
+
 use bevy::prelude::*;
 
 use crate::{
@@ -11,6 +13,7 @@ use crate::{
         pathfinding::{Position, world_to_grid_position},
     }
 };
+
 
 pub fn spawn_player(
     mut commands: &mut Commands, 

@@ -14,6 +14,8 @@ pub struct Successor {
     pub cost: i32,
 }
 
+
+//TODO : Check why absolute version. y sur grid est l'inverse de y sur world : +y on descends sur grid, -y on descends sur world.
 pub fn world_to_grid_position(
     x: f32,
     y: f32 
@@ -24,7 +26,7 @@ pub fn world_to_grid_position(
     (x_index.abs() as i32, y_index.abs() as i32)
 }
 
-/*
+
 pub fn grid_to_world_position(
     x: i32,
     y: i32
@@ -32,4 +34,3 @@ pub fn grid_to_world_position(
     (x as f32 * TILE_SIZE,
     -(y as f32) * TILE_SIZE)
 }
-*/

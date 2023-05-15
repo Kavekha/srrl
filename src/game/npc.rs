@@ -41,7 +41,6 @@ impl Plugin for NpcPlugin{
 
 
 
-
 #[derive(Component)]
 pub struct DisplayedPath;
 
@@ -61,8 +60,6 @@ pub struct MoveTo{
     //pub y: i32, //f32,
     pub destination: Position
 }
-
-
 
 
 /*

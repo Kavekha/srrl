@@ -9,10 +9,13 @@ use self::npc::NpcPlugin;
 
 use crate::{
     TILE_SIZE,
-    map_builders::map::Map,
+    map_builders::{
+        map::Map,
+        build_random_map,
+    },
     ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
-    map_builders::pathfinding::Position,
+    map_builders::pathfinding::{Position, grid_to_world_position},
 };
 
 pub mod player;
@@ -46,45 +49,23 @@ fn init_new_game(
 ){
     println!("Create new map");
     //We create the map.
-    let map = Map::new_map_rooms_and_corridors();
+    let (new_map, starting_position) = build_random_map();
  
     //spawn player
-    // How to do this with no player_x, player_y?
-    let (x, y) = map.rooms[0].center();  
-    let player_x = x as f32* TILE_SIZE;
-    let player_y = -(y as f32) * TILE_SIZE;
-    spawn_player(&mut commands, &ascii, player_x, player_y);
-    
-    /*
-    let (x, y) = map.rooms[1].center();
-            let npc_x = x as f32 * TILE_SIZE;
-            let npc_y = -(y as f32) * TILE_SIZE; 
-    let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
-    commands.entity(ghoul).insert(Monster);
-    */
+    let (x, y) = grid_to_world_position(starting_position.0, starting_position.1);  
+ 
+    spawn_player(&mut commands, &ascii, x, y);
 
-
-    //spawn enemies
-    let mut rooms = map.rooms.len() - 2; 
-    for _i in 0.. 10{
-        if rooms <= 0 {
-            break;
-        } else {
-            let (x, y) = map.rooms[rooms].center();
-            let npc_x = x as f32 * TILE_SIZE;
-            let npc_y = -(y as f32) * TILE_SIZE;         
-            let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
-            commands.entity(ghoul).insert(Monster);
-
-            rooms -= 1;
-        }        
+    for room in new_map.rooms.iter().skip(1) {
+        let (x, y) = grid_to_world_position(room.center().0, room.center().1);
+        let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
+        commands.entity(ghoul).insert(Monster);
     }
 
     // We don't need the map, let's make it a resource for the others.
-    commands.insert_resource(map);   
+    commands.insert_resource(new_map);   
     println!("Map creee et inseree comme ressource");
     game_state.set(GameState::GameMap);  
-
 }
 
 
