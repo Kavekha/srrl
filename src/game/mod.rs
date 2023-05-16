@@ -11,11 +11,10 @@ use crate::{
     TILE_SIZE,
     map_builders::{
         map::Map,
-        build_random_map,
     },
     ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
-    map_builders::pathfinding::{Position, grid_to_world_position},
+    map_builders::{pathfinding::{Position, grid_to_world_position}, self},
 };
 
 pub mod player;
@@ -47,23 +46,24 @@ fn init_new_game(
     ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>
 ){
-    println!("Create new map");
-    //We create the map.
-    let (new_map, starting_position) = build_random_map();
- 
+    println!("Asking a boxed Map Builder object from the factory"); //https://bfnightly.bracketproductions.com/chapter_23.html
+    let mut builder =  map_builders::random_builder();
+    builder.build_map();
+
     //spawn player
-    let (x, y) = grid_to_world_position(starting_position.0, starting_position.1);  
- 
+    let starting_position = builder.get_starting_position();
+    let (x, y) = grid_to_world_position(starting_position.0, starting_position.1);   
     spawn_player(&mut commands, &ascii, x, y);
 
-    for room in new_map.rooms.iter().skip(1) {
+    //spawn entities
+    for room in builder.get_map().rooms.iter().skip(1) {
         let (x, y) = grid_to_world_position(room.center().0, room.center().1);
         let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
         commands.entity(ghoul).insert(Monster);
     }
 
     // We don't need the map, let's make it a resource for the others.
-    commands.insert_resource(new_map);   
+    commands.insert_resource(builder.get_map());   
     println!("Map creee et inseree comme ressource");
     game_state.set(GameState::GameMap);  
 }

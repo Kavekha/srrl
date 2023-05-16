@@ -22,7 +22,7 @@ pub const MAPHEIGHT : usize = 50;
 pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
 
 
-#[derive(Resource)]
+#[derive(Resource, Clone)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,

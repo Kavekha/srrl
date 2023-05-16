@@ -4,20 +4,22 @@ pub mod simple_map;
 pub mod pathfinding;
 pub mod commons;
 
-
 use crate::{
     map_builders::{
-        map::Map,
+        map::{Map},
         simple_map::SimpleMapBuilder,
     },
     map_builders::pathfinding::Position,
 };
 
 
-trait MapBuilder {
-    fn build() -> (Map, Position);
+pub trait MapBuilder {
+    fn build_map(&mut self);
+    fn spawn_entities(&mut self);
+    fn get_map(&self) -> Map;
+    fn get_starting_position(&self) -> Position;
 }
 
-pub fn build_random_map() -> (Map, Position) {
-    SimpleMapBuilder::build()
+pub fn random_builder() -> Box<dyn MapBuilder> {
+    Box::new(SimpleMapBuilder::new())       //Return so no semicon... REMEMBER
 }
