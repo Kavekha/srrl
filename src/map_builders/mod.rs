@@ -15,7 +15,7 @@ use crate::{
 
 pub trait MapBuilder {
     fn build_map(&mut self);
-    fn spawn_entities(&mut self);
+    fn spawn_entities(&mut self) -> Vec<Position>;
     fn get_map(&self) -> Map;
     fn get_starting_position(&self) -> Position;
 }

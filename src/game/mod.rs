@@ -52,12 +52,13 @@ fn init_new_game(
 
     //spawn player
     let starting_position = builder.get_starting_position();
-    let (x, y) = grid_to_world_position(starting_position.0, starting_position.1);   
+    let (x, y) = grid_to_world_position(starting_position.0, starting_position.1);   //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
     spawn_player(&mut commands, &ascii, x, y);
 
     //spawn entities
-    for room in builder.get_map().rooms.iter().skip(1) {
-        let (x, y) = grid_to_world_position(room.center().0, room.center().1);
+    let entities_pos = builder.spawn_entities().clone();
+    for position in entities_pos {
+        let (x, y) = grid_to_world_position(position.0, position.1);    //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
         let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
         commands.entity(ghoul).insert(Monster);
     }
