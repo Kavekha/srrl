@@ -28,7 +28,6 @@ pub struct Map {
     pub width: i32,
     pub height: i32,
     pub blocked: Vec<bool>,
-    pub rooms : Vec<Rectangle>,
 }
 
 impl Map {
@@ -57,7 +56,6 @@ impl Map {
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
             blocked: vec![false; MAPCOUNT],
-            rooms : Vec::new(),
         }
     }   
 

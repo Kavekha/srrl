@@ -18,6 +18,7 @@ use crate::{
 pub struct SimpleMapBuilder {
     map: Map,
     starting_position: Position,
+    rooms: Vec<Rectangle>
 }
 
 impl MapBuilder for SimpleMapBuilder {
@@ -34,7 +35,7 @@ impl MapBuilder for SimpleMapBuilder {
     }
     
     fn spawn_entities(&mut self) {
-        for room in self.map.rooms.iter().skip(1){
+        for room in self.rooms.iter().skip(1){
             //TODO : We give mobs to spawn. 
             // BUT!!!! We dont have world access or commands access if we dont go through a system, and Bevy doesn't accept to send commands to Trait... :sad:
         }
@@ -46,6 +47,7 @@ impl SimpleMapBuilder {
         SimpleMapBuilder {
             map: Map::new(),
             starting_position: Position(0,0),
+            rooms: Vec::new()
           }
     }
 
@@ -69,16 +71,16 @@ impl SimpleMapBuilder {
             // Can I add the room without intersecting with another?
             let mut can_add_room = true;
 
-            for other_room in self.map.rooms.iter() {
+            for other_room in self.rooms.iter() {
                 if new_room.intersect(other_room) { can_add_room = false }
             }
             if can_add_room {
                 apply_room_to_map(&mut self.map, &new_room);   
 
                 // Join the new room to the previous one
-                if !self.map.rooms.is_empty() {
+                if !self.rooms.is_empty() {
                     let (new_x, new_y) = new_room.center();
-                    let (prev_x, prev_y) = self.map.rooms[self.map.rooms.len()-1].center();
+                    let (prev_x, prev_y) = self.rooms[self.rooms.len()-1].center();
                     if rng.gen_range(0.. 2) == 1 {
                         apply_horizontal_tunnel(&mut self.map, prev_x, new_x, prev_y);
                         apply_vertical_tunnel(&mut self.map, prev_y, new_y, new_x);
@@ -87,15 +89,15 @@ impl SimpleMapBuilder {
                         apply_horizontal_tunnel(&mut self.map, prev_x, new_x, new_y);
                     }
                 }     
-                self.map.rooms.push(new_room);            
+                self.rooms.push(new_room);            
             }      
         }
         // Add an exit to the last room.
-        let exit_position = self.map.rooms[self.map.rooms.len()-1].center();
+        let exit_position = self.rooms[self.rooms.len()-1].center();
         let exit_idx = self.map.xy_idx(exit_position.0, exit_position.1);
         self.map.tiles[exit_idx] = TileType::Exit;
 
-        let start_pos = self.map.rooms[0].center();
+        let start_pos = self.rooms[0].center();
         self.starting_position = Position(start_pos.0, start_pos.1);
     }
 }
