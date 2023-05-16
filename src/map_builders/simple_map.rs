@@ -1,6 +1,3 @@
-use std::{
-    cmp::{max, min},
-};
 use rand::prelude::*;
 
 use super::Map;

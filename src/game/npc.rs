@@ -5,10 +5,6 @@ use bevy::{
 use pathfinding::prelude::astar;
 
 use crate::{
-    ascii::{
-        spawn_ascii_sprite,
-        AsciiSheet
-    },
     GameState, despawn_screen, TILE_SIZE,
     game::{Player, Stats, TileCollider, Npc, Monster},
     commons::tile_collision_check,
@@ -28,7 +24,7 @@ impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, behavior_decision.run_if(in_state(GameState::GameMap)))  
+            .add_systems(Update, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
             .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
             .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
             //.add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
@@ -120,7 +116,7 @@ fn behavior_decision(
         // Mon goal a moi (Joueur pour le moment donc pourrait être hors boucle, mais plus pertinent pour le futur)
         let (_player, player_transform) = player_query.single();    
         let (goal_pos_x, goal_pos_y) = world_to_grid_position(player_transform.translation.x, player_transform.translation.y);
-        let mut goal = Position(goal_pos_x, goal_pos_y);
+        let goal = Position(goal_pos_x, goal_pos_y);
 
         // Suis-je à sa portée?
         let mut can_chase_target = false;

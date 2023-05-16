@@ -11,7 +11,6 @@ use::bevy::prelude::*;
 use crate::{
     map_builders::{    
         commons::TileType,
-        rectangle::Rectangle,
         pathfinding::{Position, Successor}
     },
 };
@@ -39,7 +38,7 @@ impl Map {
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
-    
+    #[warn(dead_code)]
     pub fn is_blocked(
         &self,
         x: i32,
@@ -65,7 +64,7 @@ impl Map {
         }
     }
     // TODO : generate map in Bevy.
-    pub fn create_game_map(){}
+    pub fn generate_gamemap_entity(){}
 
     pub fn get_successors(
         &self, 

@@ -4,10 +4,6 @@ use bevy::{
 
 use crate::{
     commons::{tile_collision_check},
-    ascii::{
-        spawn_ascii_sprite,
-        AsciiSheet
-    },
     TILE_SIZE, GameState, despawn_screen,
     game::{Player, Stats, TileCollider, TileExit},    
     //map_builders::pathfinding::{world_to_grid_position, grid_to_world_position} //DEBUG

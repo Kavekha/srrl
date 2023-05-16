@@ -8,7 +8,6 @@ use self::gameover::GameOverPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
-    TILE_SIZE,
     map_builders::{
         map::Map,
     },
