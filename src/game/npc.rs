@@ -6,7 +6,11 @@ use pathfinding::prelude::astar;
 
 use crate::{
     GameState, despawn_screen, TILE_SIZE,
-    game::{Player, Stats, TileCollider, Npc, Monster},
+    game::{
+        Player, Stats, TileCollider, Npc, Monster,
+        spawners::spawn_npc,
+    },
+    ascii::AsciiSheet,
     commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position},
@@ -14,7 +18,7 @@ use crate::{
     }
 };
 
-//const FIXED_TIMESTEP: f32 = 0.5;
+const FIXED_TIMESTEP: f32 = 0.1;
 const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
 
 pub struct NpcPlugin;
@@ -24,13 +28,13 @@ impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
+            .add_systems(FixedUpdate, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
             .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
             .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
-            //.add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
+            .add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?     
             //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
-            //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
+            .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             ;         
     }
 }
@@ -58,7 +62,6 @@ pub struct MoveTo{
 }
 
 
-/*
 fn display_pathfinding(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding)>,
@@ -95,7 +98,7 @@ fn display_pathfinding(
         }
     }
 }
-*/
+
 
 /// Quel est mon goal, puis-je l'atteindre, que dois je faire sinon?
 /// Créé ou remplace le pathfinding, qui determine le trajet du NPC.
@@ -281,31 +284,33 @@ fn move_to_next_step(
         x_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
         y_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
 
-        transform.translation += Vec3::new(x_delta, y_delta, 0.0);
+        //transform.translation += Vec3::new(x_delta, y_delta, 0.0);
 
         // Collision: Ne devrait pas se produire car Pathfinding prends en compte les zones bloquées.
-        let mut blocked = false;
 
         //TODO: Refacto car doublon avec ce qu'à le joueur.
-        let target_x = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
+
+        let mut final_target = Vec3::new(0.0, 0.0, 0.0);
+        let x_target = Vec3::new(x_delta, 0.0, 0.0);
+        let y_target = Vec3::new(0.0, y_delta, 0.0);
+
         if !wall_query
         .iter()
-        .any(|&transform|tile_collision_check(target_x, transform.translation))
+        .any(|&transform|tile_collision_check(transform.translation + x_target, transform.translation))
         {
-            transform.translation = target_x;
-        } else {
-            blocked = true;
+            final_target += x_target;
         }
 
-        let target_y = transform.translation + Vec3::new(0.0, y_delta, 0.0);
+        let target_y = transform.translation + y_target;
         if !wall_query
         .iter()
-        .any(|&transform|tile_collision_check(target_y, transform.translation))
+        .any(|&transform|tile_collision_check(transform.translation + target_y, transform.translation))
         {
-            transform.translation = target_y;
-        } else {
-            blocked = true;
+            final_target += y_target;
         }
+        
+        transform.translation += final_target;
+  
 
         //let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
         //println!("{:?}:moveto: ma position finale à la fin de l'iteration est : {},{}", entity, current_x, current_y);
@@ -313,11 +318,6 @@ fn move_to_next_step(
         //println!("{:?} : ordre de mouvement vers world: Je suis à {},{}, je vais à {:?}", entity, transform.translation.x, transform.translation.y, grid_to_world_position(goal_x, goal_y));
         //println!("{:?}:moveto: ordre de mouvement vers grid : Je suis à {:?}, je vais à {:?}", entity, world_to_grid_position(transform.translation.x, transform.translation.y), (goal_x, goal_y));
 
-        if blocked{
-            //println!("{:?} a été bloqué lors de mon deplacement. Recalcule s'il te plait!", entity);
-            commands.entity(entity).remove::<MoveTo>();
-            commands.entity(entity).remove::<Pathfinding>();
-        }
     }
 }
 
