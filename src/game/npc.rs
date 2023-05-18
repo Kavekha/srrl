@@ -181,6 +181,7 @@ fn behavior_decision(
         if let Some(result) = result {
             // Oui
             let path = result.0;        // Liste des positions successives à suivre.
+            let debug_path = path.clone();      //FOR DEBUG
             let pathfind = Pathfinding{
                 start,
                 goal,
@@ -189,6 +190,11 @@ fn behavior_decision(
                 dirty:false,
                 debug:false       //debug : Display path false
             };
+            
+            //DEBUG: Est-ce que ce pathfinding est juste?!!!!!
+ 
+            println!("{:?} mon chemin est : {:?}", entity, debug_path);
+
             //println!("{:?}:behavior: Mon chemin est {:?}. PathLen-1 is {:?}", entity, pathfind.path, pathfind.path.len() -1);
             commands.entity(entity).insert(pathfind);
         } else {
@@ -221,17 +227,20 @@ fn next_step_destination(
         let destination = pathfinding.path[pathfinding.step];
 
         if current_position != destination{
+            //DEBUG
             //Ai-je un MoveTo?
             for (moveto_entity, _moveto) in entity_moveto_query.iter(){
                 if entity == moveto_entity {
                     //je ne suis pas encore arrivé.
-                    //println!("{:?}:nextstep: Je suis à {:?}, je ne suis pas encore arrivé à {:?}", entity, current_position, destination);
-                    break;
+                    println!("{:?}:nextstep: Je suis à {:?} - ({},{}), je ne suis pas encore arrivé à {:?}", entity, current_position, current_position_x, current_position_y, destination);
+                    ;
                 } else {
-                    continue;
+                    continue;   // On cherche mon entité à moi.
                 }
             }
-            // j'ai pas de MoveTo, donc rien à attendre.
+            //fin DEBUG.
+            continue;  // Je n'ai plus rien à faire pour ce NPC.
+            // REMEMBER: Le premier pas du Pathfinding est ma position: je suis donc par defaut à current = destination.
         }
         //println!("{:?}:nextstep:Je suis arrivé à destination.", entity);
         // J'y suis, passons à l'etape suivante.
@@ -254,31 +263,32 @@ fn next_step_destination(
     }
 }
 
-// TODO: Parfois, NPC va dans un mur. Cela peut être dû à:
-    //- un probleme de calcul dans l'affichage du mouvement,
-    //- une mauvaise estimation du BlockedTile dans le Pathfinding. ==> Verifié : OK. Donc NPC dans le mur n'a rien a voir avec qualité du pathfinding retourné.
 fn move_to_next_step(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &MoveTo, &mut Transform, &Stats)>,
     wall_query: Query<&Transform, (With<TileCollider>,Without<MoveTo>)>,
-    time: Res<Time>
+    time: Res<Time>,
+    map: Res<Map>
 ){
     for (entity, moveto, mut transform, stats) in entity_pathfinding_query.iter_mut() {
         // Ou suis-je? 
         let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
-        //println!("{:?}:moveto: Ma position actuelle est {},{}", entity, current_x, current_y);
         // Suis-je arrivé?
         let (goal_x, goal_y) = (moveto.destination.0, moveto.destination.1); 
         if (current_x, current_y) == (goal_x, goal_y){
             //println!("{:?}:moveto: Je suis arrivé à destination.", entity);
             commands.entity(entity).remove::<MoveTo>();
             continue;
+        } else {
+            println!("{:?}:moveto: Ma position actuelle est {},{}. Mon ordre de destination est {:?}", entity, current_x, current_y, moveto.destination);
+            //println!("ma position est bloquée? {:?} Ma destination est bloquée? {:?}", map.is_blocked(current_x, current_y), map.is_blocked(moveto.destination.0, moveto.destination.1));
         }
+
         // Je dois avancer vers ma destination.
         // On doit calculer le Delta. REMEMBER : pour descendre dans la map, il faut faire du +y. Pour monter: -y.
         let mut x_delta= goal_x as f32 - current_x as f32;
         let mut y_delta = 0.0 - (goal_y as f32 - current_y as f32); // 0 - (1) ==> Je veux monter dans le monde, donc je soustrais du y dans la map.
-        //println!("{:?}:moveto: Mon delta est {},{}", entity, x_delta, y_delta);
+        println!("{:?}:moveto: Mon delta est {},{}", entity, x_delta, y_delta);
 
         // Je calcule ma vitesse de deplacement pour cette iteration.
         x_delta *= stats.speed * TILE_SIZE * time.delta_seconds();
@@ -289,34 +299,41 @@ fn move_to_next_step(
         // Collision: Ne devrait pas se produire car Pathfinding prends en compte les zones bloquées.
 
         //TODO: Refacto car doublon avec ce qu'à le joueur.
+        let current_world_position = transform.translation;
 
         let mut final_target = Vec3::new(0.0, 0.0, 0.0);
         let x_target = Vec3::new(x_delta, 0.0, 0.0);
         let y_target = Vec3::new(0.0, y_delta, 0.0);
+        //println!("{:?}:moveto:target x {:?}, target y : {:?}", entity, x_target, y_target);
+
+        let target_pos_x = transform.translation + x_target;
 
         if !wall_query
         .iter()
-        .any(|&transform|tile_collision_check(transform.translation + x_target, transform.translation))
+        .any(|&transform|tile_collision_check(target_pos_x, transform.translation))
         {
             final_target += x_target;
+            //println!("X: ma final target est {:?}. J'ai ajouté x :{:?}", final_target, x_target);
         }
 
-        let target_y = transform.translation + y_target;
+        let target_pos_y = transform.translation + y_target;
         if !wall_query
         .iter()
-        .any(|&transform|tile_collision_check(transform.translation + target_y, transform.translation))
+        .any(|&transform|tile_collision_check(target_pos_y, transform.translation))
         {
             final_target += y_target;
+            //println!("Y: ma final target est {:?}. J'ai ajouté x :{:?}", final_target, y_target);
         }
+        //println!("Final après collision : {:?}", final_target);
         
         transform.translation += final_target;
+
+        let final_world_position = transform.translation;
+        //println!("{:?}:moveto: World pos avant calcul : {:?}. Final target : {:?} - world pos après : {:?}", entity, current_world_position, final_target, final_world_position);
   
-
-        //let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
-        //println!("{:?}:moveto: ma position finale à la fin de l'iteration est : {},{}", entity, current_x, current_y);
-
-        //println!("{:?} : ordre de mouvement vers world: Je suis à {},{}, je vais à {:?}", entity, transform.translation.x, transform.translation.y, grid_to_world_position(goal_x, goal_y));
-        //println!("{:?}:moveto: ordre de mouvement vers grid : Je suis à {:?}, je vais à {:?}", entity, world_to_grid_position(transform.translation.x, transform.translation.y), (goal_x, goal_y));
+        let (now_x, now_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
+        println!("{:?}:moveto: Je suis arrivé à {},{}. Mon ordre de destination etait {:?}", entity, now_x, now_y, moveto.destination);        
+        //println!("ma nouvelle position est bloquée? {:?} Ma destination est bloquée? {:?}", map.is_blocked(now_x, now_y), map.is_blocked(moveto.destination.0, moveto.destination.1));
 
     }
 }

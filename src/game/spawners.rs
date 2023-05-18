@@ -62,7 +62,7 @@ pub fn spawn_npc(
         .entity(npc)
         .insert(Npc{home:Position(home_x, home_y)})
         .insert(Name::new(name))
-        .insert(Stats {speed: 0.5});
+        .insert(Stats {speed: 3.0});
 
     npc
 }

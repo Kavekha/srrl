@@ -39,6 +39,7 @@ impl MapBuilder for SimpleMapBuilder {
             // -> impl Iterator <Item= .. >  corresponds à un Yield. -> impl Iterator<Item=Position>
             let position = self.rooms[i].center();
             entities_pos.push(Position(position.0, position.1)); 
+            break;  // DEBUG
         }
         entities_pos
     }
