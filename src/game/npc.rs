@@ -1,3 +1,5 @@
+use std::path;
+
 use bevy::{
     prelude::*
 };
@@ -19,7 +21,7 @@ use crate::{
 };
 
 const FIXED_TIMESTEP: f32 = 0.1;
-const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+const BASE_RANGED_VIEW:i32 = 8;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
 
 pub struct NpcPlugin;
 
@@ -125,10 +127,6 @@ fn behavior_decision(
         let mut can_chase_target = false;
         if start.distance(&goal) < BASE_RANGED_VIEW {
             can_chase_target = true;
-        } else {
-            //println!("{:?}: behavior: Mon goal est trop loin: {:?} vs {:?}", entity, start, goal);
-            //J'ai besoin de savoir si j'avais deja un goal avant de perdre ma cible de vue, pour aller au moins au dernier endroit avant de rentrer chez moi.
-            //goal = Position(npc.home.0, npc.home.1);  //AVANT : on rentrait à la maison.
         }
 
         // Gerer le pathfinding existant.
@@ -143,9 +141,8 @@ fn behavior_decision(
             if pathfinding.goal != goal{
                 // Si je peux encore le voir, je dois recalculer mon pathfinding pour avoir un nouveau chemin.
                 if can_chase_target {
-                    //println!("{:?} : behavior: Mon goal {:?} est different de mon pathfinding: {:?}. Il me faut un nouveau Pathfinding.", entity, goal, pathfinding.path);
                     commands.entity(entity_with_path).remove::<Pathfinding>();
-                    commands.entity(entity_with_path).remove::<MoveTo>();
+                    //commands.entity(entity_with_path).remove::<MoveTo>();
                     break;
                 } else {
                     // Je ne le vois plus: Je poursuis jusqu'au dernier endroit où je l'ai apperçu.
@@ -193,9 +190,8 @@ fn behavior_decision(
             
             //DEBUG: Est-ce que ce pathfinding est juste?!!!!!
  
-            println!("{:?} mon chemin est : {:?}", entity, debug_path);
-
-            //println!("{:?}:behavior: Mon chemin est {:?}. PathLen-1 is {:?}", entity, pathfind.path, pathfind.path.len() -1);
+            println!("{:?}:behavior: mon chemin est : {:?}", entity, debug_path);
+            println!("{:?}:behavior: Mon goal est : {:?}. ", entity, goal);
             commands.entity(entity).insert(pathfind);
         } else {
             //println!("{:?}:behavior: Je n'ai pas de chemin vers mon goal.", entity);
@@ -227,39 +223,32 @@ fn next_step_destination(
         let destination = pathfinding.path[pathfinding.step];
 
         if current_position != destination{
-            //DEBUG
-            //Ai-je un MoveTo?
-            for (moveto_entity, _moveto) in entity_moveto_query.iter(){
-                if entity == moveto_entity {
-                    //je ne suis pas encore arrivé.
-                    println!("{:?}:nextstep: Je suis à {:?} - ({},{}), je ne suis pas encore arrivé à {:?}", entity, current_position, current_position_x, current_position_y, destination);
-                    ;
-                } else {
-                    continue;   // On cherche mon entité à moi.
-                }
-            }
-            //fin DEBUG.
+            //Je ne suis pas encore arrivé.
             continue;  // Je n'ai plus rien à faire pour ce NPC.
             // REMEMBER: Le premier pas du Pathfinding est ma position: je suis donc par defaut à current = destination.
         }
         //println!("{:?}:nextstep:Je suis arrivé à destination.", entity);
+
         // J'y suis, passons à l'etape suivante.
         pathfinding.step += 1;      // REMEMBER: step:0 ===> Le point de depart. Ca fait donc sens de poursuivre directement par Step2 meme au debut.
         // Est-ce la fin du path?
         if pathfinding.step > pathfinding.path.len() -1 {
             // J'ai atteint la fin du path.
-            //println!("{:?}:nextstep: Je suis arrivé à la fin de mon path.", entity);
+            println!("{:?}:nextstep: Je suis arrivé à la fin de mon path.", entity);
             commands.entity(entity).remove::<Pathfinding>();
             continue;
-        } else {
-            // J'ai un autre pas, donne moi l'ordre d'y aller.
-            //println!("{:?}:nextstep: Il me faut un nouvel ordre.", entity);
-            let new_destination = pathfinding.path[pathfinding.step];   // Nouveau step du pathfinding.
-            //println!("{:?}:nextstep: Nouvelle destination => {:?}", entity, new_destination);
-            commands.entity(entity).insert(MoveTo{
-                destination: new_destination
-            });
         }
+
+        // J'ai un autre pas, donne moi l'ordre d'y aller.
+        //println!("{:?}:nextstep: Il me faut un nouvel ordre.", entity);
+        let new_destination = pathfinding.path[pathfinding.step];   // Nouveau step du pathfinding.
+        println!("{:?}:nextstep: Nouvelle destination => {:?}", entity, new_destination);
+        println!("{:?}:nextstep: Chemin is => {:?}", entity, pathfinding.path);
+        commands.entity(entity).remove::<MoveTo>(); // Remove to be sure.
+        commands.entity(entity).insert(MoveTo{
+            destination: new_destination
+        });
+
     }
 }
 
@@ -304,7 +293,7 @@ fn move_to_next_step(
         let mut final_target = Vec3::new(0.0, 0.0, 0.0);
         let x_target = Vec3::new(x_delta, 0.0, 0.0);
         let y_target = Vec3::new(0.0, y_delta, 0.0);
-        //println!("{:?}:moveto:target x {:?}, target y : {:?}", entity, x_target, y_target);
+        println!("{:?}:moveto:target x {:?}, target y : {:?}", entity, x_target, y_target);
 
         let target_pos_x = transform.translation + x_target;
 
@@ -313,7 +302,9 @@ fn move_to_next_step(
         .any(|&transform|tile_collision_check(target_pos_x, transform.translation))
         {
             final_target += x_target;
-            //println!("X: ma final target est {:?}. J'ai ajouté x :{:?}", final_target, x_target);
+            println!("X: ma final target est {:?}. J'ai ajouté x :{:?}", final_target, x_target);
+        } else {
+            println!("{:?} X a un obstacle à {:?}: {:?}", entity, moveto.destination, map.is_blocked(moveto.destination.0, moveto.destination.1));
         }
 
         let target_pos_y = transform.translation + y_target;
@@ -322,14 +313,16 @@ fn move_to_next_step(
         .any(|&transform|tile_collision_check(target_pos_y, transform.translation))
         {
             final_target += y_target;
-            //println!("Y: ma final target est {:?}. J'ai ajouté x :{:?}", final_target, y_target);
+            println!("Y: ma final target est {:?}. J'ai ajouté x :{:?}", final_target, y_target);
+        } else {
+            println!("{:?} Y a un obstacle : {:?}", entity, map.is_blocked(moveto.destination.0, moveto.destination.1));
         }
-        //println!("Final après collision : {:?}", final_target);
+        println!("Final après collision : {:?}", final_target);
         
         transform.translation += final_target;
 
         let final_world_position = transform.translation;
-        //println!("{:?}:moveto: World pos avant calcul : {:?}. Final target : {:?} - world pos après : {:?}", entity, current_world_position, final_target, final_world_position);
+        println!("{:?}:moveto: World pos avant calcul : {:?}. Final target : {:?} - world pos après : {:?}", entity, current_world_position, final_target, final_world_position);
   
         let (now_x, now_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
         println!("{:?}:moveto: Je suis arrivé à {},{}. Mon ordre de destination etait {:?}", entity, now_x, now_y, moveto.destination);        
