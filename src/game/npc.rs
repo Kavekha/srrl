@@ -290,11 +290,17 @@ fn move_to_next_step(
         //TODO: Refacto car doublon avec ce qu'à le joueur.
         let current_world_position = transform.translation;
 
-        let mut final_target = Vec3::new(0.0, 0.0, 0.0);
+        //let mut final_target = Vec3::new(0.0, 0.0, 0.0);
         let x_target = Vec3::new(x_delta, 0.0, 0.0);
         let y_target = Vec3::new(0.0, y_delta, 0.0);
         println!("{:?}:moveto:target x {:?}, target y : {:?}", entity, x_target, y_target);
 
+        // REMEMBER: Difficile de prendre en compte les collisions à cause de la conversion world_to_grid_units.
+        // Dans le cas où une cellule = 10 pixels:
+        // Grille 1,1 donne world_units ==> 10,10 (Haut gauche du sprite) ==> pas de probleme.
+        // Mais 19,19 world units vers grid donne 1,1, même si seulement le pixel en haut à gauche du sprite est dans la cellule: en pixel units, il sera quasiment en 3,3.
+        // Si le Pathfinding demande d'aller à 1,0 ensuite, le sprite ira vers 19,9 ensuite: dans l'affichage il sera principalement sur du 3,2 alors que la conversion grid le donnerait à 2,1.
+        /* 
         let target_pos_x = transform.translation + x_target;
 
         if !wall_query
@@ -318,11 +324,12 @@ fn move_to_next_step(
             println!("{:?} Y a un obstacle : {:?}", entity, map.is_blocked(moveto.destination.0, moveto.destination.1));
         }
         println!("Final après collision : {:?}", final_target);
-        
-        transform.translation += final_target;
+        */
+        //transform.translation += final_target;
+        transform.translation += x_target + y_target;
 
         let final_world_position = transform.translation;
-        println!("{:?}:moveto: World pos avant calcul : {:?}. Final target : {:?} - world pos après : {:?}", entity, current_world_position, final_target, final_world_position);
+        //println!("{:?}:moveto: World pos avant calcul : {:?}. Final target : {:?} - world pos après : {:?}", entity, current_world_position, final_target, final_world_position);
   
         let (now_x, now_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
         println!("{:?}:moveto: Je suis arrivé à {},{}. Mon ordre de destination etait {:?}", entity, now_x, now_y, moveto.destination);        
