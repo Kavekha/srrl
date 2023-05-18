@@ -8,11 +8,12 @@ use self::gameover::GameOverPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
-    TILE_SIZE,
-    map_builders::map::Map,
+    map_builders::{
+        map::Map,
+    },
     ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
-    map_builders::pathfinding::Position,
+    map_builders::{pathfinding::{Position, grid_to_world_position}, self},
 };
 
 pub mod player;
@@ -44,47 +45,27 @@ fn init_new_game(
     ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>
 ){
-    println!("Create new map");
-    //We create the map.
-    let map = Map::new_map_rooms_and_corridors();
- 
+    println!("Asking a boxed Map Builder object from the factory"); //https://bfnightly.bracketproductions.com/chapter_23.html
+    let mut builder =  map_builders::random_builder();
+    builder.build_map();
+
     //spawn player
-    // How to do this with no player_x, player_y?
-    let (x, y) = map.rooms[0].center();  
-    let player_x = x as f32* TILE_SIZE;
-    let player_y = -(y as f32) * TILE_SIZE;
-    spawn_player(&mut commands, &ascii, player_x, player_y);
-    
-    /*
-    let (x, y) = map.rooms[1].center();
-            let npc_x = x as f32 * TILE_SIZE;
-            let npc_y = -(y as f32) * TILE_SIZE; 
-    let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
-    commands.entity(ghoul).insert(Monster);
-    */
+    let starting_position = builder.get_starting_position();
+    let (x, y) = grid_to_world_position(starting_position.0, starting_position.1);   //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
+    spawn_player(&mut commands, &ascii, x, y);
 
-
-    //spawn enemies
-    let mut rooms = map.rooms.len() - 2; 
-    for _i in 0.. 10{
-        if rooms <= 0 {
-            break;
-        } else {
-            let (x, y) = map.rooms[rooms].center();
-            let npc_x = x as f32 * TILE_SIZE;
-            let npc_y = -(y as f32) * TILE_SIZE;         
-            let ghoul = spawn_npc(&mut commands, &ascii, npc_x, npc_y, format!("Ghoul"), 2);  
-            commands.entity(ghoul).insert(Monster);
-
-            rooms -= 1;
-        }        
+    //spawn entities
+    let entities_pos = builder.spawn_entities().clone();
+    for position in entities_pos {
+        let (x, y) = grid_to_world_position(position.0, position.1);    //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
+        let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
+        commands.entity(ghoul).insert(Monster);
     }
 
     // We don't need the map, let's make it a resource for the others.
-    commands.insert_resource(map);   
+    commands.insert_resource(builder.get_map());   
     println!("Map creee et inseree comme ressource");
     game_state.set(GameState::GameMap);  
-
 }
 
 

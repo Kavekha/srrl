@@ -4,10 +4,6 @@ use bevy::{
 
 use crate::{
     commons::{tile_collision_check},
-    ascii::{
-        spawn_ascii_sprite,
-        AsciiSheet
-    },
     TILE_SIZE, GameState, despawn_screen,
     game::{Player, Stats, TileCollider, TileExit},    
     //map_builders::pathfinding::{world_to_grid_position, grid_to_world_position} //DEBUG
@@ -30,31 +26,6 @@ impl Plugin for PlayerPlugin{
 }
 
 
-pub fn spawn_player(
-    mut commands: &mut Commands, 
-    ascii: &AsciiSheet,
-    x: f32,
-    y: f32
-) -> Entity {
-    let player = spawn_ascii_sprite(
-        &mut commands,
-        &ascii,
-        1,
-        Color::rgb(0.3, 0.3, 0.9),
-        Vec3::new(x, y, 900.0), //(2.0 * TILE_SIZE, -2.0 * TILE_SIZE, 900.0),
-        Vec3::splat(1.0)
-    );
-
-    commands 
-        .entity(player)
-        .insert(Player)
-        .insert(Name::new("Player"))
-        .insert(Stats {speed: 6.0});
-
-    player
-}
-
-
 fn camera_follow(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>
@@ -65,7 +36,6 @@ fn camera_follow(
     camera_transform.translation.y = player_transform.translation.y;
 
 }
-
 
 fn player_input(
     mut player_query: Query<(&Player, &mut Transform, &Stats)>,

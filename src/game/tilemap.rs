@@ -7,7 +7,7 @@ use crate::{
     ascii::{spawn_ascii_sprite, AsciiSheet},
     TILE_SIZE, despawn_screen,
     map_builders::{
-        TileType,
+        commons::TileType,
         map::{Map}
     },
     game::{GameState, GameMap, TileCollider, TileExit}
@@ -36,6 +36,7 @@ fn create_simple_random_map(
     create_gamemap(commands, ascii, &map);
 }
 
+/*
 #[warn(dead_code)]
 fn create_map_from_text(
     commands: Commands,
@@ -46,6 +47,7 @@ fn create_map_from_text(
 
     create_gamemap(commands, ascii, &map);
 }
+*/
 
 pub fn create_gamemap (
     mut commands: Commands, 

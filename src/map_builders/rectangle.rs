@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct Rectangle {
     pub x1 : i32,
     pub x2 : i32,
