@@ -32,13 +32,13 @@ pub fn world_to_grid_position(
     // si modulo > 25% de Tile Size, on considère qu'il est dans la case +1, +1.
     // Exemple: TILE_SIZE = 0.05. Personnage en World Unit à 0.05, -0.05 => Il est en 0,0 si on ignore le modulo, mais en réalité c'est le haut gauche du sprite qui s'y trouve: l'essentiel de son corps est en 1,1.
     
-    if x % TILE_SIZE < TILE_SIZE / 3.0 {
+    if x % TILE_SIZE < TILE_SIZE / 2.0 {
         x_index = (x / TILE_SIZE) as i32;
     } else {
         x_index = (x / TILE_SIZE) as i32 + 1;
     }
 
-    if y % TILE_SIZE < TILE_SIZE / 3.0 {
+    if y % TILE_SIZE < TILE_SIZE / 2.0 {
         y_index = (y / TILE_SIZE) as i32 - 1;
     } else {
         y_index = (y / TILE_SIZE) as i32;       
@@ -47,6 +47,21 @@ pub fn world_to_grid_position(
     (x_index.abs() as i32, y_index.abs() as i32)
 }
 
+pub fn world_to_grid_position2(
+    x: f32,
+    y: f32 
+) -> (i32, i32) {
+    //value.abs()
+    let mut x_index = 0;
+    let mut y_index = 0;
+    //let y_index = y / TILE_SIZE as f32;
+    // si modulo > 25% de Tile Size, on considère qu'il est dans la case +1, +1.
+    // Exemple: TILE_SIZE = 0.05. Personnage en World Unit à 0.05, -0.05 => Il est en 0,0 si on ignore le modulo, mais en réalité c'est le haut gauche du sprite qui s'y trouve: l'essentiel de son corps est en 1,1.
+    x_index = (x / TILE_SIZE) as i32;
+    y_index = (y / TILE_SIZE) as i32;
+
+    (x_index.abs() as i32, y_index.abs() as i32)
+}
 
 pub fn grid_to_world_position(
     x: i32,

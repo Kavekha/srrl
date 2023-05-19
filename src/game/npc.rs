@@ -15,7 +15,7 @@ use crate::{
     ascii::AsciiSheet,
     commons::tile_collision_check,
     map_builders::{
-        pathfinding::{Position, world_to_grid_position},
+        pathfinding::{Position, world_to_grid_position, grid_to_world_position, world_to_grid_position2},
         map::{Map},
     }
 };
@@ -58,8 +58,8 @@ pub struct Pathfinding{
 
 #[derive(Component)]
 pub struct MoveTo{
-    //pub x: i32, //f32,
-    //pub y: i32, //f32,
+    pub x: f32,
+    pub y: f32,
     pub destination: Position
 }
 
@@ -244,10 +244,21 @@ fn next_step_destination(
         let new_destination = pathfinding.path[pathfinding.step];   // Nouveau step du pathfinding.
         println!("{:?}:nextstep: Nouvelle destination => {:?}", entity, new_destination);
         println!("{:?}:nextstep: Chemin is => {:?}", entity, pathfinding.path);
+
+        /*
         commands.entity(entity).remove::<MoveTo>(); // Remove to be sure.
         commands.entity(entity).insert(MoveTo{
             destination: new_destination
-        });
+        }); 
+        */
+        //Convert to grid to world.
+        let (new_destination_x, new_destination_y) = grid_to_world_position(new_destination.0, new_destination.1);
+        commands.entity(entity).remove::<MoveTo>(); // Remove to be sure.
+        commands.entity(entity).insert(MoveTo{
+            x: new_destination_x,
+            y: new_destination_y,
+            destination: new_destination
+        });       
 
     }
 }
@@ -261,22 +272,60 @@ fn move_to_next_step(
 ){
     for (entity, moveto, mut transform, stats) in entity_pathfinding_query.iter_mut() {
         // Ou suis-je? 
-        let (current_x, current_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
+        let (current_x, current_y) = (transform.translation.x, transform.translation.y);
         // Suis-je arrivé?
-        let (goal_x, goal_y) = (moveto.destination.0, moveto.destination.1); 
-        if (current_x, current_y) == (goal_x, goal_y){
+        let (goal_x, goal_y) = (moveto.x, moveto.y); 
+        
+        if (current_x, current_y) == (goal_x, goal_y) {
+            commands.entity(entity).remove::<MoveTo>();
+            continue; 
+        }
+        /*
+        if current_x > goal_x - (TILE_SIZE / 10.0) && current_x < goal_x + (TILE_SIZE / 10.0) && current_y > goal_y - (TILE_SIZE / 10.0) && current_y < goal_y - (TILE_SIZE / 10.0){
+            commands.entity(entity).remove::<MoveTo>();
+            continue;
+        }
+        */
+        /*
+        if (current_x, current_y) > (goal_x - (TILE_SIZE / 10), goal_y) {
             //println!("{:?}:moveto: Je suis arrivé à destination.", entity);
             commands.entity(entity).remove::<MoveTo>();
             continue;
         } else {
-            println!("{:?}:moveto: Ma position actuelle est {},{}. Mon ordre de destination est {:?}", entity, current_x, current_y, moveto.destination);
+            //println!("{:?}:moveto: Ma position actuelle est {},{}. Mon ordre de destination est {:?}", entity, current_x, current_y, moveto.destination);
             //println!("ma position est bloquée? {:?} Ma destination est bloquée? {:?}", map.is_blocked(current_x, current_y), map.is_blocked(moveto.destination.0, moveto.destination.1));
         }
+        */
 
         // Je dois avancer vers ma destination.
         // On doit calculer le Delta. REMEMBER : pour descendre dans la map, il faut faire du +y. Pour monter: -y.
-        let mut x_delta= goal_x as f32 - current_x as f32;
-        let mut y_delta = 0.0 - (goal_y as f32 - current_y as f32); // 0 - (1) ==> Je veux monter dans le monde, donc je soustrais du y dans la map.
+        /*
+        let (grid_goal_x, grid_goal_y) = (moveto.destination.0, moveto.destination.1);
+        let (grid_current_x, grid_current_y) = world_to_grid_position2(current_x, current_y);
+        println!("{:?}:moveto: grid_goal : {:?}, grid position : {:?}", entity, (grid_goal_x, grid_goal_y), (grid_current_x, grid_current_y));
+
+        let mut x_delta= grid_goal_x as f32 - grid_current_x as f32;
+        let mut y_delta = 0.0 - (grid_goal_y as f32 - grid_current_y as f32);
+        //let mut y_delta = 0.0 - (goal_y as f32 - current_y as f32); // 0 - (1) ==> Je veux monter dans le monde, donc je soustrais du y dans la map.
+        println!("{:?}:moveto: Mon delta est {},{}", entity, x_delta, y_delta);
+        */
+        println!("moveto: Goal : {},{} - Position {},{}", goal_x, goal_y, current_x, current_y);
+        let mut x_delta = goal_x - current_x;
+        let mut y_delta = goal_y - current_y;
+        if x_delta > 0.0 {
+            x_delta = 1.0;
+        } else if x_delta < 0.0 {
+            x_delta = -1.0
+        } else {
+            x_delta = 0.0;
+        }
+        if y_delta > 0.0 {
+            y_delta = 1.0;
+        } else if y_delta < 0.0 {
+            y_delta = -1.0
+        } else {
+            y_delta = 0.0;
+        }
         println!("{:?}:moveto: Mon delta est {},{}", entity, x_delta, y_delta);
 
         // Je calcule ma vitesse de deplacement pour cette iteration.
@@ -328,12 +377,17 @@ fn move_to_next_step(
         //transform.translation += final_target;
         transform.translation += x_target + y_target;
 
-        let final_world_position = transform.translation;
-        //println!("{:?}:moveto: World pos avant calcul : {:?}. Final target : {:?} - world pos après : {:?}", entity, current_world_position, final_target, final_world_position);
-  
-        let (now_x, now_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
-        println!("{:?}:moveto: Je suis arrivé à {},{}. Mon ordre de destination etait {:?}", entity, now_x, now_y, moveto.destination);        
-        //println!("ma nouvelle position est bloquée? {:?} Ma destination est bloquée? {:?}", map.is_blocked(now_x, now_y), map.is_blocked(moveto.destination.0, moveto.destination.1));
+        println!("Transform is {:?}, goal is {:?}", transform.translation, (goal_x, goal_y));
+        if transform.translation.x > goal_x - (TILE_SIZE / 5.0) 
+        && transform.translation.x < goal_x + (TILE_SIZE / 5.0) 
+        && transform.translation.y > goal_y - (TILE_SIZE / 5.0) 
+        && transform.translation.y < goal_y - (TILE_SIZE / 5.0){
+            transform.translation.x = goal_x;
+            transform.translation.y = goal_y;
+            //commands.entity(entity).remove::<MoveTo>();
+            println!("Dans la marge acceptable : Transform is now {:?}, goal is {:?}", transform.translation, (goal_x, goal_y));
+            continue;
+        }
 
     }
 }
