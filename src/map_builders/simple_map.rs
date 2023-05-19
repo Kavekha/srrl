@@ -24,7 +24,7 @@ impl MapBuilder for SimpleMapBuilder {
     }
 
     fn get_starting_position(&self) -> Position {
-        self.starting_position.clone()        
+        self.starting_position.clone()      
     }
 
     fn build_map(&mut self) {
@@ -34,9 +34,6 @@ impl MapBuilder for SimpleMapBuilder {
     fn spawn_entities(&mut self) -> Vec<Position> {
         let mut entities_pos: Vec<Position> = Vec::new();
         for (i, _room) in self.rooms.iter().enumerate().skip(1){
-            //TODO : We give mobs to spawn. 
-            // BUT!!!! We dont have world access or commands access if we dont go through a system, and Bevy doesn't accept to send commands to Trait... :sad:
-            // -> impl Iterator <Item= .. >  corresponds à un Yield. -> impl Iterator<Item=Position>
             let position = self.rooms[i].center();
             entities_pos.push(Position(position.0, position.1)); 
         }
@@ -94,6 +91,7 @@ impl SimpleMapBuilder {
                 self.rooms.push(new_room);            
             }      
         }
+        
         // Add an exit to the last room.
         let exit_position = self.rooms[self.rooms.len()-1].center();
         let exit_idx = self.map.xy_idx(exit_position.0, exit_position.1);
@@ -101,5 +99,8 @@ impl SimpleMapBuilder {
 
         let start_pos = self.rooms[0].center();
         self.starting_position = Position(start_pos.0, start_pos.1);
+
+        // Populate there?
+        self.map.populate_blocked() //TODO trouver un bon endroit.
     }
 }
