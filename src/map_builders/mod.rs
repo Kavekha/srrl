@@ -30,5 +30,6 @@ pub fn random_builder() -> Box<dyn MapBuilder> {
 
 #[derive(Resource)]
 pub struct MapGenHistory{
-    pub history: Vec<Map>
+    pub history: Vec<Map>,
+    pub index: usize,
 }

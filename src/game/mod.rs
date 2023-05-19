@@ -78,7 +78,7 @@ fn init_new_game(
     }
 
     //Get history if mapgen active.
-    let mapgen_history = MapGenHistory{history: builder.get_snapshot_history()};
+    let mapgen_history = MapGenHistory{history: builder.get_snapshot_history(), index: 0};
     commands.insert_resource((mapgen_history));
 
     // We don't need the map, let's make it a resource for the others.

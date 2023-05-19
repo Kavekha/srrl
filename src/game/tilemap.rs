@@ -22,7 +22,8 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(GameState::MapGeneration), display_map_generation)     //SHOW_MAPGEN_VISUALIZER must be true.
+            .add_systems(Update, display_map_generation.run_if(in_state(GameState::MapGeneration)))     //SHOW_MAPGEN_VISUALIZER must be true.
+            .add_systems(Update, despawn_screen::<GameMap>.run_if(in_state(GameState::MapGeneration)))     //SHOW_MAPGEN_VISUALIZER must be true.
             .add_systems(OnEnter(GameState::GameMap), create_map)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
     }
@@ -36,40 +37,34 @@ fn create_map(
     generate_gamemap(&mut commands, &ascii, &map);
 }
 
-
 fn display_map_generation(
     mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands, 
     ascii:Res<AsciiSheet>,
-    map_history: Res<MapGenHistory>,
+    mut map_gen: ResMut<MapGenHistory>,
     time: Res<Time>,
 ){
     if !SHOW_MAPGEN_VISUALIZER{
         game_state.set(GameState::GameMap);
     }
-
-    //TIMER
-
-    // ITERATE
-    let mut index = 0;
-    let mut game_map = generate_gamemap(&mut commands, &ascii, &map_history.history[index]);
+    let map_generated = map_gen.history[map_gen.index].clone();
+    println!("Current Snapshot from map history: {}", map_gen.index);
+    generate_gamemap(&mut commands, &ascii, &map_generated);
     let mut timer = 0.0;
 
-    while index < map_history.history.len() -1 {
-        while timer < 300.0 {
-            timer += time.delta_seconds();
-            println!("Mon TIMER est de {:?}", timer);
-        }
-        println!("Next Snapshot from map history:");
-        commands.entity(game_map).despawn_recursive();
-        timer = 0.0;
-        index += 1;
-        game_map = generate_gamemap(&mut commands, &ascii, &map_history.history[index]);
+    // TODO : REFACTO: Fige le jeu pendant ce temps.
+    while timer < 30.0 {
+        let tick_time = 0.1 * time.delta_seconds();
+        timer += tick_time;
+        println!("Mon TIMER est de {:?} et le tick est de {:?}", timer, tick_time);
     }
+    map_gen.index += 1;
 
     // End of map generation history:
-    println!("Fin de l'affichage de la generation history");
-    game_state.set(GameState::GameMap);
+    if map_gen.index >= map_gen.history.len(){
+        println!("Fin de l'affichage de la generation history");
+        game_state.set(GameState::GameMap);
+    }
 }
 
 
