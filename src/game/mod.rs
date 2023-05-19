@@ -60,6 +60,25 @@ fn init_new_game(
     ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>
 ){
+    let mut builder = map_builders::random_builder();
+    builder.build_map();
+
+    let mapgen_history = builder.build_data.history.clone();
+
+    let starting_position = builder.get_starting_position();    //TODO
+    let (x, y) = (0.0,0.0);   //TODO: Placeholder
+    spawn_player(&mut commands, &ascii, x, y);
+
+    builder.spawn_entities()    //TODO
+
+}
+
+/*
+fn init_new_game(
+    mut commands: Commands, 
+    ascii: Res<AsciiSheet>,
+    mut game_state: ResMut<NextState<GameState>>
+){
     println!("Asking a boxed Map Builder object from the factory"); //https://bfnightly.bracketproductions.com/chapter_23.html
     let mut builder =  map_builders::random_builder();
     builder.build_map();
@@ -91,7 +110,7 @@ fn init_new_game(
         game_state.set(GameState::MapGeneration);  
     }
 }
-
+ */
 
 
 
