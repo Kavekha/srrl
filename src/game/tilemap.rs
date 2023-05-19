@@ -15,6 +15,7 @@ use crate::{
     SHOW_MAPGEN_VISUALIZER
 };
 
+const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
 
 
 pub struct TileMapPlugin;
@@ -22,8 +23,14 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(Update, display_map_generation.run_if(in_state(GameState::MapGeneration)))     //SHOW_MAPGEN_VISUALIZER must be true.
-            .add_systems(Update, despawn_screen::<GameMap>.run_if(in_state(GameState::MapGeneration)))     //SHOW_MAPGEN_VISUALIZER must be true.
+            //SHOW_MAPGEN_VISUALIZER must be true.
+            .insert_resource(FixedTime::new_from_secs(FIXED_MAPGEN_NEW_SNAPSHOT))
+            .add_systems(FixedUpdate, (
+                display_map_generation, 
+                despawn_screen::<GameMap>
+            ).chain().run_if(
+                in_state(GameState::MapGeneration)))           
+
             .add_systems(OnEnter(GameState::GameMap), create_map)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
     }
@@ -43,22 +50,21 @@ fn display_map_generation(
     ascii:Res<AsciiSheet>,
     mut map_gen: ResMut<MapGenHistory>,
     time: Res<Time>,
+    mut last_time: Local<f32>,
 ){
+    println!(
+        "time since last fixed_update: {}\n",
+        time.raw_elapsed_seconds() - *last_time
+    );
+
     if !SHOW_MAPGEN_VISUALIZER{
         game_state.set(GameState::GameMap);
     }
     let map_generated = map_gen.history[map_gen.index].clone();
     println!("Current Snapshot from map history: {}", map_gen.index);
     generate_gamemap(&mut commands, &ascii, &map_generated);
-    let mut timer = 0.0;
-
-    // TODO : REFACTO: Fige le jeu pendant ce temps.
-    while timer < 30.0 {
-        let tick_time = 0.1 * time.delta_seconds();
-        timer += tick_time;
-        println!("Mon TIMER est de {:?} et le tick est de {:?}", timer, tick_time);
-    }
     map_gen.index += 1;
+    
 
     // End of map generation history:
     if map_gen.index >= map_gen.history.len(){
