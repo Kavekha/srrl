@@ -8,12 +8,15 @@ use self::gameover::GameOverPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
+    SHOW_MAPGEN_VISUALIZER,
     map_builders::{
         map::Map,
+        MapGenHistory,
+        pathfinding::{Position, grid_to_world_position},
     },
     ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
-    map_builders::{pathfinding::{Position, grid_to_world_position}, self},
+    map_builders
 };
 
 pub mod player;
@@ -23,6 +26,18 @@ pub mod npc;
 pub mod gameover;
 pub mod spawners;
 
+
+// Enum
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum GameState {
+    #[default]
+    Disabled,
+    NewGame,    // Nouvelle partie, setup Map & player creation
+    MapGeneration,
+    GameMap,    // La map et le perso qui s'y balade.
+    GameOverScreen,
+    VictoryScreen,
+}  
 
 pub struct GamePlugin;
 
@@ -62,23 +77,23 @@ fn init_new_game(
         commands.entity(ghoul).insert(Monster);
     }
 
+    //Get history if mapgen active.
+    let mapgen_history = MapGenHistory{history: builder.get_snapshot_history()};
+    commands.insert_resource((mapgen_history));
+
     // We don't need the map, let's make it a resource for the others.
     commands.insert_resource(builder.get_map());   
     println!("Map creee et inseree comme ressource");
-    game_state.set(GameState::GameMap);  
+
+    if !SHOW_MAPGEN_VISUALIZER{
+        game_state.set(GameState::GameMap);  
+    } else {
+        game_state.set(GameState::MapGeneration);  
+    }
 }
 
 
-// Enum
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum GameState {
-    #[default]
-    Disabled,
-    NewGame,    // Nouvelle partie, setup Map & player creation
-    GameMap,    // La map et le perso qui s'y balade.
-    GameOverScreen,
-    VictoryScreen,
-}  
+
 
 #[derive(Component)]
 pub struct Player;

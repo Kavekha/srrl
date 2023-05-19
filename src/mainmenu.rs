@@ -2,7 +2,8 @@ use bevy::{prelude::*, app::AppExit};
 
 use crate::{
     despawn_screen, AppState, GameState, TILE_SIZE,
-    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice}
+    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice},
+    SHOW_MAPGEN_VISUALIZER,
 };
 
 
@@ -51,6 +52,7 @@ fn start_new_game(
 ) {
     app_state.set(AppState::Game);
     game_state.set(GameState::NewGame);
+
 }
 
 /// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.

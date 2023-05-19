@@ -8,9 +8,11 @@ use crate::{
     TILE_SIZE, despawn_screen,
     map_builders::{
         commons::TileType,
-        map::{Map}
+        map::{Map},
+        MapGenHistory
     },
-    game::{GameState, GameMap, TileCollider, TileExit}
+    game::{GameState, GameMap, TileCollider, TileExit},
+    SHOW_MAPGEN_VISUALIZER
 };
 
 
@@ -20,40 +22,64 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
-            //.add_systems(OnEnter(GameState::GameMap), create_map_from_text)
-            .add_systems(OnEnter(GameState::GameMap), create_simple_random_map)
+            .add_systems(OnEnter(GameState::MapGeneration), display_map_generation)     //SHOW_MAPGEN_VISUALIZER must be true.
+            .add_systems(OnEnter(GameState::GameMap), create_map)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
     }
 }
 
-
-/// Deprecated, equivalent dans Game pour l'Init.   //TODO Refacto
-fn create_simple_random_map(
-    commands: Commands,
+fn create_map(
+    mut commands: Commands,
     ascii: Res<AsciiSheet>,
     map: Res<Map>
 ) {
-    create_gamemap(commands, ascii, &map);
+    generate_gamemap(&mut commands, &ascii, &map);
 }
 
-/*
-#[warn(dead_code)]
-fn create_map_from_text(
-    commands: Commands,
-    ascii: Res<AsciiSheet>
-){
-    //we get map (vecTile) from a text file.
-    let map: Map = Map::new_map_from_textfile("map.txt");
 
-    create_gamemap(commands, ascii, &map);
-}
-*/
-
-pub fn create_gamemap (
+fn display_map_generation(
+    mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands, 
     ascii:Res<AsciiSheet>,
+    map_history: Res<MapGenHistory>,
+    time: Res<Time>,
+){
+    if !SHOW_MAPGEN_VISUALIZER{
+        game_state.set(GameState::GameMap);
+    }
+
+    //TIMER
+
+    // ITERATE
+    let mut index = 0;
+    let mut game_map = generate_gamemap(&mut commands, &ascii, &map_history.history[index]);
+    let mut timer = 0.0;
+
+    while index < map_history.history.len() -1 {
+        while timer < 300.0 {
+            timer += time.delta_seconds();
+            println!("Mon TIMER est de {:?}", timer);
+        }
+        println!("Next Snapshot from map history:");
+        commands.entity(game_map).despawn_recursive();
+        timer = 0.0;
+        index += 1;
+        game_map = generate_gamemap(&mut commands, &ascii, &map_history.history[index]);
+    }
+
+    // End of map generation history:
+    println!("Fin de l'affichage de la generation history");
+    game_state.set(GameState::GameMap);
+}
+
+
+
+pub fn generate_gamemap (
+    mut commands: &mut Commands, 
+    ascii:&AsciiSheet,
     map: &Map
-) {   
+) -> Entity {   
+    println!("Map generation begins..");
     //All tiles entities created will go there
     let mut tiles:Vec<Entity> = Vec::new();
 
@@ -110,6 +136,7 @@ pub fn create_gamemap (
         .insert(SpatialBundle{
             ..default()
         })
-        .push_children(&tiles);
+        .push_children(&tiles)
+        .id()
 
 }

@@ -8,14 +8,16 @@ use crate::{
         rectangle::Rectangle,
         commons::{TileType, apply_room_to_map, apply_horizontal_tunnel, apply_vertical_tunnel},
         pathfinding::Position,
-    },   
+    },  
+    SHOW_MAPGEN_VISUALIZER, 
 };
 
 
 pub struct SimpleMapBuilder {
     map: Map,
     starting_position: Position,
-    rooms: Vec<Rectangle>
+    rooms: Vec<Rectangle>,
+    history: Vec<Map>
 }
 
 impl MapBuilder for SimpleMapBuilder {
@@ -39,6 +41,17 @@ impl MapBuilder for SimpleMapBuilder {
         }
         entities_pos
     }
+
+    fn get_snapshot_history(&self) -> Vec<Map> {
+        self.history.clone()
+    }
+
+    fn take_snapshot(&mut self) {
+        if SHOW_MAPGEN_VISUALIZER {
+            let snapshot = self.map.clone();
+            self.history.push(snapshot);
+        }
+    }
 }
 
 impl SimpleMapBuilder {
@@ -46,7 +59,8 @@ impl SimpleMapBuilder {
         SimpleMapBuilder {
             map: Map::new(),
             starting_position: Position(0,0),
-            rooms: Vec::new()
+            rooms: Vec::new(),
+            history: Vec::new()
           }
     }
 
@@ -88,7 +102,8 @@ impl SimpleMapBuilder {
                         apply_horizontal_tunnel(&mut self.map, prev_x, new_x, new_y);
                     }
                 }     
-                self.rooms.push(new_room);            
+                self.rooms.push(new_room);   
+                self.take_snapshot();         
             }      
         }
         
@@ -96,6 +111,7 @@ impl SimpleMapBuilder {
         let exit_position = self.rooms[self.rooms.len()-1].center();
         let exit_idx = self.map.xy_idx(exit_position.0, exit_position.1);
         self.map.tiles[exit_idx] = TileType::Exit;
+        self.take_snapshot();
 
         let start_pos = self.rooms[0].center();
         self.starting_position = Position(start_pos.0, start_pos.1);
