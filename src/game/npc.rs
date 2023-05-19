@@ -21,7 +21,7 @@ use crate::{
 };
 
 const FIXED_TIMESTEP: f32 = 0.1;
-const BASE_RANGED_VIEW:i32 = 8;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
 
 pub struct NpcPlugin;
 
@@ -147,18 +147,26 @@ fn behavior_decision(
                 } else {
                     // Je ne le vois plus: Je poursuis jusqu'au dernier endroit où je l'ai apperçu.
                     dirty_pathfinding = false;
+                    can_chase_target = true;
                 }
             } else {
                 //Mon goal n'a pas changé, donc mon path est tjrs à jour.
                 dirty_pathfinding = false;
+                can_chase_target = true;
             }
             break;
         }  
+
+        // Je ne vois pas ma cible, je n'ai pas deja d'objectif.
+        if !can_chase_target {
+            continue;
+        }
         if !dirty_pathfinding {
             // J'ai un pathfinding à jour, pas la peine de refaire des calculs.
             //println!("{:?} : behavior: Mon pathfinding est à jour.", entity);
             continue;
         }
+
         //println!("{:?}:behavior: J'ai besoin d'un novueau calcul + Pathfinding.", entity);
 
         // Donne moi mon trajet.
@@ -217,18 +225,20 @@ fn next_step_destination(
 ){
     for (entity, mut pathfinding, transform) in entity_pathfinding_query.iter_mut() {
         // REMEMBER : Premiere destination d'un Path = l'endroit où je me trouve.
-        // Ai je atteint ma destination?
-        let (current_position_x, current_position_y) = world_to_grid_position(transform.translation.x, transform.translation.y);
-        let current_position = Position(current_position_x, current_position_y);    
         let destination = pathfinding.path[pathfinding.step];
+        let (goal_x, goal_y) = grid_to_world_position(destination.0, destination.1);
 
-        if current_position != destination{
-            //Je ne suis pas encore arrivé.
-            continue;  // Je n'ai plus rien à faire pour ce NPC.
-            // REMEMBER: Le premier pas du Pathfinding est ma position: je suis donc par defaut à current = destination.
+        // Ai je atteint ma destination?
+        if !(transform.translation.x > goal_x - (TILE_SIZE / 2.5)) 
+        && !(transform.translation.x < goal_x + (TILE_SIZE / 2.5))
+        && !(transform.translation.y > goal_y - (TILE_SIZE / 2.5))   // REMEMBER: Quand on descends dans le monde, on fait du negatif.
+        && !(transform.translation.y < goal_y + (TILE_SIZE / 2.5)) {
+            // Pas encore arrivé dans la marge acceptable.
+            println!("{:?}:nextstep:Pas encore arrivé: ma position est {:?}, mon goal est {:?}", entity, (transform.translation.x, transform.translation.y), (goal_x, goal_y));
+            continue;
         }
-        //println!("{:?}:nextstep:Je suis arrivé à destination.", entity);
 
+        println!("{:?}:nextstep:ARRIVE! JE DEMANDE NOUVELLE ETAPE!ma position est {:?}, mon goal est {:?}", entity, (transform.translation.x, transform.translation.y), (goal_x, goal_y));
         // J'y suis, passons à l'etape suivante.
         pathfinding.step += 1;      // REMEMBER: step:0 ===> Le point de depart. Ca fait donc sens de poursuivre directement par Step2 meme au debut.
         // Est-ce la fin du path?
@@ -378,13 +388,14 @@ fn move_to_next_step(
         transform.translation += x_target + y_target;
 
         println!("Transform is {:?}, goal is {:?}", transform.translation, (goal_x, goal_y));
-        if transform.translation.x > goal_x - (TILE_SIZE / 5.0) 
-        && transform.translation.x < goal_x + (TILE_SIZE / 5.0) 
-        && transform.translation.y > goal_y - (TILE_SIZE / 5.0) 
-        && transform.translation.y < goal_y - (TILE_SIZE / 5.0){
+        println!("Marge acceptable: x > {:?} et x < {:?} -- y > {:?} && et y < {:?}", goal_x - (TILE_SIZE / 2.5), goal_x + (TILE_SIZE / 2.5), goal_y - (TILE_SIZE / 2.5), goal_y + (TILE_SIZE / 2.5)) ;
+        if transform.translation.x > goal_x - (TILE_SIZE / 2.5) 
+        && transform.translation.x < goal_x + (TILE_SIZE / 2.5) 
+        && transform.translation.y > goal_y - (TILE_SIZE / 2.5)     // REMEMBER: Quand on descends dans le monde, on fait du negatif.
+        && transform.translation.y < goal_y + (TILE_SIZE / 2.5){
             transform.translation.x = goal_x;
             transform.translation.y = goal_y;
-            //commands.entity(entity).remove::<MoveTo>();
+            commands.entity(entity).remove::<MoveTo>();
             println!("Dans la marge acceptable : Transform is now {:?}, goal is {:?}", transform.translation, (goal_x, goal_y));
             continue;
         }

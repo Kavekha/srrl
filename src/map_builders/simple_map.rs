@@ -34,12 +34,8 @@ impl MapBuilder for SimpleMapBuilder {
     fn spawn_entities(&mut self) -> Vec<Position> {
         let mut entities_pos: Vec<Position> = Vec::new();
         for (i, _room) in self.rooms.iter().enumerate().skip(1){
-            //TODO : We give mobs to spawn. 
-            // BUT!!!! We dont have world access or commands access if we dont go through a system, and Bevy doesn't accept to send commands to Trait... :sad:
-            // -> impl Iterator <Item= .. >  corresponds à un Yield. -> impl Iterator<Item=Position>
             let position = self.rooms[i].center();
             entities_pos.push(Position(position.0, position.1)); 
-            break;  // DEBUG
         }
         entities_pos
     }
