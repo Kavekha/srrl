@@ -71,7 +71,14 @@ fn init_new_game(
     let (x, y) = grid_to_world_position(starting_position.0,starting_position.1);   //TODO: Placeholder
     spawn_player(&mut commands, &ascii, x, y);
 
-    builder.spawn_entities();    //TODO
+    //builder.spawn_entities();    //TODO
+    let entities_pos = builder.spawn_entities().clone();
+    for position in entities_pos {
+        let (x, y) = grid_to_world_position(position.0, position.1);    //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
+        let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
+        commands.entity(ghoul).insert(Monster);
+    }
+
 
     commands.insert_resource(builder.build_data.map.clone());
     println!("Map creee et inseree comme ressource");

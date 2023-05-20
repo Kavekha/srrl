@@ -33,7 +33,7 @@ pub struct MapGenHistory{
 
 
 pub struct BuilderMap {
-    pub spawn_list: Vec<(usize, String)>,
+    pub spawn_list: Vec<Position>, //Vec<(usize, String)>,
     pub map: Map,
     pub starting_position: Option<Position>,
     pub rooms: Option<Vec<Rectangle>>,
@@ -91,14 +91,15 @@ impl BuilderChain {
             metabuilder.build_map(&mut self.build_data);
         }
     }
-    pub fn spawn_entities(&mut self) {
+    pub fn spawn_entities(&mut self) -> Vec<Position> {
         let mut entities_pos: Vec<Position> = Vec::new();
-        for (i, _room) in self.build_data.spawn_list.iter().enumerate().skip(1){
+        /* 
+        for (i, position) in self.build_data.spawn_list.iter().enumerate().skip(1){
             //let position = self.rooms[i].center();
             //entities_pos.push(Position(position.0, position.1)); 
             println!("Retourne une entité à spawner."); //TODO
-        }
-        //entities_pos
+        }*/
+        entities_pos
     }
     pub fn get_starting_position(&mut self) -> Position {
         if let Some(starting_position) = self.build_data.starting_position {
