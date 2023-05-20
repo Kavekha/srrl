@@ -100,8 +100,12 @@ impl BuilderChain {
         }
         //entities_pos
     }
-    pub fn get_starting_position(&mut self) {
-        println!("Retourner une starting position or not?");
+    pub fn get_starting_position(&mut self) -> Position {
+        if let Some(starting_position) = self.build_data.starting_position {
+            starting_position
+        } else {
+            panic!("Pas de position de depart")
+        }
     }
 }
 

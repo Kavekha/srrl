@@ -12,11 +12,11 @@ use crate::{
     map_builders::{
         map::Map,
         MapGenHistory,
-        pathfinding::{Position, grid_to_world_position},
+        pathfinding::{Position, grid_to_world_position, world_to_grid_position},
     },
     ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
-    map_builders,
+    map_builders::{random_builder}
     
     
 };
@@ -62,17 +62,25 @@ fn init_new_game(
     ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>
 ){
-    let mut builder = map_builders::random_builder();
+    let mut builder = random_builder();
     builder.build_map();
 
     let mapgen_history = builder.build_data.history.clone();
 
     let starting_position = builder.get_starting_position();    //TODO
-    let (x, y) = (0.0,0.0);   //TODO: Placeholder
+    let (x, y) = grid_to_world_position(starting_position.0,starting_position.1);   //TODO: Placeholder
     spawn_player(&mut commands, &ascii, x, y);
 
-    builder.spawn_entities()    //TODO
+    builder.spawn_entities();    //TODO
 
+    commands.insert_resource(builder.build_data.map.clone());
+    println!("Map creee et inseree comme ressource");
+
+    if !SHOW_MAPGEN_VISUALIZER{
+        game_state.set(GameState::GameMap);  
+    } else {
+        game_state.set(GameState::MapGeneration);  
+    }
 }
 
 /*
