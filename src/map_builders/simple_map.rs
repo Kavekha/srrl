@@ -1,7 +1,5 @@
 use rand::prelude::*;
 
-use super::Map;
-use super::MapBuilder;
 
 use crate::{
     map_builders::{
@@ -18,7 +16,7 @@ pub struct SimpleMapBuilder {}
 
 impl InitialMapBuilder for SimpleMapBuilder {
     fn build_map(&mut self, build_data: &mut BuilderMap) {
-        self.rooms_and_corridors();
+        self.rooms_and_corridors(build_data);
     }
 }
 
