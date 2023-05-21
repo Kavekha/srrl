@@ -15,10 +15,8 @@ use crate::{
         pathfinding::{Position, grid_to_world_position},
     },
     ascii::AsciiSheet,
-    game::spawners::{spawn_npc, spawn_player},
+    game::spawners::{spawn_npc, spawn_player, spawn_npc_old},
     map_builders::{random_builder}
-    
-    
 };
 
 pub mod player;
@@ -60,7 +58,8 @@ impl Plugin for GamePlugin {
 fn init_new_game(
     mut commands: Commands, 
     ascii: Res<AsciiSheet>,
-    mut game_state: ResMut<NextState<GameState>>
+    mut game_state: ResMut<NextState<GameState>>,
+    asset_server: Res<AssetServer>,
 ){
     let mut builder = random_builder();
     builder.build_map();
@@ -77,12 +76,14 @@ fn init_new_game(
 
     let starting_position = builder.get_starting_position();    //TODO
     let (x, y) = grid_to_world_position(starting_position.0,starting_position.1);   //TODO: Placeholder
-    spawn_player(&mut commands, &ascii, x, y);
+    spawn_player(&mut commands, &asset_server, x, y);
+    //spawn_player(&mut commands, &ascii,x, y);
 
     let entities_pos = builder.spawn_entities();
     for position in entities_pos {
         let (x, y) = grid_to_world_position(position.0, position.1);    //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
-        let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
+        //let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
+        let ghoul = spawn_npc(&mut commands, &asset_server, x, y, format!("Ghoul"), 2);
         commands.entity(ghoul).insert(Monster);
     }
 

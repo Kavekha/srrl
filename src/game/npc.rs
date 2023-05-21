@@ -8,7 +8,7 @@ use crate::{
     GameState, despawn_screen, TILE_SIZE,
     game::{
         Player, Stats, Npc, Monster,
-        spawners::spawn_npc,
+        spawners::spawn_npc, spawn_npc_old,
     },
     ascii::AsciiSheet,
     commons::tile_collision_check,
@@ -81,7 +81,7 @@ fn display_pathfinding(
                     let (path_x, path_y) = (path.0, path.1);
                     let wp_x = path_x as f32* TILE_SIZE;
                     let wp_y = -(path_y as f32) * TILE_SIZE;
-                    let displaying = spawn_npc(&mut commands, &ascii, wp_x, wp_y, format!("pathfinding {:?}",entity),'*' as usize);
+                    let displaying = spawn_npc_old(&mut commands, &ascii, wp_x, wp_y, format!("pathfinding {:?}",entity),'*' as usize);
                     commands.entity(displaying).insert(DisplayedPath);
                     commands.entity(displaying).remove::<Npc>();
                 }

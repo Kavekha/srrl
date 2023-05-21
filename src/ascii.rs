@@ -1,6 +1,6 @@
 use bevy::{prelude::*};
 
-use crate::TILE_SIZE;
+use crate::{TILE_SIZE, CHAR_SIZE};
 
 pub struct AsciiPlugin;
 
@@ -54,10 +54,10 @@ pub fn spawn_nine_slice(
     let color = Color::rgb(0.3, 0.3, 0.9);
     let mut sprites = Vec::new();
 
-    let left = (-width / 2.0 + 0.5) * TILE_SIZE;
-    let right = (width / 2.0 - 0.5) * TILE_SIZE;
-    let up = (height/2.0 - 0.5) * TILE_SIZE;
-    let down = (-height/2.0 + 0.5) * TILE_SIZE;
+    let left = (-width / 2.0 + 0.5) * CHAR_SIZE;
+    let right = (width / 2.0 - 0.5) * CHAR_SIZE;
+    let up = (height/2.0 - 0.5) * CHAR_SIZE;
+    let down = (-height/2.0 + 0.5) * CHAR_SIZE;
 
 
     sprites.push(spawn_ascii_sprite(
@@ -169,7 +169,7 @@ pub fn spawn_ascii_text(
             ascii, 
             char as usize, 
             color,
-            Vec3::new(i as f32 * TILE_SIZE, 0.0, 0.0),
+            Vec3::new(i as f32 * CHAR_SIZE, 0.0, 0.0),
             Vec3::splat(1.0)));
     }
     commands
@@ -196,7 +196,7 @@ pub fn spawn_ascii_sprite(
 
     let mut sprite = TextureAtlasSprite::new(index);
     sprite.color = color;
-    sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
+    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
 
     commands 
         .spawn(SpriteSheetBundle {
