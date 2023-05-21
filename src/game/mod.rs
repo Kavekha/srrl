@@ -15,7 +15,7 @@ use crate::{
         pathfinding::{Position, grid_to_world_position},
     },
     ascii::AsciiSheet,
-    game::spawners::{spawn_npc, spawn_player, spawn_npc_old},
+    game::spawners::{spawn_npc, spawn_player},
     map_builders::{random_builder}
 };
 
@@ -83,7 +83,7 @@ fn init_new_game(
     for position in entities_pos {
         let (x, y) = grid_to_world_position(position.0, position.1);    //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
         //let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
-        let ghoul = spawn_npc(&mut commands, &asset_server, x, y, format!("Ghoul"), 2);
+        let ghoul = spawn_npc(&mut commands, &asset_server, x, y, format!("Ghoul"));
         commands.entity(ghoul).insert(Monster);
     }
 
@@ -117,9 +117,7 @@ pub struct TileExit;
 pub struct GameMap;
 
 #[derive(Component)]
-pub struct Npc{
-    pub home: Position,
-}
+pub struct Npc;
 
 #[derive(Component)]
 pub struct Monster;

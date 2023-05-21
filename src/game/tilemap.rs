@@ -13,12 +13,16 @@ use crate::{
     },
     game::{
         GameState, GameMap, TileCollider, TileExit,
-        spawners::{spawn_wall_tile, spawn_floor_tile},
+        spawners::spawn_sprite,
     },
     SHOW_MAPGEN_VISUALIZER
 };
 
 const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
+const MAP_WALL: &str = "temp_tiles/Sewers_wall.png";
+const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
+
+
 
 
 pub struct TileMapPlugin;
@@ -94,6 +98,9 @@ pub fn generate_gamemap (
     let mut x = 0;
     let mut y = 0;
     for (_idx, tile_info) in map.tiles.iter().enumerate(){
+        // Convert to World Units.
+        let world_x = x as f32 * TILE_SIZE;
+        let world_y = -(y as f32 * TILE_SIZE);
         match tile_info {
             TileType::Wall => {
                 /*
@@ -106,10 +113,13 @@ pub fn generate_gamemap (
                     Vec3::splat(1.0)
                 );
                  */
-                let tile = spawn_wall_tile(
+                let tile = spawn_sprite(
                     &mut commands,
                     &asset_server,
-                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                    world_x,
+                    world_y,
+                    0.0,
+                    MAP_WALL,
                 );
                 commands.entity(tile).insert(TileCollider);
                 tiles.push(tile); 
@@ -127,10 +137,13 @@ pub fn generate_gamemap (
                 tiles.push(tile); 
             }
             TileType::Floor => {
-                let tile = spawn_floor_tile(
+                let tile = spawn_sprite(
                     &mut commands,
                     &asset_server,
-                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
+                    world_x,
+                    world_y,
+                    0.0,
+                    MAP_FLOOR,
                 );
                 tiles.push(tile); 
             }
