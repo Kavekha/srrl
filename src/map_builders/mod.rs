@@ -8,6 +8,7 @@ pub mod commons;
 pub mod room_based_exits;
 pub mod room_based_spawner;
 pub mod room_based_starting_position;
+pub mod sewer_map;
 
 use crate::{
     map_builders::{
@@ -17,6 +18,7 @@ use crate::{
         room_based_exits::RoomBasedExits,
         room_based_spawner::RoomBasedSpawner,
         room_based_starting_position::RoomBasedStartingPosition,
+        sewer_map::SewerMapBuilder,
     },
     map_builders::pathfinding::Position, SHOW_MAPGEN_VISUALIZER,
 };
@@ -124,7 +126,8 @@ pub fn random_builder() -> BuilderChain {
     //let mut rng = rand::thread_rng();   //TODO : Seed & refacto.
 
     let mut builder = BuilderChain::new();
-    builder.start_with(SimpleMapBuilder::new());
+    //builder.start_with(SimpleMapBuilder::new());
+    builder.start_with(SewerMapBuilder::new());    
 
     //let (random_starter, has_rooms) = random_initial_builder(rng);
     //if has_rooms {
