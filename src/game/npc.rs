@@ -221,8 +221,8 @@ fn next_step_destination(
         // Ai je atteint ma destination?
         if !(transform.translation.x > goal_x - (TILE_SIZE / 2.5)) 
         && !(transform.translation.x < goal_x + (TILE_SIZE / 2.5))
-        && !(transform.translation.y > goal_y - (TILE_SIZE / 2.5))   // REMEMBER: Quand on descends dans le monde, on fait du negatif.
-        && !(transform.translation.y < goal_y + (TILE_SIZE / 2.5)) {
+        && !(transform.translation.y > goal_y + (TILE_SIZE / 2.5))   // REMEMBER: Quand on descends dans le monde, on fait du negatif.
+        && !(transform.translation.y < goal_y - (TILE_SIZE / 2.5)) {
             // Pas encore arrivé dans la marge acceptable.
             continue;
         }
@@ -309,8 +309,8 @@ fn move_to_next_step(
         //println!("Marge acceptable: x > {:?} et x < {:?} -- y > {:?} && et y < {:?}", goal_x - (TILE_SIZE / 2.5), goal_x + (TILE_SIZE / 2.5), goal_y - (TILE_SIZE / 2.5), goal_y + (TILE_SIZE / 2.5)) ;
         if transform.translation.x > goal_x - (TILE_SIZE / 2.5) 
         && transform.translation.x < goal_x + (TILE_SIZE / 2.5) 
-        && transform.translation.y > goal_y - (TILE_SIZE / 2.5)     // REMEMBER: Quand on descends dans le monde, on fait du negatif.
-        && transform.translation.y < goal_y + (TILE_SIZE / 2.5){
+        && transform.translation.y > goal_y + (TILE_SIZE / 2.5)     // REMEMBER: Quand on descends dans le monde, on fait du negatif.
+        && transform.translation.y < goal_y - (TILE_SIZE / 2.5){
             transform.translation.x = goal_x;
             transform.translation.y = goal_y;
             commands.entity(entity).remove::<MoveTo>();
