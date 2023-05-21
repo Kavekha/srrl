@@ -30,8 +30,7 @@ impl RoomBasedSpawner {
                 let npc_pos = rooms[i].center();
                 println!("Position dans npc_pos : {:?}", npc_pos);
                 build_data.spawn_list.push(Position(npc_pos.0, npc_pos.1));
-
-                println!("Spawn entities by room!");
+                println!("Check spawn_list : {:?}", build_data.spawn_list);
             }
         } else {
             panic!("Room Based Spawner MetaBuilder only works after rooms have been created.");

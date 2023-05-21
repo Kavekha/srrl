@@ -92,14 +92,16 @@ impl BuilderChain {
         }
     }
     pub fn spawn_entities(&mut self) -> Vec<Position> {
-        let mut entities_pos: Vec<Position> = Vec::new();
         /* 
+                let mut entities_pos: Vec<Position> = Vec::new();
         for (i, position) in self.build_data.spawn_list.iter().enumerate().skip(1){
             //let position = self.rooms[i].center();
             //entities_pos.push(Position(position.0, position.1)); 
             println!("Retourne une entité à spawner."); //TODO
         }*/
-        entities_pos
+        let spawn_list = self.build_data.spawn_list.clone();
+        spawn_list
+        //entities_pos
     }
     pub fn get_starting_position(&mut self) -> Position {
         if let Some(starting_position) = self.build_data.starting_position {

@@ -72,11 +72,13 @@ fn init_new_game(
     spawn_player(&mut commands, &ascii, x, y);
 
     //builder.spawn_entities();    //TODO
-    let entities_pos = builder.spawn_entities().clone();
+    let entities_pos = builder.spawn_entities();
+    println!("Entities position are : {:?}", entities_pos);
     for position in entities_pos {
         let (x, y) = grid_to_world_position(position.0, position.1);    //TODO: Refacto: Where should the grid_to_world_position done? In the Spawning function no?
         let ghoul = spawn_npc(&mut commands, &ascii, x, y, format!("Ghoul"), 2);
         commands.entity(ghoul).insert(Monster);
+        println!("Entity created : {:?}", ghoul);
     }
 
 
