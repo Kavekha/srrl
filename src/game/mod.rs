@@ -81,6 +81,7 @@ fn init_new_game(
         println!("Entity created : {:?}", ghoul);
     }
 
+    builder.build_data.map.populate_blocked();  //TODO : Refacto: Où je fous ça moi?
 
     commands.insert_resource(builder.build_data.map.clone());
     println!("Map creee et inseree comme ressource");
