@@ -11,7 +11,7 @@ use crate::{
     SHOW_MAPGEN_VISUALIZER,
     map_builders::{
         map::Map,
-        //MapGenHistory,
+        MapGenHistory,
         pathfinding::{Position, grid_to_world_position},
     },
     ascii::AsciiSheet,
@@ -65,7 +65,15 @@ fn init_new_game(
     let mut builder = random_builder();
     builder.build_map();
 
-    //let _mapgen_history = builder.build_data.history.clone();
+    if SHOW_MAPGEN_VISUALIZER {
+        let mapgen_history = MapGenHistory{
+            history: builder.build_data.history.clone(),
+            index: 0,
+        };
+        commands.insert_resource(mapgen_history);
+    }
+
+
 
     let starting_position = builder.get_starting_position();    //TODO
     let (x, y) = grid_to_world_position(starting_position.0,starting_position.1);   //TODO: Placeholder
