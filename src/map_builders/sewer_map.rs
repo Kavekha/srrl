@@ -4,11 +4,10 @@ use rand::prelude::*;
 use crate::{
     map_builders::{
         rectangle::Rectangle,
-        commons::{TileType, apply_room_to_map, apply_horizontal_tunnel, apply_vertical_tunnel},
-        pathfinding::Position,
+        commons::{apply_room_to_map, apply_horizontal_tunnel, apply_vertical_tunnel},
         InitialMapBuilder, BuilderMap,
     },  
-    SHOW_MAPGEN_VISUALIZER, 
+    //SHOW_MAPGEN_VISUALIZER, 
 };
 
 
@@ -35,7 +34,7 @@ impl SewerMapBuilder {
         let mut rng = rand::thread_rng();   //TODO : Refacto, Seed à plus haut niveau.
 
         println!("Starting: Generate rooms");
-        for i in 0..MAX_ROOMS {
+        for _i in 0..MAX_ROOMS {
             // generate a room as a Rectangle
             let w = rng.gen_range(MIN_SIZE.. MAX_SIZE);
             let h = rng.gen_range(MIN_SIZE.. MAX_SIZE);

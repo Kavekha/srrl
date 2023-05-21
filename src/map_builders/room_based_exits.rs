@@ -1,16 +1,10 @@
-use rand::prelude::*;
-
-use super::Map;
-
 use crate::{
     map_builders::{
         MetaMapBuilder,
-        rectangle::Rectangle,
-        commons::{TileType, apply_room_to_map, apply_horizontal_tunnel, apply_vertical_tunnel},
-        pathfinding::Position,
-        InitialMapBuilder, BuilderMap,
+        commons::{TileType},
+        BuilderMap,
     },  
-    SHOW_MAPGEN_VISUALIZER, 
+    //SHOW_MAPGEN_VISUALIZER, 
 };
 
 

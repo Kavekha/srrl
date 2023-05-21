@@ -39,7 +39,7 @@ impl Map {
         (y as usize * self.width as usize) + x as usize
     }
     #[warn(dead_code)]
-    pub fn is_blocked(
+    pub fn _is_blocked(
         &self,
         x: i32,
         y: i32
@@ -64,7 +64,7 @@ impl Map {
         }
     }
     // TODO : generate map in Bevy.
-    pub fn generate_gamemap_entity(){}
+    pub fn _generate_gamemap_entity(){}
 
     pub fn get_successors(
         &self, 
@@ -113,37 +113,4 @@ impl Map {
         }
         successors
     }
-
-    /*
-    #[warn(dead_code)]
-    pub fn new_map_from_textfile(
-        file_name: &str
-    ) -> Map {
-        let mut map = Map {
-            tiles: vec![TileType::Wall; 80 * 50],
-            rooms: Vec::new(),      //Vec<Rectangle> = Vec::new();
-            width: 80,
-            height: 50,
-            blocked: vec![false; 80 * 50],
-        };
-
-        let path = format!("assets/{}", file_name);
-        let file = File::open(path).expect("No map found");
-
-        for (y, line) in BufReader::new(file).lines().enumerate(){
-            if let Ok(line)= line {
-                for (x, character) in line.chars().enumerate(){
-                    let idx = map.xy_idx(x as i32, y as i32);
-                    match character {
-                        '<' => { map.tiles[idx] = TileType::Exit; }
-                        '#' => { map.tiles[idx] = TileType::Wall; }
-                        '.' => { map.tiles[idx] = TileType::Floor;}
-                        _   => { map.tiles[idx] = TileType::Wall; }
-                    }
-                }
-            }
-        }
-        map
-    }
-    */
 }
