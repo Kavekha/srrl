@@ -3,7 +3,7 @@ use bevy::{prelude::*, app::AppExit};
 use crate::{
     despawn_screen, AppState, GameState, TILE_SIZE,
     ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice},
-    SHOW_MAPGEN_VISUALIZER,
+    //SHOW_MAPGEN_VISUALIZER,
 };
 
 

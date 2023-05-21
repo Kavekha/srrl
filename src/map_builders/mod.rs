@@ -8,15 +8,17 @@ pub mod commons;
 pub mod room_based_exits;
 pub mod room_based_spawner;
 pub mod room_based_starting_position;
+pub mod sewer_map;
 
 use crate::{
     map_builders::{
         map::{Map},
-        simple_map::SimpleMapBuilder,
+        //simple_map::SimpleMapBuilder,
         rectangle::Rectangle,
         room_based_exits::RoomBasedExits,
         room_based_spawner::RoomBasedSpawner,
         room_based_starting_position::RoomBasedStartingPosition,
+        sewer_map::SewerMapBuilder,
     },
     map_builders::pathfinding::Position, SHOW_MAPGEN_VISUALIZER,
 };
@@ -43,7 +45,7 @@ pub struct BuilderMap {
 impl BuilderMap {
     fn take_snapshot(&mut self) {
         if SHOW_MAPGEN_VISUALIZER {
-            let mut snapshot = self.map.clone();
+            let snapshot = self.map.clone();
             self.history.push(snapshot);
         }
     }
@@ -92,16 +94,8 @@ impl BuilderChain {
         }
     }
     pub fn spawn_entities(&mut self) -> Vec<Position> {
-        /* 
-                let mut entities_pos: Vec<Position> = Vec::new();
-        for (i, position) in self.build_data.spawn_list.iter().enumerate().skip(1){
-            //let position = self.rooms[i].center();
-            //entities_pos.push(Position(position.0, position.1)); 
-            println!("Retourne une entité à spawner."); //TODO
-        }*/
         let spawn_list = self.build_data.spawn_list.clone();
         spawn_list
-        //entities_pos
     }
     pub fn get_starting_position(&mut self) -> Position {
         if let Some(starting_position) = self.build_data.starting_position {
@@ -124,7 +118,8 @@ pub fn random_builder() -> BuilderChain {
     //let mut rng = rand::thread_rng();   //TODO : Seed & refacto.
 
     let mut builder = BuilderChain::new();
-    builder.start_with(SimpleMapBuilder::new());
+    //builder.start_with(SimpleMapBuilder::new());
+    builder.start_with(SewerMapBuilder::new());    
 
     //let (random_starter, has_rooms) = random_initial_builder(rng);
     //if has_rooms {

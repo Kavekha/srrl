@@ -50,7 +50,7 @@ fn display_map_generation(
     ascii:Res<AsciiSheet>,
     mut map_gen: ResMut<MapGenHistory>,
     time: Res<Time>,
-    mut last_time: Local<f32>,
+    last_time: Local<f32>,
 ){
     println!(
         "time since last fixed_update: {}\n",

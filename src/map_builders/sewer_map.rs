@@ -11,21 +11,21 @@ use crate::{
 };
 
 
-pub struct SimpleMapBuilder {}
+pub struct SewerMapBuilder {}
 
-impl InitialMapBuilder for SimpleMapBuilder {
+impl InitialMapBuilder for SewerMapBuilder {
     fn build_map(&mut self, build_data: &mut BuilderMap) {
         self.rooms_and_corridors(build_data);
     }
 }
 
-impl SimpleMapBuilder {
-    pub fn new() -> Box<SimpleMapBuilder> {
-        Box::new(SimpleMapBuilder {  })
+impl SewerMapBuilder {
+    pub fn new() -> Box<SewerMapBuilder> {
+        Box::new(SewerMapBuilder {  })
     }
 
     fn rooms_and_corridors(&mut self, build_data: &mut BuilderMap) {
-        println!("-- SimpleMapBuilder: rooms and corridors --");
+        println!("-- SewerMapBuilder: rooms and corridors --");
         const MAX_ROOMS : i32 = 30;
         const MIN_SIZE : i32 = 6;
         const MAX_SIZE : i32 = 10;
@@ -66,11 +66,15 @@ impl SimpleMapBuilder {
                     let (new_x, new_y) = new_room.center();
                     let (prev_x, prev_y) = rooms[rooms.len()-1].center();
                     if rng.gen_range(0.. 2) == 1 {
-                        apply_horizontal_tunnel(&mut build_data.map, prev_x, new_x, prev_y);
-                        apply_vertical_tunnel(&mut build_data.map, prev_y, new_y, new_x);
+                        for i in -1.. 2 {
+                            apply_horizontal_tunnel(&mut build_data.map, prev_x + i, new_x + i, prev_y + i);
+                            apply_vertical_tunnel(&mut build_data.map, prev_y + i, new_y + i, new_x + i);
+                        }
                     } else {
-                        apply_vertical_tunnel(&mut build_data.map, prev_y, new_y, prev_x);
-                        apply_horizontal_tunnel(&mut build_data.map, prev_x, new_x, new_y);
+                        for i in -1.. 2 {
+                            apply_horizontal_tunnel(&mut build_data.map, prev_x + i, new_x + i, prev_y + i);
+                            apply_vertical_tunnel(&mut build_data.map, prev_y + i, new_y + i, new_x + i);
+                        }
                     }
                 }     
                 rooms.push(new_room);   
@@ -82,14 +86,14 @@ impl SimpleMapBuilder {
 }
 
 /* 
-pub struct SimpleMapBuilder {
+pub struct SewerMapBuilder {
     map: Map,
     starting_position: Position,
     rooms: Vec<Rectangle>,
     history: Vec<Map>
 }
 
-impl MapBuilder for SimpleMapBuilder {
+impl MapBuilder for SewerMapBuilder {
     fn get_map(&self) -> Map {
         self.map.clone()
     }
@@ -123,9 +127,9 @@ impl MapBuilder for SimpleMapBuilder {
     }
 }
 
-impl SimpleMapBuilder {
-    pub fn new() -> SimpleMapBuilder {
-        SimpleMapBuilder {
+impl SewerMapBuilder {
+    pub fn new() -> SewerMapBuilder {
+        SewerMapBuilder {
             map: Map::new(),
             starting_position: Position(0,0),
             rooms: Vec::new(),

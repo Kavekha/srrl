@@ -14,7 +14,6 @@ pub struct Successor {
     pub cost: i32,
 }
 
-
 //TODO : Check why absolute version. y sur grid est l'inverse de y sur world : +y on descends sur grid, -y on descends sur world.
         // REMEMBER: Difficile de prendre en compte les collisions à cause de la conversion world_to_grid_units.
         // Dans le cas où une cellule = 10 pixels:
@@ -43,22 +42,6 @@ pub fn world_to_grid_position(
     } else {
         y_index = (y / TILE_SIZE) as i32;       
     }
-
-    (x_index.abs() as i32, y_index.abs() as i32)
-}
-
-pub fn world_to_grid_position2(
-    x: f32,
-    y: f32 
-) -> (i32, i32) {
-    //value.abs()
-    let mut x_index = 0;
-    let mut y_index = 0;
-    //let y_index = y / TILE_SIZE as f32;
-    // si modulo > 25% de Tile Size, on considère qu'il est dans la case +1, +1.
-    // Exemple: TILE_SIZE = 0.05. Personnage en World Unit à 0.05, -0.05 => Il est en 0,0 si on ignore le modulo, mais en réalité c'est le haut gauche du sprite qui s'y trouve: l'essentiel de son corps est en 1,1.
-    x_index = (x / TILE_SIZE) as i32;
-    y_index = (y / TILE_SIZE) as i32;
 
     (x_index.abs() as i32, y_index.abs() as i32)
 }
