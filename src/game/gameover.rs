@@ -3,7 +3,7 @@ use bevy::{prelude::*};
 use crate::{
     GameState, despawn_screen,
     ascii::{spawn_ascii_text, AsciiSheet},
-    mainmenu::{menu_camera, OnScreenMenu}
+    mainmenu::{menu_camera, OnScreenMenu}, CHAR_SIZE,
 };
 
 
@@ -30,12 +30,13 @@ fn display_gameover_screen(
     println!("Afficher YOU DIED"); //DEBUG
     let gameover_message = "YOU DIED.";
     let gameover_description= "A ghoul has eaten you.";
-    let x: f32 = -0.2; //0.0;
+    let x: f32 = 0.0;
     let mut y: f32 = 0.0;
 
     let text_to_display = vec![gameover_message, gameover_description];
 
     for text in text_to_display{
+        let x = - (text.len() as f32 / 2.0 * CHAR_SIZE);
         let text_placement = Vec3::new(x, y, 0.0);
         let ascii_text = spawn_ascii_text(
             &mut commands,
@@ -46,7 +47,7 @@ fn display_gameover_screen(
         commands.entity(ascii_text)
         .insert(OnScreenMenu);
 
-        y -= 0.1    
+        y -= 2.0 * CHAR_SIZE;    
     }
 
 }

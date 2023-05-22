@@ -1,6 +1,6 @@
 use bevy::{prelude::*};
 
-use crate::{TILE_SIZE, CHAR_SIZE};
+use crate::{CHAR_SIZE};
 
 pub struct AsciiPlugin;
 
@@ -196,7 +196,7 @@ pub fn spawn_ascii_sprite(
 
     let mut sprite = TextureAtlasSprite::new(index);
     sprite.color = color;
-    sprite.custom_size = Some(Vec2::splat(TILE_SIZE));
+    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
 
     commands 
         .spawn(SpriteSheetBundle {
