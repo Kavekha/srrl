@@ -3,8 +3,6 @@ use bevy::prelude::*;
 
 use self::tilemap::TileMapPlugin;
 use self::player::PlayerPlugin;
-use self::victory::VictoryPlugin;
-use self::gameover::GameOverPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
@@ -12,18 +10,22 @@ use crate::{
     map_builders::{
         map::Map,
         MapGenHistory,
-        pathfinding::{Position, grid_to_world_position},
     },
     ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
-    map_builders::{random_builder}
+    map_builders::{
+        random_builder,
+        pathfinding::grid_to_world_position,
+    },    
+    menus::{
+        victory::VictoryPlugin,
+        gameover::GameOverPlugin,
+    }
 };
 
 pub mod player;
 pub mod tilemap;
-pub mod victory;
 pub mod npc;
-pub mod gameover;
 pub mod spawners;
 
 

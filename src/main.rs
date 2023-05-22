@@ -7,17 +7,16 @@ use bevy::{
 };
 
 mod ascii;
-mod mainmenu;
 mod audio;
 mod commons;
 
+mod menus;
 mod map_builders;   //mod
 mod game;           //mod
 
 use ascii::AsciiPlugin;
-use mainmenu::MainMenuPlugin;
+use menus::mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
-
 use game::GameState;
 use game::GamePlugin;
 
