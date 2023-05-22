@@ -8,7 +8,7 @@ use crate::{
     GameState, despawn_screen, TILE_SIZE,
     game::{
         Player, Stats, Npc, Monster,
-        spawners::spawn_npc,
+        //spawners::spawn_npc, spawn_npc_old,
     },
     ascii::AsciiSheet,
     commons::tile_collision_check,
@@ -31,7 +31,7 @@ impl Plugin for NpcPlugin{
             .add_systems(FixedUpdate, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
             .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
             .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
-            .add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
+            //.add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?     
             //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
             .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
@@ -62,6 +62,7 @@ pub struct MoveTo{
 }
 
 
+/*
 fn display_pathfinding(
     mut commands: Commands,
     mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding)>,
@@ -81,7 +82,7 @@ fn display_pathfinding(
                     let (path_x, path_y) = (path.0, path.1);
                     let wp_x = path_x as f32* TILE_SIZE;
                     let wp_y = -(path_y as f32) * TILE_SIZE;
-                    let displaying = spawn_npc(&mut commands, &ascii, wp_x, wp_y, format!("pathfinding {:?}",entity),'*' as usize);
+                    let displaying = spawn_npc_old(&mut commands, &ascii, wp_x, wp_y, format!("pathfinding {:?}",entity),'*' as usize);
                     commands.entity(displaying).insert(DisplayedPath);
                     commands.entity(displaying).remove::<Npc>();
                 }
@@ -98,7 +99,7 @@ fn display_pathfinding(
         }
     }
 }
-
+ */
 
 /// Quel est mon goal, puis-je l'atteindre, que dois je faire sinon?
 /// Créé ou remplace le pathfinding, qui determine le trajet du NPC.
@@ -194,15 +195,7 @@ fn behavior_decision(
 
             commands.entity(entity).insert(pathfind);
         } else {
-            ////println!("{:?}:behavior: Je n'ai pas de chemin vers mon goal.", entity);
-            if npc.home == goal {
-                ////println!("Je suis à Home, pas de goal en vue.");
-                continue;
-            } else {
-                //goal = Position(npc.home.0, npc.home.1);    // Not used if no calcul.
-                // TODO : relancer le calcul.
-                continue;
-            }
+            continue;
         }        
     }
 }

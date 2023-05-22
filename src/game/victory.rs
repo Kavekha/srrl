@@ -3,7 +3,7 @@ use bevy::{prelude::*};
 use crate::{
     GameState, despawn_screen,
     ascii::{spawn_ascii_text, AsciiSheet},
-    mainmenu::{menu_camera, OnScreenMenu}
+    mainmenu::{menu_camera, OnScreenMenu}, CHAR_SIZE,
 };
 
 
@@ -28,12 +28,13 @@ fn display_victory_screen(
 ){
     let victory_message = "VICTORY !";
     let victory_description= "You flee the place.";
-    let x: f32 = -0.2; //0.0;
+    //let x: f32 = 0.0;
     let mut y: f32 = 0.0;
 
     let text_to_display = vec![victory_message, victory_description];
 
     for text in text_to_display{
+        let x = - (text.len() as f32 / 2.0 * CHAR_SIZE);
         let text_placement = Vec3::new(x, y, 0.0);
         let ascii_text = spawn_ascii_text(
             &mut commands,
@@ -44,7 +45,7 @@ fn display_victory_screen(
         commands.entity(ascii_text)
         .insert(OnScreenMenu);
 
-        y -= 0.1    //0.2
+        y -= 2.0 * CHAR_SIZE;
     }
 
 

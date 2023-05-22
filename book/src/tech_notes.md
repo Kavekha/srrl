@@ -15,9 +15,9 @@ Les unités UI sont des pixels logiques, compensés par le DPI Scaling. Yeah.
 
 
 # Unités de mesure & positionnement
-La Camera affiche 500.0 "unitées monde".  
+La Camera considère 1.0 pixel comme une unité monde.    
 Elle suit le Player dans le jeu.  
-Elle est à 0.0,0.0 sur le Menu principal.  
+Elle est à 0.0,0.0 par défaut.  
 
 Ascii.png contient 16 rangées de 16 colonnes.  
 Ils sont en 8x8 pixels.
@@ -29,16 +29,14 @@ Avec le Sprite Ascii.0, une valeur differente de 1.0 permets d'aggrandir le pixe
 Cela permets de faire des traits (Comme le cadre des boutons du NineSlice) ou des barres de vie.  
 
 Le Ascii text a pour point de départ le "Left Center".  
-Chaque lettre + espace a une taille de 0.9 x TILE_SIZE.  
+Chaque lettre + espace a une taille de 0.9 x CHAR_SIZE.  
 
-Le Player est créé comme un Ascii Sprite: 0.9.  
-Son Positionnement est à 2.0 * TILE_SIZE, -2.0 * TILE_SIZE et une distance de 900.0.  
-Sa vitesse de deplacement par defaut est de 6.0 * TILE_SIZE par tick, soit 0.6 unités / tick.  
+Le Player est créé avec son image pour taille. 
+Sa vitesse de deplacement par defaut est de 6.0 * TILE_SIZE par tick, soit 6 x TILE_SIZE unités / seconde.  
 
 La Map est créée sur la base d'une Grid avec des integers x et y.  
-Le positionnement se fait à x * TILE_SIZE et -y * TILE_SIZE.  
-Une grille de [0..10][0..10] placera donc la grille [0][0] à 0.0,0.0, la grille [0][1] à 0.0,-0.9 etc.  
-Cela signifie qu'un personnage à la position 12.0,14.0 est à la grille [int(12.0 / TILE_SIZE)][int(14.0 / TILE_SIZE)] soit [13][15], 
+Le positionnement dans le monde se fait à x * TILE_SIZE et -y * TILE_SIZE.  
+Une grille de [0..10][0..10] placera donc la grille [0][0] à 0.0,0.0, la grille [0][1] à 0.0,-(1 * TILE_SIZE) etc.  
 
 # Deplacement
 Très contre-intuitif pour le moment.  
@@ -50,13 +48,3 @@ Je me deplace vers la gauche : -1, +0.
 J'arrive à 37, 23.
 Pour aller à gauche je vais donc vers le negatif (Monde), ce qui se traduit par une réduction sur la map (Grid).
 BAS / HAUT sont donc inversés entre Grid et Monde.  
-
-
-# Tableau
-|| Element | World Unit | Modified by TILE_SIZE? | Final Result ||
-| TILE_SIZE | 0.1 | N/A | 0.1 |
-| Vue Camera | 500.0 | N/A | 500.0 |
-| AsciiSheet Tile 8x8 | 0.9 | N/A | 0.9 |
-| Ascii Text + Space | 0.9 | Oui | 0.09 |
-| Ascii Sprite | 0.9 | Non | 0.9 |
-

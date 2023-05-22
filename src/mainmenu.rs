@@ -1,7 +1,7 @@
 use bevy::{prelude::*, app::AppExit};
 
 use crate::{
-    despawn_screen, AppState, GameState, TILE_SIZE,
+    despawn_screen, AppState, GameState, HEIGHT, CHAR_SIZE, RESOLUTION,
     ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice},
     //SHOW_MAPGEN_VISUALIZER,
 };
@@ -98,7 +98,7 @@ fn spawn_menu_button(
     size: Vec2
 ) -> Entity {
     let nine_slice = spawn_nine_slice(commands, ascii, indices, size.x, size.y);
-    let x_offset = (-size.x / 2.0 + 1.5) * TILE_SIZE;
+    let x_offset = (-size.x / 2.0 + 1.5) * CHAR_SIZE;
     let text = spawn_ascii_text(commands, ascii, text, Vec3::new(x_offset, 0.0, 0.0));
 
     commands
@@ -122,7 +122,7 @@ fn spawn_main_menu(
     let box_height = 3.0;
     let box_center_x = 0.0;
 
-    let mut box_center_y = box_height * TILE_SIZE / 2.0;
+    let mut box_center_y = box_height * CHAR_SIZE / 2.0;
 
     // Start game button
     let start_game_text = "Start game";
@@ -142,7 +142,7 @@ fn spawn_main_menu(
 
      let quit_app_text = "Quit";
      let quit_app_width = (quit_app_text.len()+ 2) as f32;
-     box_center_y -= box_height * TILE_SIZE;
+     box_center_y -= box_height * CHAR_SIZE;
 
      spawn_menu_button(
         &mut commands, 
@@ -158,16 +158,40 @@ fn spawn_main_menu(
 
 fn spawn_title(
     mut commands: Commands,
-    ascii: Res<AsciiSheet>
+    ascii: Res<AsciiSheet>,
+    asset_server: Res<AssetServer>,
 ) {
+
+    let middle_upper = HEIGHT / 4.0;
+    let img_width = 384.0;
+    let img_height = 48.0;
+    let img_mid_x = (HEIGHT * RESOLUTION / 4.0) - (img_width / 2.0);
+
+    let title_drop = commands.spawn(SpriteBundle {
+        texture: asset_server.load("title/shadowrun_title_alone.png"),    //asset_server.load("temp_tiles/Sewers_wall.png"),
+        transform: Transform {
+            //translation: Vec3::new(img_mid_x, middle_upper / 2.0, 0.0),
+            translation: Vec3::new(-0.2, middle_upper, 0.0),
+            scale: Vec3::splat(1.0),   //splat(1.0),
+            ..default()
+        },
+        ..default()
+    })
+    .id();
+    commands.entity(title_drop)
+    .insert(OnScreenMenu);
+
+
+    /*
     let title_drop = "SHADOWRUN";
     //let title_width = (title_drop.len()+ 2) as f32; 
 
     //TODO: Where the f is this? 0.0 = Center, -1.0 ==> totaly out of scope. There is a modifier somewhere? Tilesize?
+    
 
     let text_placement= Vec3::new(
         -0.2,
-        0.3,
+        middle_upper,
         0.0);
 
     let ascii_text = spawn_ascii_text(
@@ -179,7 +203,7 @@ fn spawn_title(
 
     commands.entity(ascii_text)
     .insert(OnScreenMenu);
-
+    */
 }
 
 // TODO : Deplacer avec meilleure visibilité dans un Mod menu?
