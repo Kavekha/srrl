@@ -106,11 +106,11 @@ fn init_new_game(
 }
 
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]
 pub struct Player;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]
 pub struct Stats {
     speed: f32
@@ -125,10 +125,10 @@ pub struct TileExit;
 #[derive(Component)]
 pub struct GameMap;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]
 pub struct Npc;
 
-#[derive(Component, Reflect, Default)]
+#[derive(Component, Reflect, Default, Debug)]
 #[reflect(Component)]
 pub struct Monster;

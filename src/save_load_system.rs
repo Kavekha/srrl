@@ -1,8 +1,10 @@
+use bevy::ecs::archetype::Archetype;
 use bevy::ecs::system::SystemState;
+use bevy::reflect::{TypeRegistryInternal, TypeRegistry};
 use bevy::transform::commands;
 use bevy::{prelude::*, tasks::IoTaskPool};
 use std::{fs::File, io::Write};
-use std::path::Path;
+use std::path::{Path, Component};
 
 pub struct SaveLoadPlugin;
 
@@ -33,7 +35,7 @@ impl Plugin for SaveLoadPlugin{
 
 // System with World are exclusive and can only have world as argument.
 fn save_game(
-    mut world: &mut World,
+    mut world: &mut World
     //commands: &mut Commands
     //mut app_state: ResMut<NextState<AppState>>,
     //mut game_state: ResMut<NextState<GameState>>,    
@@ -41,26 +43,13 @@ fn save_game(
     println!("Save game!");
     // New world we will save.
     let mut scene_world = World::new();
-
-    // Components to save
-    let mut player = Player::from_world(world);
-    let mut stats = Stats::from_world(world);
-    let mut npc = Npc::from_world(world);
-    let mut monster = Monster::from_world(world);
-
-    // Components spawn in the world we'll save.
-    // TODO: Là c'est la merde: Faut tout recréer...???!
-    scene_world.spawn((
-        player,
-        stats,
-        npc,
-        monster
-    ));
+    
 
     // Insert and save resources: Je n'ai besoin que de la map, elle contient les infos dont j'ai besoin.
     // TODO: Dans l'ideal, la Seed de la map me suffirait pour la reproduire.
     // REMEMBER: 1. On recupere une Option: P-e y a une map, p-e pas.  2. Je créé une variable Map avec le contenu de Some current_map (Il y en a) et je peux travailler avec car oui, il y en a.
     // Else : agir si y en a pas. current_map.is_none => y en a pas, mais je me fiche du contenu. current_map.is_some => y en a, mais je me fiche aussi du contenu.
+ 
     let current_map = world.get_resource::<Map>();
     if let Some(map) = current_map {
         scene_world.insert_resource(Map{
@@ -71,7 +60,8 @@ fn save_game(
     }
 
     let type_registry = world.resource::<AppTypeRegistry>();    // Tous les trucs que j'ai registered avec .register_type<Component)()
-    let scene = DynamicScene::from_world(&scene_world, type_registry);
+    //let scene = DynamicScene::from_world(&scene_world, type_registry);
+    let scene = DynamicScene::from_world(&scene_world, &type_registry);
 
     // Je serialise la scene.
     let serialized_scene = scene.serialize_ron(type_registry).unwrap();
