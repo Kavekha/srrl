@@ -5,7 +5,8 @@ use bevy::{
 use crate::{
     commons::{tile_collision_check},
     TILE_SIZE, GameState, despawn_screen,
-    game::{Player, Stats, TileCollider, TileExit},    
+    game::{Player, Stats, TileCollider, TileExit},
+    AppState,
     //map_builders::pathfinding::{world_to_grid_position, grid_to_world_position} //DEBUG
 };
 
@@ -41,11 +42,20 @@ fn player_input(
     mut player_query: Query<(&Player, &mut Transform, &Stats)>,
     wall_query: Query<&Transform, (With<TileCollider>, Without<Player>)>,
     keys: Res<Input<KeyCode>>,
-    time: Res<Time>
+    time: Res<Time>,
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>
 ) {
     let (_player, mut transform, stats) = player_query.single_mut();
 
     let mut y_delta: f32 = 0.0;
+
+    //EScape menu in game
+    if keys.just_pressed(KeyCode::Escape) {
+        game_state.set(GameState::Disabled);
+        app_state.set(AppState::MainMenu);
+    }
+
     if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
         y_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
     }

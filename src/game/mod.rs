@@ -11,7 +11,6 @@ use crate::{
         map::Map,
         MapGenHistory,
     },
-    ascii::AsciiSheet,
     game::spawners::{spawn_npc, spawn_player},
     map_builders::{
         random_builder,
@@ -39,6 +38,7 @@ pub enum GameState {
     GameMap,    // La map et le perso qui s'y balade.
     GameOverScreen,
     VictoryScreen,
+    QuitGame
 }  
 
 pub struct GamePlugin;
@@ -59,7 +59,6 @@ impl Plugin for GamePlugin {
 
 fn init_new_game(
     mut commands: Commands, 
-    ascii: Res<AsciiSheet>,
     mut game_state: ResMut<NextState<GameState>>,
     asset_server: Res<AssetServer>,
 ){

@@ -36,6 +36,7 @@ impl Plugin for MainMenuPlugin{
         app
             .add_systems(OnEnter(AppState::MainMenu), spawn_title)
             .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)      
+            .add_systems(OnEnter(AppState::MainMenu), menu_camera)    
             .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
             .add_systems(Update, main_menu_input.run_if(in_state(AppState::MainMenu)))
             .add_systems(Update, hightligh_menu_button.run_if(in_state(AppState::MainMenu)))
@@ -119,6 +120,8 @@ fn spawn_main_menu(
     ascii: Res<AsciiSheet>,
     nine_slice_indices: Res<NineSliceIndices>
 ){
+    println!("Main Menu spawned");
+
     let box_height = 3.0;
     let box_center_x = 0.0;
 
@@ -158,20 +161,19 @@ fn spawn_main_menu(
 
 fn spawn_title(
     mut commands: Commands,
-    ascii: Res<AsciiSheet>,
     asset_server: Res<AssetServer>,
 ) {
 
     let middle_upper = HEIGHT / 4.0;
     let img_width = 384.0;
-    let img_height = 48.0;
+    //let img_height = 48.0;
     let img_mid_x = (HEIGHT * RESOLUTION / 4.0) - (img_width / 2.0);
 
     let title_drop = commands.spawn(SpriteBundle {
         texture: asset_server.load("title/shadowrun_title_alone.png"),    //asset_server.load("temp_tiles/Sewers_wall.png"),
         transform: Transform {
-            //translation: Vec3::new(img_mid_x, middle_upper / 2.0, 0.0),
-            translation: Vec3::new(-0.2, middle_upper, 0.0),
+            translation: Vec3::new(0.0, middle_upper / 2.0, 0.0),
+            //translation: Vec3::new(-0.2, middle_upper, 0.0),
             scale: Vec3::splat(1.0),   //splat(1.0),
             ..default()
         },

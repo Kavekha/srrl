@@ -31,7 +31,6 @@ fn display_gameover_screen(
     println!("Afficher YOU DIED"); //DEBUG
     let gameover_message = "YOU DIED.";
     let gameover_description= "A ghoul has eaten you.";
-    let x: f32 = 0.0;
     let mut y: f32 = 0.0;
 
     let text_to_display = vec![gameover_message, gameover_description];

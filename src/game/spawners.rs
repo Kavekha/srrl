@@ -2,20 +2,11 @@
 // Spawners receive x,y positions WORLD based.
 use bevy::prelude::*;
 
-use crate::{
-    ascii::{
-        spawn_ascii_sprite,
-        AsciiSheet,
-    },
-    game::{Player, Stats, Npc},
-    map_builders::{
-        pathfinding::{Position, world_to_grid_position},
-    }
-};
+use crate::game::{Player, Stats, Npc};
 
 
 pub fn spawn_sprite(
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     asset_server: &AssetServer,
     x: f32,
     y: f32,
