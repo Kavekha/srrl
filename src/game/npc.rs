@@ -107,11 +107,11 @@ fn behavior_decision(
     mut commands: Commands,
     map: Res<Map>,
     player_query: Query<(&Player, &mut Transform)>,
-    entity_transform_query: Query<(Entity, &mut Transform), Without<Player>>,
+    entity_transform_query: Query<(Entity, &mut Transform, &Npc), Without<Player>>,
     entity_pathfinding_query: Query<(Entity, &mut Pathfinding)>,
 ){
     // Pour chaque NPC:
-    for (entity, &npc_transform) in entity_transform_query.iter() {
+    for (entity, &npc_transform, _npc) in entity_transform_query.iter() {
         // Mon point de depart.
         let (start_pos_x, start_pos_y) = world_to_grid_position(npc_transform.translation.x, npc_transform.translation.y);
         let start = Position(start_pos_x, start_pos_y);
