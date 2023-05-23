@@ -10,7 +10,6 @@ use crate::{
         Player, Stats, Npc, Monster,
         //spawners::spawn_npc, spawn_npc_old,
     },
-    ascii::AsciiSheet,
     commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position, grid_to_world_position},
@@ -112,7 +111,7 @@ fn behavior_decision(
     entity_pathfinding_query: Query<(Entity, &mut Pathfinding)>,
 ){
     // Pour chaque NPC:
-    for (entity, &npc_transform, npc) in entity_transform_query.iter() {
+    for (entity, &npc_transform, _npc) in entity_transform_query.iter() {
         // Mon point de depart.
         let (start_pos_x, start_pos_y) = world_to_grid_position(npc_transform.translation.x, npc_transform.translation.y);
         let start = Position(start_pos_x, start_pos_y);
