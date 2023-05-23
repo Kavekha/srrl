@@ -54,6 +54,11 @@ impl Plugin for GamePlugin {
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_systems(OnEnter(GameState::NewGame), init_new_game)
+            //Register things to save
+            .register_type::<Player>()
+            .register_type::<Stats>()
+            .register_type::<Npc>()
+            .register_type::<Monster>()
             ;
     }
 }
@@ -101,10 +106,12 @@ fn init_new_game(
 }
 
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Player;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Stats {
     speed: f32
 }
@@ -118,8 +125,10 @@ pub struct TileExit;
 #[derive(Component)]
 pub struct GameMap;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Npc;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Monster;
