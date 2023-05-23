@@ -1,8 +1,11 @@
 use bevy::{prelude::*, app::AppExit};
+use std::path::Path;
+use std::env;
 
 use crate::{
     despawn_screen, AppState, GameState, HEIGHT, CHAR_SIZE, RESOLUTION,
     ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice},
+    save_load_system::SCENE_FILE_PATH,
     //SHOW_MAPGEN_VISUALIZER,
 };
 
@@ -13,6 +16,7 @@ use crate::{
 #[derive(Component, PartialEq, Clone, Copy)]
 pub enum MainMenuOptions {
     StartGame,
+    LoadGame,
     Quit
 }
 
@@ -20,7 +24,7 @@ pub enum MainMenuOptions {
 #[derive(Component)]
 pub struct OnScreenMenu;
 
-pub const MAIN_MENU_OPTIONS_COUNT: isize = 2;  //Necessaire pour la selection d'une option dans l'input.
+pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'une option dans l'input.
 
 #[derive(Resource)]
 pub struct MainMenuSelection {
@@ -45,6 +49,7 @@ impl Plugin for MainMenuPlugin{
 }
 
 
+
 /// Lance une nouvelle partie depuis le menu. 
 // TODO : Deplacer dans Game Mod?
 fn start_new_game(
@@ -54,6 +59,15 @@ fn start_new_game(
     app_state.set(AppState::Game);
     game_state.set(GameState::NewGame);
 
+}
+
+fn load_saved_game(
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+){
+    app_state.set(AppState::Game);
+    game_state.set(GameState::LoadGame);
+    //load_game(app_state, game_state);
 }
 
 /// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
@@ -140,7 +154,28 @@ fn spawn_main_menu(
         MainMenuOptions::StartGame,
         Vec2::new(start_game_width, box_height)
     ); 
- 
+    
+    let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+    println!("Mon Path est : {:?}", has_file);
+    if has_file {
+        // Load game button.
+        let load_game_text = "Load game";
+        let load_game_width = (load_game_text.len()+ 2) as f32;  
+        box_center_y -= box_height * CHAR_SIZE;
+
+        spawn_menu_button(
+            &mut commands, 
+            &ascii, 
+            &nine_slice_indices, 
+            Vec3::new(box_center_x, box_center_y, 100.0),
+            load_game_text, 
+            MainMenuOptions::LoadGame,
+            Vec2::new(load_game_width, box_height)
+        ); 
+    } else {
+        println!("je n'ai pas de fichier de save")
+    }
+
      // Quit game button.
 
      let quit_app_text = "Quit";
@@ -219,16 +254,35 @@ fn main_menu_input(
     let mut current_selection = menu_selection.selected as isize;
     if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
         current_selection -=1;
+        //TODO : crado, si pas de save.
+        let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+        if current_selection == 1 && !has_file{
+            current_selection -= 1;
+        }
     }
     if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
-        current_selection -=1;
+        current_selection +=1;
+        //TODO : crado, si pas de save.
+        let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+        if current_selection == 1 && !has_file{
+            current_selection += 1;
+        }
     }
 
     current_selection = (current_selection + MAIN_MENU_OPTIONS_COUNT) % MAIN_MENU_OPTIONS_COUNT;
 
     menu_selection.selected = match current_selection {
         0 => MainMenuOptions::StartGame,
-        1 => MainMenuOptions::Quit,
+        1 => {
+            let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+            if has_file {
+                MainMenuOptions::LoadGame
+            } else {
+                println!("No file, no load");
+                MainMenuOptions::StartGame
+            }         
+        },
+        2 => MainMenuOptions::Quit,
         _ => unreachable!("Bad Main menu selection")
     };
 
@@ -238,6 +292,10 @@ fn main_menu_input(
             MainMenuOptions::StartGame => {
                 println!("Go to game !");
                 start_new_game(app_state, game_state);
+            }
+            MainMenuOptions::LoadGame => {
+                println!("Load a saved game!");
+                load_saved_game(app_state, game_state);
             }
             MainMenuOptions::Quit => {
                 println!("Quit App");   //TODO

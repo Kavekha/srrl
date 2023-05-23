@@ -38,7 +38,8 @@ pub enum GameState {
     GameMap,    // La map et le perso qui s'y balade.
     GameOverScreen,
     VictoryScreen,
-    QuitGame
+    SaveGame,
+    LoadGame,
 }  
 
 pub struct GamePlugin;

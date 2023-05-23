@@ -52,8 +52,9 @@ fn player_input(
 
     //EScape menu in game
     if keys.just_pressed(KeyCode::Escape) {
-        game_state.set(GameState::Disabled);
-        app_state.set(AppState::MainMenu);
+        // Save game... //TODO: Refacto, ca ne devrait pas être là.
+        game_state.set(GameState::SaveGame);
+        //app_state.set(AppState::MainMenu);
     }
 
     if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
