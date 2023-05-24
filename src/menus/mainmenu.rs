@@ -5,7 +5,7 @@ use std::env;
 use crate::{
     despawn_screen, AppState, GameState, HEIGHT, CHAR_SIZE, RESOLUTION,
     ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice},
-    save_load_system::SCENE_FILE_PATH,
+    save_load_system::has_save_file,
     //SHOW_MAPGEN_VISUALIZER,
 };
 
@@ -155,9 +155,9 @@ fn spawn_main_menu(
         Vec2::new(start_game_width, box_height)
     ); 
     
-    let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-    println!("Mon Path est : {:?}", has_file);
-    if has_file {
+    //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+    //println!("Mon Path est : {:?}", has_file);
+    if has_save_file() {
         // Load game button.
         let load_game_text = "Load game";
         let load_game_width = (load_game_text.len()+ 2) as f32;  
@@ -255,16 +255,16 @@ fn main_menu_input(
     if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
         current_selection -=1;
         //TODO : crado, si pas de save.
-        let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-        if current_selection == 1 && !has_file{
+        //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+        if current_selection == 1 && !has_save_file() { // !has_file{
             current_selection -= 1;
         }
     }
     if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
         current_selection +=1;
         //TODO : crado, si pas de save.
-        let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-        if current_selection == 1 && !has_file{
+        //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+        if current_selection == 1 && !has_save_file() {     // !has_file{
             current_selection += 1;
         }
     }
@@ -274,8 +274,8 @@ fn main_menu_input(
     menu_selection.selected = match current_selection {
         0 => MainMenuOptions::StartGame,
         1 => {
-            let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-            if has_file {
+            //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+            if has_save_file() {    //if has_file {
                 MainMenuOptions::LoadGame
             } else {
                 println!("No file, no load");

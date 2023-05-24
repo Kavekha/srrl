@@ -19,7 +19,7 @@ use crate::{
     menus::{
         victory::VictoryPlugin,
         gameover::GameOverPlugin,
-    }
+    },    
 };
 
 pub mod player;
@@ -59,6 +59,7 @@ impl Plugin for GamePlugin {
             .register_type::<Stats>()
             .register_type::<Npc>()
             .register_type::<Monster>()
+            .register_type::<Option<Entity>>()
             ;
     }
 }

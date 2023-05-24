@@ -1,4 +1,6 @@
-#[derive(Clone)]
+use bevy::reflect::{Reflect, FromReflect};
+
+#[derive(PartialEq, Copy, Clone, Debug, Reflect, FromReflect)]
 pub struct Rectangle {
     pub x1 : i32,
     pub x2 : i32,

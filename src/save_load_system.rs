@@ -1,3 +1,5 @@
+use moonshine_save::prelude::*;
+
 use bevy::ecs::archetype::Archetype;
 use bevy::ecs::system::SystemState;
 use bevy::reflect::{TypeRegistryInternal, TypeRegistry};
@@ -16,6 +18,7 @@ use crate::{
 };
 
 
+
 pub const SCENE_FILE_PATH: &str = "scenes/load_scene_example.scn.ron";
 
 // The new, updated scene data will be saved here so that you can see the changes
@@ -32,6 +35,10 @@ impl Plugin for SaveLoadPlugin{
     }
 }
 
+pub fn has_save_file() -> bool {
+    Path::new("assets/scenes/load_scene_example.scn.ron").exists()
+}
+
 
 // System with World are exclusive and can only have world as argument.
 fn save_game(
@@ -41,23 +48,22 @@ fn save_game(
     //mut game_state: ResMut<NextState<GameState>>,    
 ){
     println!("Save game!");
-    // New world we will save.
-    let mut scene_world = World::new();
-    
+  
+    let scene_world = World::new();
 
     // Insert and save resources: Je n'ai besoin que de la map, elle contient les infos dont j'ai besoin.
     // TODO: Dans l'ideal, la Seed de la map me suffirait pour la reproduire.
     // REMEMBER: 1. On recupere une Option: P-e y a une map, p-e pas.  2. Je créé une variable Map avec le contenu de Some current_map (Il y en a) et je peux travailler avec car oui, il y en a.
     // Else : agir si y en a pas. current_map.is_none => y en a pas, mais je me fiche du contenu. current_map.is_some => y en a, mais je me fiche aussi du contenu.
- 
-    let current_map = world.get_resource::<Map>();
-    if let Some(map) = current_map {
-        scene_world.insert_resource(Map{
-            tiles: map.tiles.clone(),
-            width: map.width.clone(),
-            height: map.height.clone(),
-            blocked: map.blocked.clone()});
+    /*
+    let mapcopy = world.get_resource::<Map>();
+    if let Some(copied_map) = mapcopy {
+        let map = copied_map.clone();
+        scene_world.insert_resource(map);
+            
+   
     }
+    */
 
     let type_registry = world.resource::<AppTypeRegistry>();    // Tous les trucs que j'ai registered avec .register_type<Component)()
     //let scene = DynamicScene::from_world(&scene_world, type_registry);
