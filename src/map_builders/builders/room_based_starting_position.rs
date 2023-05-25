@@ -3,8 +3,7 @@ use crate::{
         MetaMapBuilder,
         pathfinding::Position,
         BuilderMap,
-    },  
-    //SHOW_MAPGEN_VISUALIZER, 
+    }, 
 };
 
 pub struct RoomBasedStartingPosition {}

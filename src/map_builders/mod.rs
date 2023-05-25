@@ -1,22 +1,22 @@
 pub mod map;
-pub mod rectangle;
-pub mod simple_map;
-pub mod pathfinding;
 pub mod commons;
-pub mod room_based_exits;
-pub mod room_based_spawner;
-pub mod room_based_starting_position;
-pub mod sewer_map;
+pub mod pathfinding;
+
+mod rectangle;
+mod builders;
+mod maps; 
 
 use crate::{
     map_builders::{
-        map::{Map},
         rectangle::Rectangle,
-        room_based_exits::RoomBasedExits,
-        room_based_spawner::RoomBasedSpawner,
-        room_based_starting_position::RoomBasedStartingPosition,
-        sewer_map::SewerMapBuilder,
-        pathfinding::Position,        
+        builders::{
+            room_based_exits::RoomBasedExits,
+            room_based_spawner::RoomBasedSpawner,
+            room_based_starting_position::RoomBasedStartingPosition,
+        },
+        maps::{sewer_map::SewerMapBuilder,},        
+        pathfinding::Position,  
+        map::Map,      
     },
     globals::SHOW_MAPGEN_VISUALIZER,
 };
