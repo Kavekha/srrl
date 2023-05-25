@@ -1,11 +1,4 @@
-/*
-use std::{
-    cmp::{max, min},
-    fs::File,
-    io::{BufReader, BufRead},
-};
-*/
-
+use serde::{Deserialize, Serialize};
 use::bevy::prelude::*;
 
 use crate::{
@@ -21,7 +14,8 @@ pub const MAPHEIGHT : usize = 50;
 pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
 
 
-#[derive(Resource, Clone)]
+#[derive(Resource, Clone, Reflect, Default, Deserialize, Serialize, Debug)]
+#[reflect(Resource)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,

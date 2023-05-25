@@ -1,4 +1,6 @@
 use std::cmp::{max, min};
+use serde::{Deserialize, Serialize};
+use bevy::reflect::{Reflect, FromReflect};
 
 use crate::map_builders::{
     rectangle::Rectangle,
@@ -6,7 +8,8 @@ use crate::map_builders::{
 };
 
 
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug, Reflect, FromReflect, Deserialize, Serialize)]
+//#[reflect(Resource)]
 pub enum TileType {
     Wall, 
     Floor,

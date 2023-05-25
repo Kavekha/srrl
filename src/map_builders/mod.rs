@@ -13,7 +13,6 @@ pub mod sewer_map;
 use crate::{
     map_builders::{
         map::{Map},
-        //simple_map::SimpleMapBuilder,
         rectangle::Rectangle,
         room_based_exits::RoomBasedExits,
         room_based_spawner::RoomBasedSpawner,

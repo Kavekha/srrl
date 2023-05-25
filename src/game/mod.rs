@@ -1,5 +1,6 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
+use serde::{Serialize, Deserialize};
 
 use self::tilemap::TileMapPlugin;
 use self::player::PlayerPlugin;
@@ -19,7 +20,7 @@ use crate::{
     menus::{
         victory::VictoryPlugin,
         gameover::GameOverPlugin,
-    }
+    },    
 };
 
 pub mod player;
@@ -42,18 +43,30 @@ pub enum GameState {
     LoadGame,
 }  
 
+#[derive(Resource)]
+pub struct ShouldSave {
+    pub to_save: bool
+}
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(Map::new())
+            .insert_resource(ShouldSave{to_save: false})
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
             .add_plugin(TileMapPlugin)
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_systems(OnEnter(GameState::NewGame), init_new_game)
+            //Register things to save
+            .register_type::<Player>()
+            .register_type::<Stats>()
+            .register_type::<Npc>()
+            .register_type::<Monster>()
+            .register_type::<Option<Entity>>()
             ;
     }
 }
@@ -101,10 +114,12 @@ fn init_new_game(
 }
 
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+#[reflect(Component)]
 pub struct Player;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+#[reflect(Component)]
 pub struct Stats {
     speed: f32
 }
@@ -118,8 +133,10 @@ pub struct TileExit;
 #[derive(Component)]
 pub struct GameMap;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+#[reflect(Component)]
 pub struct Npc;
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+#[reflect(Component)]
 pub struct Monster;

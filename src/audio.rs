@@ -98,17 +98,3 @@ pub fn setup_audio_mainmenu(
     let handle = audio_sinks.get_handle(music);
     commands.insert_resource(MusicController(handle));
 }
-
-/*
-#[warn(dead_code)]
-fn pause_audio(
-    audio_sinks: Res<Assets<AudioSink>>,
-    music_controller: Res<MusicController>,
-) {
-    if let Some(sink) = audio_sinks.get(&music_controller.0) {
-        if !sink.is_paused() {
-            sink.pause()
-        }
-    }
-}
-*/
