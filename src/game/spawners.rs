@@ -26,6 +26,7 @@ pub fn spawn_sprite(
     sprite
 }
 
+
 pub fn spawn_player(
     mut commands: &mut Commands,
     asset_server: &AssetServer,
@@ -44,6 +45,7 @@ pub fn spawn_player(
         .entity(player)
         .insert(Player)
         .insert(Name::new("Player"))
+        //.insert(Save)
         .insert(Stats {speed: 6.0});   
 
     player

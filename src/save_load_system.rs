@@ -1,16 +1,16 @@
-use moonshine_save::prelude::*;
-
-use bevy::ecs::archetype::Archetype;
+use bevy::ecs::archetype::{Archetype, ArchetypeId};
 use bevy::ecs::system::SystemState;
-use bevy::reflect::{TypeRegistryInternal, TypeRegistry};
-use bevy::transform::commands;
+use bevy::ecs::world;
+//use moonshine_save::prelude::*;
+use serde::{Deserialize, Serialize};
+
 use bevy::{prelude::*, tasks::IoTaskPool};
 use std::{fs::File, io::Write};
-use std::path::{Path, Component};
+use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::{Player, npc, Monster, Stats, Npc};
+use crate::game::{Player, Npc, Monster, Stats};
 use crate::map_builders::map::Map;
 use crate::{
     game::GameState,
@@ -18,6 +18,7 @@ use crate::{
 };
 
 
+const SAVE_PATH: &str = "army.ron";
 
 pub const SCENE_FILE_PATH: &str = "scenes/load_scene_example.scn.ron";
 
@@ -40,8 +41,98 @@ pub fn has_save_file() -> bool {
 }
 
 
+#[derive(Debug, Serialize, Deserialize)]
+struct SaveState {
+    //stability: Stability,
+    entities: Vec<SaveEntity>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct SaveEntity {
+    entity: Entity,
+    player: Option<Player>,
+    //skills: Option<Skills>,
+    stats: Option<Stats>,
+    npc: Option<Npc>, 
+    monster: Option<Monster>
+}
+
+impl SaveState {
+    pub fn create(world: &mut World) -> Self {
+        //let stability = world.get_resource::<Stability>().unwrap().clone();
+
+
+        SaveState {
+            //stability,
+            entities: SaveState::snapshot_entities(world),
+        }
+    }
+
+    fn snapshot_entities(world: &World) -> Vec<SaveEntity> {
+        let archetypes = world.archetypes();
+        let all_archetypes: Vec<&Archetype> = archetypes
+            .iter()
+            .filter(|archetype| match archetype.id() {
+                ArchetypeId::EMPTY | ArchetypeId::INVALID => false,
+                _ => true,
+            })
+            .collect();
+
+        let mut entities = Vec::with_capacity(all_archetypes.len());
+        for archetype in all_archetypes {
+            for archetype_entity in archetype.entities() {
+                let current_entity = &archetype_entity.entity();
+                    entities.push(SaveEntity {
+                        entity: *current_entity,
+                        player: world.get::<Player>(*current_entity).cloned(),
+                        //skills: world.get::<Skills>(*entity).cloned(),
+                        npc: world.get::<Npc>(*current_entity).cloned(),
+                        monster: world.get::<Monster>(*current_entity).cloned(),
+                        stats: world.get::<Stats>(*current_entity).cloned(),
+                    });
+
+            }
+        }
+        entities
+    }
+}
+
+pub fn save_game(world: &mut World) -> String {
+    let state = SaveState::create(world);
+    serde_json::to_string(&state).unwrap()
+}
+
+pub fn load_game(state: &str) -> World {
+    let state: SaveState = serde_json::from_str(state).unwrap();
+    let mut world = World::new();
+    //world.insert_resource(state.stability);
+
+
+    for entity in state.entities {
+        let mut e = world.spawn_empty();
+        if let Some(player) = entity.player {
+            e.insert(player);
+        }
+        /*
+        if let Some(skills) = entity.skills {
+            e.insert(skills);
+        }
+        */
+        if let Some(npc) = entity.npc {
+            e.insert(npc);
+        }
+        if let Some(monster) = entity.monster {
+            e.insert(monster);
+        }
+        if let Some(stats) = entity.stats {
+            e.insert(stats);
+        }
+    }
+    world
+}
+
 // System with World are exclusive and can only have world as argument.
-fn save_game(
+fn save_game_old(
     mut world: &mut World
     //commands: &mut Commands
     //mut app_state: ResMut<NextState<AppState>>,
@@ -105,7 +196,7 @@ pub fn change_states_after_save(
 }
 
 
-pub fn load_game(
+pub fn load_game_old(
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
 ) {

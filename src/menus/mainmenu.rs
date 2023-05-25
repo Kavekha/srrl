@@ -1,6 +1,4 @@
 use bevy::{prelude::*, app::AppExit};
-use std::path::Path;
-use std::env;
 
 use crate::{
     despawn_screen, AppState, GameState, HEIGHT, CHAR_SIZE, RESOLUTION,
