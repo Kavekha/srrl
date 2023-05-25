@@ -3,7 +3,7 @@ use bevy::{
     sprite::collide_aabb::collide
 };
 
-use crate::TILE_SIZE;
+use crate::globals::{TILE_SIZE};
 
 
 pub fn tile_collision_check(

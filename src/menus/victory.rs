@@ -2,10 +2,13 @@ use bevy::{prelude::*};
 
 use crate::{
     GameState, despawn_screen,
-    ascii::{spawn_ascii_text, AsciiSheet},
+    ascii::{spawn_ascii_text, },
     menus::mainmenu::menu_camera, 
-    ecs_elements::components::OnScreenMenu,
-    CHAR_SIZE,
+    ecs_elements::{
+        components::OnScreenMenu,
+        resources::AsciiSheet,
+    },
+    globals::CHAR_SIZE,
 };
 
 

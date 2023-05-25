@@ -1,16 +1,15 @@
 use bevy::{prelude::*};
 
 use crate::{
-    CHAR_SIZE,
-    ecs_elements::components::{NineSlice, AsciiText},
+    globals::{CHAR_SIZE},
+    ecs_elements::{
+        components::{NineSlice, AsciiText},
+        resources::AsciiSheet,
+    }
 };
 
 pub struct AsciiPlugin;
 
-
-
-# [derive(Resource)]
-pub struct AsciiSheet(Handle<TextureAtlas>);
 
 
 

@@ -15,36 +15,16 @@ mod map_builders;   //mod
 mod game;           //mod
 mod save_load_system;
 mod ecs_elements;
+mod globals;
 
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
-use game::GameState;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
+use ecs_elements::{AppState, GameState};
 
-
-pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
-pub const RESOLUTION: f32 = 16.0 / 9.0;
-pub const HEIGHT: f32 = 800.0;
-
-pub const TILE_SIZE: f32 = 32.0;
-pub const CHAR_SIZE: f32 = 16.0;  
-
-const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG 
-
-
-
-
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum AppState {
-    #[default]
-    MainMenu,
-    Game
-}
-
-
-
+use crate::globals::{HEIGHT, RESOLUTION, CLEAR};
 
 fn main() {
     println!("App launched");

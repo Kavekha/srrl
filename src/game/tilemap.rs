@@ -4,24 +4,22 @@
 use bevy::{prelude::*};
 
 use crate::{
-    ascii::{spawn_ascii_sprite, AsciiSheet},
-    TILE_SIZE, despawn_screen,
+    ascii::{spawn_ascii_sprite, },
+    globals::{TILE_SIZE, MAP_WALL, MAP_FLOOR},
+    despawn_screen,
     map_builders::{
         commons::TileType,
         map::{Map},
-        MapGenHistory
     },
     game::{
-        GameState,
         spawners::spawn_sprite,
     },
-    ecs_elements::components::{ GameMap, TileCollider, TileExit,},
-    SHOW_MAPGEN_VISUALIZER
+    ecs_elements::{
+        components::{ GameMap, TileCollider, TileExit,},
+        resources::{MapGenHistory,AsciiSheet,GameState},
+    },
+    globals::{SHOW_MAPGEN_VISUALIZER, FIXED_MAPGEN_NEW_SNAPSHOT},
 };
-
-const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
-const MAP_WALL: &str = "temp_tiles/Sewers_wall.png";
-const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
 
 
 

@@ -1,5 +1,3 @@
-use bevy::prelude::*;
-
 pub mod map;
 pub mod rectangle;
 pub mod simple_map;
@@ -18,19 +16,11 @@ use crate::{
         room_based_spawner::RoomBasedSpawner,
         room_based_starting_position::RoomBasedStartingPosition,
         sewer_map::SewerMapBuilder,
+        pathfinding::Position,        
     },
-    map_builders::pathfinding::Position, SHOW_MAPGEN_VISUALIZER,
+    globals::SHOW_MAPGEN_VISUALIZER,
 };
 
-
-
-
-
-#[derive(Resource)]
-pub struct MapGenHistory{
-    pub history: Vec<Map>,
-    pub index: usize,
-}
 
 
 pub struct BuilderMap {

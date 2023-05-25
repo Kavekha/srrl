@@ -6,16 +6,12 @@ use crate::{
         commons::TileType,
         pathfinding::{Position, Successor}
     },
+    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}
 };
 
 
-pub const MAPWIDTH : usize = 80;
-pub const MAPHEIGHT : usize = 50;
-pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
-
 
 #[derive(Resource, Clone, Reflect, Default, Deserialize, Serialize, Debug)]
-#[reflect(Resource)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,

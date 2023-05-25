@@ -10,11 +10,12 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::ecs_elements::components::{Player, Npc, Monster, Stats};
-use crate::map_builders::map::Map;
 use crate::{
-    game::{GameState,ShouldSave},
-    AppState,
+    ecs_elements::{
+        components::{Player, Npc, Monster, Stats},
+        resources::{ShouldSave, AppState, GameState},
+    },
+    map_builders::map::Map,
 };
 
 
@@ -87,7 +88,7 @@ impl SaveState {
                 let current_entity = &archetype_entity.entity();
                 //println!("entity : {:?}", current_entity);
                 
-                let entity = world.entity(*current_entity).id();
+                //let entity = world.entity(*current_entity).id();
 
                 /*
                 if let Some(player) = world.entity(world.entity(*current_entity).id()).get::<Player>(){

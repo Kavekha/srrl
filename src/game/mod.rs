@@ -6,10 +6,9 @@ use self::player::PlayerPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
-    SHOW_MAPGEN_VISUALIZER,
+    globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::{
-        map::Map,
-        MapGenHistory,
+        map::Map,        
     },
     game::spawners::{spawn_npc, spawn_player},
     map_builders::{
@@ -20,7 +19,10 @@ use crate::{
         victory::VictoryPlugin,
         gameover::GameOverPlugin,
     },    
-    ecs_elements::components::{Monster},
+    ecs_elements::{
+        components::{Monster},
+        resources::{ShouldSave, MapGenHistory, GameState},
+    }
 };
 
 pub mod player;
@@ -29,24 +31,7 @@ pub mod npc;
 pub mod spawners;
 
 
-// Enum
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum GameState {
-    #[default]
-    Disabled,
-    NewGame,    // Nouvelle partie, setup Map & player creation
-    MapGeneration,
-    GameMap,    // La map et le perso qui s'y balade.
-    GameOverScreen,
-    VictoryScreen,
-    SaveGame,
-    LoadGame,
-}  
 
-#[derive(Resource)]
-pub struct ShouldSave {
-    pub to_save: bool
-}
 
 pub struct GamePlugin;
 

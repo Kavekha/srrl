@@ -2,9 +2,13 @@ use bevy::prelude::*;
 
 use crate::{
     commons::{tile_collision_check},
-    TILE_SIZE, GameState, despawn_screen,
+    globals::TILE_SIZE,
+    despawn_screen,
     game::{ShouldSave},
-    ecs_elements::components::{TileCollider, TileExit, Player, Stats, }
+    ecs_elements::{
+        components::{TileCollider, TileExit, Player, Stats, },
+        resources::GameState,
+    },
 };
 
 

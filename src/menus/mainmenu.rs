@@ -1,26 +1,16 @@
 use bevy::{prelude::*, app::AppExit};
 
 use crate::{
-    despawn_screen, AppState, GameState, HEIGHT, CHAR_SIZE, 
-    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, },
+    despawn_screen, 
+    globals::{HEIGHT, CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, 
+    ascii::{spawn_ascii_text, NineSliceIndices, spawn_nine_slice, },
     save_load_system::has_save_file,
-    ecs_elements::components::{MainMenuOptions, OnScreenMenu, NineSlice,},
+    ecs_elements::{
+        components::{MainMenuOptions, OnScreenMenu, NineSlice,},
+        resources::{MainMenuSelection, AsciiSheet, GameState, AppState},
+    },
 };
 
-
-
-// ENUMS
-
-
-
-
-
-pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'une option dans l'input.
-
-#[derive(Resource)]
-pub struct MainMenuSelection {
-    selected: MainMenuOptions
-}
 
 
 // PLUGIN
@@ -191,7 +181,7 @@ fn spawn_title(
 ) {
 
     let middle_upper = HEIGHT / 4.0;
-    let img_width = 384.0;
+    //let img_width = 384.0;
     //let img_height = 48.0;
     //let img_mid_x = (HEIGHT * RESOLUTION / 4.0) - (img_width / 2.0);
 

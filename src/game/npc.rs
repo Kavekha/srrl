@@ -5,8 +5,12 @@ use bevy::{
 use pathfinding::prelude::astar;
 
 use crate::{
-    GameState, despawn_screen, TILE_SIZE,
-    ecs_elements::components::{Player, Stats, Npc, Monster, Pathfinding, MoveTo},
+    despawn_screen,
+    globals::{TILE_SIZE, FIXED_TIMESTEP, BASE_RANGED_VIEW},
+    ecs_elements::{
+        components::{Player, Stats, Npc, Monster, Pathfinding, MoveTo},
+        resources::GameState,
+    },
     commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position, grid_to_world_position},
@@ -14,8 +18,7 @@ use crate::{
     }
 };
 
-const FIXED_TIMESTEP: f32 = 0.1;
-const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+
 
 pub struct NpcPlugin;
 
