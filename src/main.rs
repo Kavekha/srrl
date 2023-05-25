@@ -9,13 +9,13 @@ use bevy::{
 mod ascii;
 mod audio;
 mod commons;
-
 mod menus;
 mod map_builders;   //mod
 mod game;           //mod
 mod save_load_system;
 mod ecs_elements;
 mod globals;
+mod render;
 
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
@@ -23,8 +23,10 @@ use audio::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
 use ecs_elements::{AppState, GameState};
+use render::GraphicsPlugin;
 
 use crate::globals::{HEIGHT, RESOLUTION, CLEAR};
+
 
 fn main() {
     println!("App launched");
@@ -55,6 +57,7 @@ fn main() {
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
         .add_plugin(SaveLoadPlugin)
+        .add_plugin(GraphicsPlugin)
         .run(); 
 }
 

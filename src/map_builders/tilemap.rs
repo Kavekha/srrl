@@ -1,5 +1,4 @@
-//TODO : Refacto conversion Map > Tilemap: Check this: https://github.com/frederickjjoubert/bevy-pathfinding/blob/main/src/tilemap.rs
-
+//Here goes the TileMap logic.
 
 use bevy::{prelude::*};
 
@@ -15,13 +14,11 @@ use crate::{
         spawners::spawn_sprite,
     },
     ecs_elements::{
-        components::{ GameMap, TileCollider, TileExit,},
+        components::{ GameMap, TileCollider, TileExit, GridPosition, Tile},
         resources::{MapGenHistory,AsciiSheet,GameState},
     },
     globals::{SHOW_MAPGEN_VISUALIZER, FIXED_MAPGEN_NEW_SNAPSHOT},
 };
-
-
 
 
 pub struct TileMapPlugin;
@@ -29,17 +26,51 @@ pub struct TileMapPlugin;
 impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
+            // Init.
+            .add_systems(OnEnter(GameState::GameMap), spawn_map)
+            
             //SHOW_MAPGEN_VISUALIZER must be true.
             .insert_resource(FixedTime::new_from_secs(FIXED_MAPGEN_NEW_SNAPSHOT))
             .add_systems(FixedUpdate, (
                 display_map_generation, 
                 despawn_screen::<GameMap>
             ).chain().run_if(
-                in_state(GameState::MapGeneration)))           
+                in_state(GameState::MapGeneration)))  
+            ;       
+            
 
-            .add_systems(OnEnter(GameState::GameMap), create_map)
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
+            //.add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
     }
+}
+
+// Logic map.
+fn spawn_map(
+    mut commands: Commands,
+    mut map: ResMut<Map>
+) {
+    println!("Map generation begins..");
+
+    let mut tiles:Vec<Entity> = Vec::new();
+
+    //We create logic entities from the map.tiles
+    let mut x = 0;
+    let mut y = 0;
+    for (_idx, tile_info) in map.tiles.iter().enumerate(){
+        let tile = commands.spawn((
+            Tile {tiletype: *tile_info},
+            GridPosition{x,y}
+        ))
+        .id();
+
+        tiles.push(tile); 
+          
+        x += 1;
+        if x > map.width as i32 - 1 {
+            x = 0;
+            y += 1;
+        }
+    }    
+    map.entity_tiles = tiles; 
 }
 
 fn create_map(

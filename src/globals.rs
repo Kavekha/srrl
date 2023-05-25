@@ -11,6 +11,8 @@ pub const CHAR_SIZE: f32 = 16.0;
 // temp
 pub const MAP_WALL: &str = "temp_tiles/Sewers_wall.png";
 pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
+pub const MAP_EXIT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Ajouter.
+pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Trouver une image.
 
 // MAP GENERATOR
 pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG 

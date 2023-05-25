@@ -1,14 +1,14 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
 
-use self::tilemap::TileMapPlugin;
 use self::player::PlayerPlugin;
 use self::npc::NpcPlugin;
 
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::{
-        map::Map,        
+        map::Map, 
+        TileMapPlugin       
     },
     game::spawners::{spawn_npc, spawn_player},
     map_builders::{
@@ -26,7 +26,6 @@ use crate::{
 };
 
 pub mod player;
-pub mod tilemap;
 pub mod npc;
 pub mod spawners;
 
