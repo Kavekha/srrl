@@ -8,7 +8,6 @@ use crate::{
     GameState, despawn_screen, TILE_SIZE,
     game::{
         Player, Stats, Npc, Monster,
-        //spawners::spawn_npc, spawn_npc_old,
     },
     commons::tile_collision_check,
     map_builders::{
@@ -60,45 +59,6 @@ pub struct MoveTo{
     pub destination: Position
 }
 
-
-/*
-fn display_pathfinding(
-    mut commands: Commands,
-    mut entity_pathfinding_query: Query<(Entity, &mut Pathfinding)>,
-    entity_display_query: Query<(Entity, &mut DisplayedPath)>,
-    ascii: Res<AsciiSheet>,
-    keys: Res<Input<KeyCode>>,
-){
-    if keys.just_pressed(KeyCode::Space){
-        //if any False, ==> all true.
-        //if none False, then ==> all false.
-        let mut pathdisplay_toggle = true;
-        for (entity, mut pathfinding) in entity_pathfinding_query.iter_mut(){
-            if !pathfinding.debug{
-                let paths = pathfinding.path.clone();
-                //println!("{:?}:DISPLAY: {:?}", entity, paths);
-                for path in paths{
-                    let (path_x, path_y) = (path.0, path.1);
-                    let wp_x = path_x as f32* TILE_SIZE;
-                    let wp_y = -(path_y as f32) * TILE_SIZE;
-                    let displaying = spawn_npc_old(&mut commands, &ascii, wp_x, wp_y, format!("pathfinding {:?}",entity),'*' as usize);
-                    commands.entity(displaying).insert(DisplayedPath);
-                    commands.entity(displaying).remove::<Npc>();
-                }
-                pathfinding.debug = true;
-                pathdisplay_toggle = true;
-            } else {
-                pathdisplay_toggle = false;
-            }
-        } 
-        if !pathdisplay_toggle{
-            for (display_entity, _displayedpath) in entity_display_query.iter(){
-                commands.entity(display_entity).despawn_recursive();
-            }
-        }
-    }
-}
- */
 
 /// Quel est mon goal, puis-je l'atteindre, que dois je faire sinon?
 /// Créé ou remplace le pathfinding, qui determine le trajet du NPC.

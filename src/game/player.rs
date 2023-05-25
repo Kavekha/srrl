@@ -1,13 +1,9 @@
-use bevy::{
-    prelude::*
-};
+use bevy::prelude::*;
 
 use crate::{
     commons::{tile_collision_check},
     TILE_SIZE, GameState, despawn_screen,
-    game::{Player, Stats, TileCollider, TileExit},
-    AppState,
-    //map_builders::pathfinding::{world_to_grid_position, grid_to_world_position} //DEBUG
+    game::{Player, Stats, TileCollider, TileExit, ShouldSave}
 };
 
 
@@ -39,12 +35,11 @@ fn camera_follow(
 }
 
 fn player_input(
+    mut should_save: ResMut<ShouldSave>,
     mut player_query: Query<(&Player, &mut Transform, &Stats)>,
     wall_query: Query<&Transform, (With<TileCollider>, Without<Player>)>,
     keys: Res<Input<KeyCode>>,
-    time: Res<Time>,
-    mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>
+    time: Res<Time>
 ) {
     let (_player, mut transform, stats) = player_query.single_mut();
 
@@ -52,10 +47,8 @@ fn player_input(
 
     //EScape menu in game
     if keys.just_pressed(KeyCode::Escape) {
-        // Save game... //TODO: Refacto, ca ne devrait pas être là.
-        game_state.set(GameState::SaveGame);
-        //app_state.set(AppState::MainMenu);
-    }
+        should_save.to_save = true;
+      }
 
     if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
         y_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
@@ -102,7 +95,7 @@ fn player_step_check(
         .iter()
         .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
         {
-            println!("Exit !");      //TOLOG   
+            println!("Exit !");      
             game_state.set(GameState::VictoryScreen); 
         }
 }

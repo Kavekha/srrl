@@ -6,8 +6,6 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
-//use moonshine_save::prelude::*;
-
 mod ascii;
 mod audio;
 mod commons;
@@ -75,8 +73,6 @@ fn main() {
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
         .add_plugin(SaveLoadPlugin)
-        //.add_plugin(LoadPlugin)
-        //.add_plugin(SavePlugin)
         .run(); 
 }
 

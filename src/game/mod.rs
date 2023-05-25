@@ -43,12 +43,18 @@ pub enum GameState {
     LoadGame,
 }  
 
+#[derive(Resource)]
+pub struct ShouldSave {
+    pub to_save: bool
+}
+
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(Map::new())
+            .insert_resource(ShouldSave{to_save: false})
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
             .add_plugin(TileMapPlugin)

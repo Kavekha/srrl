@@ -217,28 +217,6 @@ fn spawn_title(
     .insert(OnScreenMenu);
 
 
-    /*
-    let title_drop = "SHADOWRUN";
-    //let title_width = (title_drop.len()+ 2) as f32; 
-
-    //TODO: Where the f is this? 0.0 = Center, -1.0 ==> totaly out of scope. There is a modifier somewhere? Tilesize?
-    
-
-    let text_placement= Vec3::new(
-        -0.2,
-        middle_upper,
-        0.0);
-
-    let ascii_text = spawn_ascii_text(
-        &mut commands,
-        &ascii,
-        &title_drop,
-        text_placement
-    );
-
-    commands.entity(ascii_text)
-    .insert(OnScreenMenu);
-    */
 }
 
 // TODO : Deplacer avec meilleure visibilité dans un Mod menu?
