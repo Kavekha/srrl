@@ -10,7 +10,7 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::{Player, Npc, Monster, Stats};
+use crate::ecs_elements::components::{Player, Npc, Monster, Stats};
 use crate::map_builders::map::Map;
 use crate::{
     game::{GameState,ShouldSave},

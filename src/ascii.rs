@@ -1,14 +1,18 @@
 use bevy::{prelude::*};
 
-use crate::{CHAR_SIZE};
+use crate::{
+    CHAR_SIZE,
+    ecs_elements::components::{NineSlice, AsciiText},
+};
 
 pub struct AsciiPlugin;
+
+
 
 # [derive(Resource)]
 pub struct AsciiSheet(Handle<TextureAtlas>);
 
-#[derive(Component)]
-pub struct AsciiText;
+
 
 impl Plugin for AsciiPlugin {
     fn build(&self, app: &mut App) {
@@ -38,8 +42,7 @@ pub struct NineSliceIndices {
     vertical_index: usize
 }
 
-#[derive(Component)]
-pub struct NineSlice;
+
 
 pub fn spawn_nine_slice(
     commands: &mut Commands,

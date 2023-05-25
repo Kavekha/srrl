@@ -12,9 +12,10 @@ use crate::{
         MapGenHistory
     },
     game::{
-        GameState, GameMap, TileCollider, TileExit,
+        GameState,
         spawners::spawn_sprite,
     },
+    ecs_elements::components::{ GameMap, TileCollider, TileExit,},
     SHOW_MAPGEN_VISUALIZER
 };
 

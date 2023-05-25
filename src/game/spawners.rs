@@ -2,7 +2,7 @@
 // Spawners receive x,y positions WORLD based.
 use bevy::prelude::*;
 
-use crate::game::{Player, Stats, Npc};
+use crate::ecs_elements::components::{Player, Stats, Npc};
 
 
 pub fn spawn_sprite(

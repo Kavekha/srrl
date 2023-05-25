@@ -14,6 +14,7 @@ mod menus;
 mod map_builders;   //mod
 mod game;           //mod
 mod save_load_system;
+mod ecs_elements;
 
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
@@ -21,6 +22,7 @@ use audio::GameAudioPlugin;
 use game::GameState;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
+
 
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
