@@ -7,8 +7,8 @@ use crate::{
     save_load_system::has_save_file,
     ecs_elements::{
         components::{MainMenuOptions, OnScreenMenu, NineSlice,},
-        resources::{MainMenuSelection, AsciiSheet, GameState, AppState},
-    },
+        resources::{MainMenuSelection, AsciiSheet,},
+    }, states::{AppState, GameState},
 };
 
 

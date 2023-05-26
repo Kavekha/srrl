@@ -16,13 +16,14 @@ mod save_load_system;
 mod ecs_elements;
 mod globals;
 mod render;
+mod states;
 
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
-use ecs_elements::{AppState, GameState};
+use states::{AppState, GameState};
 
 use crate::globals::{HEIGHT, RESOLUTION, CLEAR};
 

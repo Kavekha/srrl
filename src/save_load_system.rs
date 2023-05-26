@@ -11,11 +11,13 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::ecs_elements::{Piece, GridPosition};
+use crate::ecs_elements::{Piece};
+use crate::game::GridPosition;
+use crate::states::{GameState, AppState};
 use crate::{
     ecs_elements::{
         components::{Player, Npc, Monster, Stats},
-        resources::{ShouldSave, AppState, GameState},
+        resources::{ShouldSave,},
     },
     map_builders::map::Map,
 };

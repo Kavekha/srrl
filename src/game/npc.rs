@@ -9,13 +9,12 @@ use crate::{
     globals::{TILE_SIZE, FIXED_TIMESTEP, BASE_RANGED_VIEW},
     ecs_elements::{
         components::{Player, Stats, Npc, Monster, Pathfinding, MoveTo},
-        resources::GameState,
     },
     commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position, grid_to_world_position},
         map::{Map},
-    }
+    }, states::GameState
 };
 
 

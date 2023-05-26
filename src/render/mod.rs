@@ -9,8 +9,7 @@ use self::{
 };
 
 use crate::{
-    ecs_elements::GameState,
-    globals::TILE_SIZE
+    globals::TILE_SIZE, states::GameState
 };
 
 

@@ -7,8 +7,7 @@ use crate::{
     game::{ShouldSave},
     ecs_elements::{
         components::{TileCollider, TileExit, Player, Stats, },
-        resources::GameState,
-    },
+    }, states::GameState,
 };
 
 

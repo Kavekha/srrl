@@ -6,9 +6,9 @@ use crate::{
     menus::mainmenu::menu_camera,
     ecs_elements::{
         components::OnScreenMenu, 
-        resources:: AsciiSheet, GameState, 
+        resources:: AsciiSheet,
     },
-    globals::CHAR_SIZE,
+    globals::CHAR_SIZE, states::GameState,
 };
 
 

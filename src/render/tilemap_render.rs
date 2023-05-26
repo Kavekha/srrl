@@ -2,10 +2,10 @@ use bevy::prelude::*;
 
 use crate::{
     ecs_elements::{
-        components::{GridPosition, Tile, TileExit, TileCollider, GameMapRender}
+        components::{TileExit, TileCollider, GameMapRender}
     }, 
     globals::{MAP_WALL, MAP_DEFAULT, MAP_EXIT, MAP_FLOOR},
-    map_builders::TileType, game::spawners::spawn_sprite_render, render::get_world_position
+    map_builders::TileType, game::{spawners::spawn_sprite_render, GridPosition, Tile}, render::get_world_position
 };
 
 

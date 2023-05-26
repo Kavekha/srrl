@@ -5,7 +5,7 @@ mod movements;
 mod menus;
 mod text;
 
-pub use tiles::{TileCollider, GameMap, TileExit, Tile, GridPosition, GameMapRender};
+pub use tiles::{TileCollider, TileExit, GameMapRender};
 pub use combat::Stats;
 pub use characters::{Monster, Player, Npc, Piece};
 pub use movements::{Pathfinding, MoveTo, };
