@@ -3,9 +3,9 @@ use bevy::{prelude::*};
 mod system_map;
 pub mod components;
 
-use crate::states::GameState;
+use crate::{states::GameState, ecs_elements::GameMapRender, despawn_screen};
 
-use self::system_map::spawn_map;
+use self::{system_map::spawn_map, components::GameMap};
 pub use components::{GridPosition, Tile};
 
 
@@ -30,10 +30,9 @@ impl Plugin for TileBoardPlugin {
                 in_state(GameState::MapGeneration)))       
             */
 
-            /*
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>)     // RENDER
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMapRender>)       // RENDER
-            */
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>) 
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMapRender>)       // RENDER   TODO
+
             ;  
     }
 }

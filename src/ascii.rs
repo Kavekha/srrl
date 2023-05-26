@@ -2,10 +2,7 @@ use bevy::{prelude::*};
 
 use crate::{
     globals::{CHAR_SIZE},
-    ecs_elements::{
-        components::{NineSlice, AsciiText},
-        resources::AsciiSheet,
-    }
+    ecs_elements::components::{AsciiText}, menus::{AsciiSheet, NineSlice}
 };
 
 pub struct AsciiPlugin;

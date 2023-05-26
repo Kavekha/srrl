@@ -1,15 +1,8 @@
 use bevy::{prelude::*};
 
-use crate::{
-    GameState, despawn_screen,
-    ascii::{spawn_ascii_text, },
-    menus::mainmenu::menu_camera, 
-    ecs_elements::{
-        components::OnScreenMenu,
-        resources::AsciiSheet,
-    },
-    globals::CHAR_SIZE,
-};
+use crate::{states::GameState, despawn_screen, globals::CHAR_SIZE, ascii::spawn_ascii_text};
+
+use super::{components::OnScreenMenu, AsciiSheet, mainmenu::menu_camera};
 
 
 
