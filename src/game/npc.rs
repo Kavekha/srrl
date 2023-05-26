@@ -5,9 +5,11 @@ use bevy::{
 use pathfinding::prelude::astar;
 
 use crate::{
-    GameState, despawn_screen, TILE_SIZE,
-    game::{
-        Player, Stats, Npc, Monster,
+    despawn_screen,
+    globals::{TILE_SIZE, FIXED_TIMESTEP, BASE_RANGED_VIEW},
+    ecs_elements::{
+        components::{Player, Stats, Npc, Monster, Pathfinding, MoveTo},
+        resources::GameState,
     },
     commons::tile_collision_check,
     map_builders::{
@@ -16,8 +18,7 @@ use crate::{
     }
 };
 
-const FIXED_TIMESTEP: f32 = 0.1;
-const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+
 
 pub struct NpcPlugin;
 
@@ -35,28 +36,6 @@ impl Plugin for NpcPlugin{
             .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             ;         
     }
-}
-
-
-
-#[derive(Component)]
-pub struct DisplayedPath;
-
-#[derive(Component)]
-pub struct Pathfinding{
-    pub start: Position,
-    pub goal: Position,
-    pub path: Vec<Position>,
-    pub step: usize,
-    pub dirty: bool,    //Si True, verifie la position vs Step Destination pour savoir si chemin atteint et next ordre de mouvement necessaire.
-    pub debug: bool,
-}
-
-#[derive(Component)]
-pub struct MoveTo{
-    pub x: f32,
-    pub y: f32,
-    pub destination: Position
 }
 
 

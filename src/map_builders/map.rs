@@ -6,21 +6,18 @@ use crate::{
         commons::TileType,
         pathfinding::{Position, Successor}
     },
+    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}
 };
 
 
-pub const MAPWIDTH : usize = 80;
-pub const MAPHEIGHT : usize = 50;
-pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
-
 
 #[derive(Resource, Clone, Reflect, Default, Deserialize, Serialize, Debug)]
-#[reflect(Resource)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
     pub height: i32,
     pub blocked: Vec<bool>,
+    pub entity_tiles: Vec<Entity>   //TODO : remplacer tiles <Vec>TileType dans la generation.
 }
 
 impl Map {
@@ -49,6 +46,7 @@ impl Map {
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
             blocked: vec![false; MAPCOUNT],
+            entity_tiles: vec![]
         }
     }   
 

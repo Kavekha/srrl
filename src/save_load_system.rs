@@ -5,23 +5,28 @@ use bevy::ecs::system::SystemState;
 use serde::{Deserialize, Serialize};
 
 use bevy::{prelude::*, tasks::IoTaskPool};
+use std::fs;
 use std::{fs::File, io::Write};
 use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::{Player, Npc, Monster, Stats};
-use crate::map_builders::map::Map;
+use crate::ecs_elements::{Piece, GridPosition};
 use crate::{
-    game::{GameState,ShouldSave},
-    AppState,
+    ecs_elements::{
+        components::{Player, Npc, Monster, Stats},
+        resources::{ShouldSave, AppState, GameState},
+    },
+    map_builders::map::Map,
 };
 
 
 pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";
 
 
-
+// Add a new entry in SaveEntity for saving specific components.
+// Add the new component in Snapshot function for has_component_to_save and SaveEntity::new()
+// Add this new component in the load function too.
 impl Plugin for SaveLoadPlugin{
     fn build(&self, app: &mut App) {
         app         
@@ -48,14 +53,17 @@ struct SaveState {
     entities: Vec<SaveEntity>,
 }
 
+// Bool if marker, Option if data.
 #[derive(Debug, Serialize, Deserialize)]
 struct SaveEntity {
     entity: Entity,
-    player: Option<Player>,
+    player: bool, 
     //skills: Option<Skills>,
     stats: Option<Stats>,
-    npc: Option<Npc>, 
-    monster: Option<Monster>
+    npc: bool, 
+    monster: bool,
+    piece: bool,
+    grid_position: Option<GridPosition>
 }
 
 impl SaveState {
@@ -87,7 +95,7 @@ impl SaveState {
                 let current_entity = &archetype_entity.entity();
                 //println!("entity : {:?}", current_entity);
                 
-                let entity = world.entity(*current_entity).id();
+                //let entity = world.entity(*current_entity).id();
 
                 /*
                 if let Some(player) = world.entity(world.entity(*current_entity).id()).get::<Player>(){
@@ -101,6 +109,8 @@ impl SaveState {
                 || world.get::<Npc>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Monster>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Stats>(world.entity(*current_entity).id()).is_some()
+                || world.get::<Piece>(world.entity(*current_entity).id()).is_some()
+                || world.get::<GridPosition>(world.entity(*current_entity).id()).is_some()
                 {
                     has_component_to_save = true
                 }
@@ -108,11 +118,13 @@ impl SaveState {
                 if has_component_to_save {
                     entities.push(SaveEntity {
                         entity: *current_entity,
-                        player: world.get::<Player>(*current_entity).cloned(),
+                        player: world.get::<Player>(*current_entity).is_some(),
                         //skills: world.get::<Skills>(*entity).cloned(),
-                        npc: world.get::<Npc>(*current_entity).cloned(),
-                        monster: world.get::<Monster>(*current_entity).cloned(),
+                        npc: world.get::<Npc>(*current_entity).is_some(),
+                        monster: world.get::<Monster>(*current_entity).is_some(),
                         stats: world.get::<Stats>(*current_entity).cloned(),
+                        piece: world.get::<Piece>(*current_entity).is_some(),
+                        grid_position: world.get::<GridPosition>(*current_entity).cloned(),
                     });
                 }
             }        
@@ -121,36 +133,6 @@ impl SaveState {
     }
 }
 
-
-
-pub fn load_game_new(state: &str) -> World {
-    let state: SaveState = serde_json::from_str(state).unwrap();
-    let mut world = World::new();
-    //world.insert_resource(state.stability);
-
-
-    for entity in state.entities {
-        let mut e = world.spawn_empty();
-        if let Some(player) = entity.player {
-            e.insert(player);
-        }
-        /*
-        if let Some(skills) = entity.skills {
-            e.insert(skills);
-        }
-        */
-        if let Some(npc) = entity.npc {
-            e.insert(npc);
-        }
-        if let Some(monster) = entity.monster {
-            e.insert(monster);
-        }
-        if let Some(stats) = entity.stats {
-            e.insert(stats);
-        }
-    }
-    world
-}
 
 // System with World are exclusive and can only have world as argument.
 fn save_game(
@@ -166,9 +148,9 @@ fn save_game(
     println!("Save game!");
 
     let state = SaveState::create(world);
-    let mut saved_json = serde_json::to_string(&state).unwrap();
+    let saved_json = serde_json::to_string(&state).unwrap();
 
-    println!("Save json is {:?}", state);
+    //println!("Save json is {:?}", state);
 
 
     // Formule magique pour enregistrer dans un fichier.
@@ -190,7 +172,7 @@ fn save_game(
         ResMut<NextState<GameState>>,
         )> = SystemState::new(&mut world);
 
-    let (mut app_state, mut game_state) = system_state.get_mut(&mut world);
+    let (app_state, game_state) = system_state.get_mut(&mut world);
     
     state_back_main_menu(app_state, game_state);
 
@@ -212,12 +194,10 @@ pub fn load_game(
 ) {
     println!("Load game!");
 
-    /*
-
-    let data = fs::read_to_string("assets/scenes/load_scene_example.scn.ron")
+    let data = fs::read_to_string(SCENE_FILE_PATH)
     .expect("Unable to read file");
 
-    let json: serde_json::Value = serde_json::from_str(&data)
+    let _json: serde_json::Value = serde_json::from_str(&data)
         .expect("JSON does not have correct format.");
 
     let state: SaveState = serde_json::from_str(&data).unwrap();
@@ -226,22 +206,24 @@ pub fn load_game(
 
     for entity in state.entities {
         let mut e = world.spawn_empty();
-        if let Some(player) = entity.player {
-            e.insert(player);
+
+        if entity.player {
+            e.insert(Player);
+        }        
+        if entity.npc {
+            e.insert(Npc);
         }
-        /*
-        if let Some(skills) = entity.skills {
-            e.insert(skills);
-        }
-        */
-        if let Some(npc) = entity.npc {
-            e.insert(npc);
-        }
-        if let Some(monster) = entity.monster {
-            e.insert(monster);
+        if entity.monster {
+            e.insert(Monster);
         }
         if let Some(stats) = entity.stats {
             e.insert(stats);
+        }
+        if entity.piece {
+            e.insert(Piece);
+        }
+        if let Some(grid_position) = entity.grid_position {
+            e.insert(grid_position);
         }
     }
 
@@ -252,8 +234,7 @@ pub fn load_game(
     });
     */
 
-     */
-        // Back to main menu
+    // Back to main menu
     // Simulate a "system" to get options we need to change the app_state & game_state at the end.
     let mut system_state: SystemState<(
         ResMut<NextState<AppState>>,
@@ -270,7 +251,7 @@ pub fn state_after_load_game(
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
 ){
-    game_state.set(GameState::NewGame); //TODO : changer quand load utilisable
+    game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
     app_state.set(AppState::Game);
 }
 
@@ -298,5 +279,38 @@ fn component_id_to_component_info(world: &World, component_id: ComponentId) -> O
 fn extract_component_name(component_info: &ComponentInfo) -> &str
 {
     component_info.name()
+}
+
+
+pub fn load_game_new(state: &str) -> World {
+    let state: SaveState = serde_json::from_str(state).unwrap();
+    let mut world = World::new();
+    //world.insert_resource(state.stability);
+
+
+    for entity in state.entities {
+        let mut e = world.spawn_empty();
+        if let Some(player) = entity.player {
+            e.insert(player);
+        }
+        /*
+        if let Some(skills) = entity.skills {
+            e.insert(skills);
+        }
+        */
+        if let Some(npc) = entity.npc {
+            e.insert(npc);
+        }
+        if let Some(monster) = entity.monster {
+            e.insert(monster);
+        }
+        if let Some(stats) = entity.stats {
+            e.insert(stats);
+        }
+        if let Some(piece) = entity.piece {
+            e.insert(piece);
+        }
+    }
+    world
 }
 */

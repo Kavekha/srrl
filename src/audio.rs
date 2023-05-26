@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use crate::{
     AppState,
-    GameState
+    GameState,
+    ecs_elements::resources::MusicController,
 };
 
 
 pub struct GameAudioPlugin;
 
-#[derive(Resource)]
-struct MusicController(Handle<AudioSink>);
 
 
 impl Plugin for GameAudioPlugin{

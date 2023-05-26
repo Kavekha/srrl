@@ -1,38 +1,32 @@
-use bevy::prelude::*;
-
 pub mod map;
-pub mod rectangle;
-pub mod simple_map;
-pub mod pathfinding;
 pub mod commons;
-pub mod room_based_exits;
-pub mod room_based_spawner;
-pub mod room_based_starting_position;
-pub mod sewer_map;
+pub mod pathfinding;
+pub mod tilemap;
+
+mod rectangle;
+mod builders;
+mod maps; 
+
+pub use commons::TileType;
+pub use tilemap::TileMapPlugin;
 
 use crate::{
     map_builders::{
-        map::{Map},
         rectangle::Rectangle,
-        room_based_exits::RoomBasedExits,
-        room_based_spawner::RoomBasedSpawner,
-        room_based_starting_position::RoomBasedStartingPosition,
-        sewer_map::SewerMapBuilder,
+        builders::{
+            room_based_exits::RoomBasedExits,
+            room_based_spawner::RoomBasedSpawner,
+            room_based_starting_position::RoomBasedStartingPosition,
+        },
+        maps::{sewer_map::SewerMapBuilder,},        
+        pathfinding::Position,  
+        map::Map,      
     },
-    map_builders::pathfinding::Position, SHOW_MAPGEN_VISUALIZER,
+    globals::SHOW_MAPGEN_VISUALIZER,
 };
 
 
-
-
-
-#[derive(Resource)]
-pub struct MapGenHistory{
-    pub history: Vec<Map>,
-    pub index: usize,
-}
-
-
+#[derive(Clone)]
 pub struct BuilderMap {
     pub spawn_list: Vec<Position>, //Vec<(usize, String)>,
     pub map: Map,
@@ -49,6 +43,7 @@ impl BuilderMap {
         }
     }
 }
+
 
 pub struct BuilderChain {
     starter: Option<Box<dyn InitialMapBuilder>>,

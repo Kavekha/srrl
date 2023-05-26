@@ -1,33 +1,16 @@
 use bevy::{prelude::*, app::AppExit};
 
 use crate::{
-    despawn_screen, AppState, GameState, HEIGHT, CHAR_SIZE, RESOLUTION,
-    ascii::{spawn_ascii_text, AsciiSheet, NineSliceIndices, spawn_nine_slice, NineSlice},
+    despawn_screen, 
+    globals::{HEIGHT, CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, 
+    ascii::{spawn_ascii_text, NineSliceIndices, spawn_nine_slice, },
     save_load_system::has_save_file,
-    //SHOW_MAPGEN_VISUALIZER,
+    ecs_elements::{
+        components::{MainMenuOptions, OnScreenMenu, NineSlice,},
+        resources::{MainMenuSelection, AsciiSheet, GameState, AppState},
+    },
 };
 
-
-
-// ENUMS
-
-#[derive(Component, PartialEq, Clone, Copy)]
-pub enum MainMenuOptions {
-    StartGame,
-    LoadGame,
-    Quit
-}
-
-// COMPONENTS & RESOURCES
-#[derive(Component)]
-pub struct OnScreenMenu;
-
-pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'une option dans l'input.
-
-#[derive(Resource)]
-pub struct MainMenuSelection {
-    selected: MainMenuOptions
-}
 
 
 // PLUGIN
@@ -198,9 +181,9 @@ fn spawn_title(
 ) {
 
     let middle_upper = HEIGHT / 4.0;
-    let img_width = 384.0;
+    //let img_width = 384.0;
     //let img_height = 48.0;
-    let img_mid_x = (HEIGHT * RESOLUTION / 4.0) - (img_width / 2.0);
+    //let img_mid_x = (HEIGHT * RESOLUTION / 4.0) - (img_width / 2.0);
 
     let title_drop = commands.spawn(SpriteBundle {
         texture: asset_server.load("title/shadowrun_title_alone.png"),    //asset_server.load("temp_tiles/Sewers_wall.png"),
