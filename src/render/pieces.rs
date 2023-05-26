@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{ecs_elements::{GridPosition, Piece, Player}, globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z}};
+use crate::{globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z}, game::{GridPosition, player::{Piece, Player}}};
 
 use super::get_world_position;
 

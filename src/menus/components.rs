@@ -14,3 +14,11 @@ pub enum MainMenuOptions {
     LoadGame,
     Quit
 }
+
+#[derive(Resource)]
+pub struct MainMenuSelection {
+    pub selected: MainMenuOptions
+}
+
+# [derive(Resource)]
+pub struct AsciiSheet(pub Handle<TextureAtlas>);

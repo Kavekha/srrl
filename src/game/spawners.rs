@@ -2,7 +2,7 @@
 // Spawners receive x,y positions WORLD based.
 use bevy::prelude::*;
 
-use crate::ecs_elements::components::{Player, Stats, Npc, Piece, Monster};
+use super::player::{Player, Npc, Stats, Monster, Piece};
 
 pub fn spawn_player(
     commands: &mut Commands,

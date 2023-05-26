@@ -2,34 +2,35 @@
 use bevy::prelude::*;
 
 use self::player::PlayerPlugin;
+use self::{tileboard::TileBoardPlugin,};
 use self::npc::NpcPlugin;
 
+pub mod player;
+pub mod npc;
+pub mod spawners;
+mod tileboard;
+
+pub use tileboard::components::{Tile, GridPosition};
+
+
+use crate::ecs_elements::MapGenHistory;
+use crate::game::player::Monster;
+use crate::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::{
         map::Map, 
-        TileMapPlugin    
     },
-    game::spawners::{spawn_npc, spawn_player},
+    game::{spawners::{spawn_npc, spawn_player}, },
     map_builders::{
         random_builder,
     },    
     menus::{
         victory::VictoryPlugin,
         gameover::GameOverPlugin,
-    },    
-    ecs_elements::{
-        components::{Monster},
-        resources::{ShouldSave, MapGenHistory, GameState}, GridPosition,
     }, 
-    render::GraphicsPlugin
+    render::GraphicsPlugin, states::GameState
 };
-
-pub mod player;
-pub mod npc;
-pub mod spawners;
-
-
 
 
 pub struct GamePlugin;
@@ -41,11 +42,11 @@ impl Plugin for GamePlugin {
             .insert_resource(ShouldSave{to_save: false})
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
-            .add_plugin(TileMapPlugin)
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_plugin(GraphicsPlugin)
-
+            .add_plugin(TileBoardPlugin)
+            
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             ;
     }

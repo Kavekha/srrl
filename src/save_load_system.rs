@@ -11,17 +11,16 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::ecs_elements::{Piece, GridPosition};
+use crate::game::GridPosition;
+use crate::game::player::{Stats, Player, Npc, Monster, Piece};
+use crate::globals::SCENE_FILE_PATH;
+use crate::states::{GameState, AppState};
 use crate::{
-    ecs_elements::{
-        components::{Player, Npc, Monster, Stats},
-        resources::{ShouldSave, AppState, GameState},
-    },
     map_builders::map::Map,
 };
 
 
-pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";
+
 
 
 // Add a new entry in SaveEntity for saving specific components.
@@ -36,6 +35,13 @@ impl Plugin for SaveLoadPlugin{
             ;         
     }
 }
+
+
+#[derive(Resource)]
+pub struct ShouldSave {
+    pub to_save: bool
+}
+
 
 pub fn has_save_file() -> bool {
     Path::new(SCENE_FILE_PATH).exists()

@@ -1,14 +1,12 @@
 pub mod map;
 pub mod commons;
 pub mod pathfinding;
-pub mod tilemap;
 
 mod rectangle;
 mod builders;
 mod maps; 
 
 pub use commons::TileType;
-pub use tilemap::TileMapPlugin;
 
 use crate::{
     map_builders::{

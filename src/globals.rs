@@ -35,3 +35,7 @@ pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'
 // PATHFINDING
 pub const FIXED_TIMESTEP: f32 = 0.1;
 pub const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+
+
+//SAVE
+pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";

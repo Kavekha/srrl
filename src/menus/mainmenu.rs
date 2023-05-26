@@ -1,15 +1,9 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{
-    despawn_screen, 
-    globals::{HEIGHT, CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, 
-    ascii::{spawn_ascii_text, NineSliceIndices, spawn_nine_slice, },
-    save_load_system::has_save_file,
-    ecs_elements::{
-        components::{MainMenuOptions, OnScreenMenu, NineSlice,},
-        resources::{MainMenuSelection, AsciiSheet, GameState, AppState},
-    },
-};
+use crate::{states::{AppState, GameState}, despawn_screen, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT, MAIN_MENU_OPTIONS_COUNT}, save_load_system::has_save_file};
+
+use super::{components::{MainMenuOptions, OnScreenMenu, MainMenuSelection}, NineSlice, AsciiSheet};
+
 
 
 

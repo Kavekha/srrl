@@ -1,15 +1,9 @@
 use bevy::{prelude::*};
 
-use crate::{
-    despawn_screen,
-    ascii::{spawn_ascii_text,},
-    menus::mainmenu::menu_camera,
-    ecs_elements::{
-        components::OnScreenMenu, 
-        resources:: AsciiSheet, GameState, 
-    },
-    globals::CHAR_SIZE,
-};
+use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, despawn_screen,};
+
+use super::{components::OnScreenMenu, mainmenu::menu_camera, AsciiSheet};
+
 
 
 // TODO: Refacto Victory & GameOver en un seul: Recap Screen?
@@ -22,7 +16,7 @@ impl Plugin for GameOverPlugin {
             .add_systems(OnEnter(GameState::GameOverScreen), display_gameover_screen)
             .add_systems(OnEnter(GameState::GameOverScreen), menu_camera)
             .add_systems(Update, gameover_menu_input.run_if(in_state(GameState::GameOverScreen)))
-            .add_systems(OnExit(GameState::GameOverScreen), despawn_screen::<OnScreenMenu>); 
+            .add_systems(OnExit(GameState::GameOverScreen), despawn_screen::<OnScreenMenu>);    //TODO : Despawn propre. Render
     }
 }
 
