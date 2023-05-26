@@ -26,7 +26,7 @@ use crate::{
 };
 
 
-
+#[derive(Clone)]
 pub struct BuilderMap {
     pub spawn_list: Vec<Position>, //Vec<(usize, String)>,
     pub map: Map,
@@ -43,6 +43,7 @@ impl BuilderMap {
         }
     }
 }
+
 
 pub struct BuilderChain {
     starter: Option<Box<dyn InitialMapBuilder>>,

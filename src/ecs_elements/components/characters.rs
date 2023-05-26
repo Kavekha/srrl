@@ -10,3 +10,6 @@ pub struct Npc;
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Monster;
+
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+pub struct Piece;

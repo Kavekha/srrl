@@ -2,10 +2,36 @@
 // Spawners receive x,y positions WORLD based.
 use bevy::prelude::*;
 
-use crate::ecs_elements::components::{Player, Stats, Npc};
+use crate::ecs_elements::components::{Player, Stats, Npc, Piece, Monster};
+
+pub fn spawn_player(
+    commands: &mut Commands,
+) -> Entity {
+    let player = commands.spawn(Piece).id();
+    commands
+        .entity(player)
+        .insert(Player)
+        .insert(Name::new("Player"))
+        .insert(Stats {speed: 6.0})
+        .id()  
+}
+
+pub fn spawn_npc(
+    commands: &mut Commands,
+) -> Entity {
+    let npc = commands.spawn(Piece).id();
+    commands
+        .entity(npc)
+        .insert(Name::new(format!("Ghoul")))
+        .insert(Stats {speed: 2.0})
+        .insert(Npc)
+        .insert(Monster)
+        .id()  
+}
 
 
-pub fn spawn_sprite(
+
+pub fn spawn_sprite_render(
     commands: &mut Commands,
     asset_server: &AssetServer,
     x: f32,
@@ -25,9 +51,9 @@ pub fn spawn_sprite(
 
     sprite
 }
+/* 
 
-
-pub fn spawn_player(
+pub fn spawn_player_render(
     mut commands: &mut Commands,
     asset_server: &AssetServer,
     x: f32,
@@ -51,7 +77,7 @@ pub fn spawn_player(
     player
 }
 
-pub fn spawn_npc(
+pub fn spawn_npc_render(
     mut commands: &mut Commands,
     asset_server: &AssetServer,
     x: f32,
@@ -74,5 +100,5 @@ pub fn spawn_npc(
     
     npc
 }
-
+*/
 

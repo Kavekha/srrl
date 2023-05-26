@@ -4,15 +4,10 @@ use crate::{
     ecs_elements::{
         components::{GridPosition, Tile, TileExit, TileCollider, GameMapRender}
     }, 
-    globals::{TILE_SIZE, MAP_WALL, MAP_DEFAULT, MAP_EXIT, MAP_FLOOR},
-    map_builders::TileType, game::spawners::spawn_sprite
+    globals::{MAP_WALL, MAP_DEFAULT, MAP_EXIT, MAP_FLOOR},
+    map_builders::TileType, game::spawners::spawn_sprite_render, render::get_world_position
 };
 
-pub fn check_map_sanity(
-    all_tiles_query: Query<(&GridPosition, &Tile)>,
-    //map: Res<Map>
-) {
-}
 
 pub fn spawn_map_render(
     mut commands: Commands,
@@ -25,8 +20,7 @@ pub fn spawn_map_render(
 
     for (_entity, grid_position, logic_tile) in all_tiles_query.iter() {
         // TODO : use grid_to_world function
-        let world_x = grid_position.x as f32 * TILE_SIZE;
-        let world_y = -(grid_position.y as f32 * TILE_SIZE);
+        let (world_x, world_y) = get_world_position(grid_position.x, grid_position.y);
 
         //texture & Z according to tile, before creation.   //TODO edition post creation maybe?
         let mut texture = MAP_DEFAULT;
@@ -38,11 +32,11 @@ pub fn spawn_map_render(
                 world_z = 100.0;    //TODO : Decider ce que represente le Z.
             }
             TileType::Floor => {texture = MAP_FLOOR}
-            _ => {texture = MAP_DEFAULT}
+            _ => {}
         }
 
         //Create entity.
-        let tile = spawn_sprite(
+        let tile = spawn_sprite_render(
                 &mut commands,
                 &asset_server,
                 world_x,

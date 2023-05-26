@@ -3,21 +3,14 @@
 use bevy::{prelude::*};
 
 use crate::{
-    ascii::{spawn_ascii_sprite, },
-    globals::{TILE_SIZE, MAP_WALL, MAP_FLOOR},
     despawn_screen,
     map_builders::{
-        commons::TileType,
         map::{Map},
     },
-    game::{
-        spawners::spawn_sprite,
-    },
     ecs_elements::{
-        components::{ GameMap, TileCollider, TileExit, GridPosition, Tile, GameMapRender},
-        resources::{MapGenHistory,AsciiSheet,GameState},
+        components::{ GameMap, GridPosition, Tile, GameMapRender},
+        resources::{GameState},
     },
-    globals::{SHOW_MAPGEN_VISUALIZER, FIXED_MAPGEN_NEW_SNAPSHOT},
 };
 
 
@@ -51,7 +44,7 @@ fn spawn_map(
     mut map: ResMut<Map>,
     mut game_state: ResMut<NextState<GameState>>
 ) {
-    println!("Map generation begins..");
+    println!("Map generation begins...");
 
     let mut tiles:Vec<Entity> = Vec::new();
 
@@ -81,6 +74,8 @@ fn spawn_map(
     ;
 
     map.entity_tiles = tiles; 
+
+    println!("Map generated.");
 
     game_state.set(GameState::GameMap); //TODO : Pas a ce systeme de gerer les changements de state.
 }

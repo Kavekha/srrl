@@ -1,8 +1,9 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::map_builders::commons::TileType;
 
-#[derive(Component)]
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct GridPosition{
     pub x: i32,
     pub y: i32
