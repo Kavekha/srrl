@@ -22,3 +22,6 @@ pub struct TileExit;
 
 #[derive(Component)]
 pub struct GameMap;
+
+#[derive(Component)]
+pub struct GameMapRender;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     ecs_elements::{
-        components::{GridPosition, Tile, TileExit, TileCollider, GameMap}
+        components::{GridPosition, Tile, TileExit, TileCollider, GameMapRender}
     }, 
     globals::{TILE_SIZE, MAP_WALL, MAP_DEFAULT, MAP_EXIT, MAP_FLOOR},
     map_builders::TileType, game::spawners::spawn_sprite
@@ -66,8 +66,8 @@ pub fn spawn_map_render(
     println!("Tiles rendered.");
 
     commands
-    .spawn(Name::new("Game Map"))
-    .insert(GameMap)
+    .spawn(Name::new("Game Map Render"))
+    .insert(GameMapRender)
     .insert(SpatialBundle{
         ..default()
     })

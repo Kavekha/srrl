@@ -14,7 +14,7 @@ use crate::{
         spawners::spawn_sprite,
     },
     ecs_elements::{
-        components::{ GameMap, TileCollider, TileExit, GridPosition, Tile},
+        components::{ GameMap, TileCollider, TileExit, GridPosition, Tile, GameMapRender},
         resources::{MapGenHistory,AsciiSheet,GameState},
     },
     globals::{SHOW_MAPGEN_VISUALIZER, FIXED_MAPGEN_NEW_SNAPSHOT},
@@ -39,7 +39,8 @@ impl Plugin for TileMapPlugin {
                 in_state(GameState::MapGeneration)))       
             */
 
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>)     
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMapRender>)
             ;  
     }
 }
@@ -72,6 +73,13 @@ fn spawn_map(
             y += 1;
         }
     }    
+
+    commands
+    .spawn(Name::new("Game Map"))
+    .insert(GameMap)
+    .push_children(&tiles)
+    ;
+
     map.entity_tiles = tiles; 
 
     game_state.set(GameState::GameMap); //TODO : Pas a ce systeme de gerer les changements de state.
