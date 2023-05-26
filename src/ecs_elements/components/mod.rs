@@ -1,4 +1,3 @@
-mod tiles;
 mod movements;
 mod text;
 

@@ -1,9 +1,31 @@
 use bevy::prelude::*;
 
-use crate::{globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z}, game::{GridPosition, player::{Piece, Player}}};
+use crate::{globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z, POSITION_TOLERANCE}, game::{GridPosition, player::{Piece, Player, Stats}}};
 
 use super::get_world_position;
 
+
+pub fn update_piece_position(
+    mut query: Query<(&GridPosition, &mut Transform, &Stats), With<Piece>>,
+    time: Res<Time>,
+){
+    for (grid_position, mut transform, stats) in query.iter_mut(){
+        let (position_x, position_y) = get_world_position(grid_position.x, grid_position.y);
+        let target = Vec3::new(position_x, position_y, PIECE_Z);
+        let destination = (target - transform.translation).length();
+        
+        //if destination > POSITION_TOLERANCE {
+            transform.translation = transform.translation.lerp(
+                target,
+                stats.speed * time.delta_seconds()
+            );
+        /*
+        } else {
+            transform.translation = target;
+        }
+        */
+    }
+}
 
 
 pub fn spawn_piece_renderer(

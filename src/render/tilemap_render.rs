@@ -17,8 +17,7 @@ pub fn spawn_map_render(
     let mut tiles:Vec<Entity> = Vec::new();
 
     for (_entity, grid_position, logic_tile) in all_tiles_query.iter() {
-        // TODO : use grid_to_world function
-        let (world_x, world_y) = get_world_position(grid_position.x, grid_position.y);
+          let (world_x, world_y) = get_world_position(grid_position.x, grid_position.y);
 
         //texture & Z according to tile, before creation.   //TODO edition post creation maybe?
         let mut texture = MAP_DEFAULT;

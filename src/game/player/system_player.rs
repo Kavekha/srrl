@@ -1,12 +1,46 @@
 use bevy::prelude::*;
 
-use crate::{save_load_system::ShouldSave, globals::TILE_SIZE, commons::tile_collision_check, render::components::{TileCollider, TileExit}, states::GameState};
+use crate::{save_load_system::ShouldSave, globals::TILE_SIZE, commons::tile_collision_check, render::components::{TileCollider, TileExit}, states::GameState, game::GridPosition};
 
 use super::components::{Player, Stats};
 
 
-
+//TODO : Check deplacement : si blocked 
 pub fn player_input(
+    mut query_player_position: Query<&mut GridPosition, With<Player>>,
+    keys: Res<Input<KeyCode>>,
+    mut should_save: ResMut<ShouldSave>,
+){
+    // MENU etc
+    if keys.just_pressed(KeyCode::Escape) {
+        should_save.to_save = true;
+    }
+    
+    // DEPLACEMENT
+    let Ok(mut position) = query_player_position.get_single_mut() else {return};
+
+    let (original_x, original_y) = (position.x, position.y);    //DEBUG
+    
+    if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
+        position.y += 1;
+    }
+    if keys.any_pressed([KeyCode::Down, KeyCode::S]) {
+        position.y -= 1;
+    }
+
+    if keys.any_pressed([KeyCode::Right, KeyCode::D]){
+        position.x += 1;
+    }
+    if keys.any_pressed([KeyCode::Left, KeyCode::Q]){
+        position.x -= 1;
+    }
+  
+}
+
+
+
+
+pub fn player_input_old(
     mut should_save: ResMut<ShouldSave>,
     mut player_query: Query<(&Player, &mut Transform, &Stats)>,
     wall_query: Query<&Transform, (With<TileCollider>, Without<Player>)>,
