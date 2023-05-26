@@ -22,7 +22,8 @@ use crate::{
     ecs_elements::{
         components::{Monster},
         resources::{ShouldSave, MapGenHistory, GameState},
-    }
+    }, 
+    render::GraphicsPlugin
 };
 
 pub mod player;
@@ -45,6 +46,7 @@ impl Plugin for GamePlugin {
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_systems(OnEnter(GameState::NewGame), init_new_game)
+            .add_plugin(GraphicsPlugin)
             ;
     }
 }
@@ -65,12 +67,10 @@ fn init_new_game(
         commands.insert_resource(mapgen_history);
     }
 
-
-
-    let starting_position = builder.get_starting_position();    //TODO
+    let starting_position = builder.get_starting_position();    
     let (x, y) = grid_to_world_position(starting_position.0,starting_position.1);   //TODO: Placeholder
     spawn_player(&mut commands, &asset_server, x, y);
-    //spawn_player(&mut commands, &ascii,x, y);
+
 
     let entities_pos = builder.spawn_entities();
     for position in entities_pos {
@@ -85,7 +85,7 @@ fn init_new_game(
     commands.insert_resource(builder.build_data.map.clone());
 
     if !SHOW_MAPGEN_VISUALIZER{
-        game_state.set(GameState::GameMap);  
+        game_state.set(GameState::Prerun);  //TODO : Pas a ce systeme de gerer les changements de state.
     } else {
         game_state.set(GameState::MapGeneration);  
     }

@@ -27,26 +27,28 @@ impl Plugin for TileMapPlugin {
     fn build(&self, app: &mut App){
         app
             // Init.
-            .add_systems(OnEnter(GameState::GameMap), spawn_map)
+            .add_systems(OnEnter(GameState::Prerun), spawn_map)
             
-            //SHOW_MAPGEN_VISUALIZER must be true.
+            //SHOW_MAPGEN_VISUALIZER must be true.  //TODO : Broken lors de la division Logic VS Render.
+            /* 
             .insert_resource(FixedTime::new_from_secs(FIXED_MAPGEN_NEW_SNAPSHOT))
             .add_systems(FixedUpdate, (
                 display_map_generation, 
                 despawn_screen::<GameMap>
             ).chain().run_if(
-                in_state(GameState::MapGeneration)))  
-            ;       
-            
+                in_state(GameState::MapGeneration)))       
+            */
 
-            //.add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>);     
+            ;  
     }
 }
 
 // Logic map.
 fn spawn_map(
     mut commands: Commands,
-    mut map: ResMut<Map>
+    mut map: ResMut<Map>,
+    mut game_state: ResMut<NextState<GameState>>
 ) {
     println!("Map generation begins..");
 
@@ -71,17 +73,13 @@ fn spawn_map(
         }
     }    
     map.entity_tiles = tiles; 
+
+    game_state.set(GameState::GameMap); //TODO : Pas a ce systeme de gerer les changements de state.
 }
 
-fn create_map(
-    mut commands: Commands,
-    ascii: Res<AsciiSheet>,
-    asset_server: Res<AssetServer>,
-    map: Res<Map>
-) {
-    generate_gamemap(&mut commands, &ascii, &asset_server, &map);
-}
 
+/* 
+/// TODO: Broken lors de la separation Logic vs Render: on n'utilise plus de fonction generate_gamemap.
 fn display_map_generation(
     mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands, 
@@ -111,86 +109,4 @@ fn display_map_generation(
         game_state.set(GameState::GameMap);
     }
 }
-
-
-
-pub fn generate_gamemap (
-    mut commands: &mut Commands, 
-    ascii:&AsciiSheet,
-    asset_server: &AssetServer,
-    map: &Map
-) -> Entity {   
-    println!("Map generation begins..");
-    //All tiles entities created will go there
-    let mut tiles:Vec<Entity> = Vec::new();
-
-    //We create entities from the map.tiles
-    let mut x = 0;
-    let mut y = 0;
-    for (_idx, tile_info) in map.tiles.iter().enumerate(){
-        // Convert to World Units.
-        let world_x = x as f32 * TILE_SIZE;
-        let world_y = -(y as f32 * TILE_SIZE);
-        match tile_info {
-            TileType::Wall => {
-                /*
-                let tile = spawn_ascii_sprite(
-                    &mut commands, 
-                    &ascii, 
-                    '#' as usize,
-                    Color::rgb(0.9, 0.9, 0.9),
-                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
-                    Vec3::splat(1.0)
-                );
-                 */
-                let tile = spawn_sprite(
-                    &mut commands,
-                    &asset_server,
-                    world_x,
-                    world_y,
-                    0.0,
-                    MAP_WALL,
-                );
-                commands.entity(tile).insert(TileCollider);
-                tiles.push(tile); 
-            }
-            TileType::Exit => {
-                let tile = spawn_ascii_sprite(
-                    &mut commands, 
-                    &ascii, 
-                    '<' as usize,
-                    Color::rgb(0.9, 0.9, 0.9),
-                    Vec3::new(x as f32 * TILE_SIZE, -(y as f32) * TILE_SIZE, 100.0),
-                    Vec3::splat(1.0)
-                );
-                commands.entity(tile).insert(TileExit);
-                tiles.push(tile); 
-            }
-            TileType::Floor => {
-                let tile = spawn_sprite(
-                    &mut commands,
-                    &asset_server,
-                    world_x,
-                    world_y,
-                    0.0,
-                    MAP_FLOOR,
-                );
-                tiles.push(tile); 
-            }
-        }            
-        x += 1;
-        if x > map.width as i32 - 1 {
-            x = 0;
-            y += 1;
-        }
-    }    
-    commands
-        .spawn(Name::new("Game Map"))
-        .insert(GameMap)
-        .insert(SpatialBundle{
-            ..default()
-        })
-        .push_children(&tiles)
-        .id()
-
-}
+*/

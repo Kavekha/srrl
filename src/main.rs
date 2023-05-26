@@ -23,7 +23,6 @@ use audio::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
 use ecs_elements::{AppState, GameState};
-use render::GraphicsPlugin;
 
 use crate::globals::{HEIGHT, RESOLUTION, CLEAR};
 
@@ -57,7 +56,6 @@ fn main() {
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
         .add_plugin(SaveLoadPlugin)
-        .add_plugin(GraphicsPlugin)
         .run(); 
 }
 

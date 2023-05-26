@@ -8,6 +8,11 @@ use crate::{
     map_builders::TileType, game::spawners::spawn_sprite
 };
 
+pub fn check_map_sanity(
+    all_tiles_query: Query<(&GridPosition, &Tile)>,
+    //map: Res<Map>
+) {
+}
 
 pub fn spawn_map_render(
     mut commands: Commands,
@@ -18,7 +23,7 @@ pub fn spawn_map_render(
     //All tiles entities created will go there
     let mut tiles:Vec<Entity> = Vec::new();
 
-    for (entity, grid_position, logic_tile) in all_tiles_query.iter() {
+    for (_entity, grid_position, logic_tile) in all_tiles_query.iter() {
         // TODO : use grid_to_world function
         let world_x = grid_position.x as f32 * TILE_SIZE;
         let world_y = -(grid_position.y as f32 * TILE_SIZE);
@@ -47,6 +52,7 @@ pub fn spawn_map_render(
             );
 
         // Specific components. For some reason, match doesnt work here.
+        // TODO : N'a rien à faire ici : Elements logiques!
         if logic_tile.tiletype == TileType::Wall {
             commands.entity(tile).insert(TileCollider);
         }
@@ -56,6 +62,9 @@ pub fn spawn_map_render(
 
         tiles.push(tile); 
     }
+
+    println!("Tiles rendered.");
+
     commands
     .spawn(Name::new("Game Map"))
     .insert(GameMap)

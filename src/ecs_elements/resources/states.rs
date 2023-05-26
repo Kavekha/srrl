@@ -5,6 +5,7 @@ pub enum GameState {
     #[default]
     Disabled,
     NewGame,    // Nouvelle partie, setup Map & player creation
+    Prerun,     // Partie logique de la map..
     MapGeneration,
     GameMap,    // La map et le perso qui s'y balade.
     GameOverScreen,
