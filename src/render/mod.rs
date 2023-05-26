@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 pub mod tilemap_render;
 pub mod pieces;
+pub mod components;
 
 use self::{
     tilemap_render::spawn_map_render,

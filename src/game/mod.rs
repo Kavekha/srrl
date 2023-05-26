@@ -1,8 +1,8 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
 
-use self::tileboard::TileBoardPlugin;
 use self::player::PlayerPlugin;
+use self::{tileboard::TileBoardPlugin,};
 use self::npc::NpcPlugin;
 
 pub mod player;
@@ -13,6 +13,9 @@ mod tileboard;
 pub use tileboard::components::{Tile, GridPosition};
 
 
+use crate::ecs_elements::MapGenHistory;
+use crate::game::player::Monster;
+use crate::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::{
@@ -25,17 +28,9 @@ use crate::{
     menus::{
         victory::VictoryPlugin,
         gameover::GameOverPlugin,
-    },    
-    ecs_elements::{
-        components::{Monster},
-        resources::{ShouldSave, MapGenHistory},
     }, 
     render::GraphicsPlugin, states::GameState
 };
-
-
-
-
 
 
 pub struct GamePlugin;
@@ -51,7 +46,7 @@ impl Plugin for GamePlugin {
             .add_plugin(GameOverPlugin)
             .add_plugin(GraphicsPlugin)
             .add_plugin(TileBoardPlugin)
-
+            
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             ;
     }

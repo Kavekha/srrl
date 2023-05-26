@@ -3,10 +3,14 @@ use bevy::{prelude::*};
 mod system_map;
 pub mod components;
 
-use crate::{states::GameState, ecs_elements::GameMapRender, despawn_screen};
+pub use components::{GridPosition, Tile};
 
 use self::{system_map::spawn_map, components::GameMap};
-pub use components::{GridPosition, Tile};
+
+use crate::{states::GameState, despawn_screen, render::components::GameMapRender};
+
+
+
 
 
 

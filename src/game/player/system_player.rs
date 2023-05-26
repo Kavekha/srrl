@@ -1,44 +1,12 @@
 use bevy::prelude::*;
 
-use crate::{
-    commons::{tile_collision_check},
-    globals::TILE_SIZE,
-    despawn_screen,
-    game::{ShouldSave},
-    ecs_elements::{
-        components::{TileCollider, TileExit, Player, Stats, },
-    }, states::GameState,
-};
+use crate::{save_load_system::ShouldSave, globals::TILE_SIZE, commons::tile_collision_check, render::components::{TileCollider, TileExit}, states::GameState};
+
+use super::components::{Player, Stats};
 
 
 
-pub struct PlayerPlugin;
-
-
-impl Plugin for PlayerPlugin{
-    fn build(&self, app: &mut App) {
-        app
-            //.add_systems(OnEnter(GameState::NewGame), character_creation)              
-            .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Player>);  
-    }
-}
-
-
-fn camera_follow(
-    player_query: Query<&Transform, With<Player>>,
-    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>
-) {
-    let player_transform = player_query.single();
-    let mut camera_transform = camera_query.single_mut();
-    camera_transform.translation.x = player_transform.translation.x;
-    camera_transform.translation.y = player_transform.translation.y;
-
-}
-
-fn player_input(
+pub fn player_input(
     mut should_save: ResMut<ShouldSave>,
     mut player_query: Query<(&Player, &mut Transform, &Stats)>,
     wall_query: Query<&Transform, (With<TileCollider>, Without<Player>)>,
@@ -88,7 +56,22 @@ fn player_input(
 
 }
 
-fn player_step_check(
+
+
+
+pub fn camera_follow(
+    player_query: Query<&Transform, With<Player>>,
+    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>
+) {
+    let player_transform = player_query.single();
+    let mut camera_transform = camera_query.single_mut();
+    camera_transform.translation.x = player_transform.translation.x;
+    camera_transform.translation.y = player_transform.translation.y;
+
+}
+
+
+pub fn player_step_check(
     player_query: Query<(&Player, &mut Transform)>,
     exit_query: Query<&Transform, (With<TileExit>, Without<Player>)>,
     mut game_state: ResMut<NextState<GameState>>

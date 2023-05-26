@@ -7,15 +7,14 @@ use pathfinding::prelude::astar;
 use crate::{
     despawn_screen,
     globals::{TILE_SIZE, FIXED_TIMESTEP, BASE_RANGED_VIEW},
-    ecs_elements::{
-        components::{Player, Stats, Npc, Monster, Pathfinding, MoveTo},
-    },
     commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position, grid_to_world_position},
         map::{Map},
-    }, states::GameState
+    }, states::GameState, ecs_elements::{Pathfinding, MoveTo}
 };
+
+use super::player::{Player, Npc, Stats, Monster};
 
 
 
