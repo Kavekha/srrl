@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z, POSITION_TOLERANCE}, game::{GridPosition, player::{Piece, Player, Stats}}};
+use crate::{globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z, POSITION_TOLERANCE}, game::{GridPosition, player::{Piece, Player, Stats}}, GraphicsWaitEvent};
 
 use super::get_world_position;
 
@@ -8,7 +8,9 @@ use super::get_world_position;
 pub fn update_piece_position(
     mut query: Query<(&GridPosition, &mut Transform, &Stats), With<Piece>>,
     time: Res<Time>,
+    mut ev_wait: EventWriter<GraphicsWaitEvent>
 ){
+    let mut animating = false;
     for (grid_position, mut transform, stats) in query.iter_mut(){
         let (position_x, position_y) = get_world_position(grid_position.x, grid_position.y);
         let target = Vec3::new(position_x, position_y, PIECE_Z);
@@ -19,10 +21,13 @@ pub fn update_piece_position(
                 target,
                 stats.speed * time.delta_seconds()
             );
+            animating = true;
         } else {
             transform.translation = target;
         }
-
+        if animating {
+            ev_wait.send(GraphicsWaitEvent);
+        }
     }
 }
 

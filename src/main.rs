@@ -18,6 +18,8 @@ mod globals;
 mod render;
 mod states;
 
+pub use render::GraphicsWaitEvent;
+
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
@@ -25,6 +27,7 @@ use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
 use states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
+
 
 
 fn main() {
@@ -55,7 +58,6 @@ fn main() {
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
         .add_plugin(SaveLoadPlugin)
-
         .add_state::<AppState>()
         .add_state::<GameState>()  
         .add_state::<EngineState>()

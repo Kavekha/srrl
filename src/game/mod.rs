@@ -1,6 +1,7 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
 
+use self::manager::ManagerPlugin;
 use self::player::PlayerPlugin;
 use self::tileboard::TileBoardPlugin;
 use self::npc::NpcPlugin;
@@ -12,8 +13,7 @@ pub mod spawners;
 pub mod pieces;
 pub mod actions;
 pub mod tileboard;
-
-
+pub mod manager;
 
 pub use tileboard::components::{Tile, GridPosition};
 
@@ -52,6 +52,7 @@ impl Plugin for GamePlugin {
             .add_plugin(GraphicsPlugin)
             .add_plugin(TileBoardPlugin)
             .add_plugin(ActionsPlugin)
+            .add_plugin(ManagerPlugin)
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             ;
     }
