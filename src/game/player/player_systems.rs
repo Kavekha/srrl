@@ -7,7 +7,12 @@ use crate::{save_load_system::ShouldSave, commons::tile_collision_check, render:
 use super::{components::{Player, Stats}, PlayerInputReadyEvent};
 
 
-//TODO : Check deplacement : si blocked 
+//TODO : Rework this
+const DIR_KEY_MAPPING: [(KeyCode, Position); 4] = [
+    (KeyCode::Up, Position(0,1)), (KeyCode::Down, Position(0,-1)),
+    (KeyCode::Left, Position(-1,0)), (KeyCode::Right, Position(1,0)),
+];
+
 pub fn player_input(
     mut query_player_position: Query<(Entity, &GridPosition, &mut Actor), With<Player>>,
     keys: Res<Input<KeyCode>>,
@@ -18,33 +23,23 @@ pub fn player_input(
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         should_save.to_save = true;
+        return;
     }
     
     // DEPLACEMENT
-    let Ok((entity, _position, mut actor)) = query_player_position.get_single_mut() else {return};
-    let mut x = 0;
-    let mut y = 0;
-    
-    if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
-        y += 1;
-    }
-    if keys.any_pressed([KeyCode::Down, KeyCode::S]) {
-        y -= 1;
-    }
+    // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
+    let Ok((entity, entity_position, mut actor)) = query_player_position.get_single_mut() else {return};
 
-    if keys.any_pressed([KeyCode::Right, KeyCode::D]){
-        x += 1;
-    }
-    if keys.any_pressed([KeyCode::Left, KeyCode::Q]){
-        x -= 1;
-    }
-    let destination = Position(x, y);
+    for (key, dir_position) in DIR_KEY_MAPPING {
+        if !keys.just_pressed(key) { continue;} 
 
-    let action = WalkAction(entity, destination);
-        actor.0 = Some(Box::new(action));
-        queue.0 = VecDeque::from([entity]);
-        ev_input.send(PlayerInputReadyEvent);
-  
+        let destination = Position(entity_position.x + dir_position.0, entity_position.y + dir_position.1);
+
+        let action = WalkAction(entity, destination);
+            actor.0 = Some(Box::new(action));
+            queue.0 = VecDeque::from([entity]);
+            ev_input.send(PlayerInputReadyEvent);
+    } 
 }
 
 

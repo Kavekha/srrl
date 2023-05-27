@@ -21,15 +21,17 @@ impl Plugin for ManagerPlugin {
 }
 
 fn game_start(
-    mut next_state: ResMut<NextState<EngineState>>
+    mut next_state: ResMut<NextState<EngineState>>,
 ) {
     next_state.set(EngineState::PlayerInput);
+    println!("game_start: Engine set to PlayerInput");
 }
 
 fn game_end(
     mut next_state: ResMut<NextState<EngineState>>
 ) {
     next_state.set(EngineState::None);
+    println!("game_end: Engine set to None.")
 }
 
 fn turn_update_start(
@@ -38,6 +40,7 @@ fn turn_update_start(
 ) {
     next_state.set(EngineState::TurnUpdate);
     ev_tick.send(TickEvent);
+    println!("turn_update_start ! Let's Send Tick and see if there is anything.")
 }
 
 fn tick(
@@ -46,17 +49,21 @@ fn tick(
 ) {
     if ev_wait.iter().len() == 0 {
         ev_tick.send(TickEvent);
+        println!("tick: Je n'ai pas à attendre: tick suivant!");
     }
+    println!("tick: ev_wait en cours...")
 }
 
 fn turn_update_end(
     mut next_state: ResMut<NextState<EngineState>>
 ) {
     next_state.set(EngineState::PlayerInput);
+    println!("turn_update_end: Fin de mise à jour des events. Retour au PlayerInput.");
 }
 
 fn turn_update_cancel(
     mut next_state: ResMut<NextState<EngineState>>
 ) {
     next_state.set(EngineState::PlayerInput);
+    println!("turn_update_cancel: L'event du joueur a été rejeté. Retour au PlayerInput.");
 }

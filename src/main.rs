@@ -53,14 +53,16 @@ fn main() {
         )
 
         .add_plugin(AsciiPlugin) 
-        .add_systems(Startup, spawn_camera)
         .add_plugin(MainMenuPlugin)
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
         .add_plugin(SaveLoadPlugin)
+
         .add_state::<AppState>()
         .add_state::<GameState>()  
         .add_state::<EngineState>()
+
+        .add_systems(Startup, spawn_camera)
         .run(); 
 }
 
