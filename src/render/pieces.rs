@@ -14,16 +14,15 @@ pub fn update_piece_position(
         let target = Vec3::new(position_x, position_y, PIECE_Z);
         let destination = (target - transform.translation).length();
         
-        //if destination > POSITION_TOLERANCE {
+        if destination > POSITION_TOLERANCE {
             transform.translation = transform.translation.lerp(
                 target,
                 stats.speed * time.delta_seconds()
             );
-        /*
         } else {
             transform.translation = target;
         }
-        */
+
     }
 }
 

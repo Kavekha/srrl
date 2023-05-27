@@ -29,8 +29,7 @@ impl Map {
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
-    #[warn(dead_code)]
-    pub fn _is_blocked(
+    pub fn is_blocked(
         &self,
         x: i32,
         y: i32

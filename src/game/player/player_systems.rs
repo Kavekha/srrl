@@ -1,15 +1,19 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
-use crate::{save_load_system::ShouldSave, globals::TILE_SIZE, commons::tile_collision_check, render::components::{TileCollider, TileExit}, states::GameState, game::GridPosition};
+use crate::{save_load_system::ShouldSave, globals::TILE_SIZE, commons::tile_collision_check, render::components::{TileCollider, TileExit}, states::GameState, game::{GridPosition, actions::{ActorQueue, models::WalkAction}, pieces::components::Actor}, map_builders::pathfinding::Position};
 
-use super::components::{Player, Stats};
+use super::{components::{Player, Stats}, PlayerInputReadyEvent};
 
 
 //TODO : Check deplacement : si blocked 
 pub fn player_input(
-    mut query_player_position: Query<&mut GridPosition, With<Player>>,
+    mut query_player_position: Query<(Entity, &GridPosition, &mut Actor), With<Player>>,
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
+    mut queue: ResMut<ActorQueue>,
+    mut ev_input: EventWriter<PlayerInputReadyEvent>
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
@@ -17,23 +21,29 @@ pub fn player_input(
     }
     
     // DEPLACEMENT
-    let Ok(mut position) = query_player_position.get_single_mut() else {return};
-
-    let (original_x, original_y) = (position.x, position.y);    //DEBUG
+    let Ok((mut entity, position, actor)) = query_player_position.get_single_mut() else {return};
+    let mut x = 0;
+    let mut y = 0;
     
     if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
-        position.y += 1;
+        y += 1;
     }
     if keys.any_pressed([KeyCode::Down, KeyCode::S]) {
-        position.y -= 1;
+        y -= 1;
     }
 
     if keys.any_pressed([KeyCode::Right, KeyCode::D]){
-        position.x += 1;
+        x += 1;
     }
     if keys.any_pressed([KeyCode::Left, KeyCode::Q]){
-        position.x -= 1;
+        x -= 1;
     }
+    let destination = Position(x, y);
+
+    let action = WalkAction(entity, destination);
+        actor.0 = Some(Box::new(action));
+        queue.0 = VecDeque::from([entity]);
+        ev_input.send(PlayerInputReadyEvent);
   
 }
 

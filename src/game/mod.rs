@@ -2,13 +2,18 @@
 use bevy::prelude::*;
 
 use self::player::PlayerPlugin;
-use self::{tileboard::TileBoardPlugin,};
+use self::tileboard::TileBoardPlugin;
 use self::npc::NpcPlugin;
+use self::actions::ActionsPlugin;
 
 pub mod player;
 pub mod npc;
 pub mod spawners;
-mod tileboard;
+pub mod pieces;
+pub mod actions;
+pub mod tileboard;
+
+
 
 pub use tileboard::components::{Tile, GridPosition};
 
@@ -46,7 +51,7 @@ impl Plugin for GamePlugin {
             .add_plugin(GameOverPlugin)
             .add_plugin(GraphicsPlugin)
             .add_plugin(TileBoardPlugin)
-            
+            .add_plugin(ActionsPlugin)
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             ;
     }
