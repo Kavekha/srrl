@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{save_load_system::ShouldSave, globals::TILE_SIZE, commons::tile_collision_check, render::components::{TileCollider, TileExit}, states::GameState, game::{GridPosition, actions::{ActorQueue, models::WalkAction}, pieces::components::Actor}, map_builders::pathfinding::Position};
+use crate::{save_load_system::ShouldSave, commons::tile_collision_check, render::components::{TileExit}, states::GameState, game::{GridPosition, actions::{ActorQueue, models::WalkAction}, pieces::components::Actor}, map_builders::pathfinding::Position};
 
 use super::{components::{Player, Stats}, PlayerInputReadyEvent};
 
@@ -21,7 +21,7 @@ pub fn player_input(
     }
     
     // DEPLACEMENT
-    let Ok((mut entity, position, actor)) = query_player_position.get_single_mut() else {return};
+    let Ok((entity, _position, mut actor)) = query_player_position.get_single_mut() else {return};
     let mut x = 0;
     let mut y = 0;
     
@@ -46,60 +46,6 @@ pub fn player_input(
         ev_input.send(PlayerInputReadyEvent);
   
 }
-
-
-
-
-pub fn player_input_old(
-    mut should_save: ResMut<ShouldSave>,
-    mut player_query: Query<(&Player, &mut Transform, &Stats)>,
-    wall_query: Query<&Transform, (With<TileCollider>, Without<Player>)>,
-    keys: Res<Input<KeyCode>>,
-    time: Res<Time>
-) {
-    let (_player, mut transform, stats) = player_query.single_mut();
-
-    let mut y_delta: f32 = 0.0;
-
-    //EScape menu in game
-    if keys.just_pressed(KeyCode::Escape) {
-        should_save.to_save = true;
-      }
-
-    if keys.any_pressed([KeyCode::Up, KeyCode::Z]) {
-        y_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
-    }
-    if keys.any_pressed([KeyCode::Down, KeyCode::S]) {
-        y_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
-    }
-
-    let mut x_delta: f32 = 0.0;
-    if keys.any_pressed([KeyCode::Right, KeyCode::D]){
-        x_delta += stats.speed * TILE_SIZE * time.delta_seconds(); 
-    }
-    if keys.any_pressed([KeyCode::Left, KeyCode::Q]){
-        x_delta -= stats.speed * TILE_SIZE * time.delta_seconds(); 
-    }
-
-    let target: Vec3 = transform.translation + Vec3::new(x_delta, 0.0, 0.0);
-
-    if !wall_query
-        .iter()
-        .any(|&transform|tile_collision_check(target, transform.translation))
-        {
-            transform.translation = target;
-        }
-    let target: Vec3 = transform.translation + Vec3::new(0.0, y_delta, 0.0);
-    
-    if !wall_query
-        .iter()
-        .any(|&transform|tile_collision_check(target, transform.translation))
-        {
-            transform.translation = target;
-        }
-
-}
-
 
 
 

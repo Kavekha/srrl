@@ -6,6 +6,8 @@ use self::action_queue_system::process_action_queue;
 pub mod models;
 pub mod action_queue_system;
 
+pub use models::{WalkAction, Action};
+
 
 pub struct ActionsPlugin;
 
@@ -19,10 +21,6 @@ impl Plugin for ActionsPlugin {
             .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>())
             );
     }
-}
-
-pub trait Action: Send + Sync {
-    fn execute(&self, world: &mut World) -> bool;
 }
 
 #[derive(Default, Resource)]
