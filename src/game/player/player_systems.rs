@@ -31,17 +31,19 @@ pub fn player_input(
         // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
         let Ok((entity, entity_position, mut actor)) = query_player_position.get_single_mut() else {return};
 
+        let mut destination = Position(0, 0);
         for (key, dir_position) in DIR_KEY_MAPPING {
             if keys.pressed(key) {
 
-                let destination = Position(entity_position.x + dir_position.0, entity_position.y + dir_position.1);
-
-                let action = WalkAction(entity, destination);
-                    actor.0 = Some(Box::new(action));
-                    queue.0 = VecDeque::from([entity]);
-                    ev_input.send(PlayerInputReadyEvent);
+                destination = Position(destination.0 + dir_position.0, destination.1 + dir_position.1);
             }
-        } 
+        }
+
+        let final_destination = Position(entity_position.x + destination.0, entity_position.y + destination.1);
+        let action = WalkAction(entity, final_destination);
+        actor.0 = Some(Box::new(action));
+        queue.0 = VecDeque::from([entity]);
+        ev_input.send(PlayerInputReadyEvent);
     }
 }
 
