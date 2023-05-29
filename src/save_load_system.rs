@@ -12,6 +12,7 @@ use std::path::Path;
 pub struct SaveLoadPlugin;
 
 use crate::game::GridPosition;
+use crate::game::pieces::components::{Actor, Walk};
 use crate::game::player::{Stats, Player, Npc, Monster, Piece};
 use crate::globals::SCENE_FILE_PATH;
 use crate::states::{GameState, AppState};
@@ -69,7 +70,9 @@ struct SaveEntity {
     npc: bool, 
     monster: bool,
     piece: bool,
-    grid_position: Option<GridPosition>
+    grid_position: Option<GridPosition>,
+    //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
+    walk: bool,
 }
 
 impl SaveState {
@@ -116,7 +119,8 @@ impl SaveState {
                 || world.get::<Monster>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Stats>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Piece>(world.entity(*current_entity).id()).is_some()
-                || world.get::<GridPosition>(world.entity(*current_entity).id()).is_some()
+                //|| world.get::<GridPosition>(world.entity(*current_entity).id()).is_some()    //If only a grid position (like tile) we dont want to be save. Could bite us inthe ass later.
+                || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
                 {
                     has_component_to_save = true
                 }
@@ -131,6 +135,7 @@ impl SaveState {
                         stats: world.get::<Stats>(*current_entity).cloned(),
                         piece: world.get::<Piece>(*current_entity).is_some(),
                         grid_position: world.get::<GridPosition>(*current_entity).cloned(),
+                        walk: world.get::<Walk>(*current_entity).is_some(),
                     });
                 }
             }        
@@ -230,6 +235,14 @@ pub fn load_game(
         }
         if let Some(grid_position) = entity.grid_position {
             e.insert(grid_position);
+        }
+        if entity.walk {
+            e.insert(Walk);
+        }
+
+        // Actor component can't be save, so we have to add it there if NPC or Player.
+        if entity.npc || entity.player {
+            e.insert(Actor::default());
         }
     }
 
