@@ -27,19 +27,22 @@ pub fn player_input(
     }
     
     // DEPLACEMENT
-    // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
-    let Ok((entity, entity_position, mut actor)) = query_player_position.get_single_mut() else {return};
+    if keys.any_pressed([KeyCode::Up, KeyCode::Down, KeyCode::Left, KeyCode::Right]){
+        // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
+        let Ok((entity, entity_position, mut actor)) = query_player_position.get_single_mut() else {return};
 
-    for (key, dir_position) in DIR_KEY_MAPPING {
-        if !keys.just_pressed(key) { continue;} 
+        for (key, dir_position) in DIR_KEY_MAPPING {
+            if keys.pressed(key) {
 
-        let destination = Position(entity_position.x + dir_position.0, entity_position.y + dir_position.1);
+                let destination = Position(entity_position.x + dir_position.0, entity_position.y + dir_position.1);
 
-        let action = WalkAction(entity, destination);
-            actor.0 = Some(Box::new(action));
-            queue.0 = VecDeque::from([entity]);
-            ev_input.send(PlayerInputReadyEvent);
-    } 
+                let action = WalkAction(entity, destination);
+                    actor.0 = Some(Box::new(action));
+                    queue.0 = VecDeque::from([entity]);
+                    ev_input.send(PlayerInputReadyEvent);
+            }
+        } 
+    }
 }
 
 

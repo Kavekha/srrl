@@ -15,6 +15,7 @@ impl Plugin for ManagerPlugin {
             .add_systems(Update, turn_update_start.run_if(on_event::<PlayerInputReadyEvent>()))  
             .add_systems(Update, turn_update_end.run_if(on_event::<ActionsCompleteEvent>()))
             .add_systems(Update, turn_update_cancel.run_if(on_event::<InvalidPlayerActionEvent>()))
+            .add_systems(OnEnter(EngineState::TurnUpdate), tick)
             .add_systems(Update, tick.run_if(in_state(EngineState::TurnUpdate)))
             ;
     }
@@ -49,9 +50,9 @@ fn tick(
 ) {
     if ev_wait.iter().len() == 0 {
         ev_tick.send(TickEvent);
-        println!("tick: Je n'ai pas à attendre: tick suivant!");
+        println!("tick: Everything is done. Tick suivant!");
     }
-    println!("tick: ev_wait en cours...")
+    println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
 }
 
 fn turn_update_end(
