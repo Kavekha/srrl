@@ -27,3 +27,13 @@ pub fn process_action_queue(world: &mut World) {
     // On passe au suivant.
     world.send_event(NextActorEvent);
 }
+
+
+pub fn populate_actor_queue(
+    query: Query<Entity, (With<Actor>, Without<Player>)>,
+    mut queue: ResMut<ActorQueue>
+) {
+    queue.0.extend(
+        query.iter()
+    );
+}

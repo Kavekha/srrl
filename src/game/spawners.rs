@@ -2,7 +2,7 @@
 // Spawners receive x,y positions WORLD based.
 use bevy::prelude::*;
 
-use super::{player::{Player, Npc, Stats, Monster, Piece}, pieces::components::Actor};
+use super::{player::{Player, Npc, Stats, Monster, Piece}, pieces::components::{Actor, Walk}};
 
 pub fn spawn_player(
     commands: &mut Commands,
@@ -25,8 +25,10 @@ pub fn spawn_npc(
         .entity(npc)
         .insert(Name::new(format!("Ghoul")))
         .insert(Stats {speed: 2.0})
+        .insert(Actor::default(),)
         .insert(Npc)
         .insert(Monster)
+        .insert(Walk)
         .id()  
 }
 

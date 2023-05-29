@@ -3,6 +3,7 @@ use bevy::{
 };
 
 use pathfinding::prelude::astar;
+use rand::{thread_rng, seq::SliceRandom};
 
 use crate::{
     despawn_screen,
@@ -14,8 +15,14 @@ use crate::{
     }, states::GameState, ecs_elements::{Pathfinding, MoveTo}
 };
 
-use super::player::{Player, Npc, Stats, Monster};
+use super::{player::{Player, Npc, Stats, Monster}, pieces::components::{Walk, Actor}, GridPosition, actions::{ActorQueue, WalkAction, NextActorEvent}};
 
+
+//TODO: better place to found.
+pub const ORTHO_DIRECTIONS: [Position; 4] = [
+    Position(0,-1), Position(0,1),
+    Position(-1,0), Position(1,0)
+];
 
 
 pub struct NpcPlugin;
@@ -24,16 +31,30 @@ pub struct NpcPlugin;
 impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
+            .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(FixedUpdate, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
-            .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
-            .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
+            //.add_systems(FixedUpdate, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
+            //.add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
+            //.add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
             //.add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?     
             //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
-            .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
+            //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             ;         
     }
+}
+
+
+pub fn plan_walk(
+    mut query: Query<(&GridPosition, &mut Actor), With<Walk>>,
+    queue: Res<ActorQueue>
+) {
+    let Some(entity) = queue.0.get(0) else { return };
+    let Ok((position, mut actor)) = query.get_mut(*entity) else { return };
+    let mut rng = thread_rng();
+    let dir = ORTHO_DIRECTIONS.choose(&mut rng).unwrap();
+    let direction = Position(position.x + dir.0, position.y + dir.1);
+    actor.0 = Some(Box::new(WalkAction(*entity, direction)));
 }
 
 

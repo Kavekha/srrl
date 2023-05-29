@@ -1,7 +1,9 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
-use self::action_queue_system::process_action_queue;
+use crate::states::EngineState;
+
+use self::action_queue_system::{process_action_queue, populate_actor_queue};
 
 pub mod models;
 pub mod action_queue_system;
@@ -18,8 +20,9 @@ impl Plugin for ActionsPlugin {
             .add_event::<NextActorEvent>()
             .add_event::<ActionsCompleteEvent>()
             .add_event::<InvalidPlayerActionEvent>()
-            .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>())
-            );
+            .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>()))
+            .add_systems(OnExit(EngineState::PlayerInput), populate_actor_queue)
+            ;
     }
 }
 
