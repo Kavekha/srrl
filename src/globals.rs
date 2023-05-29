@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::map_builders::pathfinding::Position;
+
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
@@ -35,6 +37,7 @@ pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'
 // PATHFINDING
 pub const FIXED_TIMESTEP: f32 = 0.1;
 pub const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
+pub const DEFAULT_COST_PATHFINDING:i32 = 1;     // Changing this will break the plan_walk.  //TODO : Remove this pathfinding element.
 
 //SAVE
 pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";
@@ -42,3 +45,13 @@ pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";
 // Movement
 pub const POSITION_TOLERANCE: f32 = 0.1;
 pub const SPEED_MULTIPLIER: f32 = 3.0;      // FAST debug / balance on speed movement.
+
+// Positions.
+pub const ORTHO_DIRECTIONS: [Position; 4] = [
+    Position(0,-1), Position(0,1),
+    Position(-1,0), Position(1,0)
+];
+
+// Npc planning
+pub const NPC_MOVE_SCORE_BONUS: i32 = 50;      // Bonus si cette position autour est sur le chemin menant au Joueur. Favorise largement ce choix.
+pub const NPC_MOVE_SCORE_DEFAULT: i32 = 5;     // Combien vaut le fait de se deplacer pour un NPC. Aide a faire un choix entre plusieurs actions à choisir à la fin. Permets de planifier plusieurs choses. 

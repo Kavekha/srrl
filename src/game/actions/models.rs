@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{map_builders::{pathfinding::Position, map::Map}, game::GridPosition};
+use crate::{map_builders::{pathfinding::Position, map::Map}, game::{GridPosition, pieces::components::Occupier}};
 
 pub trait Action: Send + Sync {
     fn execute(&self, world: &mut World) -> bool;
@@ -25,6 +25,9 @@ impl Action for WalkAction {
             //println!("WalkingAction: Tileboard tile type is : {:?}", tileboard.tiles[tileboard.xy_idx(self.1.0, self.1.1)]);
              return false };    // self.1 : Arg1  = Position
         //println!("WalkingAction: La position n'est pas bloquée.");
+
+        // Quelqu'un est-il déjà dans cette tile?   //TODO : Deactivate for this Release: we want to die at contact with Ghouls. Reactivate ==> Component Occupied on NPC / Player.
+        if world.query_filtered::<&GridPosition, With<Occupier>>().iter(world).any(|p| p.x == self.1.0 && p.y == self.1.1) { return false };
 
         let Some(mut grid_position) = world.get_mut::<GridPosition>(self.0) else { 
             //println!("WalkingAction: Je n'ai pas réussi à recuperer la GridPosition de l'entité {:?}. Je ne peux PAS la mettre à jour.  FALSE.", self.0);

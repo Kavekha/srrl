@@ -41,7 +41,7 @@ pub fn player_input(
 
         let final_destination = Position(entity_position.x + destination.0, entity_position.y + destination.1);
         let action = WalkAction(entity, final_destination);
-        actor.0 = Some(Box::new(action));
+        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_input.send(PlayerInputReadyEvent);
     }
