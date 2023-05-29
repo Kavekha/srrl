@@ -18,14 +18,16 @@ mod globals;
 mod render;
 mod states;
 
+pub use render::GraphicsWaitEvent;
+
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
 use audio::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
-use states::{AppState, GameState};
+use states::{AppState, GameState, EngineState};
+use globals::{HEIGHT, RESOLUTION, CLEAR};
 
-use crate::globals::{HEIGHT, RESOLUTION, CLEAR};
 
 
 fn main() {
@@ -49,14 +51,18 @@ fn main() {
                     ImagePlugin::default_nearest()
                 )
         )
-        .add_plugin(AsciiPlugin)
-        .add_state::<AppState>()
-        .add_state::<GameState>()   //TO MOVE elsewhere (game thingy)
-        .add_systems(Startup, spawn_camera)
+
+        .add_plugin(AsciiPlugin) 
         .add_plugin(MainMenuPlugin)
         .add_plugin(GameAudioPlugin)     
         .add_plugin(GamePlugin)
         .add_plugin(SaveLoadPlugin)
+
+        .add_state::<AppState>()
+        .add_state::<GameState>()  
+        .add_state::<EngineState>()
+
+        .add_systems(Startup, spawn_camera)
         .run(); 
 }
 

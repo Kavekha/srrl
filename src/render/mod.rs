@@ -4,6 +4,7 @@ pub mod tilemap_render;
 pub mod pieces;
 pub mod components;
 
+
 use self::{
     tilemap_render::spawn_map_render,
     pieces::{spawn_piece_renderer, update_piece_position},
@@ -21,6 +22,8 @@ pub struct GraphicsPlugin;
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_event::<GraphicsWaitEvent>()
+
             .add_systems(OnEnter(GameState::GameMap), spawn_map_render)
             .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
             .add_systems(Update, update_piece_position.run_if(in_state(GameState::GameMap)))
@@ -28,6 +31,8 @@ impl Plugin for GraphicsPlugin {
     }
 }
 
+
+pub struct GraphicsWaitEvent;
 
 fn get_world_position(
     x: i32, 

@@ -21,3 +21,12 @@ pub enum AppState {
     MainMenu,
     Game
 }
+
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum EngineState {
+    #[default]
+    None,
+    PlayerInput,
+    TurnUpdate
+}

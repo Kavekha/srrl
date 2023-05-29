@@ -1,14 +1,19 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
 
+use self::manager::ManagerPlugin;
 use self::player::PlayerPlugin;
-use self::{tileboard::TileBoardPlugin,};
+use self::tileboard::TileBoardPlugin;
 use self::npc::NpcPlugin;
+use self::actions::ActionsPlugin;
 
 pub mod player;
 pub mod npc;
 pub mod spawners;
-mod tileboard;
+pub mod pieces;
+pub mod actions;
+pub mod tileboard;
+pub mod manager;
 
 pub use tileboard::components::{Tile, GridPosition};
 
@@ -40,12 +45,15 @@ impl Plugin for GamePlugin {
         app
             .insert_resource(Map::new())
             .insert_resource(ShouldSave{to_save: false})
+
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
             .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_plugin(GraphicsPlugin)
             .add_plugin(TileBoardPlugin)
+            .add_plugin(ActionsPlugin)
+            .add_plugin(ManagerPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             ;
@@ -83,6 +91,8 @@ fn init_new_game(
 
 
     // Other entities. //TODO: Can't spawn different npc types: just one.
+    // DEACTIVATED FOR DEV PURPOSE (make the Input Queue not working )
+    /* 
     let entities_pos = builder.spawn_entities();
     for entity_position in entities_pos {
 
@@ -100,13 +110,13 @@ fn init_new_game(
         .insert(Monster)
         ;
     }
-
+*/
     builder.build_data.map.populate_blocked(); 
 
     commands.insert_resource(builder.build_data.map.clone());
 
     if !SHOW_MAPGEN_VISUALIZER {
-        game_state.set(GameState::Prerun);  //TODO : Pas a ce systeme de gerer les changements de state.
+        game_state.set(GameState::Prerun); 
     } else {
         game_state.set(GameState::MapGeneration);  
     }

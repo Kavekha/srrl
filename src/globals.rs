@@ -41,3 +41,4 @@ pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";
 
 // Movement
 pub const POSITION_TOLERANCE: f32 = 0.1;
+pub const SPEED_MULTIPLIER: f32 = 3.0;      // FAST debug / balance on speed movement.
