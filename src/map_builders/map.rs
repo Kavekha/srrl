@@ -6,7 +6,7 @@ use crate::{
         commons::TileType,
         pathfinding::{Position, Successor}
     },
-    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}
+    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH, DEFAULT_COST_PATHFINDING}
 };
 
 
@@ -98,7 +98,7 @@ impl Map {
                 //println!("Valid tile : should be false on is_blocked: {:?}", self.is_blocked(x, y));
                 successors.push(Successor {
                     position: neighbor_position,
-                    cost: 1,
+                    cost: DEFAULT_COST_PATHFINDING,
                 })
             }            
         }

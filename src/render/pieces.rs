@@ -26,7 +26,8 @@ pub fn update_piece_position(
             animating = true;
         }
         if animating {
-            ev_wait.send(GraphicsWaitEvent);
+            //TODO: Currently: One wait by Actor, so a lot of wait.
+            //ev_wait.send(GraphicsWaitEvent);
         }
     }
 }

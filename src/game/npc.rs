@@ -3,10 +3,11 @@ use bevy::{
 };
 
 use pathfinding::prelude::astar;
+use rand::{thread_rng, seq::SliceRandom};
 
 use crate::{
     despawn_screen,
-    globals::{TILE_SIZE, FIXED_TIMESTEP, BASE_RANGED_VIEW},
+    globals::{TILE_SIZE, FIXED_TIMESTEP, BASE_RANGED_VIEW, ORTHO_DIRECTIONS},
     commons::tile_collision_check,
     map_builders::{
         pathfinding::{Position, world_to_grid_position, grid_to_world_position},
@@ -14,7 +15,9 @@ use crate::{
     }, states::GameState, ecs_elements::{Pathfinding, MoveTo}
 };
 
-use super::player::{Player, Npc, Stats, Monster};
+use super::{player::{Player, Npc, Stats, Monster}, pieces::components::{Walk, Actor}, GridPosition, actions::{ActorQueue, WalkAction, NextActorEvent}};
+
+
 
 
 
@@ -24,17 +27,19 @@ pub struct NpcPlugin;
 impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
+            //.add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()))
             .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(FixedUpdate, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
-            .add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
-            .add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
+            //.add_systems(FixedUpdate, behavior_decision.run_if(in_state(GameState::GameMap)))  // Run at FIXED_TIMESTEP FixedUpdate 
+            //.add_systems(Update, next_step_destination.run_if(in_state(GameState::GameMap)))  //TODO: Should be done after Behavior.            
+            //.add_systems(Update, move_to_next_step.run_if(in_state(GameState::GameMap)))  
             //.add_systems(Update, display_pathfinding.run_if(in_state(GameState::GameMap)))            //DEBUG pas ouf 
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?     
             //.add_systems(FixedUpdate, hostile_ia_decision.run_if(in_state(GameState::GameMap)))               
-            .insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
+            //.insert_resource(FixedTime::new_from_secs(FIXED_TIMESTEP))
             ;         
     }
 }
+
 
 
 /// Quel est mon goal, puis-je l'atteindre, que dois je faire sinon?
