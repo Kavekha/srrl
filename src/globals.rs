@@ -11,12 +11,12 @@ pub const HEIGHT: f32 = 800.0;
 pub const TILE_SIZE: f32 = 32.0;
 pub const CHAR_SIZE: f32 = 16.0;  
 
-pub const PLAYER_Z: f32 = 10.0;
-pub const PIECE_Z: f32 = 05.0;
+pub const PLAYER_Z: f32 = 20.0;
+pub const PIECE_Z: f32 = 15.0;
 // temp
 pub const MAP_WALL: &str = "temp_tiles/Sewers_wall.png";
 pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
-pub const MAP_EXIT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Ajouter.
+pub const MAP_EXIT: &str = "temp_tiles/exit.png";        //TODO : Ajouter.
 pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Trouver une image.
 // sprite
 pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";

@@ -26,7 +26,7 @@ pub fn spawn_map_render(
             TileType::Wall => {texture = MAP_WALL}
             TileType::Exit => {
                 texture = MAP_EXIT;
-                world_z = 100.0;    //TODO : Decider ce que represente le Z.
+                world_z = 10.0;    //TODO : Decider ce que represente le Z.
             }
             TileType::Floor => {texture = MAP_FLOOR}
             _ => {}

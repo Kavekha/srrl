@@ -12,7 +12,7 @@ pub fn spawn_player(
         .entity(player)
         .insert(Player)
         .insert(Name::new("Player"))
-        .insert(Stats {speed: 6.0})
+        .insert(Stats {speed: 3.0})
         .insert(Actor::default(),)
         .id()  
 }
