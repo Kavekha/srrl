@@ -2,16 +2,18 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{save_load_system::ShouldSave, commons::tile_collision_check, render::components::{TileExit}, states::GameState, game::{GridPosition, actions::{ActorQueue, models::WalkAction}, pieces::components::Actor}, map_builders::pathfinding::Position};
+use crate::{
+    save_load_system::ShouldSave, 
+    commons::tile_collision_check,
+    render::components::{TileExit}, 
+    states::GameState, 
+    game::{GridPosition, actions::{ActorQueue, models::WalkAction}, pieces::components::Actor}, 
+    globals::{MULTI_DIR_KEY_MAPPING, MULTI_DIR_KEY_MAPPING_NO_NUM},
+    map_builders::pathfinding::Position};
+
 
 use super::{components::{Player, Stats}, PlayerInputReadyEvent};
 
-
-//TODO : Rework this
-const DIR_KEY_MAPPING: [(KeyCode, Position); 4] = [
-    (KeyCode::Up, Position(0,1)), (KeyCode::Down, Position(0,-1)),
-    (KeyCode::Left, Position(-1,0)), (KeyCode::Right, Position(1,0)),
-];
 
 pub fn player_input(
     mut query_player_position: Query<(Entity, &GridPosition, &mut Actor), With<Player>>,
@@ -27,12 +29,22 @@ pub fn player_input(
     }
     
     // DEPLACEMENT
-    if keys.any_pressed([KeyCode::Up, KeyCode::Down, KeyCode::Left, KeyCode::Right]){
+    //if keys.any_pressed([KeyCode::Up, KeyCode::Down, KeyCode::Left, KeyCode::Right]){
+    if keys.any_pressed([
+        KeyCode::Numpad1, KeyCode::Numpad2, KeyCode::Numpad3, KeyCode::Numpad4, KeyCode::Numpad6, KeyCode::Numpad7, KeyCode::Numpad8, KeyCode::Numpad9,
+        KeyCode::Z, KeyCode::Q, KeyCode::S, KeyCode::D, KeyCode::A, KeyCode::E, KeyCode::W, KeyCode::X,
+        ]){
         // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
         let Ok((entity, entity_position, mut actor)) = query_player_position.get_single_mut() else {return};
 
         let mut destination = Position(0, 0);
-        for (key, dir_position) in DIR_KEY_MAPPING {
+        for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
+            if keys.pressed(key) {
+
+                destination = Position(destination.0 + dir_position.0, destination.1 + dir_position.1);
+            }
+        }        
+        for (key, dir_position) in MULTI_DIR_KEY_MAPPING_NO_NUM {
             if keys.pressed(key) {
 
                 destination = Position(destination.0 + dir_position.0, destination.1 + dir_position.1);

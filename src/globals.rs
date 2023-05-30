@@ -44,14 +44,39 @@ pub const SCENE_FILE_PATH: &str = "assets/scenes/save.srrl";
 
 // Movement
 pub const POSITION_TOLERANCE: f32 = 0.1;
-pub const SPEED_MULTIPLIER: f32 = 3.0;      // FAST debug / balance on speed movement.
+pub const SPEED_MULTIPLIER: f32 = 2.0;      // FAST debug / balance on speed movement.
 
 // Positions.
 pub const ORTHO_DIRECTIONS: [Position; 4] = [
-    Position(0,-1), Position(0,1),
+    Position(0,1), Position(0,-1),
     Position(-1,0), Position(1,0)
+];
+pub const MULTI_DIRECTION:[Position; 8] = [
+    Position(0,-1), Position(0,1),
+    Position(-1,0), Position(1,0),
+    Position(1,1), Position(1,-1),
+    Position(-1,1), Position(-1,-1)
+];
+
+// Player input
+pub const DIR_KEY_MAPPING: [(KeyCode, Position); 4] = [
+    (KeyCode::Up, Position(0,1)), (KeyCode::Down, Position(0,-1)),
+    (KeyCode::Left, Position(-1,0)), (KeyCode::Right, Position(1,0)),
+];
+pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Position); 8] = [
+    (KeyCode::Numpad8, Position(0,1)), (KeyCode::Numpad2, Position(0,-1)),
+    (KeyCode::Numpad4, Position(-1,0)), (KeyCode::Numpad6, Position(1,0)),
+    (KeyCode::Numpad7, Position(-1,1)), (KeyCode::Numpad9, Position(1,1)),
+    (KeyCode::Numpad1, Position(-1,-1)), (KeyCode::Numpad3, Position(1,-1)),  
+];
+
+pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Position); 8] = [
+    (KeyCode::Z, Position(0,1)), (KeyCode::S, Position(0,-1)),
+    (KeyCode::Q, Position(-1,0)), (KeyCode::D, Position(1,0)),
+    (KeyCode::A, Position(-1,1)), (KeyCode::E, Position(1,1)),
+    (KeyCode::W, Position(-1,-1)), (KeyCode::X, Position(1,-1)),  
 ];
 
 // Npc planning
-pub const NPC_MOVE_SCORE_BONUS: i32 = 50;      // Bonus si cette position autour est sur le chemin menant au Joueur. Favorise largement ce choix.
-pub const NPC_MOVE_SCORE_DEFAULT: i32 = 5;     // Combien vaut le fait de se deplacer pour un NPC. Aide a faire un choix entre plusieurs actions à choisir à la fin. Permets de planifier plusieurs choses. 
+pub const NPC_MOVE_SCORE_BONUS: i32 = 5;      // Bonus si cette position autour est sur le chemin menant au Joueur. Favorise largement ce choix.
+pub const NPC_MOVE_SCORE_DEFAULT: i32 = 50;     // Combien vaut le fait de se deplacer pour un NPC. Aide a faire un choix entre plusieurs actions à choisir à la fin. Permets de planifier plusieurs choses. 

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use pathfinding::prelude::astar;
 use rand::{thread_rng, Rng};
 
-use crate::{game::{GridPosition, pieces::components::{Actor, Walk}, player::Player}, map_builders::{map::Map, pathfinding::Position}, globals::{ORTHO_DIRECTIONS, NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, DEFAULT_COST_PATHFINDING}};
+use crate::{game::{GridPosition, pieces::components::{Actor, Walk}, player::Player}, map_builders::{map::Map, pathfinding::Position}, globals::{ORTHO_DIRECTIONS, NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, DEFAULT_COST_PATHFINDING, MULTI_DIRECTION}};
 
 use super::{ActorQueue, WalkAction};
 
@@ -25,7 +25,7 @@ pub fn plan_walk(
     let goal = Position(player_position.x, player_position.y);
 
     // get all possible move targets
-    let positions = ORTHO_DIRECTIONS.iter().map(|direction| Position(direction.0 + gridposition.x, direction.1 + gridposition.y)).collect::<Vec<_>>();
+    let positions = MULTI_DIRECTION.iter().map(|direction| Position(direction.0 + gridposition.x, direction.1 + gridposition.y)).collect::<Vec<_>>();
 
     // find possible path to the player
     let result = astar(
@@ -51,10 +51,10 @@ pub fn plan_walk(
     let actions = positions.iter()
         .map(|some_position_around | {
             // randomize movement choices
-            let mut random_action_value = rng.gen_range(-10..0);
+            let mut random_action_value = rng.gen_range(-15..0);
             //if let Some(path) = &path_to_player {
                 // however prioritize a movement if it leads to the player                
-                if path_to_player.contains(some_position_around) { random_action_value = NPC_MOVE_SCORE_BONUS }
+                if path_to_player.contains(some_position_around) { random_action_value += NPC_MOVE_SCORE_BONUS }
             //}
             (Box::new(WalkAction(*entity, *some_position_around)) as Box<dyn super::Action>, NPC_MOVE_SCORE_DEFAULT + random_action_value)
         })
