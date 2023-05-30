@@ -8,6 +8,9 @@ For their Rust Rogue-like tutorial: https://bfnightly.bracketproductions.com/cha
 ### Mwbryant
 For their bevy rpg tutorial : https://github.com/mwbryant  
 
+## Maciej Glowka
+For their rogue-like tutorial on rust bevy : https://maciejglowka.com/blog/
+
 ### Team Bevy and all contributors!  
 Of course.
 
