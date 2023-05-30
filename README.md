@@ -1,4 +1,3 @@
 # ShadowRun:RogueLike
 
-Made from Herbert Wolverson's tutorial: https://bfnightly.bracketproductions.com/rustbook/  
-and mwbryant's tutorial: https://github.com/mwbryant/rpg-bevy-tutorial  
+Credits are there: https://github.com/Kavekha/srrl/blob/main/book/src/credits.md
