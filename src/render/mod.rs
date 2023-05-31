@@ -11,7 +11,7 @@ use self::{
 };
 
 use crate::{
-    globals::{TILE_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_WIDTH, TILE_HEIGHT}, states::GameState
+    globals::{TILE_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF}, states::GameState
 };
 
 
@@ -34,7 +34,7 @@ impl Plugin for GraphicsPlugin {
 
 pub struct GraphicsWaitEvent;
 
-fn get_world_position(
+pub fn get_world_position(
     x: i32, 
     y: i32
 ) -> (f32, f32) {
@@ -44,6 +44,13 @@ fn get_world_position(
         
         (iso_x as f32,
         0.0 - iso_y as f32)     // REMEMBER : Y in bevy2d = Negative when going down!
+}
 
- 
+/// z doit être calculé pour les objets à relief du genre mur. Le floor doit rester à 0 par contre.
+fn get_world_z(
+    x: i32,
+    y: i32
+) -> f32 {
+    let z = (x as f32 / 10.0) + (y as f32 / 5.0);
+    z
 }

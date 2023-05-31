@@ -8,20 +8,27 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 800.0;
 
 // RENDERING
-pub const TILE_SIZE: f32 = 32.0;
+pub const TILE_SIZE: f32 = 32.0;        // Deprecated : 2d grid based.
 pub const CHAR_SIZE: f32 = 16.0; 
-pub const TILE_WIDTH:i32 = 64;
+pub const STANDARD_TILE_WIDTH:i32 = 64;
 pub const TILE_WIDTH_HALF:i32 = 32;
-pub const TILE_HEIGHT:i32 = 32;
+pub const STANDARD_TILE_HEIGHT:i32 = 32;
 pub const TILE_HEIGHT_HALF:i32 = 16; 
 
-pub const PLAYER_Z: f32 = 20.0;
-pub const PIECE_Z: f32 = 15.0;
-// temp
+// Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_WALL: &str = "temp_tiles/Sewers_wall.png";
 pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
 pub const MAP_EXIT: &str = "temp_tiles/exit.png";        //TODO : Ajouter.
 pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Trouver une image.
+//
+pub const TILE_HEIGHT_VERY_HIGHT: i32 = 72; // 1/3 more than the player.
+pub const TILE_HEIGHT_HIGHT: i32 = 64; // Same as Medium & floor : 2 Y Cell higher exactly, provoke confusion.
+pub const TILE_HEIGHT_MEDIUM_HIGHT: i32 = 48; // Same as player.
+pub const TILE_HEIGHT_MEDIUM: i32 = 32; // Same as a floor tile but 1 Y cell higher exactly, so no real relief. May lead to confusion if different "floors" of tiles can be used.
+pub const TILE_HEIGHT_FLOOR: i32 = 0;
+pub const TILE_HEIGHT_LOW: i32 = 24;
+
+
 // sprite
 pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
 pub const SPRITE_GHOUL: &str = "temp_tiles/Nosferatu.png";

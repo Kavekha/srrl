@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{globals::{SPRITE_GHOUL, PIECE_Z, SPRITE_PLAYER, PLAYER_Z, POSITION_TOLERANCE, SPEED_MULTIPLIER}, game::{GridPosition, player::{Piece, Player, Stats}}, GraphicsWaitEvent};
+use crate::{globals::{SPRITE_GHOUL, SPRITE_PLAYER, POSITION_TOLERANCE, SPEED_MULTIPLIER, TILE_HEIGHT_HIGHT, TILE_HEIGHT_MEDIUM, TILE_HEIGHT_MEDIUM_HIGHT, TILE_HEIGHT_HALF}, game::{GridPosition, player::{Piece, Player, Stats}}, GraphicsWaitEvent};
 
-use super::get_world_position;
+use super::{get_world_position, get_world_z};
 
 
 pub fn update_piece_position(
@@ -13,8 +13,13 @@ pub fn update_piece_position(
     let mut animating = false;
 
     for (grid_position, mut transform, stats) in query.iter_mut(){
-        let (position_x, position_y) = get_world_position(grid_position.x, grid_position.y);
-        let target = Vec3::new(position_x, position_y, PIECE_Z);
+        let (position_x, mut position_y) = get_world_position(grid_position.x, grid_position.y);
+
+        // On fait -(TAILLE_DE_LA_TILE -STANDARD_TILE) /2  //TODO : Mieux generifier ca, car les Persos doivent l'utiliser aussi.
+        // REMEMBER : +Y dans Bevy = descendre. Ici on veut "monter" pour sortir les pieds du sol : On doit aller dans le negatif... :/
+        position_y -= ((TILE_HEIGHT_HIGHT - TILE_HEIGHT_MEDIUM) / 2) as f32;
+
+        let target = Vec3::new(position_x, position_y, get_world_z(grid_position.x, grid_position.y));
         let destination = (target - transform.translation).length();
   
         
@@ -45,12 +50,15 @@ pub fn spawn_piece_renderer(
         // Apparence
         let mut texture  = SPRITE_GHOUL;    //TODO : Plus de flexibilité pour changer les mobs.
 
-        let (x, y) = get_world_position(grid_position.x, grid_position.y);
-        let mut z = PIECE_Z;
+        let (x, mut y) = get_world_position(grid_position.x, grid_position.y);
+        let mut z = get_world_z(grid_position.x, grid_position.y);
+
+        // On fait -(TAILLE_DE_LA_TILE -STANDARD_TILE) /2  //TODO : Mieux generifier ca, car les Persos doivent l'utiliser aussi.
+        // REMEMBER : +Y dans Bevy = descendre. Ici on veut "monter" pour sortir les pieds du sol : On doit aller dans le negatif... :/
+        y -= ((TILE_HEIGHT_HIGHT - TILE_HEIGHT_MEDIUM) / 2) as f32;
 
         if let Some(_player) = player {
             texture = SPRITE_PLAYER;
-            z = PLAYER_Z;
         }
 
         commands.entity(entity)
