@@ -91,7 +91,6 @@ fn init_new_game(
 
 
     // Other entities. //TODO: Can't spawn different npc types: just one.
-    // DEACTIVATED FOR DEV PURPOSE (make the Input Queue not working )
     let entities_pos = builder.spawn_entities();
     for entity_position in entities_pos {
 

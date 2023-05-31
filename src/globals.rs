@@ -9,7 +9,11 @@ pub const HEIGHT: f32 = 800.0;
 
 // RENDERING
 pub const TILE_SIZE: f32 = 32.0;
-pub const CHAR_SIZE: f32 = 16.0;  
+pub const CHAR_SIZE: f32 = 16.0; 
+pub const TILE_WIDTH:i32 = 64;
+pub const TILE_WIDTH_HALF:i32 = 32;
+pub const TILE_HEIGHT:i32 = 32;
+pub const TILE_HEIGHT_HALF:i32 = 16; 
 
 pub const PLAYER_Z: f32 = 20.0;
 pub const PIECE_Z: f32 = 15.0;
@@ -48,7 +52,7 @@ pub const SPEED_MULTIPLIER: f32 = 2.0;      // FAST debug / balance on speed mov
 
 // Positions.
 pub const ORTHO_DIRECTIONS: [Position; 4] = [
-    Position(0,1), Position(0,-1),
+    Position(0,-1), Position(0,1),
     Position(-1,0), Position(1,0)
 ];
 pub const MULTI_DIRECTION:[Position; 8] = [
@@ -60,21 +64,21 @@ pub const MULTI_DIRECTION:[Position; 8] = [
 
 // Player input
 pub const DIR_KEY_MAPPING: [(KeyCode, Position); 4] = [
-    (KeyCode::Up, Position(0,1)), (KeyCode::Down, Position(0,-1)),
+    (KeyCode::Up, Position(0,-1)), (KeyCode::Down, Position(0,1)),
     (KeyCode::Left, Position(-1,0)), (KeyCode::Right, Position(1,0)),
 ];
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Position); 8] = [
-    (KeyCode::Numpad8, Position(0,1)), (KeyCode::Numpad2, Position(0,-1)),
+    (KeyCode::Numpad8, Position(0,-1)), (KeyCode::Numpad2, Position(0,1)),
     (KeyCode::Numpad4, Position(-1,0)), (KeyCode::Numpad6, Position(1,0)),
-    (KeyCode::Numpad7, Position(-1,1)), (KeyCode::Numpad9, Position(1,1)),
-    (KeyCode::Numpad1, Position(-1,-1)), (KeyCode::Numpad3, Position(1,-1)),  
+    (KeyCode::Numpad7, Position(-1,-1)), (KeyCode::Numpad9, Position(1,-1)),
+    (KeyCode::Numpad1, Position(-1,1)), (KeyCode::Numpad3, Position(1,1)),  
 ];
 
 pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Position); 8] = [
-    (KeyCode::Z, Position(0,1)), (KeyCode::S, Position(0,-1)),
+    (KeyCode::Z, Position(0,-1)), (KeyCode::S, Position(0,1)),
     (KeyCode::Q, Position(-1,0)), (KeyCode::D, Position(1,0)),
-    (KeyCode::A, Position(-1,1)), (KeyCode::E, Position(1,1)),
-    (KeyCode::W, Position(-1,-1)), (KeyCode::X, Position(1,-1)),  
+    (KeyCode::A, Position(-1,-1)), (KeyCode::E, Position(1,-1)),
+    (KeyCode::W, Position(-1,1)), (KeyCode::X, Position(1,1)),  
 ];
 
 // Npc planning
