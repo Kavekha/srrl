@@ -21,16 +21,17 @@ pub fn spawn_map_render(
 
         //texture & Z according to tile, before creation.   //TODO edition post creation maybe?
         let mut texture = MAP_DEFAULT;
-        let mut world_z = 0.0;
+        let mut world_z = (grid_position.y as f32 / 5.0) + (grid_position.x as f32 / 10.0);
         match logic_tile.tiletype {
             TileType::Wall => {texture = MAP_WALL}
-            TileType::Exit => {
-                texture = MAP_EXIT;
-                world_z = 10.0;    //TODO : Decider ce que represente le Z.
+            TileType::Exit => {texture = MAP_EXIT}
+            TileType::Floor => {
+                texture = MAP_FLOOR; 
+                world_z = 0.0;
             }
-            TileType::Floor => {texture = MAP_FLOOR}
             _ => {}
         }
+        println!("map render: world z for type {:?} is {}",texture, world_z);
 
         //Create entity.
         let tile = spawn_sprite_render(
