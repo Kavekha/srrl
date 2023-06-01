@@ -12,7 +12,7 @@ use crate::{
     map_builders::pathfinding::Position};
 
 
-use super::{components::{Player, Stats}, PlayerInputReadyEvent};
+use super::{components::{Player}, PlayerInputReadyEvent};
 
 
 pub fn player_input(

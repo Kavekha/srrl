@@ -34,7 +34,8 @@ impl Action for WalkAction {
             return false };  // On recupere la GridPosition de l'Entité qui fait l'action (self.0)
         //println!("WalkingAction: Je mets à jour l'Entité dont la GridPosition actuelle est : {:?},{:?}", grid_position.x, grid_position.y);
         (grid_position.x, grid_position.y) = (self.1.0, self.1.1);  // On mets à jour sa GridPosition.
-        //println!("WalkingAction: Grid Position à jour. Est désormais : {:?},{:?}. Je retourne TRUE: Action accomplie.",grid_position.x, grid_position.y);
+        //println!("WalkingAction: {:?} : Grid Position à jour. Est désormais : {:?},{:?}. Iso est : {:?}",self.0, grid_position.x, grid_position.y, get_world_position(grid_position.x, grid_position.y));
+        //println!("WalkingAction: {:?} : tile type at {},{} : {:?}", self.0, self.1.0, self.1.1, *&tileboard.tiles[tileboard.xy_idx(self.1.0, self.1.1)]);
         true
     }
 }

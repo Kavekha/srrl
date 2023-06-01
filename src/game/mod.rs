@@ -9,7 +9,6 @@ use self::actions::ActionsPlugin;
 
 pub mod player;
 pub mod npc;
-pub mod spawners;
 pub mod pieces;
 pub mod actions;
 pub mod tileboard;
@@ -19,6 +18,7 @@ pub use tileboard::components::{Tile, GridPosition};
 
 
 use crate::ecs_elements::MapGenHistory;
+use crate::game::pieces::spawners::{spawn_player, spawn_npc};
 use crate::game::player::Monster;
 use crate::save_load_system::ShouldSave;
 use crate::{
@@ -26,7 +26,6 @@ use crate::{
     map_builders::{
         map::Map, 
     },
-    game::{spawners::{spawn_npc, spawn_player}, },
     map_builders::{
         random_builder,
     },    
@@ -89,9 +88,7 @@ fn init_new_game(
             y:player_starting_position.1
         });
 
-
     // Other entities. //TODO: Can't spawn different npc types: just one.
-    // DEACTIVATED FOR DEV PURPOSE (make the Input Queue not working )
     let entities_pos = builder.spawn_entities();
     for entity_position in entities_pos {
 
@@ -109,7 +106,7 @@ fn init_new_game(
         .insert(Monster)
         ;
     }
-
+    
     builder.build_data.map.populate_blocked(); 
 
     commands.insert_resource(builder.build_data.map.clone());

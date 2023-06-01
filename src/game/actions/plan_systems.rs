@@ -2,7 +2,10 @@ use bevy::prelude::*;
 use pathfinding::prelude::astar;
 use rand::{thread_rng, Rng};
 
-use crate::{game::{GridPosition, pieces::components::{Actor, Walk}, player::Player}, map_builders::{map::Map, pathfinding::Position}, globals::{ORTHO_DIRECTIONS, NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, DEFAULT_COST_PATHFINDING, MULTI_DIRECTION}};
+use crate::{
+    game::{GridPosition, pieces::components::{Actor, Walk}, player::Player}, 
+    map_builders::{map::Map, pathfinding::Position}, 
+    globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, MULTI_DIRECTION}};
 
 use super::{ActorQueue, WalkAction};
 
