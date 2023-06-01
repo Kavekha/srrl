@@ -3,8 +3,11 @@ use serde::{Deserialize, Serialize};
 
 use crate::game::actions::Action;
 
-#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+use super::spawners::Kind;
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Piece {
+    pub kind: Kind,
     pub size: i32
 }
 

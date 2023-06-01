@@ -1,17 +1,17 @@
 use bevy::prelude::*;
 
 pub mod tilemap_render;
-pub mod pieces;
+pub mod pieces_render;
 pub mod components;
 
 
 use self::{
     tilemap_render::{spawn_map_render},
-    pieces::{spawn_piece_renderer, update_piece_position},
+    pieces_render::{spawn_piece_renderer, update_piece_position},
 };
 
 use crate::{
-    globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, STANDARD_TILE_HEIGHT, SIZE_TROLL, SIZE_DWARF,  }, 
+    globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
     states::GameState,
 };
 

@@ -3,9 +3,11 @@ use rand::Rng;
 
 use crate::{
 
-    globals::{MAP_WALL, MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_HIGH, MAP_WALL_LOW, TILE_HEIGHT_MEDIUM_HIGH, TILE_HEIGHT_HIGH, TILE_HEIGHT_VERY_HIGH, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH},
-    map_builders::TileType, game::{spawners::spawn_sprite_render, GridPosition, Tile}, 
-    render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z}
+    globals::{
+        MAP_WALL, MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_HIGH, MAP_WALL_LOW, TILE_HEIGHT_MEDIUM_HIGH, TILE_HEIGHT_HIGH,
+        TILE_HEIGHT_VERY_HIGH, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH},
+    map_builders::TileType, game::{GridPosition, Tile}, 
+    render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render}
 };
 
 use super::get_iso_y_modifier_from_elevation;
