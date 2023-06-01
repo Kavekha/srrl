@@ -107,7 +107,7 @@ pub fn get_player_render(
     let mut y_modified = get_iso_y_modifier_from_elevation(TILE_HEIGHT_MEDIUM);
 
     let mut rng = rand::thread_rng();
-    let rand = 2;   //rng.gen_range(0..5);
+    let rand = rng.gen_range(0..5);
     match rand {
         0 => {
             //Nain
