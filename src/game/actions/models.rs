@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{map_builders::{pathfinding::Position, map::Map}, game::{GridPosition, pieces::components::Occupier}, render::get_world_position};
+use crate::{map_builders::{pathfinding::Position, map::Map}, game::{GridPosition, pieces::components::Occupier}};
 
 pub trait Action: Send + Sync {
     fn execute(&self, world: &mut World) -> bool;

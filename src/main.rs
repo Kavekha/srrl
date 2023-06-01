@@ -26,7 +26,7 @@ use audio::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
 use states::{AppState, GameState, EngineState};
-use globals::{HEIGHT, RESOLUTION, CLEAR};
+use globals::{HEIGHT, RESOLUTION, CLEAR, BASE_SCREEN_SCALE};
 
 
 
@@ -70,7 +70,7 @@ fn main() {
 fn spawn_camera(mut commands: Commands) {
     let camera_bundle = Camera2dBundle {
         projection: OrthographicProjection{
-            scaling_mode: ScalingMode::WindowSize(1.0),    //WindowSize(500.0),   // Pixels = world unit
+            scaling_mode: ScalingMode::WindowSize(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
             ..default()
         },
         ..default()

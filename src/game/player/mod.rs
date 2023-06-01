@@ -3,7 +3,7 @@ use bevy::prelude::*;
 mod player_systems;
 mod components;
 
-pub use components::{Monster, Player, Piece, Npc, Stats};
+pub use components::{Monster, Player, Npc, Stats};
 
 use self::{
     player_systems::{player_input, camera_follow, player_step_check}

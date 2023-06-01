@@ -12,8 +12,8 @@ use std::path::Path;
 pub struct SaveLoadPlugin;
 
 use crate::game::GridPosition;
-use crate::game::pieces::components::{Actor, Walk};
-use crate::game::player::{Stats, Player, Npc, Monster, Piece};
+use crate::game::pieces::components::{Actor, Walk, Piece};
+use crate::game::player::{Stats, Player, Npc, Monster, };
 use crate::globals::SCENE_FILE_PATH;
 use crate::states::{GameState, AppState};
 use crate::{
@@ -69,7 +69,7 @@ struct SaveEntity {
     stats: Option<Stats>,
     npc: bool, 
     monster: bool,
-    piece: bool,
+    piece: Option<Piece>,
     grid_position: Option<GridPosition>,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
     walk: bool,
@@ -133,7 +133,7 @@ impl SaveState {
                         npc: world.get::<Npc>(*current_entity).is_some(),
                         monster: world.get::<Monster>(*current_entity).is_some(),
                         stats: world.get::<Stats>(*current_entity).cloned(),
-                        piece: world.get::<Piece>(*current_entity).is_some(),
+                        piece: world.get::<Piece>(*current_entity).cloned(),
                         grid_position: world.get::<GridPosition>(*current_entity).cloned(),
                         walk: world.get::<Walk>(*current_entity).is_some(),
                     });
@@ -230,8 +230,8 @@ pub fn load_game(
         if let Some(stats) = entity.stats {
             e.insert(stats);
         }
-        if entity.piece {
-            e.insert(Piece);
+        if let Some(piece) = entity.piece {
+            e.insert(piece);
         }
         if let Some(grid_position) = entity.grid_position {
             e.insert(grid_position);

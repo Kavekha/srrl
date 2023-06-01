@@ -20,6 +20,7 @@ pub use tileboard::components::{Tile, GridPosition};
 
 use crate::ecs_elements::MapGenHistory;
 use crate::game::player::Monster;
+use crate::globals::SIZE_DEFAULT;
 use crate::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
@@ -78,7 +79,7 @@ fn init_new_game(
 
     // init player  // TODO : ChainSystem ? But builder can't be made a resource cause of Dyn / Life time.
     // Logic spawning only.
-    let player = spawn_player(&mut commands);
+    let player = spawn_player(&mut commands, SIZE_DEFAULT);
 
     let player_starting_position = builder.get_starting_position();    
     println!("Player: Starting position = {:?}", player_starting_position);
@@ -89,7 +90,7 @@ fn init_new_game(
             y:player_starting_position.1
         });
 
-
+    /* 
     // Other entities. //TODO: Can't spawn different npc types: just one.
     let entities_pos = builder.spawn_entities();
     for entity_position in entities_pos {
@@ -108,7 +109,7 @@ fn init_new_game(
         .insert(Monster)
         ;
     }
-
+*/
     builder.build_data.map.populate_blocked(); 
 
     commands.insert_resource(builder.build_data.map.clone());
