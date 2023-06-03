@@ -2,7 +2,7 @@ use bevy::{prelude::*, app::AppExit};
 
 use crate::{states::{AppState, GameState}, despawn_screen, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT, MAIN_MENU_OPTIONS_COUNT}, save_load_system::has_save_file};
 
-use super::{components::{MainMenuOptions, OnScreenMenu, MainMenuSelection}, NineSlice, AsciiSheet};
+use super::{components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, Clickable}, NineSlice, AsciiSheet, menus_input::menu_input_mouse};
 
 
 
@@ -18,7 +18,10 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnEnter(AppState::MainMenu), menu_camera)    
             .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
             .add_systems(Update, main_menu_input.run_if(in_state(AppState::MainMenu)))
+            .add_systems(Update, menu_input_mouse.run_if(in_state(AppState::MainMenu)))
             .add_systems(Update, hightligh_menu_button.run_if(in_state(AppState::MainMenu)))
+
+            
             .add_systems(OnExit(AppState::MainMenu), despawn_screen::<OnScreenMenu>);
     }
 }
@@ -99,6 +102,7 @@ fn spawn_menu_button(
             ..default()
         })
         .insert(id)
+        .insert(Clickable {size: size})
         .add_child(nine_slice)
         .add_child(text)
         .id()

@@ -3,6 +3,10 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct OnScreenMenu;
 
+#[derive(Component)]
+pub struct Clickable {
+    pub size: Vec2
+}
 
 #[derive(Component)]
 pub struct NineSlice;
