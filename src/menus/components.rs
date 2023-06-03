@@ -5,14 +5,15 @@ pub struct OnScreenMenu;
 
 #[derive(Component)]
 pub struct Clickable {
-    pub size: Vec2
+    pub size: Vec2,
+    pub id: MainMenuOptions
 }
 
 #[derive(Component)]
 pub struct NineSlice;
 
 
-#[derive(Component, PartialEq, Clone, Copy)]
+#[derive(Component, PartialEq, Clone, Copy, Debug)]
 pub enum MainMenuOptions {
     StartGame,
     LoadGame,

@@ -102,7 +102,7 @@ fn spawn_menu_button(
             ..default()
         })
         .insert(id)
-        .insert(Clickable {size: size})
+        .insert(Clickable {size: size, id: id})
         .add_child(nine_slice)
         .add_child(text)
         .id()
@@ -245,6 +245,8 @@ fn main_menu_input(
 
 
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+        main_menu_selecting(menu_selection.selected, app_state, game_state, app_exit_events);
+        /*
         match menu_selection.selected {
             MainMenuOptions::StartGame => {
                 println!("Go to game !");
@@ -258,6 +260,29 @@ fn main_menu_input(
                 println!("Quit App");   //TODO
                 app_exit_events.send(AppExit);
             }
+        }
+        */
+    }
+}
+
+pub fn main_menu_selecting(
+    menu_selection: MainMenuOptions,
+    app_state: ResMut<NextState<AppState>>,
+    game_state: ResMut<NextState<GameState>>,
+    mut app_exit_events: EventWriter<AppExit>
+) {
+    match menu_selection {
+        MainMenuOptions::StartGame => {
+            println!("Go to game !");
+            start_new_game(app_state, game_state);
+        }
+        MainMenuOptions::LoadGame => {
+            println!("Load a saved game!");
+            load_saved_game(app_state, game_state);
+        }
+        MainMenuOptions::Quit => {
+            println!("Quit App");
+            app_exit_events.send(AppExit);
         }
     }
 }

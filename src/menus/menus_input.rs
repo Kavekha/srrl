@@ -2,7 +2,7 @@ use bevy::{prelude::*, input::{mouse::{MouseWheel, MouseMotion, MouseButtonInput
 
 use crate::globals::{TILE_SIZE, CHAR_SIZE};
 
-use super::components::Clickable;
+use super::components::{Clickable, MainMenuSelection};
 
 
 pub fn menu_input_mouse(
@@ -13,6 +13,7 @@ pub fn menu_input_mouse(
     window_query: Query<&Window>,
     button_query: Query<(&Clickable, &Transform)>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
+    mut menu_selection: ResMut<MainMenuSelection>,
 ) {
     for event in mouse_button_input_events.iter() {
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
@@ -25,7 +26,6 @@ pub fn menu_input_mouse(
             if let Some(world_position) = window_query.single().cursor_position() 
                     .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
                     .map(|ray| ray.origin.truncate())      {
-                //println!("Cursor World coords: {}/{}", world_position.x, world_position.y);
 
                 // Any clickable item there?
                 let cursor_world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
@@ -45,6 +45,21 @@ pub fn menu_input_mouse(
     }
 
     for event in cursor_moved_events.iter() {
+        // Needed to convert cursor position on window to World coords.
+        let (camera, camera_transform) = camera_q.single();
+        if let Some(world_position) = window_query.single().cursor_position() 
+                    .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+                    .map(|ray| ray.origin.truncate())      {
+            // Cursor in window
+            let cursor_world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
+            for (clickable, transform) in button_query.iter() {
+                if mouse_on_clickable(cursor_world_position, transform.translation, clickable.size) {
+                    menu_selection.selected = clickable.id;
+                    println!("Button selected: {:?}", menu_selection.selected)
+                }
+                //println!("Mouse collide between {:?} and {:?} ? : {:?}", world_position, transform.translation, mouse_on_clickable(cursor_world_position, transform.translation, clickable.size));
+            }
+        }
         //info!("{:?}", event);
     }
 
@@ -58,7 +73,7 @@ pub fn mouse_on_clickable(
     some_translation: Vec3,
     some_size: Vec2
 ) -> bool {
-    println!("Collision check : Size is {:?} vs {:?}", Vec2::splat(1.0), some_size);
+    //println!("Collision check : Size is {:?} vs {:?}", Vec2::splat(1.0), some_size);
 
     let collision = collide(
         target_pos,
