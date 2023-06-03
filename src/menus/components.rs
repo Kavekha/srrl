@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub struct OnScreenMenu;
 
 #[derive(Component)]
-pub struct Clickable {
+pub struct MainMenuClickable {
     pub size: Vec2,
     pub id: MainMenuOptions
 }

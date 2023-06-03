@@ -1,9 +1,75 @@
-use bevy::{prelude::*, input::{mouse::{MouseWheel, MouseMotion, MouseButtonInput}, ButtonState}, sprite::collide_aabb::collide, window::PrimaryWindow};
+use bevy::{prelude::*, input::{mouse::{MouseWheel, MouseMotion, MouseButtonInput}, ButtonState}, sprite::collide_aabb::collide, app::AppExit};
 
-use crate::globals::{TILE_SIZE, CHAR_SIZE};
+use crate::{globals::{CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, menus::mainmenu::main_menu_selecting, states::{AppState, GameState}, save_load_system::has_save_file};
 
-use super::components::{Clickable, MainMenuSelection};
+use super::components::{MainMenuClickable, MainMenuSelection, MainMenuOptions};
 
+
+
+// TODO : Deplacer avec meilleure visibilité dans un Mod menu?
+pub fn main_menu_input(
+    keys: Res<Input<KeyCode>>,
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+    mut menu_selection: ResMut<MainMenuSelection>,
+    mut app_exit_events: EventWriter<AppExit>
+) {
+    let mut current_selection = menu_selection.selected as isize;
+    if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
+        current_selection -=1;
+        //TODO : crado, si pas de save.
+        //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+        if current_selection == 1 && !has_save_file() { // !has_file{
+            current_selection -= 1;
+        }
+    }
+    if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
+        current_selection +=1;
+        //TODO : crado, si pas de save.
+        //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+        if current_selection == 1 && !has_save_file() {     // !has_file{
+            current_selection += 1;
+        }
+    }
+
+    current_selection = (current_selection + MAIN_MENU_OPTIONS_COUNT) % MAIN_MENU_OPTIONS_COUNT;
+
+    menu_selection.selected = match current_selection {
+        0 => MainMenuOptions::StartGame,
+        1 => {
+            //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+            if has_save_file() {    //if has_file {
+                MainMenuOptions::LoadGame
+            } else {
+                println!("No file, no load");
+                MainMenuOptions::StartGame
+            }         
+        },
+        2 => MainMenuOptions::Quit,
+        _ => unreachable!("Bad Main menu selection")
+    };
+
+
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+        main_menu_selecting(menu_selection.selected, &mut app_state, &mut game_state, &mut app_exit_events);
+        /*
+        match menu_selection.selected {
+            MainMenuOptions::StartGame => {
+                println!("Go to game !");
+                start_new_game(app_state, game_state);
+            }
+            MainMenuOptions::LoadGame => {
+                println!("Load a saved game!");
+                load_saved_game(app_state, game_state);
+            }
+            MainMenuOptions::Quit => {
+                println!("Quit App");   //TODO
+                app_exit_events.send(AppExit);
+            }
+        }
+        */
+    }
+}
 
 pub fn menu_input_mouse(
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
@@ -11,31 +77,17 @@ pub fn menu_input_mouse(
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
     window_query: Query<&Window>,
-    button_query: Query<(&Clickable, &Transform)>,
+    button_query: Query<(&MainMenuClickable, &Transform)>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
     mut menu_selection: ResMut<MainMenuSelection>,
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+    mut app_exit_events: EventWriter<AppExit>
 ) {
     for event in mouse_button_input_events.iter() {
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
         if event.button == MouseButton::Left && event.state == ButtonState::Pressed {
-            println!("Left pressed!");
-
-            // Mouse cursor: World coords
-            let (camera, camera_transform) = camera_q.single();
-
-            if let Some(world_position) = window_query.single().cursor_position() 
-                    .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
-                    .map(|ray| ray.origin.truncate())      {
-
-                // Any clickable item there?
-                let cursor_world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
-                for (clickable, transform) in button_query.iter() {
-                    println!("Mouse collide between {:?} and {:?} ? : {:?}", world_position, transform.translation, mouse_on_clickable(cursor_world_position, transform.translation, clickable.size));
-                }     
-            } 
-        }
-        if event.button == MouseButton::Left && event.state == ButtonState::Released {
-            println!("Left released!");
+            main_menu_selecting(menu_selection.selected, &mut app_state, &mut game_state, &mut app_exit_events);
         }
         info!("{:?}", event);
     }
@@ -55,7 +107,7 @@ pub fn menu_input_mouse(
             for (clickable, transform) in button_query.iter() {
                 if mouse_on_clickable(cursor_world_position, transform.translation, clickable.size) {
                     menu_selection.selected = clickable.id;
-                    println!("Button selected: {:?}", menu_selection.selected)
+                    //println!("Button selected: {:?}", menu_selection.selected)
                 }
                 //println!("Mouse collide between {:?} and {:?} ? : {:?}", world_position, transform.translation, mouse_on_clickable(cursor_world_position, transform.translation, clickable.size));
             }

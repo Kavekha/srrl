@@ -2,7 +2,11 @@ use bevy::{prelude::*, app::AppExit};
 
 use crate::{states::{AppState, GameState}, despawn_screen, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT, MAIN_MENU_OPTIONS_COUNT}, save_load_system::has_save_file};
 
-use super::{components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, Clickable}, NineSlice, AsciiSheet, menus_input::menu_input_mouse};
+use super::{
+    components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
+    NineSlice, AsciiSheet, 
+    menus_input::{menu_input_mouse, main_menu_input}, 
+};
 
 
 
@@ -31,8 +35,8 @@ impl Plugin for MainMenuPlugin{
 /// Lance une nouvelle partie depuis le menu. 
 // TODO : Deplacer dans Game Mod?
 fn start_new_game(
-    mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+    app_state: &mut ResMut<NextState<AppState>>,
+    game_state: &mut ResMut<NextState<GameState>>,
 ) {
     app_state.set(AppState::Game);
     game_state.set(GameState::NewGame);
@@ -40,8 +44,8 @@ fn start_new_game(
 }
 
 fn load_saved_game(
-    mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+    app_state: &mut ResMut<NextState<AppState>>,
+    game_state: &mut ResMut<NextState<GameState>>,
 ){
     app_state.set(AppState::Game);
     game_state.set(GameState::LoadGame);
@@ -102,7 +106,7 @@ fn spawn_menu_button(
             ..default()
         })
         .insert(id)
-        .insert(Clickable {size: size, id: id})
+        .insert(MainMenuClickable {size: size, id: id})
         .add_child(nine_slice)
         .add_child(text)
         .id()
@@ -200,76 +204,12 @@ fn spawn_title(
 
 }
 
-// TODO : Deplacer avec meilleure visibilité dans un Mod menu?
-fn main_menu_input(
-    keys: Res<Input<KeyCode>>,
-    app_state: ResMut<NextState<AppState>>,
-    game_state: ResMut<NextState<GameState>>,
-    mut menu_selection: ResMut<MainMenuSelection>,
-    mut app_exit_events: EventWriter<AppExit>
-) {
-    let mut current_selection = menu_selection.selected as isize;
-    if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
-        current_selection -=1;
-        //TODO : crado, si pas de save.
-        //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-        if current_selection == 1 && !has_save_file() { // !has_file{
-            current_selection -= 1;
-        }
-    }
-    if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
-        current_selection +=1;
-        //TODO : crado, si pas de save.
-        //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-        if current_selection == 1 && !has_save_file() {     // !has_file{
-            current_selection += 1;
-        }
-    }
-
-    current_selection = (current_selection + MAIN_MENU_OPTIONS_COUNT) % MAIN_MENU_OPTIONS_COUNT;
-
-    menu_selection.selected = match current_selection {
-        0 => MainMenuOptions::StartGame,
-        1 => {
-            //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-            if has_save_file() {    //if has_file {
-                MainMenuOptions::LoadGame
-            } else {
-                println!("No file, no load");
-                MainMenuOptions::StartGame
-            }         
-        },
-        2 => MainMenuOptions::Quit,
-        _ => unreachable!("Bad Main menu selection")
-    };
-
-
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
-        main_menu_selecting(menu_selection.selected, app_state, game_state, app_exit_events);
-        /*
-        match menu_selection.selected {
-            MainMenuOptions::StartGame => {
-                println!("Go to game !");
-                start_new_game(app_state, game_state);
-            }
-            MainMenuOptions::LoadGame => {
-                println!("Load a saved game!");
-                load_saved_game(app_state, game_state);
-            }
-            MainMenuOptions::Quit => {
-                println!("Quit App");   //TODO
-                app_exit_events.send(AppExit);
-            }
-        }
-        */
-    }
-}
 
 pub fn main_menu_selecting(
     menu_selection: MainMenuOptions,
-    app_state: ResMut<NextState<AppState>>,
-    game_state: ResMut<NextState<GameState>>,
-    mut app_exit_events: EventWriter<AppExit>
+    app_state: &mut ResMut<NextState<AppState>>,
+    game_state: &mut ResMut<NextState<GameState>>,
+    app_exit_events: &mut EventWriter<AppExit>
 ) {
     match menu_selection {
         MainMenuOptions::StartGame => {
@@ -284,6 +224,6 @@ pub fn main_menu_selecting(
             println!("Quit App");
             app_exit_events.send(AppExit);
         }
+        _ => {}
     }
 }
-
