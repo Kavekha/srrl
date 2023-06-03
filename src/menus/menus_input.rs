@@ -11,20 +11,28 @@ pub fn menu_input_mouse(
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
     window_query: Query<&Window>,
-    button_query: Query<(&Clickable, &Transform)>
+    button_query: Query<(&Clickable, &Transform)>,
+    camera_q: Query<(&Camera, &GlobalTransform)>,
 ) {
     for event in mouse_button_input_events.iter() {
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
         if event.button == MouseButton::Left && event.state == ButtonState::Pressed {
             println!("Left pressed!");
 
-            let cursor = window_query.single().cursor_position().unwrap();
-            println!("window cursor is {:?}", cursor);
-            let cursor_position = Vec3{x:cursor.x, y:cursor.y, z:0.0};
+            // Mouse cursor: World coords
+            let (camera, camera_transform) = camera_q.single();
 
-            for (clickable, transform) in button_query.iter() {
-                println!("Mouse collide between {:?} and {:?} ? : {:?}", cursor_position, transform.translation, mouse_on_clickable(cursor_position, transform.translation, clickable.size));
-            }
+            if let Some(world_position) = window_query.single().cursor_position() 
+                    .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+                    .map(|ray| ray.origin.truncate())      {
+                //println!("Cursor World coords: {}/{}", world_position.x, world_position.y);
+
+                // Any clickable item there?
+                let cursor_world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
+                for (clickable, transform) in button_query.iter() {
+                    println!("Mouse collide between {:?} and {:?} ? : {:?}", world_position, transform.translation, mouse_on_clickable(cursor_world_position, transform.translation, clickable.size));
+                }     
+            } 
         }
         if event.button == MouseButton::Left && event.state == ButtonState::Released {
             println!("Left released!");
@@ -50,11 +58,13 @@ pub fn mouse_on_clickable(
     some_translation: Vec3,
     some_size: Vec2
 ) -> bool {
+    println!("Collision check : Size is {:?} vs {:?}", Vec2::splat(1.0), some_size);
+
     let collision = collide(
         target_pos,
-        Vec2::splat(CHAR_SIZE * 0.9), 
+        Vec2::splat(1.0), 
         some_translation,
-        some_size
+        some_size * CHAR_SIZE * 0.9 // TODO : Ugly fix for two buttons too close.
     );
     collision.is_some()
 }
