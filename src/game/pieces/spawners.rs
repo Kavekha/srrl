@@ -41,6 +41,7 @@ pub fn spawn_player(
     let (kind, size) = get_random_kind();
 
     let player = commands.spawn(Piece{kind: kind, size: size }).id();
+    println!("Player is : {:?}", kind);
     commands
         .entity(player)
         .insert(Player)
