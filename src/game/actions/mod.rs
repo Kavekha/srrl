@@ -23,15 +23,24 @@ impl Plugin for ActionsPlugin {
             .add_event::<ActionsCompleteEvent>()
             .add_event::<InvalidPlayerActionEvent>()
 
-            .add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()))
-            .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()))
-            .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>()))
-
-
+            //Planning
+            .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()))
+            .configure_set(Update, ActionSet::Planning.before(ActionSet::Late))  
+            .add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
+            .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
+            
+            //Execute
+            .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>()).in_set(ActionSet::Late))
 
             .add_systems(OnExit(EngineState::PlayerInput), populate_actor_queue)
             ;
     }
+}
+
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+enum ActionSet {
+    Planning,
+    Late
 }
 
 #[derive(Default, Resource)]

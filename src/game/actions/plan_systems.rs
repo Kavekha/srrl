@@ -71,9 +71,11 @@ pub fn plan_melee(
     player_query: Query<&GridPosition, With<Player>>,
     queue: Res<ActorQueue>
 ) {
+    println!("Plan melee!");
     let Some(entity) = queue.0.get(0) else { return };
-    let Ok((mut actor, melee)) = query.get_mut(*entity) else { return };
+    let Ok((mut actor, _melee)) = query.get_mut(*entity) else { return };
     let Ok(player_position) = player_query.get_single() else { return };
+    println!("Plan Melee: Player is at : {:?}", Position(player_position.x, player_position.y));
     let action = Box::new(MeleeHitAction{
         attacker: *entity,
         target: Position(player_position.x, player_position.y)

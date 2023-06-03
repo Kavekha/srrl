@@ -18,13 +18,3 @@ pub fn tile_collision_check(
     );
     collision.is_some()
 }
-
-/// Distance between 2 positions.
-/// https://en.wikipedia.org/wiki/Taxicab_geometry
-pub fn manhattan_distance(
-    x: i32,
-    y: i32,
-    other_x: i32,
-    other_y: i32) -> i32 {
-    (x - other_x).abs() + (y - other_y).abs()
-}

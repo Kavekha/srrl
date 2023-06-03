@@ -2,11 +2,16 @@ use bevy::prelude::*;
 
 use crate::game::{player::Player, pieces::components::Actor};
 
-use super::{ActorQueue, ActionsCompleteEvent, InvalidPlayerActionEvent, NextActorEvent};
+use super::{ActorQueue, ActionsCompleteEvent, InvalidPlayerActionEvent, NextActorEvent, models::PendingActions};
 
 
 
 pub fn process_action_queue(world: &mut World) {
+    // Y a-t-il des actions en attente à faire?
+    if process_pending_actions(world) { 
+        println!("Il nous reste des actions en process!");
+        return }
+
     // Y a-t-il une queue?
     let Some(mut queue) = world.get_resource_mut::<ActorQueue>() else { return };
     // Quelque chose à traiter?
@@ -28,7 +33,12 @@ pub fn process_action_queue(world: &mut World) {
     // On regarde pour chaque action si elle réussie / est possible : si oui on s'arrête à cette action la plus importante.
     let mut success = false;
     for action in possible_actions{
-        if action.0.execute(world) {
+        //Est ce que l'action a réussie?
+        if let Ok(result) = action.0.execute(world) {
+            // Est-ce que cela a généré d'autres actions à faire?
+            if let Some(mut pending) = world.get_resource_mut::<PendingActions>() {
+                pending.0 = result
+            }
             success = true;
             break;
         }
@@ -44,6 +54,29 @@ pub fn process_action_queue(world: &mut World) {
     world.send_event(NextActorEvent);
 }
 
+
+pub fn process_pending_actions(world: &mut World) -> bool {
+    // Retourne True si un Pending a été processé.
+    // Agit sans retenir World.
+    let pending = match world.get_resource_mut::<PendingActions>() {
+        Some(mut res) => res.0.drain(..).collect::<Vec<_>>(),
+        _ => return false
+    };
+    println!("ProcessPending: Nous avons une action en pending!");
+    let mut next = Vec::new();  // Nous mettrons ici les nouvelles actions générées.
+    let mut success = false;
+    for action in pending {
+        if let Ok(result) = action.execute(world) {
+            next.extend(result);
+            success = true;
+        }
+    }
+    // Si d'autres actions sont apparues suite à cela, on les ajoute.
+    // unwrap OK car on a confirmé que la resource existe au debut.
+    let mut res = world.get_resource_mut::<PendingActions>().unwrap();
+    res.0 = next;
+    success
+}
 
 pub fn populate_actor_queue(
     query: Query<Entity, (With<Actor>, Without<Player>)>,
