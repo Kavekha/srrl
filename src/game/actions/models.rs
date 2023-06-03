@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{map_builders::{pathfinding::Position, map::Map}, game::{GridPosition, pieces::components::Occupier}};
+use crate::{map_builders::{pathfinding::Position, map::Map}, game::{GridPosition, pieces::components::{Occupier, Health}}};
 
 pub trait Action: Send + Sync {
     fn execute(&self, world: &mut World) -> bool;
@@ -20,22 +20,39 @@ impl Action for WalkAction {
 
         // La position où l'on se rends est-elle bloquée?
         if tileboard.is_blocked(self.1.0, self.1.1) {
-            //println!("WalkingAction: tileboard est bloqué à la position {:?}, {:?}. FALSE.", self.1.0, self.1.1);
-            //println!("WalkingAction: tileboard vraiment bloqué? {:?}", tileboard.is_blocked(self.1.0, self.1.1));
-            //println!("WalkingAction: Tileboard tile type is : {:?}", tileboard.tiles[tileboard.xy_idx(self.1.0, self.1.1)]);
-             return false };    // self.1 : Arg1  = Position
-        //println!("WalkingAction: La position n'est pas bloquée.");
-
+             return false };
         // Quelqu'un est-il déjà dans cette tile?   //TODO : Deactivate for this Release: we want to die at contact with Ghouls. Reactivate ==> Component Occupied on NPC / Player.
         if world.query_filtered::<&GridPosition, With<Occupier>>().iter(world).any(|p| p.x == self.1.0 && p.y == self.1.1) { return false };
 
         let Some(mut grid_position) = world.get_mut::<GridPosition>(self.0) else { 
-            //println!("WalkingAction: Je n'ai pas réussi à recuperer la GridPosition de l'entité {:?}. Je ne peux PAS la mettre à jour.  FALSE.", self.0);
             return false };  // On recupere la GridPosition de l'Entité qui fait l'action (self.0)
-        //println!("WalkingAction: Je mets à jour l'Entité dont la GridPosition actuelle est : {:?},{:?}", grid_position.x, grid_position.y);
         (grid_position.x, grid_position.y) = (self.1.0, self.1.1);  // On mets à jour sa GridPosition.
-        //println!("WalkingAction: {:?} : Grid Position à jour. Est désormais : {:?},{:?}. Iso est : {:?}",self.0, grid_position.x, grid_position.y, get_world_position(grid_position.x, grid_position.y));
-        //println!("WalkingAction: {:?} : tile type at {},{} : {:?}", self.0, self.1.0, self.1.1, *&tileboard.tiles[tileboard.xy_idx(self.1.0, self.1.1)]);
+        true
+    }
+}
+
+
+pub struct MeleeHitAction{
+    pub attacker: Entity,
+    pub target: Position,
+    //pub damage: u32
+}
+impl Action for MeleeHitAction {
+    fn execute(&self, world: &mut World) -> bool {
+        // We get attacker position.
+        let Some(attacker_gridposition) = world.get::<GridPosition>(self.attacker) else { return false };
+        // Si trop loin de sa cible, on ignore.
+        let attacker_position = Position(attacker_gridposition.x, attacker_gridposition.y);
+        if attacker_position.distance(&self.target) > 1 { return false };
+        // On regarde si la cible est bien là : Position Target vers Position(Gridx, gridy).
+        let target_entities = world.query_filtered::<(Entity, &GridPosition), With<Health>>()
+            .iter(world)
+            .filter(|(_, p)| Position(p.x, p.y) == self.target)
+            .collect::<Vec<_>>();
+        if target_entities.len() == 0 { return false }; //Pas de cible.
+        
+        // TODO deal actual damage
+        info!("Hit!");
         true
     }
 }

@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, game::player::{Stats, Npc, Monster, Player}};
 
-use super::components::{Piece, Actor, Walk};
+use super::components::{Piece, Actor, Walk, Melee};
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -62,6 +62,7 @@ pub fn spawn_npc(
         .insert(Npc)
         .insert(Monster)
         .insert(Walk)
+        .insert(Melee)
         .id()  
 }
 

@@ -21,3 +21,10 @@ pub struct Walk;
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]   //TODO : Add to save process.
 // there can be only a single occupier piece on the same tile
 pub struct Occupier;
+
+
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]   //TODO : Add to save process.
+pub struct Health;  // Can receive dmg
+
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]   //TODO : Add to save process.
+pub struct Melee;   // Can melee
