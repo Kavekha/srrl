@@ -1,4 +1,3 @@
-// Spawners receive x,y positions WORLD based.
 use bevy::prelude::*;
 use rand::Rng;
 use serde::{Serialize, Deserialize};
