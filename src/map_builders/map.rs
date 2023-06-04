@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use::bevy::prelude::*;
 
@@ -6,18 +8,18 @@ use crate::{
         commons::TileType,
         pathfinding::{Position, Successor}
     },
-    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH, DEFAULT_COST_PATHFINDING}
+    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH, DEFAULT_COST_PATHFINDING}, vectors::Vector2Int
 };
 
 
 
-#[derive(Resource, Clone, Reflect, Default, Deserialize, Serialize, Debug)]
+#[derive(Resource, Clone, Default, Deserialize, Serialize, Debug)]  
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
     pub height: i32,
     pub blocked: Vec<bool>,
-    pub entity_tiles: Vec<Entity>   //TODO : remplacer tiles <Vec>TileType dans la generation.
+    pub entity_tiles: HashMap<Vector2Int, Entity>   
 }
 
 impl Map {
@@ -45,7 +47,7 @@ impl Map {
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
             blocked: vec![false; MAPCOUNT],
-            entity_tiles: vec![]
+            entity_tiles: HashMap::new()
         }
     }   
 

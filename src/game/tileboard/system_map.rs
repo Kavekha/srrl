@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 
 use crate::{
     map_builders::map::Map, 
     states::GameState, 
-    game::tileboard::components::{GridPosition, Tile, GameMap}
+    game::tileboard::components::{GridPosition, Tile, GameMap, BoardPosition}, vectors::Vector2Int
 };
 
 
@@ -14,19 +16,23 @@ pub fn spawn_map(
 ) {
     println!("Map generation begins...");
 
-    let mut tiles:Vec<Entity> = Vec::new();
+    let mut tiles = HashMap::new();
+    let mut tile_entities:Vec::<Entity> = Vec::new();
 
     //We create logic entities from the map.tiles
     let mut x = 0;
     let mut y = 0;
     for (_idx, tile_info) in map.tiles.iter().enumerate(){
+        let v = Vector2Int::new(x, y);
         let tile = commands.spawn((
             Tile {tiletype: *tile_info},
-            GridPosition{x,y}
+            GridPosition{x,y},
+            BoardPosition{v}
         ))
         .id();
 
-        tiles.push(tile); 
+        tiles.insert(v, tile); 
+        tile_entities.push(tile);
           
         x += 1;
         if x > map.width as i32 - 1 {
@@ -34,11 +40,11 @@ pub fn spawn_map(
             y += 1;
         }
     }    
-
+    
     commands
     .spawn(Name::new("Game Map"))
     .insert(GameMap)
-    .push_children(&tiles)
+    .push_children(&tile_entities)
     ;
 
     map.entity_tiles = tiles; 

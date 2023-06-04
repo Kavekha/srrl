@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use serde::{Serialize, Deserialize};
 
-use crate::map_builders::TileType;
+use crate::{
+    map_builders::TileType,
+    vectors::Vector2Int
+};
 
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
@@ -17,3 +20,8 @@ pub struct Tile {
 
 #[derive(Component)]
 pub struct GameMap;
+
+#[derive(Component, Default, Debug, Clone, Copy)]   //add Serialize, Deserialize, TODO
+pub struct BoardPosition{
+    pub v: Vector2Int
+}
