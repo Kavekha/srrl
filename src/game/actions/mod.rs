@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 
 use crate::states::EngineState;
 
-use self::{action_queue_system::{process_action_queue, populate_actor_queue}, plan_systems::{plan_walk, plan_melee}};
+use self::{action_queue_system::{process_action_queue, populate_actor_queue}, plan_systems::{plan_walk, plan_melee}, models::PendingActions};
 
 pub mod models;
 pub mod action_queue_system;
@@ -17,6 +17,7 @@ pub struct ActionsPlugin;
 impl Plugin for ActionsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ActorQueue>()
+            .init_resource::<PendingActions>()
 
             .add_event::<TickEvent>()
             .add_event::<NextActorEvent>()
