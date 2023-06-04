@@ -3,7 +3,7 @@ use std::{
     collections::{BinaryHeap, HashMap, HashSet, VecDeque}
 };
 
-use super::{ORTHO_DIRECTIONS, Vector2Int};
+use super::{MULTI_DIRECTIONS, Vector2Int};
 
 pub fn find_path(
     start: Vector2Int,
@@ -20,7 +20,7 @@ pub fn find_path(
 
     while let Some(Node { v, cost }) = queue.pop() {
         if v == end { break; }
-        for dir in ORTHO_DIRECTIONS {
+        for dir in MULTI_DIRECTIONS {
             let n = v + dir;
             let new_cost = cost + 1;
             if !tiles.contains(&n) { continue }

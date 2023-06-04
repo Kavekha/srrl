@@ -7,16 +7,30 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{GridPosition, actions::{ActorQueue, models::WalkAction}, pieces::components::Actor}, 
-    globals::{MULTI_DIR_KEY_MAPPING, MULTI_DIR_KEY_MAPPING_NO_NUM},
-    map_builders::pathfinding::Position};
+    game::{actions::{ActorQueue, models::WalkAction}, pieces::components::Actor, tileboard::components::BoardPosition}, 
+    vectors::Vector2Int};
 
 
 use super::{components::{Player}, PlayerInputReadyEvent};
 
+//
+pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
+    (KeyCode::Numpad8, Vector2Int::UP), (KeyCode::Numpad2, Vector2Int::DOWN),
+    (KeyCode::Numpad4, Vector2Int::LEFT), (KeyCode::Numpad6, Vector2Int::RIGHT),
+    (KeyCode::Numpad7, Vector2Int::UPPER_LEFT), (KeyCode::Numpad9, Vector2Int::UPPER_RIGHT),
+    (KeyCode::Numpad1, Vector2Int::BOTTOM_LEFT), (KeyCode::Numpad3, Vector2Int::BOTTOM_RIGHT),  
+];
+
+pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
+    (KeyCode::Z, Vector2Int::UP), (KeyCode::S, Vector2Int::DOWN),
+    (KeyCode::Q, Vector2Int::LEFT), (KeyCode::D, Vector2Int::RIGHT),
+    (KeyCode::A, Vector2Int::UPPER_LEFT), (KeyCode::E, Vector2Int::UPPER_RIGHT),
+    (KeyCode::W, Vector2Int::BOTTOM_LEFT), (KeyCode::X, Vector2Int::BOTTOM_RIGHT),  
+];
+//
 
 pub fn player_input(
-    mut query_player_position: Query<(Entity, &GridPosition, &mut Actor), With<Player>>,
+    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
@@ -35,24 +49,22 @@ pub fn player_input(
         KeyCode::Z, KeyCode::Q, KeyCode::S, KeyCode::D, KeyCode::A, KeyCode::E, KeyCode::W, KeyCode::X,
         ]){
         // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
-        let Ok((entity, entity_position, mut actor)) = query_player_position.get_single_mut() else {return};
+        let Ok((entity, position, mut actor)) = query_player_position.get_single_mut() else {return};
 
-        let mut destination = Position(0, 0);
+        let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
             if keys.pressed(key) {
-
-                destination = Position(destination.0 + dir_position.0, destination.1 + dir_position.1);
+                destination += dir_position;
             }
         }        
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING_NO_NUM {
             if keys.pressed(key) {
 
-                destination = Position(destination.0 + dir_position.0, destination.1 + dir_position.1);
+                destination += dir_position;
             }
         }
 
-        let final_destination = Position(entity_position.x + destination.0, entity_position.y + destination.1);
-        let action = WalkAction(entity, final_destination);
+        let action = WalkAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_input.send(PlayerInputReadyEvent);

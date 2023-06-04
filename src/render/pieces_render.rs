@@ -4,24 +4,24 @@ use crate::{
     globals::{
         SPRITE_GHOUL, SPRITE_PLAYER, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, },
-    game::{GridPosition, player::{Player}, pieces::{components::Piece, spawners::Kind}}, GraphicsWaitEvent};
+    game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition}, GraphicsWaitEvent};
 
 use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation};
 
 
 pub fn update_piece_position(
-    mut query: Query<(&GridPosition, &mut Transform, &Piece)>,   //, With<Piece>>,
+    mut query: Query<(&BoardPosition, &mut Transform, &Piece)>,   //, With<Piece>>,
     time: Res<Time>,
     mut ev_wait: EventWriter<GraphicsWaitEvent>
 ){
     let mut animating = false;
 
-    for (grid_position, mut transform, piece) in query.iter_mut(){
-        let (position_x, mut position_y) = get_world_position(grid_position.x, grid_position.y);
+    for (position, mut transform, piece) in query.iter_mut(){
+        let (position_x, mut position_y) = get_world_position(&position);
 
         position_y += get_iso_y_modifier_from_elevation(piece.size); 
 
-        let target = Vec3::new(position_x, position_y, get_world_z(grid_position.x, grid_position.y));
+        let target = Vec3::new(position_x, position_y, get_world_z(&position));
         let destination = (target - transform.translation).length();
   
         
@@ -42,15 +42,15 @@ pub fn update_piece_position(
 
 pub fn spawn_piece_renderer(
     mut commands: Commands,
-    query: Query<(Entity, &GridPosition, &mut Piece, Option<&Player>)>,
+    query: Query<(Entity, &BoardPosition, &mut Piece, Option<&Player>)>,
     asset_server: Res<AssetServer>
 ) {
     println!("Rendering Pieces begins..."); 
     // On ajoute aux entités de nouveaux components.
-    for (entity, grid_position, piece, player) in query.iter() {
+    for (entity, position, piece, player) in query.iter() {
 
-        let (x, mut y) = get_world_position(grid_position.x, grid_position.y);
-        let z = get_world_z(grid_position.x, grid_position.y);
+        let (x, mut y) = get_world_position(&position);
+        let z = get_world_z(&position);
 
         let texture = get_texture_from_kind(piece.kind);
         y += get_iso_y_modifier_from_elevation(piece.size);
@@ -97,10 +97,10 @@ pub fn spawn_sprite_render(
     img: &str,
 ) -> Entity {
     let sprite = commands.spawn(SpriteBundle {
-        texture: asset_server.load(img),    //asset_server.load("temp_tiles/Sewers_wall.png"),
+        texture: asset_server.load(img), 
         transform: Transform {
             translation: Vec3::new(x, y, z),
-            scale: Vec3::splat(1.0),   //splat(1.0),
+            scale: Vec3::splat(1.0),  
             ..default()
         },
         ..default()

@@ -20,7 +20,9 @@ pub use tileboard::components::{Tile, GridPosition};
 use crate::ecs_elements::MapGenHistory;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc};
 use crate::game::player::Monster;
+use crate::game::tileboard::components::BoardPosition;
 use crate::save_load_system::ShouldSave;
+use crate::vectors::Vector2Int;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::{
@@ -83,10 +85,8 @@ fn init_new_game(
     println!("Player: Starting position = {:?}", player_starting_position);
     commands
         .entity(player)
-        .insert(GridPosition{
-            x:player_starting_position.0,
-            y:player_starting_position.1
-        });
+        .insert(BoardPosition{ v:Vector2Int::new(player_starting_position.0, player_starting_position.1)})
+    ;
 
     // Other entities. //TODO: Can't spawn different npc types: just one.
     let entities_pos = builder.spawn_entities();
@@ -99,10 +99,7 @@ fn init_new_game(
         //TODO : Le nom pour le moment est dans le spawner.
         commands
         .entity(npc)
-        .insert(GridPosition{
-            x:entity_position.0,
-            y:entity_position.1
-        })
+        .insert(BoardPosition{ v:Vector2Int::new(entity_position.0,entity_position.1)})
         .insert(Monster)
         ;
     }

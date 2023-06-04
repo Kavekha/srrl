@@ -11,10 +11,15 @@ pub struct Vector2Int {
 }
 
 impl Vector2Int {
-    pub const UP: Vector2Int = Vector2Int { x:0, y: 1 };
-    pub const DOWN: Vector2Int = Vector2Int { x:0, y: -1 };
+    pub const UP: Vector2Int = Vector2Int { x:0, y: -1 };
+    pub const DOWN: Vector2Int = Vector2Int { x:0, y: 1 };
     pub const LEFT: Vector2Int = Vector2Int { x:-1, y: 0 };
     pub const RIGHT: Vector2Int = Vector2Int { x:1, y: 0 };
+    pub const UPPER_LEFT: Vector2Int = Vector2Int { x:-1, y: -1 };
+    pub const UPPER_RIGHT: Vector2Int = Vector2Int { x:1, y: -1 };
+    pub const BOTTOM_LEFT: Vector2Int = Vector2Int { x:-1, y: 1 };
+    pub const BOTTOM_RIGHT: Vector2Int = Vector2Int { x:1, y: 1 };
+
     pub fn new(x: i32, y: i32) -> Vector2Int {
         Vector2Int{x, y}
     }
@@ -75,7 +80,9 @@ impl Mul<Vector2Int> for i32 {
     }
 }
 
-pub const ORTHO_DIRECTIONS: [Vector2Int; 4] = [
+pub const MULTI_DIRECTIONS: [Vector2Int; 8] = [
     Vector2Int::UP, Vector2Int::DOWN,
-    Vector2Int::LEFT, Vector2Int::RIGHT
+    Vector2Int::LEFT, Vector2Int::RIGHT,
+    Vector2Int::UPPER_LEFT, Vector2Int::UPPER_RIGHT, 
+    Vector2Int::BOTTOM_LEFT, Vector2Int::BOTTOM_RIGHT
 ];
