@@ -21,7 +21,7 @@ pub struct Tile {
 #[derive(Component)]
 pub struct GameMap;
 
-#[derive(Component, Default, Debug, Clone, Copy)]   //add Serialize, Deserialize, TODO
+#[derive(Component, Default, Debug, Clone, Copy, Serialize, Deserialize)] 
 pub struct BoardPosition{
     pub v: Vector2Int
 }

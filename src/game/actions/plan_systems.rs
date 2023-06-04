@@ -3,8 +3,8 @@ use pathfinding::prelude::astar;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    game::{GridPosition, pieces::components::{Actor, Walk, Melee, Occupier}, player::Player, tileboard::components::BoardPosition}, 
-    map_builders::{map::Map, pathfinding::Position}, 
+    game::{pieces::components::{Actor, Walk, Melee, Occupier}, player::Player, tileboard::components::BoardPosition}, 
+    map_builders::{map::Map}, 
     globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, NPC_ATTACK_SCORE_DEFAULT}, vectors::{MULTI_DIRECTIONS, find_path}};
 
 use super::{ActorQueue, WalkAction, models::MeleeHitAction};
