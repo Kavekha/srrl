@@ -3,11 +3,11 @@ use pathfinding::prelude::astar;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    game::{GridPosition, pieces::components::{Actor, Walk}, player::Player}, 
+    game::{GridPosition, pieces::components::{Actor, Walk, Melee}, player::Player}, 
     map_builders::{map::Map, pathfinding::Position}, 
-    globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, MULTI_DIRECTION}};
+    globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, MULTI_DIRECTION, NPC_ATTACK_SCORE_DEFAULT}};
 
-use super::{ActorQueue, WalkAction};
+use super::{ActorQueue, WalkAction, models::MeleeHitAction};
 
 pub fn plan_walk(
     mut query: Query<(&GridPosition, &mut Actor), With<Walk>>,
@@ -63,4 +63,22 @@ pub fn plan_walk(
         })
         .collect::<Vec<_>>();
     actor.0.extend(actions);
+}
+
+
+pub fn plan_melee(
+    mut query: Query<(&mut Actor, &Melee)>,
+    player_query: Query<&GridPosition, With<Player>>,
+    queue: Res<ActorQueue>
+) {
+    println!("Plan melee!");
+    let Some(entity) = queue.0.get(0) else { return };
+    let Ok((mut actor, _melee)) = query.get_mut(*entity) else { return };
+    let Ok(player_position) = player_query.get_single() else { return };
+    println!("Plan Melee: Player is at : {:?}", Position(player_position.x, player_position.y));
+    let action = Box::new(MeleeHitAction{
+        attacker: *entity,
+        target: Position(player_position.x, player_position.y)
+    });
+    actor.0.push((action, NPC_ATTACK_SCORE_DEFAULT))
 }

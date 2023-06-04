@@ -19,7 +19,7 @@ pub struct NpcPlugin;
 impl Plugin for NpcPlugin{
     fn build(&self, app: &mut App) {
         app         
-            .add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
+            //.add_systems(Update, monster_step_check.run_if(in_state(GameState::GameMap)))
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>)     //TODO : Refacto pour rassembler tout ca dans game?     
             ;         
     }
