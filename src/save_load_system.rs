@@ -71,7 +71,7 @@ struct SaveEntity {
     monster: bool,
     piece: Option<Piece>,
     position: Option<BoardPosition>,
-    health: Option<Health>,
+    health: bool,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
     walk: bool,
     melee: bool,
@@ -133,10 +133,11 @@ impl SaveState {
                         piece: world.get::<Piece>(*current_entity).cloned(),
                         position: world.get::<BoardPosition>(*current_entity).cloned(),
                         walk: world.get::<Walk>(*current_entity).is_some(),
-                        health: world.get::<Health>(*current_entity).cloned(),
+                        health: world.get::<Health>(*current_entity).is_some(),
                         melee: world.get::<Melee>(*current_entity).is_some(),
                         occupier: world.get::<Occupier>(*current_entity).is_some(),
                     });
+                    println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
                 }
             }        
         }
@@ -220,7 +221,7 @@ pub fn load_game(
     world.insert_resource(state.map);
 
     for entity in state.entities {
-        let mut e = world.spawn_empty();
+        let mut e = world.spawn_empty();         
 
         if entity.player {
             e.insert(Player);
@@ -239,13 +240,14 @@ pub fn load_game(
             e.insert(Actor::default()); // Actor component can't be save, so we have to add it there if NPC or Player.
         }
         if let Some(position) = entity.position {
+            println!("Load: Position of {:?} is now : {:?}", entity, position);
             e.insert(position);
         }
         if entity.walk {
             e.insert(Walk);
         }
-        if let Some(health) = entity.health {
-            e.insert(health);
+        if entity.health {
+            e.insert(Health);
         }
         if entity.melee {
             e.insert(Melee);
