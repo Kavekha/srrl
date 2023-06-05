@@ -62,7 +62,6 @@ pub fn process_pending_actions(world: &mut World) -> bool {
         Some(mut res) => res.0.drain(..).collect::<Vec<_>>(),
         _ => return false
     };
-    println!("ProcessPending: pending len: {:?}", pending.len());
 
     let mut next = Vec::new();  // Nous mettrons ici les nouvelles actions générées.
     let mut success = false;

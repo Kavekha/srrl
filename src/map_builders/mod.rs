@@ -1,6 +1,5 @@
 pub mod map;
 pub mod commons;
-pub mod pathfinding;
 
 mod rectangle;
 mod builders;
@@ -16,19 +15,18 @@ use crate::{
             room_based_spawner::RoomBasedSpawner,
             room_based_starting_position::RoomBasedStartingPosition,
         },
-        maps::{sewer_map::SewerMapBuilder,},        
-        pathfinding::Position,  
+        maps::{sewer_map::SewerMapBuilder,},
         map::Map,      
     },
-    globals::SHOW_MAPGEN_VISUALIZER,
+    globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
 };
 
 
 #[derive(Clone)]
 pub struct BuilderMap {
-    pub spawn_list: Vec<Position>, //Vec<(usize, String)>,
+    pub spawn_list: Vec<Vector2Int>, //Vec<(usize, String)>,
     pub map: Map,
-    pub starting_position: Option<Position>,
+    pub starting_position: Option<Vector2Int>,
     pub rooms: Option<Vec<Rectangle>>,
     pub history: Vec<Map>
 }
@@ -85,11 +83,11 @@ impl BuilderChain {
             metabuilder.build_map(&mut self.build_data);
         }
     }
-    pub fn spawn_entities(&mut self) -> Vec<Position> {
+    pub fn spawn_entities(&mut self) -> Vec<Vector2Int> {
         let spawn_list = self.build_data.spawn_list.clone();
         spawn_list
     }
-    pub fn get_starting_position(&mut self) -> Position {
+    pub fn get_starting_position(&mut self) -> Vector2Int {
         if let Some(starting_position) = self.build_data.starting_position {
             starting_position
         } else {

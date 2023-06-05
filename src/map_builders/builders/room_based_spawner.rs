@@ -1,8 +1,7 @@
 use crate::{
     map_builders::{
-        pathfinding::Position,
          BuilderMap, MetaMapBuilder,
-    },  
+    }, vectors::Vector2Int,  
     //SHOW_MAPGEN_VISUALIZER, 
 };
 
@@ -24,8 +23,7 @@ impl RoomBasedSpawner {
         if let Some(rooms) = &build_data.rooms {
             for (i, _room) in rooms.iter().enumerate().skip(1) {
                 let npc_pos = rooms[i].center();
-                //println!("Position dans npc_pos : {:?}", npc_pos);
-                build_data.spawn_list.push(Position(npc_pos.0, npc_pos.1));
+                build_data.spawn_list.push(Vector2Int{x:npc_pos.0, y:npc_pos.1});
                 //println!("Check spawn_list : {:?}", build_data.spawn_list);
             }
         } else {

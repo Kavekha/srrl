@@ -11,7 +11,6 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::GridPosition;
 use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier};
 use crate::game::player::{Stats, Player, Npc, Monster, };
 use crate::game::tileboard::components::BoardPosition;
@@ -75,7 +74,7 @@ struct SaveEntity {
     health: Option<Health>,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
     walk: bool,
-    melee: Option<Melee>,
+    melee: bool,
     occupier: bool,
 }
 
@@ -116,7 +115,6 @@ impl SaveState {
                 || world.get::<Monster>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Stats>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Piece>(world.entity(*current_entity).id()).is_some()
-                //|| world.get::<GridPosition>(world.entity(*current_entity).id()).is_some()    //If only a grid position (like tile) we dont want to be save. Could bite us inthe ass later.
                 || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Health>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Melee>(world.entity(*current_entity).id()).is_some()
@@ -136,7 +134,7 @@ impl SaveState {
                         position: world.get::<BoardPosition>(*current_entity).cloned(),
                         walk: world.get::<Walk>(*current_entity).is_some(),
                         health: world.get::<Health>(*current_entity).cloned(),
-                        melee: world.get::<Melee>(*current_entity).cloned(),
+                        melee: world.get::<Melee>(*current_entity).is_some(),
                         occupier: world.get::<Occupier>(*current_entity).is_some(),
                     });
                 }
@@ -249,8 +247,8 @@ pub fn load_game(
         if let Some(health) = entity.health {
             e.insert(health);
         }
-        if let Some(melee) = entity.melee {
-            e.insert(melee);
+        if entity.melee {
+            e.insert(Melee);
         }
         if entity.occupier {
             e.insert(Occupier);

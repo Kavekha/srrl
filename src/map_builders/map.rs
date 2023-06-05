@@ -5,10 +5,9 @@ use::bevy::prelude::*;
 
 use crate::{
     map_builders::{    
-        commons::TileType,
-        pathfinding::{Position, Successor}
+        commons::TileType
     },
-    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH, DEFAULT_COST_PATHFINDING}, vectors::Vector2Int
+    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}, vectors::Vector2Int
 };
 
 

@@ -85,7 +85,7 @@ fn init_new_game(
     println!("Player: Starting position = {:?}", player_starting_position);
     commands
         .entity(player)
-        .insert(BoardPosition{ v:Vector2Int::new(player_starting_position.0, player_starting_position.1)})
+        .insert(BoardPosition{ v:player_starting_position })
     ;
 
     // Other entities. //TODO: Can't spawn different npc types: just one.
@@ -99,7 +99,7 @@ fn init_new_game(
         //TODO : Le nom pour le moment est dans le spawner.
         commands
         .entity(npc)
-        .insert(BoardPosition{ v:Vector2Int::new(entity_position.0,entity_position.1)})
+        .insert(BoardPosition{ v:entity_position})
         .insert(Monster)
         ;
     }

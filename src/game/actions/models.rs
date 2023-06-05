@@ -54,14 +54,16 @@ pub struct MeleeHitAction{
 }
 impl Action for MeleeHitAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
-        //println!("Execute: MeleeHit!: attacker is : {:?}, target position is : {:?}", self.attacker, self.target);
+        println!("Execute: MeleeHit!: attacker is : {:?}, target position is : {:?}", self.attacker, self.target);
         
         // We get attacker position.
         let attacker_position = world.get::<BoardPosition>(self.attacker).ok_or(())?;
         println!("ActionMelee: Attacker : OK");
         
         // Si trop loin de sa cible, on ignore.
-        if attacker_position.v.manhattan(self.target) > 1 { return Err(()) }; 
+        if attacker_position.v.manhattan(self.target) > 1 { 
+            println!("Attacker position is {:?}, self.target is {:?}, manhattan is : {:?}", attacker_position.v, self.target, attacker_position.v.manhattan(self.target));
+            return Err(()) }; 
         println!("ActionMelee: Distance : OK");
 
         // On regarde si la cible est bien là : Position Target vers Position(Gridx, gridy).

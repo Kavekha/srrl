@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use crate::map_builders::pathfinding::Position;
-
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
@@ -83,4 +81,4 @@ pub const SPEED_MULTIPLIER: f32 = 2.0;      // FAST debug / balance on speed mov
 // Npc planning
 pub const NPC_MOVE_SCORE_BONUS: i32 = 5;      // Bonus si cette position autour est sur le chemin menant au Joueur. Favorise largement ce choix.
 pub const NPC_MOVE_SCORE_DEFAULT: i32 = 50;     // Combien vaut le fait de se deplacer pour un NPC. Aide a faire un choix entre plusieurs actions à choisir à la fin. Permets de planifier plusieurs choses. 
-pub const NPC_ATTACK_SCORE_DEFAULT: i32 = 75;
+pub const NPC_ATTACK_SCORE_DEFAULT: i32 = 750;
