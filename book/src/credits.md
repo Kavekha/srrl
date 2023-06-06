@@ -14,12 +14,14 @@ For their rogue-like tutorial on rust bevy : https://maciejglowka.com/blog/
 ### Team Bevy and all contributors!  
 Of course.
 
+
+# Thanks 
 ### Samuel Tardieu
-For Pathfinding Crate : https://github.com/samueltardieu/pathfinding  
+SRRL was on Pathfinding Crate for a time: https://github.com/samueltardieu/pathfinding  
 https://github.com/samueltardieu/pathfinding  
 
 ### Jacques Joubert
-For their Bevy Pathfinding prototype: https://github.com/frederickjjoubert/bevy-pathfinding/blob/main/LICENSE.md
+SRRL pathfinding implementation was from their Bevy Pathfinding prototype for a time: https://github.com/frederickjjoubert/bevy-pathfinding/blob/main/LICENSE.md
 
 MIT License  
 

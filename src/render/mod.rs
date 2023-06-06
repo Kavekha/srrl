@@ -30,7 +30,7 @@ impl Plugin for GraphicsPlugin {
     }
 }
 
-
+#[derive(Event)]
 pub struct GraphicsWaitEvent;
 
 pub fn get_world_position(

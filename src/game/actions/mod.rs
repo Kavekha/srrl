@@ -46,7 +46,18 @@ enum ActionSet {
 
 #[derive(Default, Resource)]
 pub struct ActorQueue(pub VecDeque<Entity>);
+
+#[derive(Event)]
 pub struct TickEvent;
+
+#[derive(Event)]
 pub struct NextActorEvent;
-pub struct ActionsCompleteEvent;
+
+#[derive(Event)]
 pub struct InvalidPlayerActionEvent;
+
+#[derive(Event)]
+pub struct ActionsCompleteEvent;
+
+
+

@@ -11,7 +11,7 @@ pub const TILE_SIZE: f32 = 32.0;        // Deprecated : 2d grid based.
 pub const CHAR_SIZE: f32 = 16.0; 
 //pub const STANDARD_TILE_WIDTH:i32 = 64;
 pub const TILE_WIDTH_HALF:i32 = 32;
-pub const STANDARD_TILE_HEIGHT:i32 = 32;
+//pub const STANDARD_TILE_HEIGHT:i32 = 32;
 pub const TILE_HEIGHT_HALF:i32 = 16; 
 
 // Tiles    //TEMPORARY : TODO : Loader.
@@ -29,8 +29,8 @@ pub const TILE_HEIGHT_VERY_HIGH: i32 = 72; // 1/3 more than the player.
 pub const TILE_HEIGHT_HIGH: i32 = 64; // Same as Medium & floor : 2 Y Cell higher exactly, provoke confusion.
 pub const TILE_HEIGHT_MEDIUM_HIGH: i32 = 48; // Same as player.
 pub const TILE_HEIGHT_MEDIUM: i32 = 32; // Same as a floor tile but 1 Y cell higher exactly, so no real relief. May lead to confusion if different "floors" of tiles can be used.
-pub const TILE_HEIGHT_FLOOR: i32 = 0;
-pub const TILE_HEIGHT_LOW: i32 = 24;
+//pub const TILE_HEIGHT_FLOOR: i32 = 0;
+//pub const TILE_HEIGHT_LOW: i32 = 24;
 
 //size: 1 pix = 4 cm. Character sprite are on tile center, so there is a TILE_HEIGHT_HALF to adds.
 pub const SIZE_DWARF: i32 = 44; // 16 + 28 px (112 cm)
@@ -39,7 +39,7 @@ pub const SIZE_ELF: i32 = 64; // 16 + 48 px (192 cm)
 pub const SIZE_ORC: i32 = 64; // 16 + 48 px (192 cm)
 pub const SIZE_TROLL: i32 = 80; // 16 + 64 pix (256 cm)
 pub const SIZE_GHOUL: i32 = 64;
-pub const SIZE_DEFAULT: i32 = 64;
+//pub const SIZE_DEFAULT: i32 = 64;
 
 
 
@@ -63,11 +63,6 @@ pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
 
 // MENUS
 pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'une option dans l'input.
-
-// PATHFINDING
-//pub const FIXED_TIMESTEP: f32 = 0.1;
-//pub const BASE_RANGED_VIEW:i32 = 12;     // Distance à laquelle un NPC "voit" le joueur. //TODO : real visibility check
-pub const DEFAULT_COST_PATHFINDING:i32 = 1;     // Changing this will break the plan_walk.  //TODO : Remove this pathfinding element.
 
 //SAVE
 pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";

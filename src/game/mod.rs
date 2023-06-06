@@ -2,13 +2,11 @@
 use bevy::prelude::*;
 
 use self::manager::ManagerPlugin;
-use self::player::PlayerPlugin;
+use self::player::{PlayerPlugin, Npc};
 use self::tileboard::TileBoardPlugin;
-use self::npc::NpcPlugin;
 use self::actions::ActionsPlugin;
 
 pub mod player;
-pub mod npc;
 pub mod pieces;
 pub mod actions;
 pub mod tileboard;
@@ -17,12 +15,12 @@ pub mod manager;
 pub use tileboard::components::{Tile, GridPosition};
 
 
+use crate::despawn_screen;
 use crate::ecs_elements::MapGenHistory;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc};
 use crate::game::player::Monster;
 use crate::game::tileboard::components::BoardPosition;
 use crate::save_load_system::ShouldSave;
-use crate::vectors::Vector2Int;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::{
@@ -49,7 +47,6 @@ impl Plugin for GamePlugin {
 
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
-            .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_plugin(GraphicsPlugin)
             .add_plugin(TileBoardPlugin)
@@ -57,6 +54,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ManagerPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>) //TODO : Remove NPC ? Add a full "end game" function?
             ;
     }
 }

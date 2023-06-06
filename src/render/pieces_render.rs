@@ -10,7 +10,7 @@ use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation};
 
 
 pub fn update_piece_position(
-    mut query: Query<(&BoardPosition, &mut Transform, &Piece)>,   //, With<Piece>>,
+    mut query: Query<(&BoardPosition, &mut Transform, &Piece)>,  
     time: Res<Time>,
     mut ev_wait: EventWriter<GraphicsWaitEvent>
 ){
