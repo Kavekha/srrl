@@ -30,3 +30,12 @@ pub enum EngineState {
     PlayerInput,
     TurnUpdate
 }
+
+
+#[derive(SystemSet, Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum TurnSet {
+    #[default]
+    Logic,
+    Animation,
+    Tick
+}

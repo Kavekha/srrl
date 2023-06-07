@@ -2,7 +2,7 @@ use std::any::Any;
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, Piece}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
 
 
 
@@ -16,7 +16,7 @@ pub trait Action: Send + Sync {
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
 
-pub struct WalkAction(pub Entity, pub Vector2Int);    //REMEMBER : arg0 = self.0, arg1 = self.1
+pub struct WalkAction(pub Entity, pub Vector2Int, pub Piece);    //REMEMBER : arg0 = self.0, arg1 = self.1
 impl Action for WalkAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         //println!("WalkAction: Entity : {:?}, Position : {:?}", self.0, self.1);

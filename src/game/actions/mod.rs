@@ -1,15 +1,14 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
-use crate::states::EngineState;
+mod models;
+mod action_queue_system;
+mod plan_systems;
 
-use self::{action_queue_system::{process_action_queue, populate_actor_queue}, plan_systems::{plan_walk, plan_melee}, models::PendingActions};
+pub use models::{WalkAction, Action, MeleeHitAction};
 
-pub mod models;
-pub mod action_queue_system;
-pub mod plan_systems;
-
-pub use models::{WalkAction, Action};
+use crate::states::{EngineState, TurnSet};
+use self::{models::{PendingActions}, plan_systems::{plan_melee, plan_walk}, action_queue_system::{populate_actor_queue, process_action_queue}};
 
 use super::player::PlayerActionEvent;
 
@@ -26,10 +25,13 @@ impl Plugin for ActionsPlugin {
             .add_event::<ActionsCompleteEvent>()
             .add_event::<InvalidPlayerActionEvent>()
             .add_event::<PlayerActionEvent>()
+            .add_event::<ActionExecutedEvent>()          
+
 
             //Planning
-            .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()))
-            .configure_set(Update, ActionSet::Planning.before(ActionSet::Late))  
+            .configure_sets(Update, (ActionSet::Planning, ActionSet::Late).in_set(TurnSet::Logic))
+
+            .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()).before(ActionSet::Late))    
             .add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             
@@ -64,5 +66,3 @@ pub struct ActionsCompleteEvent;
 
 #[derive(Event)]
 pub struct ActionExecutedEvent(pub Box<dyn Action>);
-
-

@@ -97,7 +97,7 @@ fn get_tile_infos_render(
                     y_modifier = get_iso_y_modifier_from_elevation(TILE_HEIGHT_HIGH);
                 }
             }            
-            world_z = get_world_z(&position);
+            world_z = get_world_z(&position.v);
         }
         TileType::Exit => {texture = MAP_EXIT}
         TileType::Floor => {texture = MAP_FLOOR}
