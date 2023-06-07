@@ -7,12 +7,12 @@ pub mod components;
 
 use self::{
     tilemap_render::{spawn_map_render},
-    pieces_render::{spawn_piece_renderer, update_piece_position},
+    pieces_render::{spawn_piece_renderer, update_piece_position, path_animator_update, walk_animation},
 };
 
 use crate::{
     globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
-    states::GameState, game::tileboard::components::BoardPosition,
+    states::{GameState, TurnSet}, game::tileboard::components::BoardPosition, vectors::Vector2Int,
 };
 
 
@@ -25,7 +25,13 @@ impl Plugin for GraphicsPlugin {
 
             .add_systems(OnEnter(GameState::GameMap), spawn_map_render)           
             .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
-            .add_systems(Update, update_piece_position.run_if(in_state(GameState::GameMap)))
+            //.add_systems(Update, update_piece_position.run_if(in_state(GameState::GameMap)))
+
+            .add_systems(Update, (walk_animation, path_animator_update).in_set(TurnSet::Animation))
+    
+            //.add_systems(Update, path_animator_update.run_if(in_state(GameState::GameMap)))
+            //.add_systems(Update, walk_animation.run_if(in_state(GameState::GameMap)))
+            
             ;
     }
 }

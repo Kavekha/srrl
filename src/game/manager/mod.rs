@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{states::{GameState, EngineState}, render::GraphicsWaitEvent};
+use crate::{states::{GameState, EngineState, TurnSet}, render::GraphicsWaitEvent};
 
-use super::{player::PlayerInputReadyEvent, actions::{TickEvent, ActionsCompleteEvent, InvalidPlayerActionEvent}};
+use super::{player::PlayerActionEvent, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent}};
+
+
 
 
 pub struct ManagerPlugin;
@@ -12,11 +14,17 @@ impl Plugin for ManagerPlugin {
         app.add_systems(OnEnter(GameState::GameMap), game_start) 
             .add_systems(OnExit(GameState::GameMap), game_end)  
 
-            .add_systems(Update, turn_update_start.run_if(on_event::<PlayerInputReadyEvent>()))  
+            .configure_set(Update, TurnSet::Logic.run_if(in_state(EngineState::TurnUpdate)).before(TurnSet::Animation))   
+            .configure_set(Update, TurnSet::Animation.run_if(in_state(EngineState::TurnUpdate)).before(TurnSet::Tick))   
+            .configure_set(Update, TurnSet::Tick.run_if(in_state(EngineState::TurnUpdate)))   
+
+            .add_systems(Update, turn_update_start.run_if(on_event::<PlayerActionEvent>()))
+            //.add_systems(Update, turn_update_start.run_if(on_event::<PlayerInputReadyEvent>()))  
+
             .add_systems(Update, turn_update_end.run_if(on_event::<ActionsCompleteEvent>()))
             .add_systems(Update, turn_update_cancel.run_if(on_event::<InvalidPlayerActionEvent>()))
             .add_systems(OnEnter(EngineState::TurnUpdate), tick)
-            .add_systems(Update, tick.run_if(in_state(EngineState::TurnUpdate)))
+            .add_systems(Update, tick.run_if(in_state(EngineState::TurnUpdate)).in_set(TurnSet::Tick))
             ;
     }
 }
@@ -52,7 +60,7 @@ fn tick(
         ev_tick.send(TickEvent);
         //println!("tick: Everything is done. Tick suivant!");
     }
-    println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
+    //println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
 }
 
 fn turn_update_end(

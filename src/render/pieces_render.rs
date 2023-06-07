@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
 use crate::{
@@ -6,7 +8,60 @@ use crate::{
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, },
     game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition}, GraphicsWaitEvent};
 
-use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation};
+use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation, components::PathAnimator};
+
+
+
+pub fn walk_animation(
+    mut commands: Commands,
+    mut ev_action: EventReader<ActionExecutedEvent>,
+    mut ev_wait: EventWriter<GraphicsWaitEvent>
+) {
+    for ev in ev_action.iter() {
+        let action = ev.0.as_any();
+        if let Some(action) = action.downcast_ref::<WalkAction>() {
+            let (target_x, target_y) = get_world_position(&action.1);
+            let target = Vec3::new(target_x, target_y, 0.0);
+            commands.entity(action.0)
+                .insert(PathAnimator(VecDeque::from([target])));
+            ev_wait.send(GraphicsWaitEvent);
+        }
+    }
+}
+
+
+pub fn path_animator_update(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut PathAnimator, &mut Transform)>,
+    time: Res<Time>,
+    mut ev_wait: EventWriter<GraphicsWaitEvent>
+) {
+    for (entity, mut animator, mut transform) in query.iter_mut() {
+        if animator.0.len() == 0 {
+            // this entity has completed it's animation
+            println!("PathAnimator: Anim completed.");
+            commands.entity(entity).remove::<PathAnimator>();
+            continue;
+        }
+        //ev_wait.send(GraphicsWaitEvent);
+        let target = *animator.0.get(0).unwrap();
+        println!("PathAnimator: target is {:?}", target);
+  
+        let destination = (target - transform.translation).length();
+        println!("PathAnimator: Destination is {:?}", destination);
+
+        if destination > POSITION_TOLERANCE {
+            transform.translation = transform.translation.lerp(
+                target,
+                BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
+            );
+        } else {
+            // the entity is at the desired path position
+            transform.translation = target;
+            animator.0.pop_front();
+        }
+    }
+}
 
 
 pub fn update_piece_position(
