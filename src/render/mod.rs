@@ -12,7 +12,7 @@ use self::{
 
 use crate::{
     globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
-    states::GameState, game::tileboard::components::BoardPosition,
+    states::GameState, game::tileboard::components::BoardPosition, vectors::Vector2Int,
 };
 
 
@@ -33,12 +33,14 @@ impl Plugin for GraphicsPlugin {
 #[derive(Event)]
 pub struct GraphicsWaitEvent;
 
+
+
 pub fn get_world_position(
-    position: &BoardPosition
+    v: &Vector2Int
 ) -> (f32, f32) {
         // REMEMBER : Y in bevy2d = Negative when going down!
-        let iso_x = (position.v.x - position.v.y) * TILE_WIDTH_HALF;
-        let iso_y = (position.v.x + position.v.y) * TILE_HEIGHT_HALF;
+        let iso_x = (v.x - v.y) * TILE_WIDTH_HALF;
+        let iso_y = (v.x + v.y) * TILE_HEIGHT_HALF;
         
         (iso_x as f32,
         0.0 - iso_y as f32)     // REMEMBER : Y in bevy2d = Negative when going down!
