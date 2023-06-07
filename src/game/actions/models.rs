@@ -1,3 +1,5 @@
+use std::any::Any;
+
 use bevy::{prelude::*, ecs::system::SystemState};
 
 use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
@@ -6,6 +8,7 @@ use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Heal
 
 pub trait Action: Send + Sync {
     fn execute(&self, world: &mut World) ->  Result<Vec<Box<dyn Action>>, ()>;
+    fn as_any(&self) -> &dyn Any;       //https://maciejglowka.com/blog/bevy-roguelike-tutorial-devlog-part-7-better-animation/
 }
 
 
@@ -33,6 +36,7 @@ impl Action for WalkAction {
         position.v = self.1;
         Ok(Vec::new())
     }
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 
@@ -45,6 +49,7 @@ impl Action for GameOverAction{
         game_state.set(GameState::GameOverScreen);
         Ok(Vec::new())
     }
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 pub struct MeleeHitAction{
@@ -83,6 +88,7 @@ impl Action for MeleeHitAction {
         Ok(result)
 
     }
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }
 
 
@@ -105,4 +111,5 @@ impl Action for DamageAction {
         result.push(Box::new(GameOverAction) as Box<dyn Action>);
         Ok(result)
     }
+    fn as_any(&self) -> &dyn std::any::Any { self }
 }

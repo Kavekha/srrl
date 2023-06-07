@@ -35,3 +35,5 @@ impl Plugin for PlayerPlugin{
 #[derive(Event)]
 pub struct PlayerInputReadyEvent;
 
+#[derive(Event)]
+pub struct PlayerActionEvent;
