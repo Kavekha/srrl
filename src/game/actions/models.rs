@@ -2,7 +2,7 @@ use std::any::Any;
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, Piece}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
 
 
 
