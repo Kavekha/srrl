@@ -11,6 +11,8 @@ pub mod plan_systems;
 
 pub use models::{WalkAction, Action};
 
+use super::player::PlayerActionEvent;
+
 
 pub struct ActionsPlugin;
 
@@ -23,6 +25,7 @@ impl Plugin for ActionsPlugin {
             .add_event::<NextActorEvent>()
             .add_event::<ActionsCompleteEvent>()
             .add_event::<InvalidPlayerActionEvent>()
+            .add_event::<PlayerActionEvent>()
 
             //Planning
             .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()))
@@ -59,5 +62,7 @@ pub struct InvalidPlayerActionEvent;
 #[derive(Event)]
 pub struct ActionsCompleteEvent;
 
+#[derive(Event)]
+pub struct ActionExecutedEvent(pub Box<dyn Action>);
 
 

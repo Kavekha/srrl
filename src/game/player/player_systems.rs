@@ -11,7 +11,7 @@ use crate::{
     vectors::Vector2Int};
 
 
-use super::{components::{Player}, PlayerInputReadyEvent};
+use super::{components::{Player}, PlayerInputReadyEvent, PlayerActionEvent};
 
 //
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
@@ -34,7 +34,8 @@ pub fn player_input(
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
-    mut ev_input: EventWriter<PlayerInputReadyEvent>
+    //mut ev_input: EventWriter<PlayerInputReadyEvent>,
+    mut ev_action: EventWriter<PlayerActionEvent>,
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
@@ -59,7 +60,6 @@ pub fn player_input(
         }        
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING_NO_NUM {
             if keys.pressed(key) {
-
                 destination += dir_position;
             }
         }
@@ -67,7 +67,7 @@ pub fn player_input(
         let action = WalkAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        ev_input.send(PlayerInputReadyEvent);
+        ev_action.send(PlayerActionEvent);
     }
 }
 

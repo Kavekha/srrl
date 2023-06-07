@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 
 
@@ -10,3 +12,6 @@ pub struct TileExit;
 
 #[derive(Component)]
 pub struct GameMapRender;
+
+#[derive(Component)]
+pub struct PathAnimator(pub VecDeque<Vec3>);

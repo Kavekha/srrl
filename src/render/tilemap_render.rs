@@ -24,7 +24,7 @@ pub fn spawn_map_render(
 
     for (_entity, position, logic_tile) in all_tiles_query.iter() {
 
-          let (world_x, world_y) = get_world_position(&position);
+          let (world_x, world_y) = get_world_position(&position.v);
           
         //get info for typetile
         let (texture, modified_y, world_z) =  get_tile_infos_render(&position, logic_tile.tiletype);

@@ -15,7 +15,7 @@ For their rogue-like tutorial on rust bevy : https://maciejglowka.com/blog/
 Of course.
 
 
-# Thanks 
+## Thanks 
 ### Samuel Tardieu
 SRRL was on Pathfinding Crate for a time: https://github.com/samueltardieu/pathfinding  
 https://github.com/samueltardieu/pathfinding  

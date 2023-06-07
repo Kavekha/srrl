@@ -2,15 +2,26 @@ use bevy::prelude::*;
 
 use crate::game::{player::Player, pieces::components::Actor};
 
-use super::{ActorQueue, ActionsCompleteEvent, InvalidPlayerActionEvent, NextActorEvent, models::PendingActions};
+use super::{ActorQueue, ActionsCompleteEvent, InvalidPlayerActionEvent, NextActorEvent, models::PendingActions, ActionExecutedEvent};
 
+
+fn execute_action(action: Box<dyn super::Action>, world: &mut World) -> bool {
+    if let Ok(result) = action.execute(world) {
+        // Si l'action a généré d'autres actions, on les envoi dans Pending.
+        if let Some(mut pending) = world.get_resource_mut::<PendingActions>() {
+            pending.0.extend(result);
+        }
+        //on informe ensuite que l'action a réussie.
+        world.send_event(ActionExecutedEvent(action));
+        return true;
+    }
+    false
+}
 
 
 pub fn process_action_queue(world: &mut World) {
     // Y a-t-il des actions en attente à faire?
-    if process_pending_actions(world) { 
-        println!("Il nous reste des actions en process!");
-        return }
+    if process_pending_actions(world) { return }
 
     // Y a-t-il une queue?
     let Some(mut queue) = world.get_resource_mut::<ActorQueue>() else { return };
@@ -20,7 +31,11 @@ pub fn process_action_queue(world: &mut World) {
         return;
     };
     // Qui va faire l'action?
-    let Some(mut actor) = world.get_mut::<Actor>(entity) else { return };
+    let Some(mut actor) = world.get_mut::<Actor>(entity) else { 
+        // L'actor a pu être détruit entre temps, donc on passe au suivant si on ne le trouve pas.
+        world.send_event(NextActorEvent);
+        return;
+    };
 
     // On récupère la liste de ses differentes actions potentielles (NPC => 1+, PJ => Uniquement une.)
     let mut possible_actions = actor.0.drain(..).collect::<Vec<_>>();
@@ -33,16 +48,9 @@ pub fn process_action_queue(world: &mut World) {
     // On regarde pour chaque action si elle réussie / est possible : si oui on s'arrête à cette action la plus importante.
     let mut success = false;
     for action in possible_actions{
-        //Est ce que l'action a réussie?
-        if let Ok(result) = action.0.execute(world) {
-            // Est-ce que cela a généré d'autres actions à faire?
-            if let Some(mut pending) = world.get_resource_mut::<PendingActions>() {
-                pending.0 = result
-            }
-            success = true;
-            break;
-        }
-    }         
+        success = success || execute_action(action.0, world);
+        if success { break }
+    } 
 
     // Si c'est un joueur, on a eu le droit qu'à une action. Si elle echoue, on "informe" le joueur via event InvalidPlayerAction et surtout on ne lui fait pas perdre son tour / ne passe par au tour des autres.
     if !success && world.get::<Player>(entity).is_some() {
@@ -63,22 +71,10 @@ pub fn process_pending_actions(world: &mut World) -> bool {
         _ => return false
     };
 
-    let mut next = Vec::new();  // Nous mettrons ici les nouvelles actions générées.
     let mut success = false;
-    println!("About to deal with Pending actions...");
     for action in pending {
-        println!("ProcessPending: Action resolved.");
-        if let Ok(result) = action.execute(world) {
-            next.extend(result);
-            success = true;
-        }
+        success = success || execute_action(action, world);
     }
-    println!("Done with pending action.");
-    // Si d'autres actions sont apparues suite à cela, on les ajoute.
-    // unwrap OK car on a confirmé que la resource existe au debut.
-    let mut res = world.get_resource_mut::<PendingActions>().unwrap();
-    res.0 = next;
-    println!("About to return result for pending action dealt with: {:?}", success);
     success
 }
 
