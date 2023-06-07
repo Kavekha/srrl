@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    game::{pieces::components::{Actor, Walk, Melee, Occupier, Piece}, player::Player, tileboard::components::BoardPosition}, 
+    game::{pieces::components::{Actor, Walk, Melee, Occupier}, player::Player, tileboard::components::BoardPosition}, 
     map_builders::{map::Map}, 
     globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, NPC_ATTACK_SCORE_DEFAULT}, vectors::{MULTI_DIRECTIONS, find_path}};
 
@@ -11,7 +11,7 @@ use super::{ActorQueue, models::{MeleeHitAction, WalkAction}};
 
 
 pub fn plan_walk(
-    mut query: Query<(&BoardPosition, &mut Actor, &Piece), With<Walk>>,
+    mut query: Query<(&BoardPosition, &mut Actor), With<Walk>>,
     queue: Res<ActorQueue>,
     occupier_query: Query<&BoardPosition, With<Occupier>>, //Will return None for now, since no char have it.
     player_query: Query<&BoardPosition, With<Player>>,
@@ -21,7 +21,7 @@ pub fn plan_walk(
     let Some(entity) = queue.0.get(0) else { return };
 
     // Fait-il parti des Actors avec Grid position?
-    let Ok((position, mut actor, piece)) = query.get_mut(*entity) else { return };
+    let Ok((position, mut actor)) = query.get_mut(*entity) else { return };
 
     // On veut connaitre le joueur pour en faire notre Goal. Si y en a pas, on s'en va.
     let Ok(player_position) = player_query.get_single() else { return };
@@ -48,7 +48,7 @@ pub fn plan_walk(
                 // however prioritize a movement if it leads to the player                
                 if path.contains(some_position_around) { random_action_value += NPC_MOVE_SCORE_BONUS }
             }
-            (Box::new(WalkAction(*entity, *some_position_around, *piece)) as Box<dyn super::Action>, NPC_MOVE_SCORE_DEFAULT + random_action_value)
+            (Box::new(WalkAction(*entity, *some_position_around)) as Box<dyn super::Action>, NPC_MOVE_SCORE_DEFAULT + random_action_value)
         })
         .collect::<Vec<_>>();
     actor.0.extend(actions);

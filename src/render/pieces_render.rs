@@ -46,15 +46,17 @@ pub fn walk_animation(
     mut commands: Commands,
     mut ev_action: EventReader<ActionExecutedEvent>,
     mut ev_wait: EventWriter<GraphicsWaitEvent>,
+    query_piece: Query<&Piece>
 ) {
     for ev in ev_action.iter() {
         let action = ev.0.as_any();
         // WalkAction: On recupere Entity + Position + Piece
         if let Some(action) = action.downcast_ref::<WalkAction>() {
+            let Ok(piece) = query_piece.get(action.0) else { return };
             // Converti pour ISO.
             let (position_x, mut position_y) = get_world_position(&action.1); // Position X,Y de World.
 
-            position_y += get_iso_y_modifier_from_elevation(action.2.size); // Affichage de l'image pour les sprites > Tile.    
+            position_y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile.    
             let target = Vec3::new(position_x, position_y, get_world_z(&action.1)); // Calcul du Z par la même occasion.
 
             commands.entity(action.0)

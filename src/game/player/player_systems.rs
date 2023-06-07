@@ -30,7 +30,7 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 //
 
 pub fn player_input(
-    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor, &Piece), With<Player>>,
+    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
@@ -50,7 +50,7 @@ pub fn player_input(
         KeyCode::Z, KeyCode::Q, KeyCode::S, KeyCode::D, KeyCode::A, KeyCode::E, KeyCode::W, KeyCode::X,
         ]){
         // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
-        let Ok((entity, position, mut actor, piece)) = query_player_position.get_single_mut() else {return};
+        let Ok((entity, position, mut actor)) = query_player_position.get_single_mut() else {return};
 
         let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
@@ -64,7 +64,7 @@ pub fn player_input(
             }
         }
 
-        let action = WalkAction(entity, destination, *piece);
+        let action = WalkAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_action.send(PlayerActionEvent);
