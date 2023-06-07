@@ -14,4 +14,7 @@ pub struct TileExit;
 pub struct GameMapRender;
 
 #[derive(Component)]
-pub struct PathAnimator(pub VecDeque<Vec3>);
+pub struct PathAnimator {
+    pub path:VecDeque<Vec3>,
+    pub wait_anim: bool
+}

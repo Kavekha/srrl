@@ -5,8 +5,6 @@ use crate::{states::{GameState, EngineState, TurnSet}, render::GraphicsWaitEvent
 use super::{player::PlayerActionEvent, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent}};
 
 
-
-
 pub struct ManagerPlugin;
 
 impl Plugin for ManagerPlugin {

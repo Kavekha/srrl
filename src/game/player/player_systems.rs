@@ -7,11 +7,11 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, models::WalkAction}, pieces::components::Actor, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, WalkAction}, pieces::components::{Actor, Piece}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
-use super::{components::{Player}, PlayerInputReadyEvent};
+use super::{components::{Player}, PlayerInputReadyEvent, PlayerActionEvent};
 
 //
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
@@ -30,11 +30,12 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 //
 
 pub fn player_input(
-    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
+    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor, &Piece), With<Player>>,
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
-    mut ev_input: EventWriter<PlayerInputReadyEvent>
+    //mut ev_input: EventWriter<PlayerInputReadyEvent>,
+    mut ev_action: EventWriter<PlayerActionEvent>,
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
@@ -49,7 +50,7 @@ pub fn player_input(
         KeyCode::Z, KeyCode::Q, KeyCode::S, KeyCode::D, KeyCode::A, KeyCode::E, KeyCode::W, KeyCode::X,
         ]){
         // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
-        let Ok((entity, position, mut actor)) = query_player_position.get_single_mut() else {return};
+        let Ok((entity, position, mut actor, piece)) = query_player_position.get_single_mut() else {return};
 
         let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
@@ -59,15 +60,14 @@ pub fn player_input(
         }        
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING_NO_NUM {
             if keys.pressed(key) {
-
                 destination += dir_position;
             }
         }
 
-        let action = WalkAction(entity, destination);
+        let action = WalkAction(entity, destination, *piece);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        ev_input.send(PlayerInputReadyEvent);
+        ev_action.send(PlayerActionEvent);
     }
 }
 

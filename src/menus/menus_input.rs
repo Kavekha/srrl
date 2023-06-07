@@ -73,7 +73,7 @@ pub fn main_menu_input(
 
 pub fn menu_input_mouse(
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
-    mut mouse_motion_events: EventReader<MouseMotion>,
+    //mut mouse_motion_events: EventReader<MouseMotion>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut mouse_wheel_events: EventReader<MouseWheel>,
     window_query: Query<&Window>,
@@ -91,11 +91,12 @@ pub fn menu_input_mouse(
         }
         info!("{:?}", event);
     }
-
+    
+    /* 
     for event in mouse_motion_events.iter() {
         //info!("{:?}", event);
     }
-
+    */
     for event in cursor_moved_events.iter() {
         // Needed to convert cursor position on window to World coords.
         let (camera, camera_transform) = camera_q.single();
@@ -114,10 +115,11 @@ pub fn menu_input_mouse(
         }
         //info!("{:?}", event);
     }
-
+    /*
     for event in mouse_wheel_events.iter() {
         //info!("{:?}", event);
     }
+    */
 }
 
 pub fn mouse_on_clickable(
