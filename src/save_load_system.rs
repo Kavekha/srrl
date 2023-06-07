@@ -11,9 +11,9 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::GridPosition;
-use crate::game::pieces::components::{Actor, Walk, Piece};
+use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier};
 use crate::game::player::{Stats, Player, Npc, Monster, };
+use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
 use crate::states::{GameState, AppState};
 use crate::{
@@ -70,14 +70,19 @@ struct SaveEntity {
     npc: bool, 
     monster: bool,
     piece: Option<Piece>,
-    grid_position: Option<GridPosition>,
+    position: Option<BoardPosition>,
+    health: bool,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
     walk: bool,
+    melee: bool,
+    occupier: bool,
 }
 
 impl SaveState {
     pub fn create(world: &mut World) -> Self {
+        println!("Saving... savestate start.");
         let map = world.get_resource::<Map>().unwrap().clone();
+        println!("Saving... map unwraped.");
         SaveState {
             map,
             entities: SaveState::snapshot_entities(world),
@@ -85,6 +90,7 @@ impl SaveState {
     }
 
     fn snapshot_entities(world: &World) -> Vec<SaveEntity> {
+        println!("Saving.... Snapshot entities.");
         let archetypes = world.archetypes();
         let all_archetypes: Vec<&Archetype> = archetypes
             .iter()
@@ -102,25 +108,17 @@ impl SaveState {
             for archetype_entity in archetype.entities() {
 
                 let current_entity = &archetype_entity.entity();
-                //println!("entity : {:?}", current_entity);
-                
-                //let entity = world.entity(*current_entity).id();
-
-                /*
-                if let Some(player) = world.entity(world.entity(*current_entity).id()).get::<Player>(){
-                    println!("Player is {:?}", player);
-                } else {
-                    println!("No player");
-                }
-                */
+    
                 let mut has_component_to_save = false;
                 if world.get::<Player>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Npc>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Monster>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Stats>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Piece>(world.entity(*current_entity).id()).is_some()
-                //|| world.get::<GridPosition>(world.entity(*current_entity).id()).is_some()    //If only a grid position (like tile) we dont want to be save. Could bite us inthe ass later.
                 || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
+                || world.get::<Health>(world.entity(*current_entity).id()).is_some()
+                || world.get::<Melee>(world.entity(*current_entity).id()).is_some()
+                || world.get::<Occupier>(world.entity(*current_entity).id()).is_some()
                 {
                     has_component_to_save = true
                 }
@@ -129,14 +127,17 @@ impl SaveState {
                     entities.push(SaveEntity {
                         entity: *current_entity,
                         player: world.get::<Player>(*current_entity).is_some(),
-                        //skills: world.get::<Skills>(*entity).cloned(),
                         npc: world.get::<Npc>(*current_entity).is_some(),
                         monster: world.get::<Monster>(*current_entity).is_some(),
                         stats: world.get::<Stats>(*current_entity).cloned(),
                         piece: world.get::<Piece>(*current_entity).cloned(),
-                        grid_position: world.get::<GridPosition>(*current_entity).cloned(),
+                        position: world.get::<BoardPosition>(*current_entity).cloned(),
                         walk: world.get::<Walk>(*current_entity).is_some(),
+                        health: world.get::<Health>(*current_entity).is_some(),
+                        melee: world.get::<Melee>(*current_entity).is_some(),
+                        occupier: world.get::<Occupier>(*current_entity).is_some(),
                     });
+                    println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
                 }
             }        
         }
@@ -159,7 +160,9 @@ fn save_game(
     println!("Save game!");
 
     let state = SaveState::create(world);
+    println!("Saving... SaveState created.");
     let saved_json = serde_json::to_string(&state).unwrap();
+    println!("Saving... json created.");
 
     //println!("Save json is {:?}", state);
 
@@ -175,6 +178,7 @@ fn save_game(
                 .expect("Error while writing scene to file");
         })
         .detach();
+    println!("Saving... file written.");
 
     // Back to main menu
     // Simulate a "system" to get options we need to change the app_state & game_state at the end.
@@ -184,6 +188,7 @@ fn save_game(
         )> = SystemState::new(&mut world);
 
     let (app_state, game_state) = system_state.get_mut(&mut world);
+    println!("Saved end.... Back to MainMenu.");
     
     state_back_main_menu(app_state, game_state);
 
@@ -216,7 +221,7 @@ pub fn load_game(
     world.insert_resource(state.map);
 
     for entity in state.entities {
-        let mut e = world.spawn_empty();
+        let mut e = world.spawn_empty();         
 
         if entity.player {
             e.insert(Player);
@@ -232,17 +237,23 @@ pub fn load_game(
         }
         if let Some(piece) = entity.piece {
             e.insert(piece);
+            e.insert(Actor::default()); // Actor component can't be save, so we have to add it there if NPC or Player.
         }
-        if let Some(grid_position) = entity.grid_position {
-            e.insert(grid_position);
+        if let Some(position) = entity.position {
+            println!("Load: Position of {:?} is now : {:?}", entity, position);
+            e.insert(position);
         }
         if entity.walk {
             e.insert(Walk);
         }
-
-        // Actor component can't be save, so we have to add it there if NPC or Player.
-        if entity.npc || entity.player {
-            e.insert(Actor::default());
+        if entity.health {
+            e.insert(Health);
+        }
+        if entity.melee {
+            e.insert(Melee);
+        }
+        if entity.occupier {
+            e.insert(Occupier);
         }
     }
 
@@ -273,63 +284,3 @@ pub fn state_after_load_game(
     game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
     app_state.set(AppState::Game);
 }
-
-/*
-fn get_components_ids<'a>(world: &'a World, entity: &Entity) -> Option<impl Iterator<Item=ComponentId> + 'a>
-{
-    // components and entities are linked through archetypes
-    for archetype in world.archetypes().iter()
-    {
-        for archetype_entity in archetype.entities() {
-            let current_entity = archetype_entity.entity();
-            if current_entity == *entity { return Some(archetype.components()) }
-        }
-        
-    }
-    None
-}
-
-fn component_id_to_component_info(world: &World, component_id: ComponentId) -> Option<&ComponentInfo>
-{
-    let components = world.components();
-    components.get_info(component_id)
-}
-
-fn extract_component_name(component_info: &ComponentInfo) -> &str
-{
-    component_info.name()
-}
-
-
-pub fn load_game_new(state: &str) -> World {
-    let state: SaveState = serde_json::from_str(state).unwrap();
-    let mut world = World::new();
-    //world.insert_resource(state.stability);
-
-
-    for entity in state.entities {
-        let mut e = world.spawn_empty();
-        if let Some(player) = entity.player {
-            e.insert(player);
-        }
-        /*
-        if let Some(skills) = entity.skills {
-            e.insert(skills);
-        }
-        */
-        if let Some(npc) = entity.npc {
-            e.insert(npc);
-        }
-        if let Some(monster) = entity.monster {
-            e.insert(monster);
-        }
-        if let Some(stats) = entity.stats {
-            e.insert(stats);
-        }
-        if let Some(piece) = entity.piece {
-            e.insert(piece);
-        }
-    }
-    world
-}
-*/

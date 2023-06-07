@@ -1,6 +1,6 @@
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{pathfinding::Position, map::Map}, game::{GridPosition, pieces::components::{Occupier, Health}}, states::GameState};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
 
 
 
@@ -13,7 +13,7 @@ pub trait Action: Send + Sync {
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
 
-pub struct WalkAction(pub Entity, pub Position);    //REMEMBER : arg0 = self.0, arg1 = self.1
+pub struct WalkAction(pub Entity, pub Vector2Int);    //REMEMBER : arg0 = self.0, arg1 = self.1
 impl Action for WalkAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         //println!("WalkAction: Entity : {:?}, Position : {:?}", self.0, self.1);
@@ -23,13 +23,14 @@ impl Action for WalkAction {
         //println!("WalkingAction: Il y a une map.");
 
         // La position où l'on se rends est-elle bloquée?
-        if tileboard.is_blocked(self.1.0, self.1.1) { return Err(()) };
-        // Quelqu'un est-il déjà dans cette tile?   //TODO : Deactivate for this Release: we want to die at contact with Ghouls. Reactivate ==> Component Occupied on NPC / Player.
-        if world.query_filtered::<&GridPosition, With<Occupier>>().iter(world).any(|p| p.x == self.1.0 && p.y == self.1.1) { return Err(()) };
+        if tileboard.is_blocked(self.1.x, self.1.y) { return Err(()) };
 
-        let mut grid_position = world.get_mut::<GridPosition>(self.0).ok_or(())?; 
-        // On recupere la GridPosition de l'Entité qui fait l'action (self.0)
-        (grid_position.x, grid_position.y) = (self.1.0, self.1.1);  // On mets à jour sa GridPosition.
+        // Quelqu'un est-il déjà dans cette tile?   //TODO : Deactivate for this Release: we want to die at contact with Ghouls. Reactivate ==> Component Occupied on NPC / Player.
+        if !tileboard.entity_tiles.contains_key(&self.1) { return Err(()) };
+        if world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).any(|p| p.v == self.1) { return Err(()) };
+
+        let Some(mut position) = world.get_mut::<BoardPosition>(self.0) else { return Err(()) };
+        position.v = self.1;
         Ok(Vec::new())
     }
 }
@@ -48,32 +49,31 @@ impl Action for GameOverAction{
 
 pub struct MeleeHitAction{
     pub attacker: Entity,
-    pub target: Position,
+    pub target: Vector2Int,
     //pub damage: u32
 }
 impl Action for MeleeHitAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
-        //println!("Execute: MeleeHit!: attacker is : {:?}, target position is : {:?}", self.attacker, self.target);
+        println!("Execute: MeleeHit!: attacker is : {:?}, target position is : {:?}", self.attacker, self.target);
         
         // We get attacker position.
-        let attacker_gridposition = world.get::<GridPosition>(self.attacker).ok_or(())?;
+        let attacker_position = world.get::<BoardPosition>(self.attacker).ok_or(())?;
         println!("ActionMelee: Attacker : OK");
         
         // Si trop loin de sa cible, on ignore.
-        let attacker_position = Position(attacker_gridposition.x, attacker_gridposition.y);
-        if attacker_position.distance(&self.target) > 1 { return Err(()) }; 
+        if attacker_position.v.manhattan(self.target) > 1 { 
+            println!("Attacker position is {:?}, self.target is {:?}, manhattan is : {:?}", attacker_position.v, self.target, attacker_position.v.manhattan(self.target));
+            return Err(()) }; 
         println!("ActionMelee: Distance : OK");
 
         // On regarde si la cible est bien là : Position Target vers Position(Gridx, gridy).
-        let target_entities = world.query_filtered::<(Entity, &GridPosition), With<Health>>()
+        let target_entities = world.query_filtered::<(Entity, &BoardPosition), With<Health>>()
             .iter(world)
-            .filter(|(_, p)| Position(p.x, p.y) == self.target)
+            .filter(|(_, position)| position.v == self.target)
             .collect::<Vec<_>>();
         
         //Pas de cible ?
-        if target_entities.len() == 0 { 
-            println!("ActionMelee: Pas de target entities où p, vise: {:?}... vs ...{:?}", attacker_position, self.target);
-            return Err(()) }; 
+        if target_entities.len() == 0 { return Err(()) }; 
 
         // TODO : Ajouter dmg somewhere.
         let result = target_entities.iter()

@@ -2,13 +2,11 @@
 use bevy::prelude::*;
 
 use self::manager::ManagerPlugin;
-use self::player::PlayerPlugin;
+use self::player::{PlayerPlugin, Npc};
 use self::tileboard::TileBoardPlugin;
-use self::npc::NpcPlugin;
 use self::actions::ActionsPlugin;
 
 pub mod player;
-pub mod npc;
 pub mod pieces;
 pub mod actions;
 pub mod tileboard;
@@ -17,9 +15,11 @@ pub mod manager;
 pub use tileboard::components::{Tile, GridPosition};
 
 
+use crate::despawn_screen;
 use crate::ecs_elements::MapGenHistory;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc};
 use crate::game::player::Monster;
+use crate::game::tileboard::components::BoardPosition;
 use crate::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
@@ -47,7 +47,6 @@ impl Plugin for GamePlugin {
 
             .add_plugin(PlayerPlugin)
             .add_plugin(VictoryPlugin)
-            .add_plugin(NpcPlugin)
             .add_plugin(GameOverPlugin)
             .add_plugin(GraphicsPlugin)
             .add_plugin(TileBoardPlugin)
@@ -55,6 +54,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ManagerPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
+            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>) //TODO : Remove NPC ? Add a full "end game" function?
             ;
     }
 }
@@ -83,10 +83,8 @@ fn init_new_game(
     println!("Player: Starting position = {:?}", player_starting_position);
     commands
         .entity(player)
-        .insert(GridPosition{
-            x:player_starting_position.0,
-            y:player_starting_position.1
-        });
+        .insert(BoardPosition{ v:player_starting_position })
+    ;
 
     // Other entities. //TODO: Can't spawn different npc types: just one.
     let entities_pos = builder.spawn_entities();
@@ -99,10 +97,7 @@ fn init_new_game(
         //TODO : Le nom pour le moment est dans le spawner.
         commands
         .entity(npc)
-        .insert(GridPosition{
-            x:entity_position.0,
-            y:entity_position.1
-        })
+        .insert(BoardPosition{ v:entity_position})
         .insert(Monster)
         ;
     }

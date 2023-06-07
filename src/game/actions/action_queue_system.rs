@@ -62,19 +62,23 @@ pub fn process_pending_actions(world: &mut World) -> bool {
         Some(mut res) => res.0.drain(..).collect::<Vec<_>>(),
         _ => return false
     };
-    println!("ProcessPending: Nous avons une action en pending!");
+
     let mut next = Vec::new();  // Nous mettrons ici les nouvelles actions générées.
     let mut success = false;
+    println!("About to deal with Pending actions...");
     for action in pending {
+        println!("ProcessPending: Action resolved.");
         if let Ok(result) = action.execute(world) {
             next.extend(result);
             success = true;
         }
     }
+    println!("Done with pending action.");
     // Si d'autres actions sont apparues suite à cela, on les ajoute.
     // unwrap OK car on a confirmé que la resource existe au debut.
     let mut res = world.get_resource_mut::<PendingActions>().unwrap();
     res.0 = next;
+    println!("About to return result for pending action dealt with: {:?}", success);
     success
 }
 

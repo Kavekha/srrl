@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
-use crate::{globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, game::{player::{Stats, Npc, Monster, Player}, pieces::components::Health}};
+use crate::{globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, game::{player::{Stats, Npc, Monster, Player}, pieces::components::{Health, Occupier}}};
 
 use super::components::{Piece, Actor, Walk, Melee};
 
@@ -48,6 +48,7 @@ pub fn spawn_player(
         .insert(Stats {speed: 3.0})
         .insert(Actor::default(),)
         .insert(Health)
+        .insert(Occupier)
         .id()  
 }
 
@@ -65,6 +66,7 @@ pub fn spawn_npc(
         .insert(Walk)
         .insert(Melee)
         .insert(Health)
+        .insert(Occupier)
         .id()  
 }
 

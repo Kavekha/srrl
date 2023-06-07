@@ -17,6 +17,7 @@ mod ecs_elements;
 mod globals;
 mod render;
 mod states;
+mod vectors;
 
 pub use render::GraphicsWaitEvent;
 
