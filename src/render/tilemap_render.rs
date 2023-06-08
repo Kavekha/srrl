@@ -27,7 +27,7 @@ pub fn spawn_map_render(
           let (world_x, world_y) = get_world_position(&position.v);
           
         //get info for typetile
-        let (texture, modified_y, mut world_z) =  get_tile_infos_render(&position, logic_tile.tiletype);
+        let (texture, modified_y, world_z) =  get_tile_infos_render(&position, logic_tile.tiletype);
 
         //Create entity.
         let tile = spawn_sprite_render(

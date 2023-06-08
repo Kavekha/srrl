@@ -13,7 +13,7 @@ use self::{
 
 use crate::{
     globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
-    states::{GameState, TurnSet}, vectors::Vector2Int, game::player::cursor::get_grid_position,
+    states::{GameState, TurnSet}, vectors::Vector2Int,
 };
 
 pub struct GraphicsPlugin;

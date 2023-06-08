@@ -9,9 +9,9 @@ pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 // RENDERING
 pub const TILE_SIZE: f32 = 32.0;        // Deprecated : 2d grid based.
 pub const CHAR_SIZE: f32 = 16.0; 
-pub const STANDARD_TILE_WIDTH:i32 = 64;
+//pub const STANDARD_TILE_WIDTH:i32 = 64;
 pub const TILE_WIDTH_HALF:i32 = 32;
-pub const STANDARD_TILE_HEIGHT:i32 = 32;
+//pub const STANDARD_TILE_HEIGHT:i32 = 32;
 pub const TILE_HEIGHT_HALF:i32 = 16; 
 
 // Tiles    //TEMPORARY : TODO : Loader.

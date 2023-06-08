@@ -21,7 +21,7 @@ pub fn spawn_game_cursor(
             })
             .insert(Name::new("Cursor"))
             .id();
-    /* 
+
     let back_cursor = commands.spawn(GameCursorRender)
             .insert(SpriteBundle{
                 texture: asset_server.load(CURSOR_BACK),    
@@ -36,7 +36,7 @@ pub fn spawn_game_cursor(
             .id();
     
     commands.entity(front_cursor).push_children(&[back_cursor]);
-    */
+
     println!("Cursor spawned: {:?}", front_cursor);
     
 }

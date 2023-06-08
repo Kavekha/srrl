@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{vectors::Vector2Int, states::GameState, despawn_screen, globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, STANDARD_TILE_WIDTH, STANDARD_TILE_HEIGHT}, render::{get_world_position, components::GameCursorRender}};
+use crate::{vectors::Vector2Int, states::GameState, despawn_screen, globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF}, render::{components::GameCursorRender}};
 
 
 pub struct CursorPlugin;
@@ -26,8 +26,7 @@ pub fn cursor_position(
     window_query: Query<&Window>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
 ) {
-    for event in cursor_moved_events.iter() {
-        println!("Cursor moved");
+    for _event in cursor_moved_events.iter() {
         let Ok((camera, camera_transform)) = camera_q.get_single() else { return };
 
         if let Some(world_position) = window_query.single().cursor_position() 
@@ -36,7 +35,6 @@ pub fn cursor_position(
         {
                 res_cursor.world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
                 res_cursor.grid_position = get_grid_position(world_position.x, world_position.y);
-                println!("Cursor updated");
         }
         //println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
         //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
@@ -51,7 +49,7 @@ pub fn get_grid_position(
 ) -> Vector2Int {
     //println!("GetGridPosition: {:?}", (x, y));
     // We need to reverse the numbers.
-    let mut world_x = x;
+    let world_x = x;
     let mut world_y = y - (y * 2.0);
     //println!("GetGridPosition, reverse: {:?}", (world_x, world_y));
     // We also need to add half tile for each because...?? Trust me... //TODO : Understand why... -_-

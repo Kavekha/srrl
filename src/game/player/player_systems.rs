@@ -7,11 +7,11 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction}, pieces::components::{Actor, Piece}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, WalkAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
-use super::{components::{Player}, PlayerInputReadyEvent, PlayerActionEvent};
+use super::{components::{Player}, PlayerActionEvent};
 
 //
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
