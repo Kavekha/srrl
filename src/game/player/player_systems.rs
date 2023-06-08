@@ -77,7 +77,7 @@ pub fn camera_follow(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>
 ) {
-    let player_transform = player_query.single();
+    let Ok(player_transform) = player_query.get_single() else {return};
     let mut camera_transform = camera_query.single_mut();
     camera_transform.translation.x = player_transform.translation.x;
     camera_transform.translation.y = player_transform.translation.y;
@@ -91,7 +91,7 @@ pub fn player_step_check(
     mut game_state: ResMut<NextState<GameState>>
 ) {
     // If player on collision with an exit...
-    let (_player, player_transform) = player_query.single();
+    let Ok((_player, player_transform)) = player_query.get_single() else {return };
     if exit_query
         .iter()
         .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))

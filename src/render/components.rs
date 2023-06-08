@@ -9,6 +9,8 @@ pub struct TileCollider;
 #[derive(Component)]
 pub struct TileExit;
 
+#[derive(Component)]
+pub struct GameCursorRender;
 
 #[derive(Component)]
 pub struct GameMapRender;
