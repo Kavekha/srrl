@@ -5,10 +5,10 @@ use bevy::prelude::*;
 use crate::{
     globals::{
         SPRITE_GHOUL, SPRITE_PLAYER, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, },
+        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF,},
     game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent};
 
-use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation, components::PathAnimator};
+use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation, components::{PathAnimator}};
 
 
 pub fn melee_animation(
@@ -46,7 +46,7 @@ pub fn walk_animation(
     mut commands: Commands,
     mut ev_action: EventReader<ActionExecutedEvent>,
     mut ev_wait: EventWriter<GraphicsWaitEvent>,
-    query_piece: Query<&Piece>
+    query_piece: Query<&Piece>,
 ) {
     for ev in ev_action.iter() {
         let action = ev.0.as_any();
@@ -56,8 +56,10 @@ pub fn walk_animation(
             // Converti pour ISO.
             let (position_x, mut position_y) = get_world_position(&action.1); // Position X,Y de World.
 
-            position_y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile.    
-            let target = Vec3::new(position_x, position_y, get_world_z(&action.1)); // Calcul du Z par la même occasion.
+            position_y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile.  
+
+            let position_z = get_world_z(&action.1); 
+              let target = Vec3::new(position_x, position_y, position_z); 
 
             commands.entity(action.0)
                 .insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
@@ -142,8 +144,9 @@ pub fn spawn_piece_renderer(
     for (entity, position, piece, player) in query.iter() {
 
         let (x, mut y) = get_world_position(&position.v);
+        let (x_debug, y_debug) = get_world_position(&position.v);   //DEBUG
         let z = get_world_z(&position.v);
-
+ 
         let texture = get_texture_from_kind(piece.kind);
         y += get_iso_y_modifier_from_elevation(piece.size);
 
@@ -159,7 +162,7 @@ pub fn spawn_piece_renderer(
             });
         
             if let Some(_player) = player {
-                println!("INFO: player rendered.");
+                println!("INFO: player rendered at {:?} for grid position {:?}.", (x_debug, y_debug), position.v);
             }
         
     }

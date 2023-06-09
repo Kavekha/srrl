@@ -3,11 +3,12 @@ use bevy::prelude::*;
 pub mod tilemap_render;
 pub mod pieces_render;
 pub mod components;
+pub mod cursor_render;
 
 
 use self::{
     tilemap_render::{spawn_map_render},
-    pieces_render::{spawn_piece_renderer, path_animator_update, walk_animation, melee_animation},
+    pieces_render::{spawn_piece_renderer, path_animator_update, walk_animation, melee_animation}, cursor_render::{spawn_game_cursor, update_game_cursor},
 };
 
 use crate::{
@@ -24,12 +25,12 @@ impl Plugin for GraphicsPlugin {
 
             .add_systems(OnEnter(GameState::GameMap), spawn_map_render)           
             .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
+            .add_systems(OnEnter(GameState::GameMap), spawn_game_cursor)
             //.add_systems(Update, update_piece_position.run_if(in_state(GameState::GameMap)))
 
             .add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
+            .add_systems(Update, update_game_cursor)
     
-            //.add_systems(Update, path_animator_update.run_if(in_state(GameState::GameMap)))
-            //.add_systems(Update, walk_animation.run_if(in_state(GameState::GameMap)))
             
             ;
     }
@@ -46,9 +47,12 @@ pub fn get_world_position(
         // REMEMBER : Y in bevy2d = Negative when going down!
         let iso_x = (v.x - v.y) * TILE_WIDTH_HALF;
         let iso_y = (v.x + v.y) * TILE_HEIGHT_HALF;
-        
+
+        //println!("GetWorldPosition : {:?} gives {:?}. World position get grid position : {:?}", (v.x, v.y), (iso_x, iso_y), get_grid_position(iso_x as f32, 0.0 - iso_y as f32));
+
         (iso_x as f32,
         0.0 - iso_y as f32)     // REMEMBER : Y in bevy2d = Negative when going down!
+
 }
 
 /// z doit être calculé pour les objets à relief du genre mur. Le floor doit rester à 0 par contre.
@@ -58,7 +62,6 @@ fn get_world_z(
     let z = (position.x as f32 / 10.0) + (position.y as f32 / 5.0);
     z
 }
-
 
 
 fn get_iso_y_modifier_from_elevation(

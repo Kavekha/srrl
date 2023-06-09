@@ -41,8 +41,6 @@ pub const SIZE_TROLL: i32 = 80; // 16 + 64 pix (256 cm)
 pub const SIZE_GHOUL: i32 = 64;
 //pub const SIZE_DEFAULT: i32 = 64;
 
-
-
 // sprite
 pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
 pub const SPRITE_GHOUL: &str = "temp_tiles/Nosferatu.png";
@@ -51,6 +49,9 @@ pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/cube_human_.png";
 pub const SPRITE_PLAYER_ORC: &str = "temp_tiles/cube_orc_.png";
 pub const SPRITE_PLAYER_ELF: &str = "temp_tiles/cube_elf_.png";
 pub const SPRITE_PLAYER_TROLL: &str = "temp_tiles/cube_troll_.png";
+
+pub const CURSOR_FRONT: &str = "temp_tiles/cursor_front.png";
+pub const CURSOR_BACK: &str = "temp_tiles/cursor_back.png";
 
 // MAP GENERATOR
 pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
@@ -71,6 +72,7 @@ pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";
 pub const POSITION_TOLERANCE: f32 = 0.15;
 pub const BASE_SPEED: f32 = 3.0;
 pub const SPEED_MULTIPLIER: f32 = 2.0;      // FAST debug / balance on speed movement.
+pub const CURSOR_SPEED: f32 = 20.0;
 
 
 // Npc planning

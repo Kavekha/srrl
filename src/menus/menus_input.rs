@@ -75,7 +75,7 @@ pub fn menu_input_mouse(
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
     //mut mouse_motion_events: EventReader<MouseMotion>,
     mut cursor_moved_events: EventReader<CursorMoved>,
-    mut mouse_wheel_events: EventReader<MouseWheel>,
+    //mut mouse_wheel_events: EventReader<MouseWheel>,
     window_query: Query<&Window>,
     button_query: Query<(&MainMenuClickable, &Transform)>,
     camera_q: Query<(&Camera, &GlobalTransform)>,

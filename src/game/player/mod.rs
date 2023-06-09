@@ -2,8 +2,10 @@ use bevy::prelude::*;
 
 mod player_systems;
 mod components;
+pub mod cursor;
 
 pub use components::{Monster, Player, Npc, Stats};
+pub use cursor::Cursor;
 
 use self::{
     player_systems::{player_input, camera_follow, player_step_check}
