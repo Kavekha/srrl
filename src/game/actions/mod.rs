@@ -26,7 +26,7 @@ impl Plugin for ActionsPlugin {
             .add_event::<InvalidPlayerActionEvent>()
             .add_event::<PlayerActionEvent>()
             .add_event::<ActionExecutedEvent>()          
-
+ 
 
             //Planning
             .configure_sets(Update, (ActionSet::Planning, ActionSet::Late).in_set(TurnSet::Logic))

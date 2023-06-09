@@ -2,7 +2,7 @@ use std::any::Any;
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::Vector2Int};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -12,8 +12,28 @@ pub trait Action: Send + Sync {
 }
 
 
+/// Following Actions after an action resolution.
 #[derive(Default, Resource)]
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
+
+ 
+ /// Generate a pathfinding & component. This component will create WalkAction each turn, with a check before each.
+ pub struct MoveToAction(pub Entity, pub Vector2Int);
+ impl Action for MoveToAction {
+    fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
+        let Some(position) = world.get::<BoardPosition>(self.0) else { return Err(()) };
+        let Some(map) = world.get_resource::<Map>() else { return Err(())};
+        let occupier_query = *world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).collect::<Vec<_>>();
+        let path_to_destination = find_path(
+            position.v,
+            self.1,
+            &map.entity_tiles.keys().cloned().collect(),
+            &occupier_query.iter().map(|p| p.v).collect()
+        );  
+        Ok(Vec::new())
+    }
+    fn as_any(&self) -> &dyn std::any::Any { self }
+}
 
 
 pub struct WalkAction(pub Entity, pub Vector2Int);    //REMEMBER : arg0 = self.0, arg1 = self.1

@@ -14,7 +14,7 @@ Y par de 0.0 en haut jusqu'au nombre de pixels de l'ecran en bas.
 Les unités UI sont des pixels logiques, compensés par le DPI Scaling. Yeah.  
 
 
-# Unités de mesure & positionnement
+## Unités de mesure & positionnement
 La Camera considère 1.0 pixel comme une unité monde.    
 Elle suit le Player dans le jeu.  
 Elle est à 0.0,0.0 par défaut.  
@@ -48,3 +48,33 @@ Je me deplace vers la gauche : -1, +0.
 J'arrive à 37, 23.
 Pour aller à gauche je vais donc vers le negatif (Monde), ce qui se traduit par une réduction sur la map (Grid).
 BAS / HAUT sont donc inversés entre Grid et Monde.  
+
+
+# Events / loop
+## Deroulement
+StartGame -> State:PlayerInput  
+Recoit une PlayerAction -> State:TurnUpdate (Rempli la Queue si 1° fois) -> Declenche un Tick.  
+Tick déclenche process_action_queue -> Récupère l'action du joueur et la teste.  
+==> Si resolue, mets les actions qui en decoulent potentiellement dans la Pending Action.  
+==> Si echec, retourne InvalidPlayerActionEvent => On revient à PlayerInput pour qu'il prenne une autre décision.  
+send NextActor Event (Les NPC)  -> NPC font leur planning pendant le cycle.  
+Nouveau tick -> Active process action queue -> Prends les actions de l'acteur, les trie par priorité, les verifie.  
+==> Si resolue, mets les actions qui en decoulent potentiellement dans la Pending Action et s'arrête.  
+==> Si echec, passe à l'action possible suivante.  
+send NextActor Event (Les NPC)  -> NPC font leur planning pendant le cycle. -> Nouveau tick jusqu'à ce que Pending & Actor vide.  
+Si tout vide: ActionsCompleteEvent -> State:PlayerInput.  
+
+## Note
+On ne distingue pas les actions logiques des actions graphiques, elles vont dans la même queue.  
+On a par contre plusieurs etapes: D'abord un evenement logique, suivi par un evenement animation, puis un nouveau tick.  
+
+## Ameliorations à considérer
+Mieux séparer l'animation du logic : une serie d'animations bloque le logic si on veut qu'elle se joue jusqu'à la fin.  
+De même, les animations se jouent les unes à la suite des autres. Si on veut les "controler", on allonge le temps avant que le joueur retrouve la main.  
+Peut être qu'une nouvelle action Joueur doit "cut" les animations à la séquence de fin, ou les recalculer pour être plus à jour.  
+On aimerait aussi pouvoir distinguer "animation basique" (les mobs se deplacent) et "animation importante" (Les mobs me tapent): les premières peuvent être jouées ensemble, les secondes doivent s'alterner.  
+
+
+
+
+
