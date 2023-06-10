@@ -21,14 +21,15 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
  pub struct MoveToAction(pub Entity, pub Vector2Int);
  impl Action for MoveToAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
+        println!("MoveToAction: Execute.");
         let Some(position) = world.get::<BoardPosition>(self.0) else { return Err(()) };
         let Some(map) = world.get_resource::<Map>() else { return Err(())};
-        let occupier_query = *world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).collect::<Vec<_>>();
+        //let occupier_query = world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world);
         let path_to_destination = find_path(
             position.v,
             self.1,
             &map.entity_tiles.keys().cloned().collect(),
-            &occupier_query.iter().map(|p| p.v).collect()
+            &world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).map(|p| p.v).collect()
         );  
         Ok(Vec::new())
     }

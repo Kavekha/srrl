@@ -1,17 +1,17 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}};
 
 use crate::{
     save_load_system::ShouldSave, 
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, WalkAction, MoveToAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
-use super::{components::{Player}, PlayerActionEvent};
+use super::{components::{Player}, PlayerActionEvent, Cursor};
 
 //
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
@@ -28,6 +28,33 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
     (KeyCode::W, Vector2Int::BOTTOM_LEFT), (KeyCode::X, Vector2Int::BOTTOM_RIGHT),  
 ];
 //
+
+pub fn player_mouse_input(
+    mut mouse_button_event: EventReader<MouseButtonInput>,
+    mut ev_action: EventWriter<PlayerActionEvent>,
+    mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
+    res_cursor: Res<Cursor>,
+    mut queue: ResMut<ActorQueue>,
+){
+    for event in mouse_button_event.iter() {
+        match event.state {
+            ButtonState::Pressed => {
+                println!("Mouse button press: {:?}", event.button);
+                let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
+
+                let destination = res_cursor.grid_position;
+                let action = MoveToAction(entity, destination);
+                actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+                queue.0 = VecDeque::from([entity]);
+                ev_action.send(PlayerActionEvent);
+                println!("MoveToAction sent from player mouse input.");
+            }
+            ButtonState::Released => {
+                println!("Mouse button release: {:?}", event.button);
+            }
+        }
+    }
+}
 
 pub fn player_input(
     mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
