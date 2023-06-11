@@ -2,7 +2,7 @@ use std::any::Any;
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition}, states::GameState, vectors::{Vector2Int, find_path}};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, PathTo}, tileboard::components::BoardPosition}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -24,14 +24,27 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
         println!("MoveToAction: Execute.");
         let Some(position) = world.get::<BoardPosition>(self.0) else { return Err(()) };
         let Some(map) = world.get_resource::<Map>() else { return Err(())};
-        //let occupier_query = world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world);
+        
+        //REMEMBER: Premier step: La case suivante.
         let path_to_destination = find_path(
             position.v,
             self.1,
             &map.entity_tiles.keys().cloned().collect(),
             &world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).map(|p| p.v).collect()
         );  
-        Ok(Vec::new())
+        if let Some(path) = path_to_destination {
+            println!("Path for {:?} is OK : {:?}", self.0, path.clone());
+            world.entity_mut(self.0).insert(PathTo{pathing: path.clone().into()});   
+
+            if let Some(first_step) = path.clone().into_iter().next() {
+                // First walk action.
+                let mut result = Vec::new();
+                result.push(Box::new(WalkAction(self.0, first_step)) as Box<dyn Action>);
+                return Ok(result);    
+            } else { return Err(()) };        //REMEMBER : this will consum the vec                    
+        } else { return Err(()) };
+        //Ok(Vec::new())
+        
     }
     fn as_any(&self) -> &dyn std::any::Any { self }
 }

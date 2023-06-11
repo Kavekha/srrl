@@ -102,37 +102,6 @@ pub fn path_animator_update(
     }
 }
 
-/* 
-pub fn update_piece_position(
-    mut query: Query<(&BoardPosition, &mut Transform, &Piece)>,  
-    time: Res<Time>,
-    //mut ev_wait: EventWriter<GraphicsWaitEvent>
-){
-    let mut animating = false;
-
-    for (position, mut transform, piece) in query.iter_mut(){
-        let (position_x, mut position_y) = get_world_position(&position.v);
-
-        position_y += get_iso_y_modifier_from_elevation(piece.size); 
-
-        let target = Vec3::new(position_x, position_y, get_world_z(&position.v));
-        let destination = (target - transform.translation).length();
-  
-        
-        if destination > POSITION_TOLERANCE {
-            transform.translation = transform.translation.lerp(
-                target,
-                BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
-            );
-            animating = true;
-        }
-        if animating {
-            //TODO: Currently: One wait by Actor, so a lot of wait.
-            //ev_wait.send(GraphicsWaitEvent);
-        }
-    }
-}
-*/
 
 pub fn spawn_piece_renderer(
     mut commands: Commands,

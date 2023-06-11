@@ -2,12 +2,30 @@ use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    game::{pieces::components::{Actor, Walk, Melee, Occupier}, player::Player, tileboard::components::BoardPosition}, 
+    game::{pieces::components::{Actor, Walk, Melee, Occupier, PathTo}, player::Player, tileboard::components::BoardPosition}, 
     map_builders::{map::Map}, 
     globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, NPC_ATTACK_SCORE_DEFAULT}, vectors::{MULTI_DIRECTIONS, find_path}};
 
 use super::{ActorQueue, models::{MeleeHitAction, WalkAction}};
 
+
+
+pub fn pathfinding_walk(
+    mut query: Query<(&mut Actor, &mut PathTo)>,
+    queue: Res<ActorQueue>,
+){
+    println!("Pathfinding walk is running.");
+    // On prends la premiere entity de la queue.
+    let Some(entity) = queue.0.get(0) else { return };
+
+    // Fait-il parti des Actors avec Grid position?
+    let Ok((mut actor, path)) = query.get_mut(*entity) else { 
+        println!("{:?} : Je n'ai pas de path", entity);
+        return };
+
+    println!("Je suis {:?} et j'ai un PathTo pour me deplacer!", entity)
+
+}
 
 
 pub fn plan_walk(
