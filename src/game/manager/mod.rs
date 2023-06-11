@@ -47,7 +47,7 @@ fn turn_update_start(
 ) {
     next_state.set(EngineState::TurnUpdate);
     ev_tick.send(TickEvent);
-    //println!("turn_update_start ! Let's Send Tick and see if there is anything.")
+    println!("turn_update_start ! Let's Send Tick and see if there is anything.")
 }
 
 fn tick(

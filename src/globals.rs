@@ -69,7 +69,7 @@ pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'
 pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";
 
 // Movement
-pub const POSITION_TOLERANCE: f32 = 0.15;
+pub const POSITION_TOLERANCE: f32 = 0.01;
 pub const BASE_SPEED: f32 = 3.0;
 pub const SPEED_MULTIPLIER: f32 = 2.0;      // FAST debug / balance on speed movement.
 pub const CURSOR_SPEED: f32 = 20.0;

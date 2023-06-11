@@ -1,8 +1,10 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    game::{pieces::components::{Actor, Walk, Melee, Occupier, PathTo}, player::Player, tileboard::components::BoardPosition}, 
+    game::{pieces::components::{Actor, Walk, Melee, Occupier, PathTo}, player::{Player, PlayerActionEvent}, tileboard::components::BoardPosition}, 
     map_builders::{map::Map}, 
     globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, NPC_ATTACK_SCORE_DEFAULT}, vectors::{MULTI_DIRECTIONS, find_path}};
 
@@ -11,6 +13,33 @@ use super::{ActorQueue, models::{MeleeHitAction, WalkAction}};
 
 
 pub fn pathfinding_walk(
+    mut query: Query<(Entity, &mut Actor, &mut PathTo)>,
+    mut commands: Commands,
+    mut queue: ResMut<ActorQueue>,    
+    mut ev_action: EventWriter<PlayerActionEvent>,
+){
+    println!("--- pathfinding_walk ---");
+    for (entity, mut actor, mut pathto) in query.iter_mut() {
+        println!("Pathfinding walk is running for {:?}. Content is {:?}", entity, pathto.pathing);
+
+        //TODO : Find a better way: We reverse because pop take the last one....
+        pathto.pathing.reverse();
+        if let Some(first_step) = pathto.pathing.pop() {
+            pathto.pathing.reverse();   //On revient à l'etat initial. REMEMBEr : Obligé de reverse car pop prends la fin, pas le debut.
+            let action = WalkAction(entity, first_step);
+            actor.0 = vec![(Box::new(action), 0)];
+            queue.0 = VecDeque::from([entity]);
+            ev_action.send(PlayerActionEvent);
+
+            println!("Path is now : {:?}", pathto.pathing)
+        } else {
+            commands.entity(entity).remove::<PathTo>();
+            println!("PathTo removed for {:?} : no step to do.", entity);
+        }
+    }
+}
+
+pub fn pathfinding_walk_old(
     mut query: Query<(&mut Actor, &mut PathTo)>,
     queue: Res<ActorQueue>,
 ){
@@ -24,7 +53,6 @@ pub fn pathfinding_walk(
         return };
 
     println!("Je suis {:?} et j'ai un PathTo pour me deplacer!", entity)
-
 }
 
 

@@ -74,7 +74,8 @@ De même, les animations se jouent les unes à la suite des autres. Si on veut l
 Peut être qu'une nouvelle action Joueur doit "cut" les animations à la séquence de fin, ou les recalculer pour être plus à jour.  
 On aimerait aussi pouvoir distinguer "animation basique" (les mobs se deplacent) et "animation importante" (Les mobs me tapent): les premières peuvent être jouées ensemble, les secondes doivent s'alterner.  
 
-
+# Questions
+- Lire le premier element d'une liste et le supprimer? (Pop agit sur le dernier, je dois reverse avant mais bof). Exemple de Pathing in PathTo.  
 
 
 
