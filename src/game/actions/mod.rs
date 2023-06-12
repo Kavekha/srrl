@@ -19,13 +19,14 @@ impl Plugin for ActionsPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ActorQueue>()
             .init_resource::<PendingActions>()
+            .init_resource::<PlayerActions>()
 
             .add_event::<TickEvent>()
             .add_event::<NextActorEvent>()
             .add_event::<ActionsCompleteEvent>()
             .add_event::<InvalidPlayerActionEvent>()
             .add_event::<PlayerActionEvent>()
-            .add_event::<ActionExecutedEvent>()          
+            .add_event::<ActionExecutedEvent>()
  
 
             //Planning
@@ -54,6 +55,9 @@ enum ActionSet {
 
 #[derive(Default, Resource)]
 pub struct ActorQueue(pub VecDeque<Entity>);
+
+#[derive(Default, Resource)]
+pub struct PlayerActions(pub VecDeque<Entity>);
 
 #[derive(Event)]
 pub struct TickEvent;

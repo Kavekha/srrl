@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{states::{GameState, EngineState, TurnSet}, render::GraphicsWaitEvent};
 
-use super::{player::PlayerActionEvent, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent}};
+use super::{player::PlayerActionEvent, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent, PlayerActions}};
 
 
 pub struct ManagerPlugin;
@@ -16,6 +16,7 @@ impl Plugin for ManagerPlugin {
             .configure_set(Update, TurnSet::Animation.run_if(in_state(EngineState::TurnUpdate)).before(TurnSet::Tick))   
             .configure_set(Update, TurnSet::Tick.run_if(in_state(EngineState::TurnUpdate)))   
 
+            .add_systems(OnEnter(EngineState::PlayerInput), turn_player_pending_actions)
             .add_systems(Update, turn_update_start.run_if(on_event::<PlayerActionEvent>()))
             //.add_systems(Update, turn_update_start.run_if(on_event::<PlayerInputReadyEvent>()))  
 
@@ -25,6 +26,16 @@ impl Plugin for ManagerPlugin {
             .add_systems(Update, tick.run_if(in_state(EngineState::TurnUpdate)).in_set(TurnSet::Tick))
             ;
     }
+}
+
+fn turn_player_pending_actions(
+    mut queue: ResMut<PlayerActions>,  
+){
+    if let Some(entity) = queue.0.pop_front() {
+        println!("turn player: an action is waiting for {:?}", entity);
+    } else { 
+        println!("turn player: No action waiting");
+    };
 }
 
 fn game_start(
@@ -47,7 +58,7 @@ fn turn_update_start(
 ) {
     next_state.set(EngineState::TurnUpdate);
     ev_tick.send(TickEvent);
-    println!("turn_update_start ! Let's Send Tick and see if there is anything.")
+    println!("turn_update_start by PlayerActionEvent! Let's Send Tick and see if there is anything.")
 }
 
 fn tick(
