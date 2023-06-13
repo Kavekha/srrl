@@ -44,26 +44,26 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
                 println!("Pathing is now : {:?}", pathing);
 
                
-                    // Next walk actions are sent in ActionPlayers for process
-                    let mut some_player_queue = VecDeque::new();
-                    if let mut actor = world.get_mut::<Actor>(self.0) {                    
-                        if let Some(mut final_actor) = actor {
-                            pathing.reverse(); // We redo this because iter start from the head...
-                            for next_step in pathing.iter() {
-                                let action = WalkAction(self.0, *next_step);
-                                final_actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-                                some_player_queue.extend(VecDeque::from([self.0]));
-                                println!("Next step is : {:?}", next_step);
-                            }
+                // Next walk actions are sent in ActionPlayers for process
+                let mut nb_actions = 0;
+                if let mut actor = world.get_mut::<Actor>(self.0) {                    
+                    if let Some(mut final_actor) = actor {
+                        pathing.reverse(); // We redo this because iter start from the head...
+                        for next_step in pathing.iter() {
+                            let action = WalkAction(self.0, *next_step);
+                            final_actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+                            nb_actions += 1;
+                            println!("Next step is : {:?}", next_step);
                         }
                     }
-                    if let mut player_queue = world.get_resource_mut::<PlayerActions>() {
-                        if let Some(mut final_player_queue) = player_queue {
-                            for queue in some_player_queue.iter() {
-                                final_player_queue.0 = VecDeque::from([*queue]);
-                            }
+                }
+                if let mut player_queue = world.get_resource_mut::<PlayerActions>() {
+                    if let Some(mut final_player_queue) = player_queue {
+                        for i in 0..nb_actions {
+                            final_player_queue.0 = VecDeque::from([self.0]);
                         }
                     }
+                }
                 return Ok(result);                
             } else { return Err(()) };        //REMEMBER : this will consum the vec          
         } else { return Err(()) };
