@@ -1,8 +1,8 @@
-use std::any::Any;
+use std::{any::Any, collections::VecDeque};
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, PathTo}, tileboard::components::BoardPosition}, states::GameState, vectors::{Vector2Int, find_path}};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, PathTo, Actor}, tileboard::components::BoardPosition, actions::{PlayerActions}}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -23,38 +23,51 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         println!("MoveToAction: Execute.");
         let Some(position) = world.get::<BoardPosition>(self.0) else { return Err(()) };
-        let Some(map) = world.get_resource::<Map>() else { return Err(())};
-        
+        let Some(map) = world.get_resource::<Map>() else { return Err(())};       
+
         //REMEMBER: Premier step: La case suivante.
         let path_to_destination = find_path(
             position.v,
             self.1,
             &map.entity_tiles.keys().cloned().collect(),
             &world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).map(|p| p.v).collect()
-        );  
+        ); 
+
         if let Some(path) = path_to_destination {
             let mut pathing:Vec<Vector2Int> = path.clone().into();
-            //pathing.reverse();  // REMEMBER : We use Pop to read the path, and pop is the last of Vec.
-
-            /*
+            println!("Path for {:?} is OK : {:?}", self.0, pathing); 
+            pathing.reverse();  // REMEMBER : We use Pop to read the path, and pop is the last of Vec.
             if let Some(first_step) = pathing.pop() {
                 // First walk action.
                 let mut result = Vec::new();
                 result.push(Box::new(WalkAction(self.0, first_step)) as Box<dyn Action>);
+                println!("Pathing is now : {:?}", pathing);
 
-                println!("Path for {:?} is OK : {:?}", self.0, pathing);
-                world.entity_mut(self.0).insert(PathTo{pathing: pathing});   
-                return Ok(result);                
-            } else { return Err(()) };        //REMEMBER : this will consum the vec  
-            */
-
-            if !pathing.is_empty() {
-                println!("MoveToAction: Path for {:?} is OK : {:?}", self.0, pathing);  
-                world.entity_mut(self.0).insert(PathTo{pathing: pathing}); 
-            } else { return Err(()) }; 
                
+                    // Next walk actions are sent in ActionPlayers for process
+                    let mut some_player_queue = VecDeque::new();
+                    if let mut actor = world.get_mut::<Actor>(self.0) {                    
+                        if let Some(mut final_actor) = actor {
+                            pathing.reverse(); // We redo this because iter start from the head...
+                            for next_step in pathing.iter() {
+                                let action = WalkAction(self.0, *next_step);
+                                final_actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+                                some_player_queue.extend(VecDeque::from([self.0]));
+                                println!("Next step is : {:?}", next_step);
+                            }
+                        }
+                    }
+                    if let mut player_queue = world.get_resource_mut::<PlayerActions>() {
+                        if let Some(mut final_player_queue) = player_queue {
+                            for queue in some_player_queue.iter() {
+                                final_player_queue.0 = VecDeque::from([*queue]);
+                            }
+                        }
+                    }
+                return Ok(result);                
+            } else { return Err(()) };        //REMEMBER : this will consum the vec          
         } else { return Err(()) };
-        Ok(Vec::new())
+        //Ok(Vec::new())
         
     }
     fn as_any(&self) -> &dyn std::any::Any { self }

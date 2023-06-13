@@ -11,7 +11,7 @@ use crate::{
 use super::{ActorQueue, models::{MeleeHitAction, WalkAction}};
 
 
-
+/* 
 pub fn pathfinding_walk(
     mut query: Query<(Entity, &mut Actor, &mut PathTo)>,
     mut commands: Commands,
@@ -38,6 +38,7 @@ pub fn pathfinding_walk(
         }
     }
 }
+*/
 
 pub fn pathfinding_walk_old(
     mut query: Query<(&mut Actor, &mut PathTo)>,
