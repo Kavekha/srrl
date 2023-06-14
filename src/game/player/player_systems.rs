@@ -118,8 +118,8 @@ pub fn player_input(
         }
 
         let action = WalkAction(entity, destination);
-        player_queue.0 = vec![(Box::new(action), entity)];      // 0 => Player doesn't care for Action Score.
-        //queue.0 = VecDeque::from([entity]);
+        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+        queue.0 = VecDeque::from([entity]);
         println!("Keyboard: WalkAction: PlayeractionEvent sent 1");
         ev_action.send(PlayerActionEvent);
         println!("Keyboard: WalkAction: PlayeractionEvent sent 2");

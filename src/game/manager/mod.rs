@@ -47,8 +47,8 @@ fn turn_player_pending_actions(
             if let Ok(mut actor) = query_player.get_component_mut::<Actor>(entity) {
                 println!("turn player: action push.");
                 actor.0.push((action, 0));
+                queue.0 = VecDeque::from([entity]);                
                 ev_action.send(PlayerActionEvent);
-                queue.0 = VecDeque::from([entity]);
             } else {
                 println!("No actor.");
             };
@@ -106,15 +106,7 @@ fn turn_update_start(
     mut ev_tick: EventWriter<TickEvent>,    
     mut ev_action: EventWriter<PlayerActionEvent>,  
 ) {
-    /*
-    if let Some(entity) = player_queue.0.pop_front() {
-        println!("turn player: an action is waiting for {:?}", entity);
-        queue.0 = VecDeque::from([entity]);
-        ev_action.send(PlayerActionEvent);
-    } else { 
-        println!("turn player: No action waiting");
-    };
- */
+    println!("turn_update start: ActorQueue is {:?}", queue.0.len());
     next_state.set(EngineState::TurnUpdate);
     ev_tick.send(TickEvent);
     println!("turn_update_start by PlayerActionEvent! Let's Send Tick and see if there is anything.")

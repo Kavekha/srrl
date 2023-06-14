@@ -42,6 +42,7 @@ impl Action for MoveToAction {
                let mut result = Vec::new();
                result.push(Box::new(WalkAction(self.0, first_step)) as Box<dyn Action>);
                println!("Pathing is now : {:?}", pathing);
+               pathing.reverse(); // REMEMBER : We reverse back so iter() goes from first to last.
 
                let mut player_actions = world.get_resource_mut::<PlayerActions>(); 
                if let Some(mut player_actions_queue) = player_actions {
@@ -152,6 +153,10 @@ impl Action for GameOverAction{
         let mut system_state: SystemState<ResMut<NextState<GameState>>> = SystemState::new(&mut world);
         let mut game_state = system_state.get_mut(&mut world);
         game_state.set(GameState::GameOverScreen);
+        // We remove all actions in waiting.
+        if let Some(mut player_actions) = world.get_resource_mut::<PlayerActions>() {
+            player_actions.0.clear();
+        }
         Ok(Vec::new())
     }
     fn as_any(&self) -> &dyn std::any::Any { self }
