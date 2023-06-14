@@ -46,7 +46,6 @@ pub fn melee_animation(
 pub fn walk_animation(
     mut commands: Commands,
     mut ev_action: EventReader<ActionExecutedEvent>,
-    mut ev_wait: EventWriter<GraphicsWaitEvent>,
     query_piece: Query<&Piece>,
 ) {
     for ev in ev_action.iter() {
@@ -56,13 +55,6 @@ pub fn walk_animation(
             let Ok(piece) = query_piece.get(action.0) else { return };
             // Converti pour ISO.
             let target = get_final_world_position(action.1, piece.size);
-
-            /* 
-            let (position_x, mut position_y) = get_world_position(&action.1); // Position X,Y de World.
-            let position_z = get_world_z(&action.1); 
-            position_y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile. 
-            let target = Vec3::new(position_x, position_y, position_z); 
-            */
 
             commands.entity(action.0)
                 .insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
@@ -116,15 +108,6 @@ pub fn spawn_piece_renderer(
     println!("Rendering Pieces begins..."); 
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
-
-        /*
-        let (x, mut y) = get_world_position(&position.v);
-        let (x_debug, y_debug) = get_world_position(&position.v);   //DEBUG
-        let z = get_world_z(&position.v);
- 
-        
-        y += get_iso_y_modifier_from_elevation(piece.size);
-        */
         let translation= get_final_world_position(position.v, piece.size);
         let texture = get_texture_from_kind(piece.kind);
 

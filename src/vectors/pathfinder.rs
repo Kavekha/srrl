@@ -3,7 +3,7 @@ use std::{
     collections::{BinaryHeap, HashMap, HashSet, VecDeque}
 };
 
-use super::{MULTI_DIRECTIONS, Vector2Int};
+use super::{MULTI_DIRECTIONS, Vector2Int, get_direction_cost};
 
 pub fn find_path(
     start: Vector2Int,
@@ -22,7 +22,10 @@ pub fn find_path(
         if v == end { break; }
         for dir in MULTI_DIRECTIONS {
             let n = v + dir;
-            let new_cost = cost + 1;
+            //let new_cost = cost + 1;
+            let dir_cost = get_direction_cost(dir);
+            let new_cost = cost + dir_cost;      // TODO: Crado: on additionne x + y et on retourne la valeur. Diagonal = 2 donc cost > 1.
+            // Si !tiles.contains(&n), ca veut dire qu'on est hors map.
             if !tiles.contains(&n) { continue }
             // we allow the target to be a blocker
             if blockers.contains(&n) && n != end { continue }
