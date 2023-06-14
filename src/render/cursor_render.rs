@@ -35,9 +35,7 @@ pub fn spawn_game_cursor(
             .insert(Name::new("Back cursor"))
             .id();
     
-    commands.entity(front_cursor).push_children(&[back_cursor]);
-
-    println!("Cursor spawned: {:?}", front_cursor);
+    //commands.entity(front_cursor).push_children(&[back_cursor]);
     
 }
 
