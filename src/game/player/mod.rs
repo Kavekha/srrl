@@ -26,7 +26,8 @@ impl Plugin for PlayerPlugin{
         app          
             .add_event::<PlayerInputReadyEvent>()
             .add_systems(Update, player_input.run_if(in_state(EngineState::PlayerInput)))
-            .add_systems(Update, player_mouse_input.run_if(in_state(EngineState::PlayerInput)))
+            //.add_systems(Update, player_mouse_input.run_if(in_state(EngineState::PlayerInput)))
+            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::GameMap)))
             
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))

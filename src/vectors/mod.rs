@@ -86,3 +86,7 @@ pub const MULTI_DIRECTIONS: [Vector2Int; 8] = [
     Vector2Int::UPPER_LEFT, Vector2Int::UPPER_RIGHT, 
     Vector2Int::BOTTOM_LEFT, Vector2Int::BOTTOM_RIGHT
 ];
+
+pub fn get_direction_cost(v: Vector2Int) -> u32 {
+    return v.x.abs() as u32 + v.y.abs() as u32
+}

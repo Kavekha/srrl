@@ -118,7 +118,7 @@ impl SaveState {
                 || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Health>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Melee>(world.entity(*current_entity).id()).is_some()
-                || world.get::<Occupier>(world.entity(*current_entity).id()).is_some()
+                //|| world.get::<Occupier>(world.entity(*current_entity).id()).is_some()    //TODO: As for Boardposition, Tile like Wall use Occupier. This has to change!
                 {
                     has_component_to_save = true
                 }

@@ -17,13 +17,27 @@ pub trait Action: Send + Sync {
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
 
+pub struct ClearPendingAction(pub Entity);
+impl Action for ClearPendingAction {
+    fn execute(&self, world:&mut World) -> Result<Vec<Box<dyn Action>>, ()> {
+        if let Some(mut player_pending_actions) = world.get_resource_mut::<PlayerActions>() {
+            player_pending_actions.0.clear();
+            println!("ClearPendingAction: player queue removed.");
+        }
+        Err(()) // Doesnt count as a turn.
+    }     
+   fn as_any(&self) -> &dyn std::any::Any { self }
+}
+
 /// Generate a pathfinding & component. This component will create WalkAction each turn, with a check before each.
 pub struct MoveToAction(pub Entity, pub Vector2Int);
 impl Action for MoveToAction {
    fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
        println!("MoveToAction: Execute.");
        let Some(position) = world.get::<BoardPosition>(self.0) else { return Err(()) };
+       if position.v == self.1 {return Err(())};
        let Some(map) = world.get_resource::<Map>() else { return Err(())};       
+       
 
        //REMEMBER: Premier step: La case suivante.
        let path_to_destination = find_path(
@@ -36,6 +50,7 @@ impl Action for MoveToAction {
        if let Some(path) = path_to_destination {
            let mut pathing:Vec<Vector2Int> = path.clone().into();
            println!("Path for {:?} is OK : {:?}", self.0, pathing); 
+           
            pathing.reverse();  // REMEMBER : We use Pop to read the path, and pop is the last of Vec.
            if let Some(first_step) = pathing.pop() {
                // First walk action.
@@ -134,7 +149,7 @@ impl Action for WalkAction {
         // La position où l'on se rends est-elle bloquée?
         if tileboard.is_blocked(self.1.x, self.1.y) { return Err(()) };
 
-        // Quelqu'un est-il déjà dans cette tile?   //TODO : Deactivate for this Release: we want to die at contact with Ghouls. Reactivate ==> Component Occupied on NPC / Player.
+        // REMEMBER: pas de tile = pas dans la map.
         if !tileboard.entity_tiles.contains_key(&self.1) { return Err(()) };
         if world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).any(|p| p.v == self.1) { return Err(()) };
 

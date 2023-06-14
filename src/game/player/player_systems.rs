@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction, MoveToAction, PlayerActions}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, WalkAction, MoveToAction, PlayerActions, ClearPendingAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -36,14 +36,30 @@ pub fn player_mouse_input(
     mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
     res_cursor: Res<Cursor>,
     mut queue: ResMut<ActorQueue>,
+    mut player_queue: ResMut<PlayerActions>
 ){
+    if buttons.just_pressed(MouseButton::Right) {
+        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
+        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
+        let action = ClearPendingAction(entity);
+        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+        queue.0 = VecDeque::from([entity]);
+        println!("Player pending actions cleared.");
+    }
     if buttons.just_pressed(MouseButton::Left) {
         println!("Mouse button press Left");
-        // Pathfinding.
+        
+        // On annule les actions en attente:
+        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
-
+        let action = ClearPendingAction(entity);
+        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+        queue.0 = VecDeque::from([entity]);
+        println!("Player pending actions cleared.");
+        
+        // MoveTo.
+        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let destination = res_cursor.grid_position;
-
         
         let action = MoveToAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
@@ -51,34 +67,6 @@ pub fn player_mouse_input(
         ev_action.send(PlayerActionEvent);
         println!("MoveToAction sent from player mouse input.");
     }
-    if buttons.just_released(MouseButton::Left) {
-        println!("Mouse button release Left");
-    }
-
-    for event in mouse_button_event.iter() {
-        println!("Event state is {:?}", event.state);
-    }
-
-    /*
-    for event in mouse_button_event.iter() {
-        match event.state {
-            ButtonState::Pressed => {
-                println!("Mouse button press: {:?}", event.button);
-                let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
-
-                let destination = res_cursor.grid_position;
-                let action = MoveToAction(entity, destination);
-                actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-                queue.0 = VecDeque::from([entity]);
-                ev_action.send(PlayerActionEvent);
-                println!("MoveToAction sent from player mouse input.");
-            }
-            ButtonState::Released => {
-                println!("Mouse button release: {:?}", event.button);
-            }
-        }
-    }
-     */
 }
 
 pub fn player_input(
@@ -104,6 +92,13 @@ pub fn player_input(
         ]){
         // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
         let Ok((entity, position, mut actor)) = query_player_position.get_single_mut() else {return};
+
+        // On annule les actions en cours.
+        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
+        let action = ClearPendingAction(entity);
+        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+        queue.0 = VecDeque::from([entity]);
+        println!("Player pending actions cleared.");
 
         let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {

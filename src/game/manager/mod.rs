@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, transform::commands, ecs::component};
+use bevy::{prelude::*, transform::commands, ecs::component, input::mouse::MouseButtonInput};
 
 use crate::{states::{GameState, EngineState, TurnSet}, render::GraphicsWaitEvent};
 
@@ -35,7 +35,7 @@ fn turn_player_pending_actions(
     mut player_queue: ResMut<PlayerActions>,  
     mut queue: ResMut<ActorQueue>,
     mut ev_action: EventWriter<PlayerActionEvent>,
-    mut query_player: Query<(&mut Actor, With<Player>)>
+    mut query_player: Query<(&mut Actor, With<Player>)>,
 ){
     if !player_queue.0.is_empty() {
         println!("turn_player: an action is waiting.");

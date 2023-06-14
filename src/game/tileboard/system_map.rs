@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     map_builders::map::Map, 
     states::GameState, 
-    game::tileboard::components::{GridPosition, Tile, GameMap, BoardPosition}, vectors::Vector2Int
+    game::{tileboard::components::{GridPosition, Tile, GameMap, BoardPosition}, pieces::components::Occupier}, vectors::Vector2Int
 };
 
 
@@ -31,6 +31,9 @@ pub fn spawn_map(
         ))
         .id();
 
+        if map.is_blocked(x, y) {
+            commands.entity(tile).insert(Occupier); //TODO : Something else? Occupier is used by Pieces too.
+        }
         tiles.insert(v, tile); 
         tile_entities.push(tile);
           
