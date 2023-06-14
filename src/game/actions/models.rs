@@ -2,7 +2,7 @@ use std::{any::Any};
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition, actions::{PlayerActions}}, states::GameState, vectors::{Vector2Int, find_path}};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition, actions::{PlayerActions}, player::Player}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -120,7 +120,7 @@ impl Action for GameOverAction{
 pub struct MeleeHitAction{
     pub attacker: Entity,
     pub target: Vector2Int,
-    //pub damage: u32
+    pub damage: u32
 }
 impl Action for MeleeHitAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
@@ -147,7 +147,7 @@ impl Action for MeleeHitAction {
 
         // TODO : Ajouter dmg somewhere.
         let result = target_entities.iter()
-        .map(|e| Box::new(DamageAction(e.0)) as Box<dyn Action>)
+        .map(|e| Box::new(DamageAction(e.0, self.damage)) as Box<dyn Action>)
         .collect::<Vec<_>>();
         println!("HIT !");
         Ok(result)
@@ -157,24 +157,25 @@ impl Action for MeleeHitAction {
 }
 
 
-pub struct DamageAction(pub Entity);
+pub struct DamageAction(pub Entity, pub u32);   //target, dmg
 impl Action for DamageAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         println!("DamageAction: Execute!");
         // On verifie si l'entity a bien des PV.
-        let Some(_health) = world.get_mut::<Health>(self.0) else { return Err(()) };
+        let Some(mut health) = world.get_mut::<Health>(self.0) else { return Err(()) };
         println!("DamageAction: Health présent.");
-        /* 
-        health.value = health.value.saturating_sub(self.1);
-        if health.value == 0 {
-            // the unit is killed
-            world.despawn(self.0);
+        health.current = health.current.saturating_sub(self.1);
+        println!("Health for {:?} is now {:?}/{:?}", self.0, health.current, health.max);
+        if health.current == 0 {
+            if let Some(_player) = world.get::<Player>(self.0) {
+                let mut result = Vec::new();
+                result.push(Box::new(GameOverAction) as Box<dyn Action>);
+                return Ok(result);
+            }
+            //world.despawn(self.0);
         }
         Ok(Vec::new())
-        */
-        let mut result = Vec::new();
-        result.push(Box::new(GameOverAction) as Box<dyn Action>);
-        Ok(result)
+        
     }
     fn as_any(&self) -> &dyn std::any::Any { self }
 }

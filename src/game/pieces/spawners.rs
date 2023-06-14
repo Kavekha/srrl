@@ -47,7 +47,7 @@ pub fn spawn_player(
         .insert(Name::new("Player"))
         .insert(Stats {speed: 3.0})
         .insert(Actor::default(),)
-        .insert(Health)
+        .insert(Health { max: 10, current: 10 })
         .insert(Occupier)
         .id()  
 }
@@ -64,8 +64,8 @@ pub fn spawn_npc(
         .insert(Npc)
         .insert(Monster)
         .insert(Walk)
-        .insert(Melee)
-        .insert(Health)
+        .insert(Melee { damage: 2 })
+        .insert(Health { max: 10, current: 10 })
         .insert(Occupier)
         .id()  
 }

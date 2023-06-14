@@ -24,10 +24,15 @@ pub struct Occupier;
 
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)] 
-pub struct Health;  // Can receive dmg
+pub struct Health {
+    pub max: u32,
+    pub current: u32
+}
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
-pub struct Melee;   // Can melee
+pub struct Melee {
+    pub damage: u32
+}
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone)]   // TODO : Add to save.
 pub struct PathTo{
