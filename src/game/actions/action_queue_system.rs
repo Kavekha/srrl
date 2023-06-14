@@ -28,6 +28,7 @@ pub fn process_action_queue(world: &mut World) {
     // Quelque chose à traiter?
     let Some(entity) = queue.0.pop_front() else {
         world.send_event(ActionsCompleteEvent);
+        println!("--> Actions Complete ! <---");
         return;
     };
     // Qui va faire l'action?
@@ -59,6 +60,7 @@ pub fn process_action_queue(world: &mut World) {
     }
 
     // Au suivant!
+    println!("Action processed for {:?}", entity);
     world.send_event(NextActorEvent);
 }
 

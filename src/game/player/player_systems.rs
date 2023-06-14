@@ -1,17 +1,17 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}};
 
 use crate::{
     save_load_system::ShouldSave, 
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, WalkAction, MoveToAction, PlayerActions}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
-use super::{components::{Player}, PlayerActionEvent};
+use super::{components::{Player}, PlayerActionEvent, Cursor};
 
 //
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
@@ -29,13 +29,66 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 ];
 //
 
+pub fn player_mouse_input(
+    mut mouse_button_event: EventReader<MouseButtonInput>,
+    buttons: Res<Input<MouseButton>>,
+    mut ev_action: EventWriter<PlayerActionEvent>,
+    mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
+    res_cursor: Res<Cursor>,
+    mut queue: ResMut<ActorQueue>,
+){
+    if buttons.just_pressed(MouseButton::Left) {
+        println!("Mouse button press Left");
+        // Pathfinding.
+        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
+
+        let destination = res_cursor.grid_position;
+
+        
+        let action = MoveToAction(entity, destination);
+        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+        queue.0 = VecDeque::from([entity]);
+        ev_action.send(PlayerActionEvent);
+        println!("MoveToAction sent from player mouse input.");
+    }
+    if buttons.just_released(MouseButton::Left) {
+        println!("Mouse button release Left");
+    }
+
+    for event in mouse_button_event.iter() {
+        println!("Event state is {:?}", event.state);
+    }
+
+    /*
+    for event in mouse_button_event.iter() {
+        match event.state {
+            ButtonState::Pressed => {
+                println!("Mouse button press: {:?}", event.button);
+                let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
+
+                let destination = res_cursor.grid_position;
+                let action = MoveToAction(entity, destination);
+                actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
+                queue.0 = VecDeque::from([entity]);
+                ev_action.send(PlayerActionEvent);
+                println!("MoveToAction sent from player mouse input.");
+            }
+            ButtonState::Released => {
+                println!("Mouse button release: {:?}", event.button);
+            }
+        }
+    }
+     */
+}
+
 pub fn player_input(
     mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
     //mut ev_input: EventWriter<PlayerInputReadyEvent>,
-    mut ev_action: EventWriter<PlayerActionEvent>,
+    mut ev_action: EventWriter<PlayerActionEvent>,    
+    mut player_queue: ResMut<PlayerActions>,  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
@@ -67,7 +120,9 @@ pub fn player_input(
         let action = WalkAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
+        println!("Keyboard: WalkAction: PlayeractionEvent sent 1");
         ev_action.send(PlayerActionEvent);
+        println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
     }
 }
 

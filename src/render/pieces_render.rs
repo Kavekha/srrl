@@ -6,7 +6,7 @@ use crate::{
     globals::{
         SPRITE_GHOUL, SPRITE_PLAYER, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF,},
-    game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent};
+    game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
 
 use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation, components::{PathAnimator}};
 
@@ -18,6 +18,7 @@ pub fn melee_animation(
     mut ev_action: EventReader<ActionExecutedEvent>,
     mut ev_wait: EventWriter<super::GraphicsWaitEvent>
 ) {
+    println!("--Melee animation--");
     for ev in ev_action.iter() {
         let action = ev.0.as_any();
         if let Some(action) = action.downcast_ref::<MeleeHitAction>() {
@@ -54,12 +55,14 @@ pub fn walk_animation(
         if let Some(action) = action.downcast_ref::<WalkAction>() {
             let Ok(piece) = query_piece.get(action.0) else { return };
             // Converti pour ISO.
+            let target = get_final_world_position(action.1, piece.size);
+
+            /* 
             let (position_x, mut position_y) = get_world_position(&action.1); // Position X,Y de World.
-
-            position_y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile.  
-
             let position_z = get_world_z(&action.1); 
-              let target = Vec3::new(position_x, position_y, position_z); 
+            position_y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile. 
+            let target = Vec3::new(position_x, position_y, position_z); 
+            */
 
             commands.entity(action.0)
                 .insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
@@ -83,9 +86,11 @@ pub fn path_animator_update(
             continue;
         }
         let target = *animator.path.get(0).unwrap();  
-        let destination = (target - transform.translation).length();
+        //let destination = (target - transform.translation).length();
+        let destination = target - transform.translation;
+        //destination.y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile. 
 
-        if destination > POSITION_TOLERANCE {
+        if destination.length() > POSITION_TOLERANCE {
             transform.translation = transform.translation.lerp(
                 target,
                 BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
@@ -102,37 +107,6 @@ pub fn path_animator_update(
     }
 }
 
-/* 
-pub fn update_piece_position(
-    mut query: Query<(&BoardPosition, &mut Transform, &Piece)>,  
-    time: Res<Time>,
-    //mut ev_wait: EventWriter<GraphicsWaitEvent>
-){
-    let mut animating = false;
-
-    for (position, mut transform, piece) in query.iter_mut(){
-        let (position_x, mut position_y) = get_world_position(&position.v);
-
-        position_y += get_iso_y_modifier_from_elevation(piece.size); 
-
-        let target = Vec3::new(position_x, position_y, get_world_z(&position.v));
-        let destination = (target - transform.translation).length();
-  
-        
-        if destination > POSITION_TOLERANCE {
-            transform.translation = transform.translation.lerp(
-                target,
-                BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
-            );
-            animating = true;
-        }
-        if animating {
-            //TODO: Currently: One wait by Actor, so a lot of wait.
-            //ev_wait.send(GraphicsWaitEvent);
-        }
-    }
-}
-*/
 
 pub fn spawn_piece_renderer(
     mut commands: Commands,
@@ -143,18 +117,22 @@ pub fn spawn_piece_renderer(
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
 
+        /*
         let (x, mut y) = get_world_position(&position.v);
         let (x_debug, y_debug) = get_world_position(&position.v);   //DEBUG
         let z = get_world_z(&position.v);
  
-        let texture = get_texture_from_kind(piece.kind);
+        
         y += get_iso_y_modifier_from_elevation(piece.size);
+        */
+        let translation= get_final_world_position(position.v, piece.size);
+        let texture = get_texture_from_kind(piece.kind);
 
         commands.entity(entity)
             .insert(SpriteBundle {
                 texture: asset_server.load(texture),    
                 transform: Transform {
-                    translation: Vec3::new(x, y, z),
+                    translation: translation,    //Vec3::new(x, y, z),
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
@@ -162,7 +140,7 @@ pub fn spawn_piece_renderer(
             });
         
             if let Some(_player) = player {
-                println!("INFO: player rendered at {:?} for grid position {:?}.", (x_debug, y_debug), position.v);
+                //println!("INFO: player rendered at {:?} for grid position {:?}.", (x_debug, y_debug), position.v);
             }
         
     }

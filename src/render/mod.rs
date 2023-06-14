@@ -69,3 +69,14 @@ fn get_iso_y_modifier_from_elevation(
 ) -> f32 {
     ((tile_elevation - TILE_HEIGHT_MEDIUM) / 2) as f32
 }
+
+fn get_final_world_position(
+    v: Vector2Int,
+    size:i32
+) -> Vec3 {
+    let (w_x, mut w_y) = get_world_position(&v); 
+    let w_z = get_world_z(&v);
+    w_y += get_iso_y_modifier_from_elevation(size);
+
+    return Vec3::new(w_x, w_y, w_z)
+}
