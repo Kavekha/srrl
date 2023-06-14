@@ -1,13 +1,13 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}};
+use bevy::prelude::*;
 
 use crate::{
     save_load_system::ShouldSave, 
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction, MoveToAction, PlayerActions, ClearPendingAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, WalkAction, MoveToAction, ClearPendingAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -30,13 +30,11 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 //
 
 pub fn player_mouse_input(
-    mut mouse_button_event: EventReader<MouseButtonInput>,
     buttons: Res<Input<MouseButton>>,
     mut ev_action: EventWriter<PlayerActionEvent>,
     mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
     res_cursor: Res<Cursor>,
     mut queue: ResMut<ActorQueue>,
-    mut player_queue: ResMut<PlayerActions>
 ){
     if buttons.just_pressed(MouseButton::Right) {
         //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
@@ -75,8 +73,7 @@ pub fn player_input(
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
     //mut ev_input: EventWriter<PlayerInputReadyEvent>,
-    mut ev_action: EventWriter<PlayerActionEvent>,    
-    mut player_queue: ResMut<PlayerActions>,  
+    mut ev_action: EventWriter<PlayerActionEvent>,  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {

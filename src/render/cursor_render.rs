@@ -9,7 +9,7 @@ pub fn spawn_game_cursor(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ){
-    let front_cursor = commands.spawn(GameCursorRender)
+    commands.spawn(GameCursorRender)
             .insert(SpriteBundle {
                 texture: asset_server.load(CURSOR_FRONT),    
                 transform: Transform {
@@ -20,9 +20,9 @@ pub fn spawn_game_cursor(
                 ..default()            
             })
             .insert(Name::new("Cursor"))
-            .id();
+            ;
 
-    let back_cursor = commands.spawn(GameCursorRender)
+    commands.spawn(GameCursorRender)
             .insert(SpriteBundle{
                 texture: asset_server.load(CURSOR_BACK),    
                 transform: Transform {
@@ -33,25 +33,15 @@ pub fn spawn_game_cursor(
                 ..default()    
             })
             .insert(Name::new("Back cursor"))
-            .id();
-    
-    //commands.entity(front_cursor).push_children(&[back_cursor]);
-    
+            ;    
 }
 
 
 pub fn update_game_cursor(
-    mut commands: Commands,
     mut query_game_cursor: Query<(&GameCursorRender, &mut Transform)>,
     cursor_position: Res<Cursor>,
     time: Res<Time>
 ){
-
-    //let Ok((game_cursor, transform, )) = query_game_cursor.get_single_mut() else { return };
-
-    //TODO:check if in grid..
-
-
     for (_game_cursor, mut transform, ) in query_game_cursor.iter_mut(){
         let (position_x, position_y) = get_world_position(&cursor_position.grid_position);
         let world_z = get_world_z(&cursor_position.grid_position);
