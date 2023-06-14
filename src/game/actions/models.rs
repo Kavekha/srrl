@@ -16,9 +16,56 @@ pub trait Action: Send + Sync {
 #[derive(Default, Resource)]
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
- 
+
+/// Generate a pathfinding & component. This component will create WalkAction each turn, with a check before each.
+pub struct MoveToAction(pub Entity, pub Vector2Int);
+impl Action for MoveToAction {
+   fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
+       println!("MoveToAction: Execute.");
+       let Some(position) = world.get::<BoardPosition>(self.0) else { return Err(()) };
+       let Some(map) = world.get_resource::<Map>() else { return Err(())};       
+
+       //REMEMBER: Premier step: La case suivante.
+       let path_to_destination = find_path(
+           position.v,
+           self.1,
+           &map.entity_tiles.keys().cloned().collect(),
+           &world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).map(|p| p.v).collect()
+       ); 
+
+       if let Some(path) = path_to_destination {
+           let mut pathing:Vec<Vector2Int> = path.clone().into();
+           println!("Path for {:?} is OK : {:?}", self.0, pathing); 
+           pathing.reverse();  // REMEMBER : We use Pop to read the path, and pop is the last of Vec.
+           if let Some(first_step) = pathing.pop() {
+               // First walk action.
+               let mut result = Vec::new();
+               result.push(Box::new(WalkAction(self.0, first_step)) as Box<dyn Action>);
+               println!("Pathing is now : {:?}", pathing);
+
+               let mut player_actions = world.get_resource_mut::<PlayerActions>(); 
+               if let Some(mut player_actions_queue) = player_actions {
+                    let actions = pathing.iter()
+                        .map(|some_position_around | {
+                                (Box::new(WalkAction(self.0, *some_position_around)) as Box<dyn super::Action>, self.0)
+                        })
+                        .collect::<Vec<_>>();
+                    println!("MoveTo: actions len is : {:?}", actions.len());
+                    player_actions_queue.0.extend(actions);
+                }
+                return Ok(result);                
+           } else { return Err(()) };        //REMEMBER : this will consum the vec          
+       } else { return Err(()) };
+       //Ok(Vec::new())
+       
+   }
+   fn as_any(&self) -> &dyn std::any::Any { self }
+}
+
+
+ /* 
  /// Generate a pathfinding & component. This component will create WalkAction each turn, with a check before each.
- pub struct MoveToAction(pub Entity, pub Vector2Int);
+ pub struct MoveToAction_old(pub Entity, pub Vector2Int);
  impl Action for MoveToAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         println!("MoveToAction: Execute.");
@@ -46,9 +93,9 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
                
                 // Next walk actions are sent in ActionPlayers for process
                 let mut nb_actions = 0;
-                if let mut actor = world.get_mut::<Actor>(self.0) {                    
-                    if let Some(mut final_actor) = actor {
-                        pathing.reverse(); // We redo this because iter start from the head...
+                if let mut actor = world.get_mut::<Actor>(self.0) {  
+                    // We dont reverse back because we add each new step at 0 position.                  
+                    if let Some(mut final_actor) = actor {                        
                         for next_step in pathing.iter() {
                             let action = WalkAction(self.0, *next_step);
                             final_actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
@@ -56,7 +103,7 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
                             println!("Next step is : {:?}", next_step);
                         }
                     }
-                }
+                }                
                 if let mut player_queue = world.get_resource_mut::<PlayerActions>() {
                     if let Some(mut final_player_queue) = player_queue {
                         for i in 0..nb_actions {
@@ -72,7 +119,7 @@ pub struct PendingActions(pub Vec<Box<dyn Action>>);
     }
     fn as_any(&self) -> &dyn std::any::Any { self }
 }
-
+*/
 
 pub struct WalkAction(pub Entity, pub Vector2Int);    //REMEMBER : arg0 = self.0, arg1 = self.1
 impl Action for WalkAction {

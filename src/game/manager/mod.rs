@@ -1,10 +1,10 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::commands, ecs::component};
 
 use crate::{states::{GameState, EngineState, TurnSet}, render::GraphicsWaitEvent};
 
-use super::{player::PlayerActionEvent, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent, PlayerActions, ActorQueue}};
+use super::{player::{PlayerActionEvent, Player}, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent, PlayerActions, ActorQueue}, pieces::components::Actor};
 
 
 pub struct ManagerPlugin;
@@ -31,10 +31,50 @@ impl Plugin for ManagerPlugin {
 }
 
 fn turn_player_pending_actions(
+    mut commands: Commands,
     mut player_queue: ResMut<PlayerActions>,  
     mut queue: ResMut<ActorQueue>,
-    mut ev_action: EventWriter<PlayerActionEvent>,  
+    mut ev_action: EventWriter<PlayerActionEvent>,
+    mut query_player: Query<(&mut Actor, With<Player>)>
 ){
+    if !player_queue.0.is_empty() {
+        println!("turn_player: an action is waiting.");
+        let mut player_actions = player_queue.0.drain(0..1).collect::<Vec<_>>();
+        println!("Vec len is : {:?}", player_actions.len());
+
+        if let Some(mut last_action) = player_actions.pop() {
+            let (action, entity) = last_action;
+            if let Ok(mut actor) = query_player.get_component_mut::<Actor>(entity) {
+                println!("turn player: action push.");
+                actor.0.push((action, 0));
+                ev_action.send(PlayerActionEvent);
+                queue.0 = VecDeque::from([entity]);
+            } else {
+                println!("No actor.");
+            };
+        } else {
+            println!("turn player: No last action.");
+        }
+        /* 
+        let next_player_action = player_actions.into_iter().nth(0);        
+        if let Some(player_action) = next_player_action {
+            println!("turn player: Action available.");
+            let (action, entity) = player_action;
+            if let Ok(mut actor) = query_player.get_component_mut::<Actor>(entity) {
+                println!("turn player: action push.");
+                actor.0.push((action, 0));
+            } else {
+                println!("No actor.");
+            };
+        } else {
+            println!("turn player : No next player action.");
+        }; */       
+    } else {
+        println!("turn_player : player queue empty");
+    }
+}
+
+/* 
     if let Some(entity) = player_queue.0.pop_front() {
         println!("turn player: an action is waiting for {:?}", entity);
         queue.0 = VecDeque::from([entity]);
@@ -43,7 +83,7 @@ fn turn_player_pending_actions(
     } else { 
         println!("turn player: No action waiting");
     };
-}
+}*/
 
 fn game_start(
     mut next_state: ResMut<NextState<EngineState>>,
@@ -86,9 +126,9 @@ fn tick(
 ) {
     if ev_wait.iter().len() == 0 {
         ev_tick.send(TickEvent);
-        //println!("tick: Waiting done. Tick suivant!");
+        println!("tick: Waiting done. Tick suivant!");
     }
-    //println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
+    println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
 }
 
 fn turn_update_end(

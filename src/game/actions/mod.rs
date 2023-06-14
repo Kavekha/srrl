@@ -57,7 +57,7 @@ enum ActionSet {
 pub struct ActorQueue(pub VecDeque<Entity>);
 
 #[derive(Default, Resource)]
-pub struct PlayerActions(pub VecDeque<Entity>);
+pub struct PlayerActions(pub Vec<(Box<dyn Action>, Entity)>); 
 
 #[derive(Event)]
 pub struct TickEvent;
