@@ -2,7 +2,7 @@ use std::{any::Any};
 
 use bevy::{prelude::*, ecs::system::SystemState};
 
-use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health}, tileboard::components::BoardPosition, actions::{PlayerActions}, player::Player}, states::GameState, vectors::{Vector2Int, find_path}};
+use crate::{map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, Stats}, tileboard::components::BoardPosition, actions::{PlayerActions}, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -49,14 +49,14 @@ impl Action for MoveToAction {
 
        if let Some(path) = path_to_destination {
            let mut pathing:Vec<Vector2Int> = path.clone().into();
-           println!("Path for {:?} is OK : {:?}", self.0, pathing); 
+           //println!("Path for {:?} is OK : {:?}", self.0, pathing); 
            
            pathing.reverse();  // REMEMBER : We use Pop to read the path, and pop is the last of Vec.
            if let Some(first_step) = pathing.pop() {
                // First walk action.
                let mut result = Vec::new();
                result.push(Box::new(WalkAction(self.0, first_step)) as Box<dyn Action>);
-               println!("Pathing is now : {:?}", pathing);
+               //println!("Pathing is now : {:?}", pathing);
                pathing.reverse(); // REMEMBER : We reverse back so iter() goes from first to last.
 
                let mut player_actions = world.get_resource_mut::<PlayerActions>(); 
@@ -123,33 +123,37 @@ pub struct MeleeHitAction{
     pub damage: u32
 }
 impl Action for MeleeHitAction {
-    fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
-        //println!("Execute: MeleeHit!: attacker is : {:?}, target position is : {:?}", self.attacker, self.target);
-        
+    fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {        
         // We get attacker position.
         let attacker_position = world.get::<BoardPosition>(self.attacker).ok_or(())?;
-        //println!("ActionMelee: Attacker : OK");
-        
         // Si trop loin de sa cible, on ignore.
-        if attacker_position.v.manhattan(self.target) > 1 { 
-            //println!("Attacker position is {:?}, self.target is {:?}, manhattan is : {:?}", attacker_position.v, self.target, attacker_position.v.manhattan(self.target));
-            return Err(()) }; 
-        //println!("ActionMelee: Distance : OK");
-
-        // On regarde si la cible est bien là : Position Target vers Position(Gridx, gridy).
-        let target_entities = world.query_filtered::<(Entity, &BoardPosition), With<Health>>()
+        if attacker_position.v.manhattan(self.target) > 1 { return Err(()) }; 
+        // On récupère les cibles de cette case: Position Target vers Position(Gridx, gridy).
+        let target_entities = world.query_filtered::<(Entity, &BoardPosition, &Stats), With<Health>>()
             .iter(world)
-            .filter(|(_, position)| position.v == self.target)
-            .collect::<Vec<_>>();
-        
+            .filter(|(_, position,_)| position.v == self.target)
+            .collect::<Vec<_>>();        
         //Pas de cible ?
         if target_entities.len() == 0 { return Err(()) }; 
 
-        // TODO : Ajouter dmg somewhere.
+        //TODO : SR stats
+        let attacker_stat = world.get::<Stats>(self.attacker).ok_or(())?;
+        let mut result = Vec::new();
+        for (target_entity, _target_position, target_stats) in target_entities.iter() {            
+            //TODO: Add to Stats component.
+            let dice_roll = roll_dices_against(attacker_stat.attack, target_stats.dodge);   
+            if dice_roll.success > 0 {
+                println!("HIT target with {:?} success!", dice_roll.success);
+                result.push(Box::new(DamageAction(*target_entity, self.damage.saturating_add(dice_roll.success))) as Box<dyn Action>)
+            }
+        }
+        /*
+        // Old version.
         let result = target_entities.iter()
         .map(|e| Box::new(DamageAction(e.0, self.damage)) as Box<dyn Action>)
         .collect::<Vec<_>>();
         println!("HIT !");
+         */
         Ok(result)
 
     }
@@ -161,11 +165,15 @@ pub struct DamageAction(pub Entity, pub u32);   //target, dmg
 impl Action for DamageAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         println!("DamageAction: Execute!");
-        // On verifie si l'entity a bien des PV.
+
+        //TODO : Stats vs Stats Shadowrun. Erzatz pour le moment.
+        let Some(stats) = world.get::<Stats>(self.0) else { return Err(())};    //TODO: A surveiller. On pourra p-e se faire tabasser un jour sans Stat (Door and co)
+        let dice_roll = roll_dices_against(stats.resilience, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
+        let dmg = stats.power.saturating_sub(dice_roll.success);    //REMEMBER: saturating_sub ne modifie pas l'objet sur lequel il est utilisé
+
         let Some(mut health) = world.get_mut::<Health>(self.0) else { return Err(()) };
-        println!("DamageAction: Health présent.");
-        health.current = health.current.saturating_sub(self.1);
-        println!("Health for {:?} is now {:?}/{:?}", self.0, health.current, health.max);
+        health.current = health.current.saturating_sub(dmg);
+        println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, health.current, health.max);
         if health.current == 0 {
             if let Some(_player) = world.get::<Player>(self.0) {
                 let mut result = Vec::new();

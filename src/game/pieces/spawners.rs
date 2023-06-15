@@ -2,9 +2,11 @@ use bevy::prelude::*;
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
-use crate::{globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, game::{player::{Stats, Npc, Monster, Player}, pieces::components::{Health, Occupier}}};
+use crate::{
+    globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, 
+    game::{player::Player, pieces::components::{Health, Occupier, Stats}}};
 
-use super::components::{Piece, Actor, Walk, Melee};
+use super::components::{Piece, Actor, Walk, Melee, Npc, Monster};
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -45,7 +47,13 @@ pub fn spawn_player(
         .entity(player)
         .insert(Player)
         .insert(Name::new("Player"))
-        .insert(Stats {speed: 3.0})
+        //TODO : Shadowrun stats
+        .insert(Stats {
+            power: 3,         
+            attack: 6,
+            dodge: 6,
+            resilience: 3
+        })
         .insert(Actor::default(),)
         .insert(Health { max: 10, current: 10 })
         .insert(Occupier)
@@ -59,7 +67,12 @@ pub fn spawn_npc(
     commands
         .entity(npc)
         .insert(Name::new(format!("Ghoul")))
-        .insert(Stats {speed: 2.0})
+        .insert(Stats {
+            power: 4,         
+            attack: 4,
+            dodge: 3,
+            resilience: 4
+        })
         .insert(Actor::default(),)
         .insert(Npc)
         .insert(Monster)

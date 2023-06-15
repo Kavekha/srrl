@@ -2,7 +2,8 @@
 use bevy::prelude::*;
 
 use self::manager::ManagerPlugin;
-use self::player::{PlayerPlugin, Npc};
+use self::pieces::components::Npc;
+use self::player::PlayerPlugin;
 use self::tileboard::TileBoardPlugin;
 use self::actions::ActionsPlugin;
 use self::player::cursor::CursorPlugin;
@@ -12,14 +13,15 @@ pub mod pieces;
 pub mod actions;
 pub mod tileboard;
 pub mod manager;
+pub mod rules;
 
 pub use tileboard::components::{Tile, GridPosition};
 
 
 use crate::despawn_screen;
 use crate::ecs_elements::MapGenHistory;
+use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc};
-use crate::game::player::Monster;
 use crate::game::tileboard::components::BoardPosition;
 use crate::save_load_system::ShouldSave;
 use crate::{

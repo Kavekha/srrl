@@ -11,8 +11,8 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier};
-use crate::game::player::{Stats, Player, Npc, Monster, };
+use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier, Stats, Npc, Monster};
+use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
 use crate::states::{GameState, AppState};

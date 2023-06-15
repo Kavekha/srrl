@@ -36,8 +36,7 @@ pub fn melee_animation(
             println!("Melee attack anim start from {:?} and goes to {:?}", base, target);
 
             commands.entity(action.attacker)
-                //.insert(PathAnimator{path:VecDeque::from([target, base]), wait_anim: true});
-                .insert(PathAnimator{path:VecDeque::from([target]), wait_anim: true});  // Just go to the target for one-shot
+                .insert(PathAnimator{path:VecDeque::from([target, base]), wait_anim: true});
             ev_wait.send(super::GraphicsWaitEvent);
         }
     }
