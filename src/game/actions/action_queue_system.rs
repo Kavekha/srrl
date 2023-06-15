@@ -60,7 +60,7 @@ pub fn process_action_queue(world: &mut World) {
     }
 
     // Au suivant!
-    println!("Action processed for {:?}", entity);
+    //println!("Action processed for {:?}", entity);
     world.send_event(NextActorEvent);
 }
 

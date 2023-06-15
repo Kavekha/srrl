@@ -56,6 +56,7 @@ pub fn spawn_player(
         })
         .insert(Actor::default(),)
         .insert(Health { max: 10, current: 10 })
+        .insert(Melee { damage: 1 })
         .insert(Occupier)
         .id()  
 }

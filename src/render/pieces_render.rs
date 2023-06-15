@@ -18,11 +18,11 @@ pub fn melee_animation(
     mut ev_action: EventReader<ActionExecutedEvent>,
     mut ev_wait: EventWriter<super::GraphicsWaitEvent>
 ) {
-    println!("--Melee animation--");
+    //println!("--Melee animation--");
     for ev in ev_action.iter() {
         let action = ev.0.as_any();
         if let Some(action) = action.downcast_ref::<MeleeHitAction>() {
-            println!("MELEE ATTACK ANIM !");
+            //println!("MELEE ATTACK ANIM !");
             let Ok(base_position) = query_position.get(action.attacker) else { continue };
             let Ok(base_piece) = query_piece.get(action.attacker) else { continue };
 
@@ -33,7 +33,7 @@ pub fn melee_animation(
             let (position_x, position_y) = get_world_position(&action.target);
             let target = Vec3::new(position_x, position_y, get_world_z(&action.target)); 
 
-            println!("Melee attack anim start from {:?} and goes to {:?}", base, target);
+            //println!("Melee attack anim start from {:?} and goes to {:?}", base, target);
 
             commands.entity(action.attacker)
                 .insert(PathAnimator{path:VecDeque::from([target, base]), wait_anim: true});
@@ -72,7 +72,7 @@ pub fn path_animator_update(
     for (entity, mut animator, mut transform) in query.iter_mut() {
         if animator.path.len() == 0 {
             // this entity has completed it's animation
-            println!("PathAnimator: Anim completed.");
+            //println!("PathAnimator: Anim completed.");
             commands.entity(entity).remove::<PathAnimator>();
             continue;
         }
@@ -93,7 +93,7 @@ pub fn path_animator_update(
         }
         if animator.wait_anim {
             ev_wait.send(GraphicsWaitEvent);
-            println!("wait_anim: True");
+            //println!("wait_anim: True");
         }
     }
 }

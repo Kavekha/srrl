@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction, MoveToAction, ClearPendingAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, MoveToAction, ClearPendingAction, WalkOrHitAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -109,10 +109,10 @@ pub fn player_input(
             }
         }
 
-        let action = WalkAction(entity, destination);
+        //let action = WalkAction(entity, destination);
+        let action = WalkOrHitAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        println!("Keyboard: WalkAction: PlayeractionEvent sent 1");
         ev_action.send(PlayerActionEvent);
         println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
     }
