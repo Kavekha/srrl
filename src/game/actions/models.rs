@@ -56,7 +56,7 @@ impl Action for MoveToAction {
            if let Some(first_step) = pathing.pop() {
                // First walk action.
                let mut result = Vec::new();
-               result.push(Box::new(WalkAction(self.0, first_step)) as Box<dyn Action>);
+               result.push(Box::new(WalkOrHitAction(self.0, first_step)) as Box<dyn Action>);
                //println!("Pathing is now : {:?}", pathing);
                pathing.reverse(); // REMEMBER : We reverse back so iter() goes from first to last.
 

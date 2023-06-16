@@ -42,7 +42,7 @@ pub fn player_mouse_input(
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared.");
+        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
     }
     if buttons.just_pressed(MouseButton::Left) {
         println!("Mouse button press Left");
@@ -53,7 +53,7 @@ pub fn player_mouse_input(
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared.");
+        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
         
         // MoveTo.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
@@ -63,7 +63,7 @@ pub fn player_mouse_input(
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_action.send(PlayerActionEvent);
-        println!("MoveToAction sent from player mouse input.");
+        println!("MoveToAction sent from player mouse input. Actor queue len is : {:?}", actor.0.len())
     }
 }
 
