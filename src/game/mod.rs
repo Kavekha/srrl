@@ -14,6 +14,7 @@ pub mod actions;
 pub mod tileboard;
 pub mod manager;
 pub mod rules;
+pub mod ui;
 
 pub use tileboard::components::{Tile, GridPosition};
 

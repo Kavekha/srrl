@@ -127,7 +127,7 @@ pub fn spawn_piece_renderer(
             });
         
             if let Some(_player) = player {
-                //println!("INFO: player rendered at {:?} for grid position {:?}.", (x_debug, y_debug), position.v);
+                println!("player rendered.");
             }
         
     }
