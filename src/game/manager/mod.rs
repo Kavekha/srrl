@@ -79,7 +79,7 @@ fn turn_update_start(
     println!("turn_update start: ActorQueue is {:?}", queue.0.len());
     next_state.set(EngineState::TurnUpdate);
     ev_tick.send(TickEvent);
-    println!("turn_update_start by PlayerActionEvent! Let's Send Tick and see if there is anything.")
+    //println!("turn_update_start by PlayerActionEvent! Let's Send Tick and see if there is anything.")
 }
 
 fn tick(
@@ -88,9 +88,9 @@ fn tick(
 ) {
     if ev_wait.iter().len() == 0 {
         ev_tick.send(TickEvent);
-        println!("tick: Waiting done. Tick suivant!");
+        //println!("tick: Waiting done. Tick suivant!");
     }
-    println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
+    //println!("tick: ev_wait in process... {:?} to go.", ev_wait.iter().len());
 }
 
 fn turn_update_end(

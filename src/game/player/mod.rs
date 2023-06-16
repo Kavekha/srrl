@@ -4,7 +4,7 @@ mod player_systems;
 mod components;
 pub mod cursor;
 
-pub use components::{Monster, Player, Npc, Stats};
+pub use components::Player;
 pub use cursor::Cursor;
 
 use self::{

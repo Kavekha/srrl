@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkAction, MoveToAction, ClearPendingAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, MoveToAction, ClearPendingAction, WalkOrHitAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -42,7 +42,7 @@ pub fn player_mouse_input(
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared.");
+        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
     }
     if buttons.just_pressed(MouseButton::Left) {
         println!("Mouse button press Left");
@@ -53,7 +53,7 @@ pub fn player_mouse_input(
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared.");
+        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
         
         // MoveTo.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
@@ -63,7 +63,7 @@ pub fn player_mouse_input(
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_action.send(PlayerActionEvent);
-        println!("MoveToAction sent from player mouse input.");
+        println!("MoveToAction sent from player mouse input. Actor queue len is : {:?}", actor.0.len())
     }
 }
 
@@ -109,10 +109,10 @@ pub fn player_input(
             }
         }
 
-        let action = WalkAction(entity, destination);
+        //let action = WalkAction(entity, destination);
+        let action = WalkOrHitAction(entity, destination);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
-        println!("Keyboard: WalkAction: PlayeractionEvent sent 1");
         ev_action.send(PlayerActionEvent);
         println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
     }

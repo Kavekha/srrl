@@ -63,12 +63,13 @@ pub fn plan_melee(
 ) {
     //println!("Plan melee!");
     let Some(entity) = queue.0.get(0) else { return };
-    let Ok((mut actor, _melee)) = query.get_mut(*entity) else { return };
+    let Ok((mut actor, melee)) = query.get_mut(*entity) else { return };
     let Ok(player_position) = player_query.get_single() else { return };
     //println!("Plan Melee: Player is at : {:?}", player_position.v);
     let action = Box::new(MeleeHitAction{
         attacker: *entity,
         target: player_position.v,
+        damage: melee.damage
     });
     actor.0.push((action, NPC_ATTACK_SCORE_DEFAULT))
 }

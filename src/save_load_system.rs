@@ -11,8 +11,8 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier};
-use crate::game::player::{Stats, Player, Npc, Monster, };
+use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier, Stats, Npc, Monster};
+use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
 use crate::states::{GameState, AppState};
@@ -71,10 +71,10 @@ struct SaveEntity {
     monster: bool,
     piece: Option<Piece>,
     position: Option<BoardPosition>,
-    health: bool,
+    health: Option<Health>,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
     walk: bool,
-    melee: bool,
+    melee: Option<Melee>,
     occupier: bool,
 }
 
@@ -133,8 +133,8 @@ impl SaveState {
                         piece: world.get::<Piece>(*current_entity).cloned(),
                         position: world.get::<BoardPosition>(*current_entity).cloned(),
                         walk: world.get::<Walk>(*current_entity).is_some(),
-                        health: world.get::<Health>(*current_entity).is_some(),
-                        melee: world.get::<Melee>(*current_entity).is_some(),
+                        health: world.get::<Health>(*current_entity).cloned(),
+                        melee: world.get::<Melee>(*current_entity).cloned(),
                         occupier: world.get::<Occupier>(*current_entity).is_some(),
                     });
                     println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
@@ -246,11 +246,11 @@ pub fn load_game(
         if entity.walk {
             e.insert(Walk);
         }
-        if entity.health {
-            e.insert(Health);
+        if let Some(health) = entity.health {
+            e.insert(health);
         }
-        if entity.melee {
-            e.insert(Melee);
+        if let Some(melee) = entity.melee {
+            e.insert(melee);
         }
         if entity.occupier {
             e.insert(Occupier);
