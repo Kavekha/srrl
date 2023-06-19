@@ -1,18 +1,9 @@
-use bevy::{prelude::*, a11y::{AccessibilityNode, accesskit::{NodeBuilder, Role}}};
+use bevy::prelude::*;
 
 use crate::{game::{pieces::components::Health, player::Player}, globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
 
-
-const INTERFACE_GLOBAL_HEIGHT: f32 = 40.;
-const INTERFACE_GLOBAL_WIDTH: f32 = 96.;
-const INTERFACE_NAME_HEIGHT: f32 = 32.;
-const INTERFACE_NAME_WIDTH: f32 = 20.;
-
-const INTERFACE_HP_BLOCK_HEIGHT: f32 = 32.;
-const INTERFACE_HP_BLOCK_WIDTH: f32 = 300.;
-const INTERFACE_HP_CHUNK_MARGIN: f32 = 2.;
-const INTERFACE_HP_CHUNK_HEIGHT: f32 = 24.;
-const INTERFACE_HP_CHUNK_WIDTH: f32 = 16.;
+const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
+const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
 
 const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
@@ -21,18 +12,6 @@ const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
 #[derive(Component)]
 pub struct InterfaceGame;
-
-#[derive(Component)]
-pub struct InterfacePlayerName;
-
-#[derive(Component)]
-pub struct InterfaceHealthChunk;
-
-
-#[derive(Component, Default)]
-struct ScrollingList {
-    position: f32,
-}
 
 
 
@@ -67,23 +46,8 @@ pub fn draw_interface(
             ..default()
         },
         ..default()
-    }).id();  
+    }).insert(InterfaceGame).id();  
 
- /* 
-    let name_container = commands.spawn(NodeBundle {
-        style: Style {
-            position_type: PositionType::Relative,
-            width: Val::Percent(20.0),
-            height: Val::Percent(10.0),
-            justify_content: JustifyContent::FlexStart,
-            align_items: AlignItems::FlexEnd,
-            bottom: Val::Px(10.),
-            ..default()
-        },
-        ..default()
-    }).id();  
- 
-*/
     let player_name_tag = commands.spawn((
         TextBundle::from_section(
             player_name,
@@ -101,7 +65,7 @@ pub fn draw_interface(
         // not button/list item text, this is necessary
         // for accessibility to treat the text accordingly.
         Label,
-        InterfaceGame,
+        //InterfaceGame,
     )).id();
 
 
@@ -115,7 +79,6 @@ pub fn draw_interface(
 
     let mut chunk_list:Vec<Entity> = Vec::new();
     for i in 1..=player_health_max {
-        println!("Chunk {:?}", i);
         let mut border_color = Color::rgb(0.5, 0.0, 0.0);
         let mut background_color = Color::rgb(0.9, 0.0, 0.0 );
         if i > player_health_current {
@@ -125,18 +88,15 @@ pub fn draw_interface(
 
         let chunk = commands.spawn(NodeBundle {
             style: Style {
-                width: Val::Px(8.0),
-                height: Val::Px(16.0),
-                //position_type: PositionType::Relative,
-                //justify_content: JustifyContent::FlexStart,
+                width: Val::Px(INTERFACE_HP_CHUNK_WIDTH),//(8.0),
+                height: Val::Px(INTERFACE_HP_CHUNK_HEIGHT), //(16.0),
                 margin: UiRect::all(Val::Px(1.)),   
                 flex_grow: 8.0,
                 bottom: Val::Px(8.),
                 border: UiRect::all(Val::Px(2.)),
                 ..default()
             },
-            border_color: border_color.into(),  // Color::rgb(0.5, 0.0, 0.0).into(), //Color::RED.into(),
-            //background_color: Color::rgb(1.0, 0.0, 0.3).into(),
+            border_color: border_color.into(), 
             ..default()
         })
         .with_children(|parent| {
@@ -145,15 +105,13 @@ pub fn draw_interface(
                     width: Val::Percent(100.0),
                     height: Val::Percent(100.0),
                     flex_grow: 8.0,
-                    //width: Val::Px(6.0),
-                    //height: Val::Px(14.0),
                     ..default()
                 },
-                background_color: background_color.into(), //Color::rgb(0.9, 0.0, 0.0 ).into(),
+                background_color: background_color.into(),
                 ..default()
             });  
         }).id();
-        commands.entity(chunk).insert(InterfaceGame);
+        //commands.entity(chunk).insert(InterfaceGame);
         chunk_list.push(chunk);
     }
     
