@@ -62,6 +62,7 @@ pub fn draw_interface(
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
             justify_content: JustifyContent::FlexStart,
+            align_items: AlignItems::FlexEnd,
             bottom: Val::Px(0.),
             ..default()
         },
@@ -93,8 +94,7 @@ pub fn draw_interface(
             },
         )
         .with_style(Style {
-            margin: UiRect::all(Val::Px(5.)),            
-            bottom: Val::Px(10.),
+            margin: UiRect::all(Val::Px(8.)),            
             ..default()
         }),
         // Because this is a distinct label widget and
@@ -107,14 +107,6 @@ pub fn draw_interface(
 
     let chunk_container = commands.spawn(NodeBundle {
         style: Style {
-            position_type: PositionType::Relative,
-            width: Val::Percent(10.0),
-            height: Val::Percent(10.0),
-            //justify_content: JustifyContent::FlexStart,
-            //align_content: AlignContent::FlexEnd,
-            //align_items: AlignItems::FlexEnd,
-            //flex_direction: FlexDirection::Row,
-            //bottom: Val::Px(0.),
             ..default()
         },
         ..default()
@@ -137,8 +129,9 @@ pub fn draw_interface(
                 height: Val::Px(16.0),
                 //position_type: PositionType::Relative,
                 //justify_content: JustifyContent::FlexStart,
+                margin: UiRect::all(Val::Px(1.)),   
                 flex_grow: 8.0,
-                //bottom: Val::Px(10.),
+                bottom: Val::Px(8.),
                 border: UiRect::all(Val::Px(2.)),
                 ..default()
             },
