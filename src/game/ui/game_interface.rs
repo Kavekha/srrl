@@ -197,26 +197,31 @@ pub fn draw_enemy_health(
     let (camera, camera_transform) = camera_q.single();
 
     for (health, transform) in enemies_q.iter() {
-        println!("Enemy health is {:?}/{:?}, position is {:?}", health.current, health.max, transform.translation);
+        //println!("Enemy health is {:?}/{:?}, position is {:?}", health.current, health.max, transform.translation);
         println!("Enemy position on screen is : {:?}", camera.world_to_viewport(camera_transform, transform.translation));
 
-        let mut x = 0.0;
+        let mut x= 0.0;
         let mut y = 0.0;
         if let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation) {
             (x, y) = (screen_position.x, screen_position.y);
         }
-        
+
+
         let chunk_container = commands.spawn(NodeBundle {
             style: Style {
                 top: Val::Px(y),
                 left: Val::Px(x),
-                right: Val::Px(x + 200.0),
-                bottom: Val::Px(y + 20.0),
+                bottom: Val::Px(y + 10.0),
+                right: Val::Px(x + 80.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Column,
+                position_type: PositionType::Absolute,
                 ..default()
             },
             ..default()
         }).id();  
-        
+
         let mut chunk_list:Vec<Entity> = Vec::new();
         for i in 1..=health.max {
             let mut border_color = Color::rgb(0.5, 0.0, 0.0);
@@ -228,8 +233,8 @@ pub fn draw_enemy_health(
     
             let chunk = commands.spawn(NodeBundle {
                 style: Style {
-                    width: Val::Px(INTERFACE_HP_CHUNK_WIDTH),//(8.0),
-                    height: Val::Px(INTERFACE_HP_CHUNK_HEIGHT), //(16.0),
+                    width: Val::Px(INTERFACE_HP_CHUNK_WIDTH / 2.0),//(8.0),
+                    height: Val::Px(INTERFACE_HP_CHUNK_HEIGHT/ 2.0), //(16.0),
                     margin: UiRect::all(Val::Px(1.)),   
                     flex_grow: 8.0,
                     bottom: Val::Px(8.),
