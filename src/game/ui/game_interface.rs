@@ -61,7 +61,7 @@ pub fn draw_interface(
             position_type: PositionType::Absolute,
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
-            justify_content: JustifyContent::SpaceBetween,
+            justify_content: JustifyContent::FlexStart,
             bottom: Val::Px(0.),
             ..default()
         },
@@ -169,7 +169,7 @@ pub fn draw_interface(
         commands.entity(chunk_container).add_child(chunk);
     }
     commands.entity(container).add_child(player_name_tag);
-    commands.entity(player_name_tag).add_child(chunk_container);
+    commands.entity(container).add_child(chunk_container);
     
   
 }
