@@ -44,6 +44,17 @@ pub fn draw_interface(
 ) {
     clear_interface(&mut commands, interface_query);
 
+    let mut player_name = "Unkwnown Runner";
+    let mut player_health_max = INTERFACE_HP_CHUNK_MAX;
+    let mut player_health_current = INTERFACE_HP_CHUNK_MAX;
+    if let Ok(player_infos) = player_info_query.get_single() {
+        let (_p_entity, p_name, p_health) = player_infos;
+        player_name = p_name.as_str();
+        player_health_max = p_health.max;
+        player_health_current = p_health.current;
+    }   
+
+
     // Interface container.
     let container = commands.spawn(NodeBundle {
         style: Style {
@@ -51,38 +62,27 @@ pub fn draw_interface(
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
             justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::FlexEnd,
             bottom: Val::Px(0.),
             ..default()
         },
         ..default()
     }).id();  
 
-    /* 
+ /* 
     let name_container = commands.spawn(NodeBundle {
         style: Style {
-            position_type: PositionType::Absolute,
-            width: Val::Percent(10.0),
+            position_type: PositionType::Relative,
+            width: Val::Percent(20.0),
             height: Val::Percent(10.0),
             justify_content: JustifyContent::FlexStart,
             align_items: AlignItems::FlexEnd,
-            bottom: Val::Px(0.),
+            bottom: Val::Px(10.),
             ..default()
         },
         ..default()
     }).id();  
-    */
-
-    let mut player_name = "Unkwnown Runner";
-    let mut player_health_max = INTERFACE_HP_CHUNK_MAX;
-    let mut player_health_current = INTERFACE_HP_CHUNK_MAX;
-    if let Ok(player_infos) = player_info_query.get_single() {
-        let (p_entity, p_name, p_health) = player_infos;
-        player_name = p_name.as_str();
-        player_health_max = p_health.max;
-        player_health_current = p_health.current;
-    }   
-
+ 
+*/
     let player_name_tag = commands.spawn((
         TextBundle::from_section(
             player_name,
@@ -93,7 +93,8 @@ pub fn draw_interface(
             },
         )
         .with_style(Style {
-            margin: UiRect::all(Val::Px(5.)),
+            margin: UiRect::all(Val::Px(5.)),            
+            bottom: Val::Px(10.),
             ..default()
         }),
         // Because this is a distinct label widget and
@@ -102,6 +103,23 @@ pub fn draw_interface(
         Label,
         InterfaceGame,
     )).id();
+
+
+    let chunk_container = commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Relative,
+            width: Val::Percent(10.0),
+            height: Val::Percent(10.0),
+            //justify_content: JustifyContent::FlexStart,
+            //align_content: AlignContent::FlexEnd,
+            //align_items: AlignItems::FlexEnd,
+            //flex_direction: FlexDirection::Row,
+            //bottom: Val::Px(0.),
+            ..default()
+        },
+        ..default()
+    }).id();  
+ 
 
     let mut chunk_list:Vec<Entity> = Vec::new();
     for i in 1..=player_health_max {
@@ -117,10 +135,10 @@ pub fn draw_interface(
             style: Style {
                 width: Val::Px(8.0),
                 height: Val::Px(16.0),
-                position_type: PositionType::Relative,
-                justify_content: JustifyContent::FlexStart,
+                //position_type: PositionType::Relative,
+                //justify_content: JustifyContent::FlexStart,
                 flex_grow: 8.0,
-                bottom: Val::Px(10.),
+                //bottom: Val::Px(10.),
                 border: UiRect::all(Val::Px(2.)),
                 ..default()
             },
@@ -147,41 +165,13 @@ pub fn draw_interface(
     }
     
 
-    commands.entity(container).add_child(player_name_tag);
     for chunk in chunk_list {
-        commands.entity(container).add_child(chunk);
+        commands.entity(chunk_container).add_child(chunk);
     }
+    commands.entity(container).add_child(player_name_tag);
+    commands.entity(player_name_tag).add_child(chunk_container);
     
-
-
-
-    /* 
-    let container = commands.spawn((
-        InterfaceGame,
-        NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                border: UiRect {bottom:Val::Px(0.), left: Val::Px(0.), right: Val::Px(0.), top: Val::Px(0.)},
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                size: Size::new(Val::Percent(100.), Val::Px(INTERFACE_GLOBAL_HEIGHT)),
-                ..Default::default()
-            },
-            ..Default::default()
-        }))
-        .id();
-        
-    for i in 0..INTERFACE_HP_CHUNK_MAX {
-        let mut margin = UiRect::all(Val::Px(INTERFACE_HP_CHUNK_MARGIN));
-        margin.bottom = Val::Px(INTERFACE_HP_CHUNK_MARGIN);
-        let chunk = helpers::get_chunk(
-            &mut commands,
-            Size::new(Val::Px(INTERFACE_HP_CHUNK_WIDTH, Val::Px(INTERFACE_HP_CHUNK_HEIGHT)),
-            margin,
-            &assets.textures["hp_chunk"],
-        ));
-    }
-    */
+  
 }
 
 fn clear_interface(
