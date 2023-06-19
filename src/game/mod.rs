@@ -7,6 +7,7 @@ use self::player::PlayerPlugin;
 use self::tileboard::TileBoardPlugin;
 use self::actions::ActionsPlugin;
 use self::player::cursor::CursorPlugin;
+use self::ui::UiPlugin;
 
 pub mod player;
 pub mod pieces;
@@ -14,6 +15,7 @@ pub mod actions;
 pub mod tileboard;
 pub mod manager;
 pub mod rules;
+pub mod ui;
 
 pub use tileboard::components::{Tile, GridPosition};
 
@@ -56,6 +58,7 @@ impl Plugin for GamePlugin {
             .add_plugin(ActionsPlugin)
             .add_plugin(ManagerPlugin)
             .add_plugin(CursorPlugin)
+            .add_plugin(UiPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>) //TODO : Remove NPC ? Add a full "end game" function?

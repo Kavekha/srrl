@@ -20,3 +20,6 @@ pub struct PathAnimator {
     pub path:VecDeque<Vec3>,
     pub wait_anim: bool
 }
+
+#[derive(Component)]
+pub struct GameInterface;

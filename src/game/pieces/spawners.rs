@@ -46,7 +46,7 @@ pub fn spawn_player(
     commands
         .entity(player)
         .insert(Player)
-        .insert(Name::new("Player"))
+        .insert(Name::new("The Shadowrunner"))
         //TODO : Shadowrun stats
         .insert(Stats {
             power: 3,         

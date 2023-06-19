@@ -31,8 +31,8 @@ impl Plugin for ActionsPlugin {
 
             //Planning
             .configure_sets(Update, (ActionSet::Planning, ActionSet::Late).in_set(TurnSet::Logic))
-
-            .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()).before(ActionSet::Late))    
+            .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()).before(ActionSet::Late))  
+              
             .add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             

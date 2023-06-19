@@ -8,7 +8,7 @@ use crate::{
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF,},
     game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
 
-use super::{get_world_position, get_world_z, get_iso_y_modifier_from_elevation, components::{PathAnimator}};
+use super::components::PathAnimator;
 
 
 pub fn melee_animation(
@@ -26,12 +26,17 @@ pub fn melee_animation(
             let Ok(base_position) = query_position.get(action.attacker) else { continue };
             let Ok(base_piece) = query_piece.get(action.attacker) else { continue };
 
+            let base = get_final_world_position(base_position.v, base_piece.size);
+            let target = get_final_world_position(action.target, base_piece.size);
+
+            /*
             let (position_x, mut position_y) = get_world_position(&base_position.v);
             position_y += get_iso_y_modifier_from_elevation(base_piece.size);
             let base = Vec3::new(position_x, position_y, get_world_z(&base_position.v)); 
 
             let (position_x, position_y) = get_world_position(&action.target);
             let target = Vec3::new(position_x, position_y, get_world_z(&action.target)); 
+             */
 
             //println!("Melee attack anim start from {:?} and goes to {:?}", base, target);
 
@@ -122,7 +127,7 @@ pub fn spawn_piece_renderer(
             });
         
             if let Some(_player) = player {
-                //println!("INFO: player rendered at {:?} for grid position {:?}.", (x_debug, y_debug), position.v);
+                println!("player rendered.");
             }
         
     }
