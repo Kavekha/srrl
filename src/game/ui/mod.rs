@@ -5,7 +5,7 @@ pub mod game_interface;
 
 use crate::{states::{EngineState, GameState}, despawn_screen};
 
-use self::game_interface::{draw_interface, InterfaceGame};
+use self::game_interface::{draw_interface, InterfaceGame, draw_enemy_health};
 
 use super::actions::ActionExecutedEvent;
 
@@ -17,10 +17,12 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(EngineState::PlayerInput), turn_update_end)
             .add_systems(Update, turn_update_end.run_if(on_event::<ActionExecutedEvent>()).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, draw_interface.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, draw_enemy_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::GameMap)))
             .add_systems(OnExit(GameState::GameMap), despawn_screen::<InterfaceGame>)
             ;
     }
 }
+
 
 #[derive(Event)]
 pub struct ReloadUiEvent;

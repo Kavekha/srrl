@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{pieces::components::Health, player::Player}, globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
+use crate::{game::{pieces::components::{Health, Monster}, player::Player, tileboard::components::BoardPosition}, globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
 
 const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
 const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
@@ -13,6 +13,69 @@ const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 #[derive(Component)]
 pub struct InterfaceGame;
 
+
+fn clear_interface(
+    commands: &mut Commands,
+    interface_query: Query<Entity, With<InterfaceGame>>
+) {
+    for entity in interface_query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+/// TODO : It seems that this doesnt work well in an existing node. If used in draw_interface, all will break.
+fn spawn_health_meter(
+    commands: &mut Commands,
+    max_health: u32,
+    current_health: u32
+) -> Entity {
+    let chunk_container = commands.spawn(NodeBundle {
+        style: Style {
+            ..default()
+        },
+        ..default()
+    }).id();  
+ 
+
+    let mut chunk_list:Vec<Entity> = Vec::new();
+    for i in 1..=max_health {
+        let mut border_color = Color::rgb(0.5, 0.0, 0.0);
+        let mut background_color = Color::rgb(0.9, 0.0, 0.0 );
+        if i > current_health {
+            border_color = Color::rgb(0.1, 0.1, 0.1);
+            background_color = Color::rgba(0.0, 0.0, 0.0, 1.0 );
+        }
+
+        let chunk = commands.spawn(NodeBundle {
+            style: Style {
+                width: Val::Px(INTERFACE_HP_CHUNK_WIDTH),//(8.0),
+                height: Val::Px(INTERFACE_HP_CHUNK_HEIGHT), //(16.0),
+                margin: UiRect::all(Val::Px(1.)),   
+                flex_grow: 8.0,
+                bottom: Val::Px(8.),
+                border: UiRect::all(Val::Px(2.)),
+                ..default()
+            },
+            border_color: border_color.into(), 
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn(NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    flex_grow: 8.0,
+                    ..default()
+                },
+                background_color: background_color.into(),
+                ..default()
+            });  
+        }).id();
+        commands.entity(chunk).insert(InterfaceGame);
+        chunk_list.push(chunk);
+    }
+    chunk_container
+}
 
 
 pub fn draw_interface(
@@ -68,7 +131,6 @@ pub fn draw_interface(
         //InterfaceGame,
     )).id();
 
-
     let chunk_container = commands.spawn(NodeBundle {
         style: Style {
             ..default()
@@ -119,17 +181,94 @@ pub fn draw_interface(
     for chunk in chunk_list {
         commands.entity(chunk_container).add_child(chunk);
     }
+
     commands.entity(container).add_child(player_name_tag);
     commands.entity(container).add_child(chunk_container);
     
   
 }
 
-fn clear_interface(
-    commands: &mut Commands,
-    interface_query: Query<Entity, With<InterfaceGame>>
-) {
-    for entity in interface_query.iter() {
-        commands.entity(entity).despawn_recursive();
+
+pub fn draw_enemy_health(
+    mut commands: Commands,
+    enemies_q: Query<(&Health, &Transform), With<Monster>>,
+    camera_q: Query<(&Camera, &GlobalTransform)>,
+){
+    let (camera, camera_transform) = camera_q.single();
+
+    for (health, transform) in enemies_q.iter() {
+        println!("Enemy health is {:?}/{:?}, position is {:?}", health.current, health.max, transform.translation);
+        println!("Enemy position on screen is : {:?}", camera.world_to_viewport(camera_transform, transform.translation));
+
+        let mut x = 0.0;
+        let mut y = 0.0;
+        if let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation) {
+            (x, y) = (screen_position.x, screen_position.y);
+        }
+        
+        let chunk_container = commands.spawn(NodeBundle {
+            style: Style {
+                top: Val::Px(y),
+                left: Val::Px(x),
+                right: Val::Px(x + 200.0),
+                bottom: Val::Px(y + 20.0),
+                ..default()
+            },
+            ..default()
+        }).id();  
+        
+        let mut chunk_list:Vec<Entity> = Vec::new();
+        for i in 1..=health.max {
+            let mut border_color = Color::rgb(0.5, 0.0, 0.0);
+            let mut background_color = Color::rgb(0.9, 0.0, 0.0 );
+            if i > health.current {
+                border_color = Color::rgb(0.1, 0.1, 0.1);
+                background_color = Color::rgba(0.0, 0.0, 0.0, 1.0 );
+            }
+    
+            let chunk = commands.spawn(NodeBundle {
+                style: Style {
+                    width: Val::Px(INTERFACE_HP_CHUNK_WIDTH),//(8.0),
+                    height: Val::Px(INTERFACE_HP_CHUNK_HEIGHT), //(16.0),
+                    margin: UiRect::all(Val::Px(1.)),   
+                    flex_grow: 8.0,
+                    bottom: Val::Px(8.),
+                    border: UiRect::all(Val::Px(2.)),
+                    ..default()
+                },
+                border_color: border_color.into(), 
+                ..default()
+            })
+            .with_children(|parent| {
+                parent.spawn(NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        flex_grow: 8.0,
+                        ..default()
+                    },
+                    background_color: background_color.into(),
+                    ..default()
+                });  
+            }).id();
+            commands.entity(chunk).insert(InterfaceGame);
+            chunk_list.push(chunk);
+        }
+        
+    
+        for chunk in chunk_list {
+            commands.entity(chunk_container).add_child(chunk);
+        }
+
+
     }
+
+    /* 
+    let mut coords_top_left = camera
+        .world_to_viewport(transform, Vec3::new(x, -0.6, 0.0))
+        .unwrap();
+    let mut coords_bottom_right = camera
+        .world_to_viewport(transform, Vec3::new(x + 1.0, -1.0, 0.0))
+        .unwrap();
+*/
 }
