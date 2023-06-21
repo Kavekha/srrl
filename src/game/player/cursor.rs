@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{vectors::Vector2Int, states::GameState, despawn_screen, globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF}, render::{components::GameCursorRender}};
+use crate::{vectors::Vector2Int, states::GameState, globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF}};
 
 
 pub struct CursorPlugin;
@@ -10,9 +10,11 @@ impl Plugin for CursorPlugin{
         app 
             .insert_resource(Cursor{grid_position:Vector2Int{x:0,y:0},world_position:Vec3::new(0.0, 0.0, 0.0)}) 
             .add_systems(Update, cursor_position.run_if(in_state(GameState::GameMap)))
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameCursorRender>);  
+        ;
     }
 }
+
+
 
 #[derive(Resource, Component)]
 pub struct Cursor {    

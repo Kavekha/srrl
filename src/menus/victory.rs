@@ -1,8 +1,8 @@
 use bevy::{prelude::*};
 
-use crate::{states::GameState, despawn_screen, globals::CHAR_SIZE, ascii::spawn_ascii_text};
+use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, game::clean_game_screen};
 
-use super::{components::OnScreenMenu, AsciiSheet, mainmenu::menu_camera};
+use super::{components::OnScreenMenu, AsciiSheet, mainmenu::menu_camera, clean_menu};
 
 
 
@@ -14,7 +14,8 @@ impl Plugin for VictoryPlugin {
             .add_systems(OnEnter(GameState::VictoryScreen), display_victory_screen)
             .add_systems(OnEnter(GameState::VictoryScreen), menu_camera)
             .add_systems(Update, victory_menu_input.run_if(in_state(GameState::VictoryScreen)))
-            .add_systems(OnExit(GameState::VictoryScreen), despawn_screen::<OnScreenMenu>); 
+            .add_systems(OnExit(GameState::VictoryScreen), clean_menu); 
+            //.add_systems(OnExit(GameState::VictoryScreen), despawn_screen::<OnScreenMenu>); 
     }
 }
 
