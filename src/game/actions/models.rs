@@ -174,9 +174,17 @@ impl Action for MeleeHitAction {
         if target_entities.len() == 0 { return Err(()) }; 
 
         //TODO : SR stats
+        if let Some(entity_name) = world.get::<Name>(self.attacker) {
+            println!("Attacker is : {:?}", entity_name.as_str());
+        }
         let attacker_stat = world.get::<Stats>(self.attacker).ok_or(())?;
         let mut result = Vec::new();
-        for (target_entity, _target_position, target_stats) in target_entities.iter() {            
+        for (target_entity, _target_position, target_stats) in target_entities.iter() {     
+            // Can't hit yourself.
+            if self.attacker == * target_entity { continue; }   
+            if let Some(target_name) = world.get::<Name>(* target_entity) {
+                println!("Defender is : {:?}", target_name.as_str());
+            }
             //TODO: Add to Stats component.
             let dice_roll = roll_dices_against(attacker_stat.attack, target_stats.dodge);   
             let dmg = dice_roll.success.saturating_add(attacker_stat.power as u32);

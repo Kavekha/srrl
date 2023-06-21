@@ -29,6 +29,12 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 ];
 //
 
+/* 
+pub fn clear_player_pending_actions_2(
+    mut player_queue: ResMut<PlayerActions>, 
+){
+    player_queue.0.clear();
+}*/
 
 pub fn player_mouse_input(
     buttons: Res<Input<MouseButton>>,
@@ -37,31 +43,28 @@ pub fn player_mouse_input(
     res_cursor: Res<Cursor>,
     mut queue: ResMut<ActorQueue>,
     mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,    
+    //mut player_queue: ResMut<PlayerActions>, 
 ){
     if buttons.just_pressed(MouseButton::Right) {
         ev_cancel.send(CancelPlayerPendingActionsEvent);
-
-       
-        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
-        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
-         /* 
-        let action = ClearPendingAction(entity);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        queue.0 = VecDeque::from([entity]);
-        */
-        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
     }
     if buttons.just_pressed(MouseButton::Left) {
         println!("Mouse button press Left");
-        
         // On annule les actions en attente:
+        ev_cancel.send(CancelPlayerPendingActionsEvent);
+        println!("Canceling current actions....");
+    }
+    if buttons.just_released(MouseButton::Left) {
+        /*
         //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
-        
+         */
+
+        println!("Doing new actions instead...");
         // MoveTo.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let destination = res_cursor.grid_position;
