@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, MoveToAction, ClearPendingAction, WalkOrHitAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, MoveToAction, ClearPendingAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -29,19 +29,26 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 ];
 //
 
+
 pub fn player_mouse_input(
     buttons: Res<Input<MouseButton>>,
     mut ev_action: EventWriter<PlayerActionEvent>,
     mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
     res_cursor: Res<Cursor>,
     mut queue: ResMut<ActorQueue>,
+    mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,    
 ){
     if buttons.just_pressed(MouseButton::Right) {
+        ev_cancel.send(CancelPlayerPendingActionsEvent);
+
+       
         //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
+         /* 
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
+        */
         println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
     }
     if buttons.just_pressed(MouseButton::Left) {

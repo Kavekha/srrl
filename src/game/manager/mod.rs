@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{states::{GameState, EngineState, TurnSet}, render::GraphicsWaitEvent};
 
-use super::{player::{PlayerActionEvent, Player}, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent, PlayerActions, ActorQueue}, pieces::components::Actor};
+use super::{player::{PlayerActionEvent, Player}, actions::{ActionsCompleteEvent, InvalidPlayerActionEvent, TickEvent, PlayerActions, ActorQueue, CancelPlayerPendingActionsEvent}, pieces::components::Actor};
 
 
 pub struct ManagerPlugin;
@@ -20,6 +20,7 @@ impl Plugin for ManagerPlugin {
 
             .add_systems(OnEnter(EngineState::PlayerInput), turn_player_pending_actions)
             .add_systems(Update, turn_update_start.run_if(on_event::<PlayerActionEvent>()))
+            .add_systems(Update, clear_player_pending_actions.run_if(on_event::<CancelPlayerPendingActionsEvent>()))
 
             .add_systems(Update, turn_update_end.run_if(on_event::<ActionsCompleteEvent>()))
             .add_systems(Update, turn_update_cancel.run_if(on_event::<InvalidPlayerActionEvent>()))
@@ -27,6 +28,15 @@ impl Plugin for ManagerPlugin {
             .add_systems(Update, tick.run_if(in_state(EngineState::TurnUpdate)).in_set(TurnSet::Tick))
             ;
     }
+}
+
+fn clear_player_pending_actions(
+    //mut next_state: ResMut<NextState<EngineState>>,
+    mut player_queue: ResMut<PlayerActions>,  
+) {
+    player_queue.0.clear();
+    println!("Event! Clear Player Pending action!");
+    //next_state.set(EngineState::PlayerInput);
 }
 
 fn turn_player_pending_actions(

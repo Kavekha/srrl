@@ -27,6 +27,7 @@ impl Plugin for ActionsPlugin {
             .add_event::<InvalidPlayerActionEvent>()
             .add_event::<PlayerActionEvent>()
             .add_event::<ActionExecutedEvent>()
+            .add_event::<CancelPlayerPendingActionsEvent>()
  
 
             //Planning
@@ -73,3 +74,7 @@ pub struct ActionsCompleteEvent;
 
 #[derive(Event)]
 pub struct ActionExecutedEvent(pub Box<dyn Action>);
+
+
+#[derive(Event)]
+pub struct CancelPlayerPendingActionsEvent;

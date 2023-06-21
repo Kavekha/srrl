@@ -13,7 +13,7 @@ pub trait Action: Send + Sync {
     fn as_any(&self) -> &dyn Any;       //https://maciejglowka.com/blog/bevy-roguelike-tutorial-devlog-part-7-better-animation/
 }
 
-
+ 
 /// Following Actions after an action resolution.
 #[derive(Default, Resource)]
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
