@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{game::{pieces::components::{Health, Monster}, player::Player, tileboard::components::BoardPosition}, globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
+use crate::{
+    game::{pieces::components::{Health, Monster}, player::Player},
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF}
+};
 
 const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
 const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
@@ -13,15 +16,31 @@ const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 #[derive(Component)]
 pub struct InterfaceGame;
 
+#[derive(Component)]
+pub struct UiEnemyHp;
+
 
 fn clear_interface(
     commands: &mut Commands,
-    interface_query: Query<Entity, With<InterfaceGame>>
+    interface_query: Query<Entity, With<InterfaceGame>>,
 ) {
     for entity in interface_query.iter() {
         commands.entity(entity).despawn_recursive();
     }
 }
+
+fn clear_enemy_hp_ui(
+    commands: &mut Commands,    
+    interface_query: Query<Entity, With<UiEnemyHp>>,
+) {
+    for entity in interface_query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+
+
+
 
 /// TODO : It seems that this doesnt work well in an existing node. If used in draw_interface, all will break.
 fn spawn_health_meter(
@@ -192,35 +211,52 @@ pub fn draw_interface(
 pub fn draw_enemy_health(
     mut commands: Commands,
     enemies_q: Query<(&Health, &Transform), With<Monster>>,
-    camera_q: Query<(&Camera, &GlobalTransform)>,
+    camera_q: Query<(&Camera, &GlobalTransform)>,    
+    interface_query: Query<Entity, With<UiEnemyHp>>,
 ){
+    clear_enemy_hp_ui(&mut commands, interface_query);
+
     let (camera, camera_transform) = camera_q.single();
+    let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+
+    //println!("Camera physical viewport size is {:?}", screen_size);
 
     for (health, transform) in enemies_q.iter() {
-        //println!("Enemy health is {:?}/{:?}, position is {:?}", health.current, health.max, transform.translation);
-        println!("Enemy position on screen is : {:?}", camera.world_to_viewport(camera_transform, transform.translation));
+        let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
+        //If not in screen, we don't display.
+        if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
+      
+        let left =screen_position.x - (TILE_WIDTH_HALF as f32);
+        //let right =screen_size.x - screen_position.x;
+        let top =screen_position.y - (TILE_HEIGHT_HALF as f32); // REMEMBER : world = y goes from bottom to top (++)
+        //let bottom = screen_size.y - screen_position.y;
+        let width = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
+        let height = INTERFACE_HP_CHUNK_HEIGHT/ 2.0;
+        //println!("Character screen position is : {:?}", screen_position);
+        //println!("left : {:?}, right : {:?}, top : {:?}, bottom : {:?}, width: {:?}, height: {:?}", left ,right ,top ,bottom, width, height );
 
-        let mut x= 0.0;
-        let mut y = 0.0;
-        if let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation) {
-            (x, y) = (screen_position.x, screen_position.y);
-        }
 
+        let grow = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0;
 
         let chunk_container = commands.spawn(NodeBundle {
-            style: Style {
-                top: Val::Px(y),
-                left: Val::Px(x),
-                bottom: Val::Px(y + 10.0),
-                right: Val::Px(x + 80.0),
+            style: Style {                
+                left: Val::Px(left),
+                //right: Val::Px(right),
+                top: Val::Px(top),
+                //bottom: Val::Px(bottom),
+                width: Val::Px(width),
+                height: Val::Px(height),
+                flex_grow: grow,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::Column,
+                flex_direction: FlexDirection::Row,
                 position_type: PositionType::Absolute,
                 ..default()
             },
+            //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
             ..default()
         }).id();  
+        commands.entity(chunk_container).insert(UiEnemyHp);
 
         let mut chunk_list:Vec<Entity> = Vec::new();
         for i in 1..=health.max {
@@ -256,7 +292,7 @@ pub fn draw_enemy_health(
                     ..default()
                 });  
             }).id();
-            commands.entity(chunk).insert(InterfaceGame);
+            //commands.entity(chunk).insert(InterfaceGame);
             chunk_list.push(chunk);
         }
         
