@@ -1,11 +1,11 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{states::{AppState, GameState}, despawn_screen, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file};
+use crate::{states::{AppState, GameState}, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, game::clean_game_screen};
 
 use super::{
     components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
     NineSlice, AsciiSheet, 
-    menus_input::{menu_input_mouse, main_menu_input}, 
+    menus_input::{menu_input_mouse, main_menu_input}, clean_menu, 
 };
 
 
@@ -26,7 +26,7 @@ impl Plugin for MainMenuPlugin{
             .add_systems(Update, hightligh_menu_button.run_if(in_state(AppState::MainMenu)))
 
             
-            .add_systems(OnExit(AppState::MainMenu), despawn_screen::<OnScreenMenu>);
+            .add_systems(OnExit(AppState::MainMenu), clean_menu);
     }
 }
 

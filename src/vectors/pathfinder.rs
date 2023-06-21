@@ -24,7 +24,7 @@ pub fn find_path(
             let n = v + dir;
             //let new_cost = cost + 1;
             let dir_cost = get_direction_cost(dir);
-            let new_cost = cost + dir_cost;      // TODO: Crado: on additionne x + y et on retourne la valeur. Diagonal = 2 donc cost > 1.
+            let new_cost = cost.saturating_add(dir_cost);   //Diagonal = 2 donc cost > 1.
             // Si !tiles.contains(&n), ca veut dire qu'on est hors map.
             if !tiles.contains(&n) { continue }
             // we allow the target to be a blocker

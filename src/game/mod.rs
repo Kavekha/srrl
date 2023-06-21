@@ -3,10 +3,11 @@ use bevy::prelude::*;
 
 use self::manager::ManagerPlugin;
 use self::pieces::components::Npc;
-use self::player::PlayerPlugin;
+use self::player::{PlayerPlugin, Player};
 use self::tileboard::TileBoardPlugin;
 use self::actions::ActionsPlugin;
 use self::player::cursor::CursorPlugin;
+use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 
 pub mod player;
@@ -20,11 +21,11 @@ pub mod ui;
 pub use tileboard::components::{Tile, GridPosition};
 
 
-use crate::despawn_screen;
 use crate::ecs_elements::MapGenHistory;
 use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc};
 use crate::game::tileboard::components::BoardPosition;
+use crate::render::components::{GameMapRender, GameCursorRender};
 use crate::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
@@ -61,9 +62,44 @@ impl Plugin for GamePlugin {
             .add_plugin(UiPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>) //TODO : Remove NPC ? Add a full "end game" function?
+            //.add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>) //TODO : Remove NPC ? Add a full "end game" function?
+            .add_systems(OnExit(GameState::GameMap), clean_game_screen)
             ;
     }
+}
+
+
+
+pub fn despawn_component<T: Component>(
+    to_despawn: Query<Entity, With<T>>, 
+    mut commands: Commands) {
+    for entity in &to_despawn {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn despawn_screen<T: Component>(
+    to_despawn: Query<Entity, With<T>>, 
+    commands: &mut Commands) {
+    for entity in &to_despawn {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+pub fn clean_game_screen(
+    mut commands: Commands,
+    despawn_npc: Query<Entity, With<Npc>>,    
+    despawn_gamemap: Query<Entity, With<GameMap>>,
+    despawn_gamemap_render: Query<Entity, With<GameMapRender>>,
+    despawn_player: Query<Entity, With<Player>>,
+    despawn_gamecursor: Query<Entity, With<GameCursorRender>>,
+    
+) {
+    despawn_screen(despawn_npc, &mut commands);
+    despawn_screen(despawn_gamemap, &mut commands);
+    despawn_screen(despawn_gamemap_render, &mut commands);    
+    despawn_screen(despawn_player, &mut commands);
+    despawn_screen(despawn_gamecursor, &mut commands);
 }
 
 

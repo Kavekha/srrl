@@ -1,8 +1,8 @@
 use bevy::{prelude::*};
 
-use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, despawn_screen,};
+use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, };
 
-use super::{components::OnScreenMenu, mainmenu::menu_camera, AsciiSheet};
+use super::{components::OnScreenMenu, mainmenu::menu_camera, AsciiSheet, clean_menu};
 
 
 
@@ -16,7 +16,7 @@ impl Plugin for GameOverPlugin {
             .add_systems(OnEnter(GameState::GameOverScreen), display_gameover_screen)
             .add_systems(OnEnter(GameState::GameOverScreen), menu_camera)
             .add_systems(Update, gameover_menu_input.run_if(in_state(GameState::GameOverScreen)))
-            .add_systems(OnExit(GameState::GameOverScreen), despawn_screen::<OnScreenMenu>);    //TODO : Despawn propre. Render
+            .add_systems(OnExit(GameState::GameOverScreen), clean_menu);    
     }
 }
 

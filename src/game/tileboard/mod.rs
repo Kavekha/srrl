@@ -7,7 +7,7 @@ pub use components::{GridPosition, Tile};
 
 use self::{system_map::spawn_map, components::GameMap};
 
-use crate::{states::GameState, despawn_screen, render::components::GameMapRender};
+use crate::{states::GameState, render::components::GameMapRender};
 
 
 
@@ -28,10 +28,6 @@ impl Plugin for TileBoardPlugin {
             ).chain().run_if(
                 in_state(GameState::MapGeneration)))       
             */
-
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMap>) 
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<GameMapRender>)       // RENDER   TODO
-
             ;  
     }
 }

@@ -12,8 +12,7 @@ use self::{
 };
 
 use crate::{
-    states::{GameState, EngineState}, 
-    despawn_screen
+    states::{GameState, EngineState}
 };
 
 
@@ -31,7 +30,7 @@ impl Plugin for PlayerPlugin{
             
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))
-            .add_systems(OnExit(GameState::GameMap), despawn_screen::<Player>);  
+            ;
     }
 }
 
