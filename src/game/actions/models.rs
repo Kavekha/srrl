@@ -4,7 +4,7 @@ use bevy::{prelude::*, ecs::system::SystemState};
 
 use crate::{
     map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, Stats, Monster, Melee},
-    tileboard::components::BoardPosition, actions::{PlayerActions}, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
+    tileboard::components::BoardPosition, actions::{PlayerActions, CancelPlayerPendingActionsEvent}, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -19,9 +19,11 @@ pub trait Action: Send + Sync {
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
 
+/* 
 pub struct ClearPendingAction(pub Entity);
 impl Action for ClearPendingAction {
     fn execute(&self, world:&mut World) -> Result<Vec<Box<dyn Action>>, ()> {
+        //TODO : How to do this with Event?
         if let Some(mut player_pending_actions) = world.get_resource_mut::<PlayerActions>() {
             player_pending_actions.0.clear();
             println!("ClearPendingAction: player queue removed.");
@@ -29,7 +31,7 @@ impl Action for ClearPendingAction {
         Err(()) // Doesnt count as a turn.
     }     
    fn as_any(&self) -> &dyn std::any::Any { self }
-}
+}*/
 
 pub struct MoveToAction(pub Entity, pub Vector2Int);
 impl Action for MoveToAction {
@@ -211,6 +213,13 @@ pub struct DamageAction(pub Entity, pub u32);   //target, dmg
 impl Action for DamageAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         println!("DamageAction: Execute!");
+        if let Some(_player) = world.get::<Player>(self.0) { 
+            //TODO : How to do this with Event?
+            if let Some(mut player_pending_actions) = world.get_resource_mut::<PlayerActions>() {
+                player_pending_actions.0.clear();
+                println!("ClearPendingAction: player queue removed.");
+            }
+        }
 
         //TODO : Stats vs Stats Shadowrun. Erzatz pour le moment.
         let Some(stats) = world.get::<Stats>(self.0) else { return Err(())};    //TODO: A surveiller. On pourra p-e se faire tabasser un jour sans Stat (Door and co)

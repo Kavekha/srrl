@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, MoveToAction, ClearPendingAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, MoveToAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -83,7 +83,8 @@ pub fn player_input(
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
     //mut ev_input: EventWriter<PlayerInputReadyEvent>,
-    mut ev_action: EventWriter<PlayerActionEvent>,  
+    mut ev_action: EventWriter<PlayerActionEvent>,      
+    mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
@@ -102,10 +103,14 @@ pub fn player_input(
 
         // On annule les actions en cours.
         //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
+        /*
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         println!("Player pending actions cleared.");
+        */
+        ev_cancel.send(CancelPlayerPendingActionsEvent);
+        println!("Keyboard Input: Canceling current actions....");
 
         let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
