@@ -1,6 +1,7 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
 
+use self::combat::{CombatPlugin, CombatState};
 use self::manager::ManagerPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player};
@@ -17,6 +18,7 @@ pub mod tileboard;
 pub mod manager;
 pub mod rules;
 pub mod ui;
+pub mod combat;
 
 pub use tileboard::components::{Tile, GridPosition};
 
@@ -60,6 +62,7 @@ impl Plugin for GamePlugin {
             .add_plugins(ManagerPlugin)
             .add_plugins(CursorPlugin)
             .add_plugins(UiPlugin)
+            .add_plugins(CombatPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)
@@ -149,7 +152,7 @@ fn init_new_game(
     commands.insert_resource(builder.build_data.map.clone());
 
     if !SHOW_MAPGEN_VISUALIZER {
-        game_state.set(GameState::Prerun); 
+        game_state.set(GameState::Prerun);  
     } else {
         game_state.set(GameState::MapGeneration);  
     }

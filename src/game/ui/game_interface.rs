@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{pieces::components::{Health, Monster}, player::Player},
+    game::{pieces::components::{Health, Monster}, player::Player, combat::components::ActionPoints},
     globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF}
 };
 
@@ -43,7 +43,8 @@ pub fn draw_interface(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     interface_query: Query<Entity, With<InterfaceGame>>,
-    player_info_query: Query<(Entity, &Name, &Health), With<Player>>
+    player_info_query: Query<(Entity, &Name, &Health), With<Player>>,
+    player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
 ) {
     clear_interface(&mut commands, interface_query);
 
@@ -56,6 +57,11 @@ pub fn draw_interface(
         player_health_max = p_health.max;
         player_health_current = p_health.current;
     }   
+    let mut action_points = 0;
+    if let Ok(player_action_points) = player_actions_query.get_single() {
+        let (_p_entity_action, p_action) = player_action_points;
+        action_points = p_action.current;
+    }
 
 
     // Interface container.
@@ -71,6 +77,21 @@ pub fn draw_interface(
         },
         ..default()
     }).insert(InterfaceGame).id();  
+
+    let player_action_display = commands.spawn(
+        TextBundle::from_section(
+            format!("{}",action_points),
+            TextStyle { 
+                font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                color: Color::YELLOW,
+            },
+        )
+        .with_style(Style {
+            margin: UiRect::all(Val::Px(8.)),            
+            ..default()
+        }),
+    ).id();
 
     let player_name_tag = commands.spawn((
         TextBundle::from_section(
@@ -142,7 +163,8 @@ pub fn draw_interface(
     for chunk in chunk_list {
         commands.entity(chunk_container).add_child(chunk);
     }
-
+    
+    commands.entity(container).add_child(player_action_display);
     commands.entity(container).add_child(player_name_tag);
     commands.entity(container).add_child(chunk_container);
     
