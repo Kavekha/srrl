@@ -4,7 +4,7 @@ use bevy::{prelude::*, ecs::system::SystemState};
 
 use crate::{
     map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, Stats, Monster, Melee},
-    tileboard::components::BoardPosition, actions::{PlayerActions}, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
+    tileboard::components::BoardPosition, actions::{PlayerActions, CancelPlayerPendingActionsEvent}, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -13,15 +13,17 @@ pub trait Action: Send + Sync {
     fn as_any(&self) -> &dyn Any;       //https://maciejglowka.com/blog/bevy-roguelike-tutorial-devlog-part-7-better-animation/
 }
 
-
+ 
 /// Following Actions after an action resolution.
 #[derive(Default, Resource)]
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
 
+/* 
 pub struct ClearPendingAction(pub Entity);
 impl Action for ClearPendingAction {
     fn execute(&self, world:&mut World) -> Result<Vec<Box<dyn Action>>, ()> {
+        //TODO : How to do this with Event?
         if let Some(mut player_pending_actions) = world.get_resource_mut::<PlayerActions>() {
             player_pending_actions.0.clear();
             println!("ClearPendingAction: player queue removed.");
@@ -29,7 +31,7 @@ impl Action for ClearPendingAction {
         Err(()) // Doesnt count as a turn.
     }     
    fn as_any(&self) -> &dyn std::any::Any { self }
-}
+}*/ 
 
 pub struct MoveToAction(pub Entity, pub Vector2Int);
 impl Action for MoveToAction {
@@ -174,9 +176,17 @@ impl Action for MeleeHitAction {
         if target_entities.len() == 0 { return Err(()) }; 
 
         //TODO : SR stats
+        if let Some(entity_name) = world.get::<Name>(self.attacker) {
+            println!("Attacker is : {:?}", entity_name.as_str());
+        }
         let attacker_stat = world.get::<Stats>(self.attacker).ok_or(())?;
         let mut result = Vec::new();
-        for (target_entity, _target_position, target_stats) in target_entities.iter() {            
+        for (target_entity, _target_position, target_stats) in target_entities.iter() {     
+            // Can't hit yourself.
+            if self.attacker == * target_entity { continue; }   
+            if let Some(target_name) = world.get::<Name>(* target_entity) {
+                println!("Defender is : {:?}", target_name.as_str());
+            }
             //TODO: Add to Stats component.
             let dice_roll = roll_dices_against(attacker_stat.attack, target_stats.dodge);   
             let dmg = dice_roll.success.saturating_add(attacker_stat.power as u32);
@@ -203,6 +213,13 @@ pub struct DamageAction(pub Entity, pub u32);   //target, dmg
 impl Action for DamageAction {
     fn execute(&self, world: &mut World) -> Result<Vec<Box<dyn Action>>, ()> {
         println!("DamageAction: Execute!");
+        if let Some(_player) = world.get::<Player>(self.0) { 
+            //TODO : How to do this with Event?
+            if let Some(mut player_pending_actions) = world.get_resource_mut::<PlayerActions>() {
+                player_pending_actions.0.clear();
+                println!("ClearPendingAction: player queue removed.");
+            }
+        }
 
         //TODO : Stats vs Stats Shadowrun. Erzatz pour le moment.
         let Some(stats) = world.get::<Stats>(self.0) else { return Err(())};    //TODO: A surveiller. On pourra p-e se faire tabasser un jour sans Stat (Door and co)

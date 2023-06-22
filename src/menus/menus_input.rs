@@ -86,7 +86,7 @@ pub fn menu_input_mouse(
 ) {
     for event in mouse_button_input_events.iter() {
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
-        if event.button == MouseButton::Left && event.state == ButtonState::Pressed {
+        if event.button == MouseButton::Left && event.state == ButtonState::Released {
             main_menu_selecting(menu_selection.selected, &mut app_state, &mut game_state, &mut app_exit_events);
         }
         info!("{:?}", event);

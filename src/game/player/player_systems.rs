@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, MoveToAction, ClearPendingAction, WalkOrHitAction}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, MoveToAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
     vectors::Vector2Int};
 
 
@@ -29,32 +29,42 @@ pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
 ];
 //
 
+/* 
+pub fn clear_player_pending_actions_2(
+    mut player_queue: ResMut<PlayerActions>, 
+){
+    player_queue.0.clear();
+}*/
+
 pub fn player_mouse_input(
     buttons: Res<Input<MouseButton>>,
     mut ev_action: EventWriter<PlayerActionEvent>,
     mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
     res_cursor: Res<Cursor>,
     mut queue: ResMut<ActorQueue>,
+    mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,    
+    //mut player_queue: ResMut<PlayerActions>, 
 ){
     if buttons.just_pressed(MouseButton::Right) {
-        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
-        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
-        let action = ClearPendingAction(entity);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
+        ev_cancel.send(CancelPlayerPendingActionsEvent);
     }
     if buttons.just_pressed(MouseButton::Left) {
         println!("Mouse button press Left");
-        
         // On annule les actions en attente:
+        ev_cancel.send(CancelPlayerPendingActionsEvent);
+        println!("Canceling current actions....");
+    }
+    if buttons.just_released(MouseButton::Left) {
+        /*
         //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
-        
+         */
+
+        println!("Doing new actions instead...");
         // MoveTo.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let destination = res_cursor.grid_position;
@@ -73,7 +83,8 @@ pub fn player_input(
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
     //mut ev_input: EventWriter<PlayerInputReadyEvent>,
-    mut ev_action: EventWriter<PlayerActionEvent>,  
+    mut ev_action: EventWriter<PlayerActionEvent>,      
+    mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
@@ -92,10 +103,14 @@ pub fn player_input(
 
         // On annule les actions en cours.
         //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
+        /*
         let action = ClearPendingAction(entity);
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         println!("Player pending actions cleared.");
+        */
+        ev_cancel.send(CancelPlayerPendingActionsEvent);
+        println!("Keyboard Input: Canceling current actions....");
 
         let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
