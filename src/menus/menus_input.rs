@@ -1,4 +1,4 @@
-use bevy::{prelude::*, input::{mouse::{MouseWheel, MouseMotion, MouseButtonInput}, ButtonState}, sprite::collide_aabb::collide, app::AppExit};
+use bevy::{prelude::*, input::{mouse::{MouseButtonInput}, ButtonState}, sprite::collide_aabb::collide, app::AppExit};
 
 use crate::{globals::{CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, menus::mainmenu::main_menu_selecting, states::{AppState, GameState}, save_load_system::has_save_file};
 
@@ -97,7 +97,7 @@ pub fn menu_input_mouse(
         //info!("{:?}", event);
     }
     */
-    for event in cursor_moved_events.iter() {
+    for _event in cursor_moved_events.iter() {
         // Needed to convert cursor position on window to World coords.
         let (camera, camera_transform) = camera_q.single();
         if let Some(world_position) = window_query.single().cursor_position() 

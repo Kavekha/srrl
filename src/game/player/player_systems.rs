@@ -49,22 +49,13 @@ pub fn player_mouse_input(
         ev_cancel.send(CancelPlayerPendingActionsEvent);
     }
     if buttons.just_pressed(MouseButton::Left) {
-        println!("Mouse button press Left");
+        //println!("Mouse button press Left");
         // On annule les actions en attente:
         ev_cancel.send(CancelPlayerPendingActionsEvent);
-        println!("Canceling current actions....");
+        //println!("Canceling current actions....");
     }
     if buttons.just_released(MouseButton::Left) {
-        /*
-        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
-        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
-        let action = ClearPendingAction(entity);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared. Actor queue len is : {:?}", actor.0.len());
-         */
-
-        println!("Doing new actions instead...");
+        //println!("Doing new actions instead...");
         // MoveTo.
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let destination = res_cursor.grid_position;
@@ -73,7 +64,7 @@ pub fn player_mouse_input(
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_action.send(PlayerActionEvent);
-        println!("MoveToAction sent from player mouse input. Actor queue len is : {:?}", actor.0.len())
+        //println!("MoveToAction sent from player mouse input. Actor queue len is : {:?}", actor.0.len())
     }
 }
 
@@ -110,7 +101,7 @@ pub fn player_input(
         println!("Player pending actions cleared.");
         */
         ev_cancel.send(CancelPlayerPendingActionsEvent);
-        println!("Keyboard Input: Canceling current actions....");
+        //println!("Keyboard Input: Canceling current actions....");
 
         let mut destination = position.v;
         for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
@@ -129,7 +120,7 @@ pub fn player_input(
         actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
         queue.0 = VecDeque::from([entity]);
         ev_action.send(PlayerActionEvent);
-        println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
+        //println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
     }
 }
 

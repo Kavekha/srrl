@@ -1,6 +1,6 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{states::{AppState, GameState}, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, game::clean_game_screen};
+use crate::{states::{AppState, GameState}, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file};
 
 use super::{
     components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
@@ -224,6 +224,5 @@ pub fn main_menu_selecting(
             println!("Quit App");
             app_exit_events.send(AppExit);
         }
-        _ => {}
     }
 }

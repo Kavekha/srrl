@@ -22,15 +22,10 @@ fn execute_action(action: Box<dyn super::Action>, world: &mut World) -> bool {
 pub fn process_action_queue(world: &mut World) {
     println!("Processing action queue...");
     // Y a-t-il des actions en attente à faire?
-    if process_pending_actions(world) { 
-        println!("process: Pending action True.");
-        return }
+    if process_pending_actions(world) { return }
 
     // Y a-t-il une queue?
-    let Some(mut queue) = world.get_resource_mut::<ActorQueue>() else {
-        println!("process: No actor queue.");
-         return 
-    };
+    let Some(mut queue) = world.get_resource_mut::<ActorQueue>() else { return };
     // Quelque chose à traiter?
     let Some(entity) = queue.0.pop_front() else {
         world.send_event(ActionsCompleteEvent);

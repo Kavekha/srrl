@@ -17,7 +17,7 @@ pub const TILE_HEIGHT_HALF:i32 = 16;
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
 pub const MAP_EXIT: &str = "temp_tiles/exit.png";        //TODO : Ajouter.
-pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Trouver une image.
+pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall64.png";        //TODO : Trouver une image.
 pub const MAP_WALL: &str = "temp_tiles/Sewers_wall64.png";
 pub const MAP_WALL_LOW: &str = "temp_tiles/Sewers_wall48.png";
 pub const MAP_WALL_HIGH: &str = "temp_tiles/Sewers_wall72.png";
@@ -42,7 +42,7 @@ pub const SIZE_GHOUL: i32 = 64;
 //pub const SIZE_DEFAULT: i32 = 64;
 
 // sprite
-pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
+//pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
 pub const SPRITE_GHOUL: &str = "temp_tiles/Nosferatu.png";
 pub const SPRITE_PLAYER_DWARF: &str = "temp_tiles/cube_dwarf_.png";
 pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/cube_human_.png";

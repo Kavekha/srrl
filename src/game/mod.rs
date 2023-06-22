@@ -51,18 +51,17 @@ impl Plugin for GamePlugin {
             .insert_resource(Map::new())
             .insert_resource(ShouldSave{to_save: false})
 
-            .add_plugin(PlayerPlugin)
-            .add_plugin(VictoryPlugin)
-            .add_plugin(GameOverPlugin)
-            .add_plugin(GraphicsPlugin)
-            .add_plugin(TileBoardPlugin)
-            .add_plugin(ActionsPlugin)
-            .add_plugin(ManagerPlugin)
-            .add_plugin(CursorPlugin)
-            .add_plugin(UiPlugin)
+            .add_plugins(PlayerPlugin)
+            .add_plugins(VictoryPlugin)
+            .add_plugins(GameOverPlugin)
+            .add_plugins(GraphicsPlugin)
+            .add_plugins(TileBoardPlugin)
+            .add_plugins(ActionsPlugin)
+            .add_plugins(ManagerPlugin)
+            .add_plugins(CursorPlugin)
+            .add_plugins(UiPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
-            //.add_systems(OnExit(GameState::GameMap), despawn_screen::<Npc>) //TODO : Remove NPC ? Add a full "end game" function?
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)
             ;
     }

@@ -53,11 +53,11 @@ fn main() {
                 )
         )
 
-        .add_plugin(AsciiPlugin) 
-        .add_plugin(MainMenuPlugin)
-        .add_plugin(GameAudioPlugin)     
-        .add_plugin(GamePlugin)
-        .add_plugin(SaveLoadPlugin)
+        .add_plugins(AsciiPlugin) 
+        .add_plugins(MainMenuPlugin)
+        .add_plugins(GameAudioPlugin)     
+        .add_plugins(GamePlugin)
+        .add_plugins(SaveLoadPlugin)
 
         .add_state::<AppState>()
         .add_state::<GameState>()  
@@ -79,13 +79,3 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn(camera_bundle);
 }
 
-
-/* 
-pub fn despawn_screen<T: Component>(
-    to_despawn: Query<Entity, With<T>>, 
-    mut commands: Commands) {
-    for entity in &to_despawn {
-        commands.entity(entity).despawn_recursive();
-    }
-}
-*/

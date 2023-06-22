@@ -5,9 +5,9 @@ pub mod components;
 
 pub use components::{GridPosition, Tile};
 
-use self::{system_map::spawn_map, components::GameMap};
+use self::{system_map::spawn_map};
 
-use crate::{states::GameState, render::components::GameMapRender};
+use crate::states::GameState;
 
 
 

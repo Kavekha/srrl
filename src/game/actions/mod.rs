@@ -37,9 +37,6 @@ impl Plugin for ActionsPlugin {
             .add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             
-            // Automatic action that the player should be able to break... TODO : implement in Queue system.
-            //.add_systems(OnEnter(EngineState::TurnUpdate),pathfinding_walk.in_set(ActionSet::Planning))
-            
             //Execute
             .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>()).in_set(ActionSet::Late))
 

@@ -39,64 +39,6 @@ fn clear_enemy_hp_ui(
 }
 
 
-
-
-
-/// TODO : It seems that this doesnt work well in an existing node. If used in draw_interface, all will break.
-fn spawn_health_meter(
-    commands: &mut Commands,
-    max_health: u32,
-    current_health: u32
-) -> Entity {
-    let chunk_container = commands.spawn(NodeBundle {
-        style: Style {
-            ..default()
-        },
-        ..default()
-    }).id();  
- 
-
-    let mut chunk_list:Vec<Entity> = Vec::new();
-    for i in 1..=max_health {
-        let mut border_color = Color::rgb(0.5, 0.0, 0.0);
-        let mut background_color = Color::rgb(0.9, 0.0, 0.0 );
-        if i > current_health {
-            border_color = Color::rgb(0.1, 0.1, 0.1);
-            background_color = Color::rgba(0.0, 0.0, 0.0, 1.0 );
-        }
-
-        let chunk = commands.spawn(NodeBundle {
-            style: Style {
-                width: Val::Px(INTERFACE_HP_CHUNK_WIDTH),//(8.0),
-                height: Val::Px(INTERFACE_HP_CHUNK_HEIGHT), //(16.0),
-                margin: UiRect::all(Val::Px(1.)),   
-                flex_grow: 8.0,
-                bottom: Val::Px(8.),
-                border: UiRect::all(Val::Px(2.)),
-                ..default()
-            },
-            border_color: border_color.into(), 
-            ..default()
-        })
-        .with_children(|parent| {
-            parent.spawn(NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    flex_grow: 8.0,
-                    ..default()
-                },
-                background_color: background_color.into(),
-                ..default()
-            });  
-        }).id();
-        commands.entity(chunk).insert(InterfaceGame);
-        chunk_list.push(chunk);
-    }
-    chunk_container
-}
-
-
 pub fn draw_interface(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -304,12 +246,4 @@ pub fn draw_enemy_health(
 
     }
 
-    /* 
-    let mut coords_top_left = camera
-        .world_to_viewport(transform, Vec3::new(x, -0.6, 0.0))
-        .unwrap();
-    let mut coords_bottom_right = camera
-        .world_to_viewport(transform, Vec3::new(x + 1.0, -1.0, 0.0))
-        .unwrap();
-*/
 }
