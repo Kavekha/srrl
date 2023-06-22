@@ -5,7 +5,7 @@ use crate::{states::GameState, game::combat::components::ActionPoints};
 
 use self::components::EndTurnEvent;
 
-use super::{pieces::components::{Health, Stats}, player::Player};
+use super::{pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
 
 
 
@@ -26,6 +26,7 @@ impl Plugin for CombatPlugin {
             .add_state::<CombatState>()
 
             .add_event::<EndTurnEvent>()
+
             .add_systems(OnEnter(GameState::GameMap), combat_start)
             .add_systems(OnExit(GameState::GameMap), combat_end)
 
@@ -35,6 +36,7 @@ impl Plugin for CombatPlugin {
             ;
     }
 }
+
 
 pub fn combat_start(    
     mut commands: Commands,
@@ -61,12 +63,14 @@ pub fn combat_end(
 
 pub fn entity_end_turn(
     mut ev_endturn: EventReader<EndTurnEvent>,
-    mut action_points_q: Query<&mut ActionPoints>
+    mut action_points_q: Query<&mut ActionPoints>,
+    mut ev_interface: EventWriter<ReloadUiEvent>
 ) {
     for event in ev_endturn.iter() {
         if let Ok(mut action_points) =  action_points_q.get_mut(event.entity) {
             consume_actionpoints(&mut action_points, 100);   //TODO : Better way?
             //action_points.current = 0;
+            ev_interface.send(ReloadUiEvent);
             println!("Turn End for {:?}. Action points : {:?}", event.entity, action_points.current);
         }        
     }    
