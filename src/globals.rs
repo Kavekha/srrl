@@ -17,7 +17,7 @@ pub const TILE_HEIGHT_HALF:i32 = 16;
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
 pub const MAP_EXIT: &str = "temp_tiles/exit.png";        //TODO : Ajouter.
-pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall.png";        //TODO : Trouver une image.
+pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall64.png";        //TODO : Trouver une image.
 pub const MAP_WALL: &str = "temp_tiles/Sewers_wall64.png";
 pub const MAP_WALL_LOW: &str = "temp_tiles/Sewers_wall48.png";
 pub const MAP_WALL_HIGH: &str = "temp_tiles/Sewers_wall72.png";

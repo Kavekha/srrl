@@ -5,7 +5,7 @@ use crate::{
 
     globals::{
         MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_HIGH, MAP_WALL_LOW, TILE_HEIGHT_MEDIUM_HIGH, TILE_HEIGHT_HIGH,
-        TILE_HEIGHT_VERY_HIGH, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH},
+        TILE_HEIGHT_VERY_HIGH, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, MAP_WALL},
     map_builders::TileType, game::{Tile, tileboard::components::BoardPosition}, 
     render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render}
 };
@@ -77,6 +77,9 @@ fn get_tile_infos_render(
 
     match tile_type {
         TileType::Wall => {
+            texture = MAP_WALL_VERY_HIGH;
+            y_modifier = get_iso_y_modifier_from_elevation(TILE_HEIGHT_EXTREMELY_HIGH);
+            /* 
             let mut rng = rand::thread_rng();
             let rand = rng.gen_range(0..4);
             match rand {
@@ -92,11 +95,15 @@ fn get_tile_infos_render(
                     texture = MAP_WALL_VERY_HIGH;
                     y_modifier = get_iso_y_modifier_from_elevation(TILE_HEIGHT_EXTREMELY_HIGH);
                 }
-                _ => {
-                    //texture = MAP_WALL;
+                3 => {
+                    texture = MAP_WALL;
                     y_modifier = get_iso_y_modifier_from_elevation(TILE_HEIGHT_HIGH);
                 }
-            }            
+                _ => {
+                    y_modifier = get_iso_y_modifier_from_elevation(TILE_HEIGHT_HIGH);
+                }
+            } 
+            */           
             world_z = get_world_z(&position.v);
         }
         TileType::Exit => {texture = MAP_EXIT}
