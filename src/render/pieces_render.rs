@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     globals::{
-        SPRITE_GHOUL, SPRITE_PLAYER, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
+        SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF,},
     game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
 
@@ -28,17 +28,6 @@ pub fn melee_animation(
 
             let base = get_final_world_position(base_position.v, base_piece.size);
             let target = get_final_world_position(action.target, base_piece.size);
-
-            /*
-            let (position_x, mut position_y) = get_world_position(&base_position.v);
-            position_y += get_iso_y_modifier_from_elevation(base_piece.size);
-            let base = Vec3::new(position_x, position_y, get_world_z(&base_position.v)); 
-
-            let (position_x, position_y) = get_world_position(&action.target);
-            let target = Vec3::new(position_x, position_y, get_world_z(&action.target)); 
-             */
-
-            //println!("Melee attack anim start from {:?} and goes to {:?}", base, target);
 
             commands.entity(action.attacker)
                 .insert(PathAnimator{path:VecDeque::from([target, base]), wait_anim: true});
@@ -144,7 +133,7 @@ pub fn get_texture_from_kind(
         Kind::Orc => { SPRITE_PLAYER_ORC }
         Kind::Troll => { SPRITE_PLAYER_TROLL }
         Kind::Ghoul => { SPRITE_GHOUL }
-        _ => { SPRITE_PLAYER }
+        //_ => { SPRITE_PLAYER }
     }
 }
 

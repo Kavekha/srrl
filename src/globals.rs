@@ -42,7 +42,7 @@ pub const SIZE_GHOUL: i32 = 64;
 //pub const SIZE_DEFAULT: i32 = 64;
 
 // sprite
-pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
+//pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
 pub const SPRITE_GHOUL: &str = "temp_tiles/Nosferatu.png";
 pub const SPRITE_PLAYER_DWARF: &str = "temp_tiles/cube_dwarf_.png";
 pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/cube_human_.png";

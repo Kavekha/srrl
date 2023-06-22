@@ -4,7 +4,7 @@ use bevy::{prelude::*, ecs::system::SystemState};
 
 use crate::{
     map_builders::{map::Map}, game::{pieces::components::{Occupier, Health, Stats, Monster, Melee},
-    tileboard::components::BoardPosition, actions::{PlayerActions, CancelPlayerPendingActionsEvent}, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
+    tileboard::components::BoardPosition, actions::PlayerActions, player::Player, rules::roll_dices_against}, states::GameState, vectors::{Vector2Int, find_path}};
 
 
 
@@ -18,20 +18,6 @@ pub trait Action: Send + Sync {
 #[derive(Default, Resource)]
 pub struct PendingActions(pub Vec<Box<dyn Action>>);
 
-
-/* 
-pub struct ClearPendingAction(pub Entity);
-impl Action for ClearPendingAction {
-    fn execute(&self, world:&mut World) -> Result<Vec<Box<dyn Action>>, ()> {
-        //TODO : How to do this with Event?
-        if let Some(mut player_pending_actions) = world.get_resource_mut::<PlayerActions>() {
-            player_pending_actions.0.clear();
-            println!("ClearPendingAction: player queue removed.");
-        }
-        Err(()) // Doesnt count as a turn.
-    }     
-   fn as_any(&self) -> &dyn std::any::Any { self }
-}*/ 
 
 pub struct MoveToAction(pub Entity, pub Vector2Int);
 impl Action for MoveToAction {
@@ -62,7 +48,7 @@ impl Action for MoveToAction {
                //println!("Pathing is now : {:?}", pathing);
                pathing.reverse(); // REMEMBER : We reverse back so iter() goes from first to last.
 
-               let mut player_actions = world.get_resource_mut::<PlayerActions>(); 
+               let player_actions = world.get_resource_mut::<PlayerActions>(); 
                if let Some(mut player_actions_queue) = player_actions {
                     let actions = pathing.iter()
                         .map(|some_position_around | {
