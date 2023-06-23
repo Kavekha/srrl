@@ -1,8 +1,14 @@
+use std::collections::VecDeque;
+
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 
-//TODO : Adapter à Shadowrun: Skill & Ability.
+#[derive(Default, Resource)]
+pub struct CombatTurnQueue(pub VecDeque<Entity>);
+
+
+
 #[derive(Component, Default, Debug, Serialize, Deserialize)]
 pub struct ActionPoints {
     pub max: u32,
@@ -11,6 +17,12 @@ pub struct ActionPoints {
 
 
 #[derive(Event)]
-pub struct EndTurnEvent {
+pub struct EntityEndTurnEvent {
     pub entity: Entity
 }
+
+#[derive(Event)]
+pub struct CombatTurnEndEvent;
+
+#[derive(Event)]
+pub struct CombatTurnNextEntityEvent;
