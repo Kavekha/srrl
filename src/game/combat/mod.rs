@@ -13,9 +13,9 @@ use super::{pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEve
 pub enum CombatState {
     #[default]
     None, 
+    StartTurn,
     PlayerTurn,
-    TurnUpdate,
-    EnemyTurn
+    TurnUpdate
 }
 
 
@@ -40,8 +40,8 @@ impl Plugin for CombatPlugin {
 
             // Deroulement du tour.            
             // On ajoute les participants au combat.
-            .add_systems(OnEnter(CombatState::PlayerTurn), combat_turn_start)
-            .add_systems(Update, combat_turn_update.run_if(in_state(CombatState::PlayerTurn)))
+            .add_systems(OnEnter(CombatState::StartTurn), combat_turn_start)
+            .add_systems(Update, combat_turn_update.run_if(in_state(CombatState::TurnUpdate)))
             .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
             
             .add_systems(Update, entity_end_turn.run_if(on_event::<EntityEndTurnEvent>()))
@@ -69,7 +69,7 @@ pub fn combat_start(
         println!("Action points added for {:?}", fighter_id);
     }
     commands.insert_resource(CombatInfos {turn: 0, current_entity: None});
-    combat_state.set(CombatState::PlayerTurn);
+    combat_state.set(CombatState::StartTurn);
     println!("Combat start!");
 }
 
@@ -100,8 +100,9 @@ pub fn combat_turn_start(
 pub fn combat_turn_next_entity(
     mut queue: ResMut<CombatTurnQueue>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
-    //mut q_action: Query<(Entity, &ActionPoints, Option<&Player>)>,
-    mut current_combat: ResMut<CombatInfos>
+    q_player: Query<&Player>,
+    mut current_combat: ResMut<CombatInfos>,    
+    mut combat_state: ResMut<NextState<CombatState>>,
 ) {
     let Some(entity) = queue.0.pop_front() else {
         ev_turn_end.send(CombatTurnEndEvent);
@@ -109,6 +110,11 @@ pub fn combat_turn_next_entity(
         return;
     };
     current_combat.current_entity = Some(entity);
+    if let Ok(_player) = q_player.get(entity) {
+        combat_state.set(CombatState::PlayerTurn);
+    } else {
+        combat_state.set(CombatState::TurnUpdate);
+    }
 }
 
 pub fn combat_turn_update(
@@ -140,7 +146,7 @@ pub fn combat_turn_update(
 pub fn combat_turn_end(    
     mut combat_state: ResMut<NextState<CombatState>>,
 ){
-    combat_state.set(CombatState::PlayerTurn);
+    combat_state.set(CombatState::StartTurn);
 }
 
 
@@ -162,7 +168,8 @@ pub fn combat_end(
 pub fn entity_end_turn(
     mut ev_endturn: EventReader<EntityEndTurnEvent>,
     mut action_points_q: Query<&mut ActionPoints>,
-    mut ev_interface: EventWriter<ReloadUiEvent>
+    mut ev_interface: EventWriter<ReloadUiEvent>,    
+    mut combat_state: ResMut<NextState<CombatState>>,
 ) {
     for event in ev_endturn.iter() {
         if let Ok(mut action_points) =  action_points_q.get_mut(event.entity) {
@@ -172,6 +179,7 @@ pub fn entity_end_turn(
             println!("Turn End for {:?}. Action points : {:?}", event.entity, action_points.current);
         }        
     }    
+    combat_state.set(CombatState::TurnUpdate);
 }
 
 pub fn consume_actionpoints(
