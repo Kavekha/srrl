@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, reflect::List};
 
 pub mod components;
 use crate::{states::GameState, game::combat::components::{ActionPoints, CombatTurnEndEvent}};
@@ -76,19 +76,38 @@ pub fn combat_start(
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
 /// TODO: Check if entity toujours vivante. !!
+/// TODO : Meilleure gestion du regain AP.
 pub fn combat_turn_start(
     npc_query: Query<Entity, (With<ActionPoints>, Without<Player>)>,
     player_query: Query<Entity, (With<ActionPoints>, With<Player>)>,
+    mut action_query: Query<&mut ActionPoints>,
     mut queue: ResMut<CombatTurnQueue>,
-    mut ev_next: EventWriter<CombatTurnNextEntityEvent>
+    mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
+    mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
+    for npc in npc_query.iter() {
+        let Ok(mut action) = action_query.get_mut(npc) else {continue};
+        action.current = action.current.saturating_add(10);
+        queue.0.insert(0, npc);
+    }
+    /*
     queue.0.extend(
         npc_query.iter()
     );
+    */
+    for player in player_query.iter() {
+        let Ok(mut action) = action_query.get_mut(player) else {continue};
+        action.current = action.max;
+        queue.0.insert(0, player);
+        ev_interface.send(ReloadUiEvent);
+    }
+
+    /* 
     //We add player last, so they are the first to play.
     queue.0.extend(
         player_query.iter()
     );    
+    */
     println!("Combat turn queue has {:?} messages.", queue.0.len());
     println!("Sending Next Entity");
     ev_next.send(CombatTurnNextEntityEvent);
@@ -110,6 +129,7 @@ pub fn combat_turn_next_entity(
         return;
     };
     current_combat.current_entity = Some(entity);
+    println!("Combat turn next entity: Entity is {:?}", entity);
     if let Ok(_player) = q_player.get(entity) {
         combat_state.set(CombatState::PlayerTurn);
     } else {
@@ -121,16 +141,24 @@ pub fn combat_turn_update(
     mut commands: Commands,
     mut current_combat: ResMut<CombatInfos>,
     query_action_points: Query<&ActionPoints>,
-    mut ev_next: EventWriter<CombatTurnNextEntityEvent>
+    mut ev_next: EventWriter<CombatTurnNextEntityEvent>,
+    query_player: Query<&Player>,   //DEBUG
+    mut ev_endturn: EventWriter<EntityEndTurnEvent>,      //DEBUG
 ) {
-    println!("Combat turn update");
+    println!("Turn update begins...");
     // On recupere l'entité de CombatInfos.
     if let Some(mut entity) = current_combat.current_entity {
         if let Ok(ap_entity) = query_action_points.get(entity) {
             if ap_entity.current <= 0 {
                 ev_next.send(CombatTurnNextEntityEvent);
            } else {
-               println!("Current AP for {:?}: {:?}", entity, ap_entity.current);
+                //println!("Current AP for {:?}: {:?}", entity, ap_entity.current);
+                //DEBUG
+                if let Ok(_is_player) = query_player.get(entity) { 
+                    println!("Player still have AP");
+                } else {
+                    ev_endturn.send(EntityEndTurnEvent {entity});
+                }
            };
         } else {
             current_combat.current_entity = None;
@@ -146,6 +174,7 @@ pub fn combat_turn_update(
 pub fn combat_turn_end(    
     mut combat_state: ResMut<NextState<CombatState>>,
 ){
+    println!("Combat turn End");
     combat_state.set(CombatState::StartTurn);
 }
 
@@ -179,6 +208,7 @@ pub fn entity_end_turn(
             println!("Turn End for {:?}. Action points : {:?}", event.entity, action_points.current);
         }        
     }    
+    println!("Un petit turnupdate pour la forme!");
     combat_state.set(CombatState::TurnUpdate);
 }
 
