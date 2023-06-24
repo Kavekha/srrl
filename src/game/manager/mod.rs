@@ -11,7 +11,8 @@ pub struct ManagerPlugin;
 
 impl Plugin for ManagerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::GameMap), game_start) 
+        app
+            .add_systems(OnEnter(GameState::GameMap), game_start) 
             .add_systems(OnExit(GameState::GameMap), game_end)  
 
             .configure_set(Update, TurnSet::Logic.run_if(in_state(EngineState::TurnUpdate)).before(TurnSet::Animation))   
