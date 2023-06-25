@@ -26,3 +26,15 @@ pub struct CombatTurnEndEvent;
 
 #[derive(Event)]
 pub struct CombatTurnNextEntityEvent;
+
+#[derive(Event)]
+pub struct CombatTickEvent;
+
+#[derive(Default, Resource)]
+pub struct CurrentEntityTurnQueue(pub VecDeque<Entity>);
+
+#[derive(Resource)]
+pub struct CombatInfos {
+    pub turn: u32,
+    pub current_entity: Option<Entity>
+}

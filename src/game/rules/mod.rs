@@ -1,5 +1,8 @@
 use rand::prelude::*;
 
+use super::combat::components::ActionPoints;
+
+
 pub struct DiceRollResult{
     pub success: u32,
     pub fail: u32,
@@ -46,4 +49,13 @@ pub fn roll_dice() -> u32 {
     let dice_roll: u32 = rng.gen_range(0..=6);
     dice_roll
 
+}
+
+
+
+pub fn consume_actionpoints(
+    actionpoints_component: &mut ActionPoints,
+    lost_value: u32,
+) {
+    actionpoints_component.current = actionpoints_component.current.saturating_sub(lost_value);
 }

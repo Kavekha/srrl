@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 use std::collections::VecDeque;
 
-mod models;
-mod action_queue_system;
+pub mod models;
+pub mod action_queue_system;
 mod plan_systems;
+
 
 pub use models::{WalkAction, Action, MeleeHitAction, MoveToAction, WalkOrHitAction};
 
