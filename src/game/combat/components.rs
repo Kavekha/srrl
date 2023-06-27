@@ -30,6 +30,12 @@ pub struct CombatTurnNextEntityEvent;
 #[derive(Event)]
 pub struct CombatTickEvent;
 
+#[derive(Event)]
+pub struct InvalidPlayerCombatActionEvent;
+
+#[derive(Event)]
+pub struct PlayerCombatActionEvent;
+
 #[derive(Default, Resource)]
 pub struct CurrentEntityTurnQueue(pub VecDeque<Entity>);
 

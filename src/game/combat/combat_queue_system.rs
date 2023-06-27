@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::game::{
-    combat::components::CurrentEntityTurnQueue, 
+    combat::components::{CurrentEntityTurnQueue, PlayerCombatActionEvent, InvalidPlayerCombatActionEvent}, 
     pieces::components::Actor, player::{Player, PlayerActionEvent}, 
     actions::{InvalidPlayerActionEvent, ActionExecutedEvent, Action, models::PendingActions}
 };
@@ -21,8 +21,6 @@ fn execute_action(action: Box<dyn Action>, world: &mut World) -> bool {
 }
 
 pub fn process_action_queue(world: &mut World) {
-    println!("Processing combat queue...");
-
     // Y a-t-il une queue?
     let Some(mut queue) = world.get_resource_mut::<CurrentEntityTurnQueue>() else { return };
     // Quelque chose à traiter?
@@ -30,6 +28,9 @@ pub fn process_action_queue(world: &mut World) {
         // Aucune action à traiter.
         return;
     };
+
+    println!("Process action queue for {:?}", entity);
+
     // On recupère le composant Actor qui contient l'action à faire.
     let Some(mut actor) = world.get_mut::<Actor>(entity) else { 
         // L'actor a pu être détruit entre temps, donc on passe au suivant si on ne le trouve pas.
@@ -53,11 +54,11 @@ pub fn process_action_queue(world: &mut World) {
 
     // Si c'est un joueur, on a eu le droit qu'à une action. Si elle echoue, on "informe" le joueur via event InvalidPlayerAction et surtout on ne lui fait pas perdre son tour / ne passe par au tour des autres.
     if !success && world.get::<Player>(entity).is_some() {
-        world.send_event(InvalidPlayerActionEvent);
+        world.send_event(InvalidPlayerCombatActionEvent);
         return;
     }
 
     if success && world.get::<Player>(entity).is_some() {
-        world.send_event(PlayerActionEvent);
+        world.send_event(PlayerCombatActionEvent);
     }
 }
