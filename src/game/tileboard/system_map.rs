@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     map_builders::map::Map, 
     states::GameState, 
-    game::{tileboard::components::{GridPosition, Tile, GameMap, BoardPosition}, pieces::components::Occupier}, vectors::Vector2Int
+    game::{tileboard::components::{Tile, GameMap, BoardPosition}, pieces::components::Occupier}, vectors::Vector2Int
 };
 
 
@@ -26,7 +26,6 @@ pub fn spawn_map(
         let v = Vector2Int::new(x, y);
         let tile = commands.spawn((
             Tile {tiletype: *tile_info},
-            GridPosition{x,y},
             BoardPosition{v}
         ))
         .id();

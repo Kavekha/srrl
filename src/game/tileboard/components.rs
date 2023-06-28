@@ -7,12 +7,6 @@ use crate::{
 };
 
 
-#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct GridPosition{
-    pub x: i32,
-    pub y: i32
-}
-
 #[derive(Component)]
 pub struct Tile {
     pub tiletype: TileType,

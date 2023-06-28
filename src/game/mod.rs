@@ -1,7 +1,7 @@
 // Game Plugin + Component & enum go there + new game setup.
 use bevy::prelude::*;
 
-use self::combat::{CombatPlugin, CombatState};
+use self::combat::CombatPlugin;
 use self::manager::ManagerPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player};
@@ -20,7 +20,7 @@ pub mod rules;
 pub mod ui;
 pub mod combat;
 
-pub use tileboard::components::{Tile, GridPosition};
+pub use tileboard::components::Tile;
 
 
 use crate::ecs_elements::MapGenHistory;
