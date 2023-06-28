@@ -44,3 +44,9 @@ pub struct CombatInfos {
     pub turn: u32,
     pub current_entity: Option<Entity>
 }
+
+#[derive(Event)]
+pub struct CombatTurnStartEvent;
+
+#[derive(Component, Default, Debug, Serialize, Deserialize)]
+pub struct Turn;

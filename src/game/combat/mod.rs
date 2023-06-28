@@ -6,9 +6,9 @@ pub mod components;
 pub mod combat_queue_system;
 mod models;
 
-use crate::{states::GameState, game::combat::{components::{ActionPoints, CombatTurnEndEvent, CombatInfos}, models::EndTurnAction}};
-use self::{components::{CombatTurnQueue, EntityEndTurnEvent, CombatTurnNextEntityEvent, CombatTickEvent, CurrentEntityTurnQueue, InvalidPlayerCombatActionEvent, PlayerCombatActionEvent}, combat_queue_system::process_action_queue};
-use super::{pieces::components::{Health, Stats, Actor, Npc}, player::{Player, PlayerActionEvent}, ui::ReloadUiEvent, actions::Action};
+use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatTurnEndEvent, CombatInfos}, models::EndTurnAction}};
+use self::{components::{CombatTurnQueue, EntityEndTurnEvent, CombatTurnNextEntityEvent, CombatTickEvent, CurrentEntityTurnQueue, InvalidPlayerCombatActionEvent, PlayerCombatActionEvent, CombatTurnStartEvent, Turn}, combat_queue_system::process_action_queue};
+use super::{pieces::components::{Health, Stats, Actor, Npc}, player::{Player, PlayerActionEvent}, ui::ReloadUiEvent, actions::Action, rules::consume_actionpoints};
 
 
 
@@ -27,70 +27,40 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_state::<CombatState>()
+        //SECONDE REFACTO
+            .add_state::<CombatState>()     // Les infos du combat: Tour, Personnage dont c'est le tour.
             
             .init_resource::<CombatTurnQueue>()     // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
 
+            .add_event::<CombatTurnStartEvent>()        // Lance le tour.
             .add_event::<CombatTurnNextEntityEvent>()           // Envoyé pour prendre le nouvel acteur.
-            .add_event::<EntityEndTurnEvent>()                  // Envoyé par l'Entité qui mets volontairement fin à son tour.
             .add_event::<CombatTurnEndEvent>()              // Envoyé quand plus aucun acteur dans la Queue du Tour de Combat.
-            .add_event::<InvalidPlayerCombatActionEvent>()
-            .add_event::<PlayerCombatActionEvent>()
-            .add_event::<CombatTickEvent>()
 
+            .add_event::<EntityEndTurnEvent>()                  // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC.                 
             // Init Combat.
             .add_systems(OnEnter(GameState::GameMap), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
-            // Le combat commence.
-            .add_systems(OnEnter(CombatState::StartTurn), combat_turn_start)
-            //Next entity turn.
-            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
-            
-
-            // On attends les input du joueur. Cela doit generer un Event "J'ai fais une Action a prendre en compte"
-            .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)))
-            // Actions via Events.
-            .add_systems(Update, action_entity_end_turn.run_if(on_event::<EntityEndTurnEvent>()))
-
-            // Process des actions de la Queue CurrentEntityTurn.
-            //.add_systems(Update, process_action_queue.run_if(in_state(CombatState::TurnUpdate)))
-            .add_systems(Update, plan_action_forfeit.run_if(on_event::<CombatTickEvent>()).before(process_action_queue))
-            .add_systems(Update, process_action_queue.run_if(on_event::<CombatTickEvent>()))            
-            .add_systems(Update, combat_turn_entity_check.run_if(on_event::<CombatTickEvent>()).after(process_action_queue))
-            
-
-            
-         
-            // Gestion retour action PJ.
-            //.add_systems(Update, invalid_player_action.run_if(on_event::<InvalidPlayerCombatActionEvent>()))
-            //.add_systems(Update, valid_player_action.run_if(on_event::<PlayerCombatActionEvent>()))
-
+           // Le tour commence.
+           .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()))
+           // On prends l'entité dont c'est le tour. On passe en TurnUpdate
+           .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))
 
+            // Generation des actions à faire.
+            .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)))
+            
+            // Gestion des actions demandées.
+            .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::GameMap)))
+
+
+            // Check de la situation PA-wise.
+            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)))
+
             // TODO: Quitter le combat. PLACEHOLDER.
             .add_systems(OnExit(GameState::GameMap), combat_end)
-
-
-
-
-
-            //REFACTO
-            /* 
-
-            .add_event::<CombatTickEvent>()
-            
-            .add_systems(Update, combat_input_received.run_if(on_event::<PlayerActionEvent>()))
- */    
-            // Deroulement du tour.            
-            // On ajoute les participants au combat.
-            //.add_systems(Update, combat_tick.run_if(in_state(CombatState::TurnUpdate)).before(combat_turn_update))
-            //.add_systems(Update, combat_turn_update.run_if(in_state(CombatState::TurnUpdate)))
-            
-            
-            
-
-            
+                
             ;
     }
 }
@@ -101,22 +71,24 @@ impl Plugin for CombatPlugin {
 pub fn combat_start(    
     mut commands: Commands,
     mut combat_state: ResMut<NextState<CombatState>>,
+    mut engine_state: ResMut<NextState<EngineState>>,   // TODO: Gerer le passage Combat / FreeMode.
+    mut ev_newturn: EventWriter<CombatTurnStartEvent>,
     fighters: Query<(Entity, &Health, &Stats, Option<&Player>)>,
 ) {    
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
-        commands.entity(fighter_id).insert(ActionPoints {max: 10, current: 10});
+        commands.entity(fighter_id).insert(ActionPoints {max: 10, current: 0});
         println!("Action points added for {:?}", fighter_id);
     }
     commands.insert_resource(CombatInfos {turn: 0, current_entity: None});
-    combat_state.set(CombatState::StartTurn);
+    //combat_state.set(CombatState::StartTurn);
+    ev_newturn.send(CombatTurnStartEvent);
+    engine_state.set(EngineState::None);
     println!("Combat start!");
 }
 
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
-/// TODO: Check if entity toujours vivante. !!
-/// TODO : Meilleure gestion du regain AP.
 pub fn combat_turn_start(
     mut action_query: Query<(Entity, &mut ActionPoints)>,
     npc_query: Query<Entity, (With<ActionPoints>, Without<Player>)>,
@@ -126,6 +98,7 @@ pub fn combat_turn_start(
     mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
     // On redonne les PA à tout le monde.
+    println!("Combat turn start");
     for (_entity, mut action_points) in action_query.iter_mut() {
         action_points.current = action_points.max;
     }
@@ -151,6 +124,7 @@ pub fn combat_turn_start(
 
 /// On récupère le prochain combattant, puisque le précédent a fini.
 pub fn combat_turn_next_entity(
+    mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,       
@@ -165,7 +139,12 @@ pub fn combat_turn_next_entity(
     };
     // On mets à jour CombatInfos pour savoir qui est l'entité dont c'est le Tour.
     current_combat.current_entity = Some(entity);
+    // On lui donne le composant "Turn".
+    commands.entity(entity).insert(Turn);
 
+    combat_state.set(CombatState::TurnUpdate);
+
+    /* 
     // si joueur, on mets le PlayerTurn State.
     if let Ok(_player) = q_player.get(entity) {
         //println!("Next entity is player : {:?}", entity);
@@ -174,6 +153,16 @@ pub fn combat_turn_next_entity(
         //println!("Next entity is a npc : {:?}", entity);
         combat_state.set(CombatState::TurnUpdate);
     }
+    */
+}
+
+pub fn combat_turn_end(    
+    mut combat_state: ResMut<NextState<CombatState>>,
+    mut ev_newturn: EventWriter<CombatTurnStartEvent>,
+){
+    println!("Combat turn End.");    
+    ev_newturn.send(CombatTurnStartEvent);
+    //combat_state.set(CombatState::StartTurn);
 }
 
 /// Les events du Joueur.
@@ -187,38 +176,54 @@ pub fn combat_input(
             let entity = result.0;
             ev_endturn.send(EntityEndTurnEvent {entity});
             println!("Player asked for End of round for {:?}.", entity);
-        }
-        
+        }        
     }
 }
 
-/// Une action accomplie par un personnage, déclenchée par un Event.
+/// NPC : Generate / Choice to forfeit their turn.
+pub fn plan_action_forfeit(
+    combat_info: Res<CombatInfos>,
+    mut query_npc: Query<(Entity, &ActionPoints, &Turn), With<Npc>>,
+    mut ev_endturn: EventWriter<EntityEndTurnEvent>,
+){
+    println!("Planning forfeit...");
+    let Some(_entity) = combat_info.current_entity else { return };  //TODO : Toujours necessaire avec le Component Turn?
+    for (entity, _action_points, _turn) in query_npc.iter() {
+        //TODO : Dans quelles circonstances un NPC decide de Forfeit.
+        println!("planning: Entity is a NPC.");
+        ev_endturn.send(EntityEndTurnEvent {entity})     
+    }  
+}
+
+/// Gestion de l'action de forfeit.
 pub fn action_entity_end_turn(
     mut ev_endturn: EventReader<EntityEndTurnEvent>,
-    mut actor_q: Query<&mut Actor>,    
+    mut query_character_turn: Query<(Entity, &mut ActionPoints, &Turn, Option<&Player>)>,
     mut combat_queue: ResMut<CurrentEntityTurnQueue>,
     //mut combat_state: ResMut<NextState<CombatState>>,
     //mut ev_interface: EventWriter<ReloadUiEvent>,    
-    mut ev_tick: EventWriter<CombatTickEvent>
+    //mut ev_tick: EventWriter<CombatTickEvent>,    
+    mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
+    println!("action entity turn");
     for event in ev_endturn.iter() {
-        let Ok(mut actor) = actor_q.get_mut(event.entity) else { continue;};
+        //L'entité n'a pas de Action points / Pas son tour, on ignore.
+        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
+        let (_entity, mut action_points, _turn, is_player) = entity_infos;
 
-        let action = EndTurnAction(event.entity);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        combat_queue.0 = VecDeque::from([event.entity]);
+        let lost_value = action_points.max.saturating_add(0);
+        consume_actionpoints(&mut action_points, lost_value);
+        
+        if is_player.is_some() {
+            ev_interface.send(ReloadUiEvent);
+        }
     }
-    //combat_state.set(CombatState::TurnUpdate);  //TODO : On va pas faire ça à chaque action...
-    ev_tick.send(CombatTickEvent);
 }
-
-
-// ----- PROCESS ACTION AVEC DEPENSE DE PA ----- //
-
 
 /// Regarde si tous les PA ont été dépensé par le personnage dont c'est le tour.
 /// Si c'est le cas, passe au perso suivant.
 pub fn combat_turn_entity_check(
+    mut commands: Commands,
     current_combat: ResMut<CombatInfos>,
     query_action_points: Query<(&ActionPoints, Option<&Player>)>,
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>, 
@@ -234,22 +239,17 @@ pub fn combat_turn_entity_check(
             //If no AP anymore, next entity turn.
             if ap_entity.current <= 0 {
                 //println!("This entity has no AP: let's turn to next entity event.");
+                commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {
-                //println!("This entity has AP and is the Player: let's go in PlayerTurnState.");
-            combat_state.set(CombatState::PlayerTurn);
+                println!("This entity has AP and is the Player.");
+                //combat_state.set(CombatState::PlayerTurn);
+           } else {
+           println!("This entity has AP but is not the player");
            }
-           //println!("This entity has AP but is not the player");
         }
        // println!("Turn Entity check: {:?} turn.", entity);
     }    
-}
-
-pub fn combat_turn_end(    
-    mut combat_state: ResMut<NextState<CombatState>>,
-){
-    println!("Combat turn End");
-    combat_state.set(CombatState::StartTurn);
 }
 
 /// Retire les ActionPoints, Remove CombatInfos, change State.
@@ -257,27 +257,35 @@ pub fn combat_end(
     mut commands: Commands,
     fighters: Query<(Entity, &ActionPoints)>,
     mut combat_state: ResMut<NextState<CombatState>>,
+    mut queue: ResMut<CombatTurnQueue>,
 ){
     for (entity, _fighter) in fighters.iter() {
         commands.entity(entity).remove::<ActionPoints>();
     }
     commands.remove_resource::<CombatInfos>();
-    combat_state.set(CombatState::None);
+    //combat_state.set(CombatState::None);
+    queue.0.clear();
     println!("Combat end!");
 }
 
-/// NPC : Choice to forfeit their turn.
-pub fn plan_action_forfeit(
-    combat_info: Res<CombatInfos>,
-    mut query_npc: Query<Entity, With<Npc>>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,
-){
-    println!("Planning forfeit...");
-    let Some(entity) = combat_info.current_entity else { return };
-    let Ok(_is_npc) = query_npc.get(entity) else { return };
-    println!("planning: Entity is a NPC.");
-    ev_endturn.send(EntityEndTurnEvent {entity})       
-}
+
+
+
+
+
+
+
+
+
+
+
+
+// ----- PROCESS ACTION AVEC DEPENSE DE PA ----- //
+
+
+
+
+
 
 
 /* 
