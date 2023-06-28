@@ -1,14 +1,13 @@
-use std::collections::VecDeque;
-
 use bevy::prelude::*;
 
 pub mod components;
-pub mod combat_queue_system;
-mod models;
+mod events;
 
-use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatTurnEndEvent, CombatInfos}, models::EndTurnAction}};
-use self::{components::{CombatTurnQueue, EntityEndTurnEvent, CombatTurnNextEntityEvent, CombatTickEvent, CurrentEntityTurnQueue, InvalidPlayerCombatActionEvent, PlayerCombatActionEvent, CombatTurnStartEvent, Turn}, combat_queue_system::process_action_queue};
-use super::{pieces::components::{Health, Stats, Actor, Npc}, player::{Player, PlayerActionEvent}, ui::ReloadUiEvent, actions::Action, rules::consume_actionpoints};
+use crate::{states::{GameState, EngineState}, game::combat::components::{ActionPoints, CombatInfos}};
+
+use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn}, components::CurrentEntityTurnQueue};
+
+use super::{pieces::components::{Health, Stats, Npc}, player::{Player}, ui::ReloadUiEvent, rules::consume_actionpoints};
 
 
 
@@ -267,92 +266,4 @@ pub fn combat_end(
     queue.0.clear();
     println!("Combat end!");
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ----- PROCESS ACTION AVEC DEPENSE DE PA ----- //
-
-
-
-
-
-
-
-/* 
-
-pub fn combat_input_received(
-    mut combat_state: ResMut<NextState<CombatState>>,
-){
-    combat_state.set(CombatState::TurnUpdate);
-}
-
-
-
-
-pub fn combat_tick(
-    mut ev_tick: EventWriter<CombatTickEvent>
-) {
-    ev_tick.send(CombatTickEvent);
-}
-
-pub fn combat_turn_update(
-    mut commands: Commands,
-    mut current_combat: ResMut<CombatInfos>,
-    query_action_points: Query<&ActionPoints>,
-    mut ev_next: EventWriter<CombatTurnNextEntityEvent>,
-    query_player: Query<&Player>,   //DEBUG
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,      //DEBUG    
-    
-) {
-    println!("Turn update begins...");
-    // On recupere l'entité de CombatInfos.
-    if let Some(mut entity) = current_combat.current_entity {
-        if let Ok(ap_entity) = query_action_points.get(entity) {
-            //If no AP anymore, next entity turn.
-            if ap_entity.current <= 0 {
-                ev_next.send(CombatTurnNextEntityEvent);
-           }
-        }
-    }
-    
-    /* else {            
-                //println!("Current AP for {:?}: {:?}", entity, ap_entity.current);
-                //DEBUG
-                if let Ok(_is_player) = query_player.get(entity) { 
-                    println!("Player still have AP");
-                } else {
-                    ev_endturn.send(EntityEndTurnEvent {entity});
-                }
-           };
-        } else {
-            current_combat.current_entity = None;
-            ev_next.send(CombatTurnNextEntityEvent);
-        };
-    } else {
-        ev_next.send(CombatTurnNextEntityEvent);
-    };  
-    // On regarde s'il a des PA.
-    // S'il n'en a plus, on le retire de CombatInfos et on passe à Next Entity
-     */
-}
-
-
-
-*/
-
-
-
-
-
-
 
