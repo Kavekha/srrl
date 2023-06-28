@@ -42,9 +42,9 @@ impl Plugin for CombatPlugin {
            // Le tour commence.
            .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()))
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
-           .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
+           .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start))
             // toutes les entités ont fait leur tour.
-            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).before(combat_turn_start))
+            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity))
 
             // Generation des actions à faire.
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)))
@@ -175,6 +175,7 @@ pub fn combat_input(
         let Ok(result) = player_query.get_single() else { return };
         let entity = result.0;
         let destination = res_cursor.grid_position;
+        println!("Clic to move!");
         ev_try_move.send(EntityTryMoveEvent {entity: entity, destination: destination});
 
     }
@@ -226,7 +227,7 @@ pub fn action_entity_try_move(
     mut ev_move: EventWriter<EntityMoveEvent>
 ){
     for event in ev_try_move.iter() {
-        //println!("action entity try move");
+        println!("action entity try move");
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { return };
         let (action_points, position, _is_player) = entity_infos;
 
@@ -314,7 +315,8 @@ pub fn walk_combat_animation(
             let target = get_final_world_position(current_step, piece.size);
             path_animation.push_back(target);
         }
-        commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: false});        
+        println!("PathAnimator created");
+        commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
     }
 }
 
