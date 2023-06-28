@@ -5,7 +5,7 @@ use bevy::{prelude::*, transform::commands};
 pub mod components;
 mod events;
 
-use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos, MovePath}, events::AnimateEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{components::PathAnimator, get_final_world_position}};
+use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos, MovePath}, events::AnimateEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{components::PathAnimator, get_final_world_position, pieces_render::path_animator_update}};
 
 use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent}, components::CurrentEntityTurnQueue};
 
@@ -62,6 +62,8 @@ impl Plugin for CombatPlugin {
 
             // ANIME : //TODO : Changer d'endroit.
             .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, path_animator_update.run_if(in_state(GameState::GameMap)))
+            
 
             // TODO: Quitter le combat. PLACEHOLDER.
             .add_systems(OnExit(GameState::GameMap), combat_end)
