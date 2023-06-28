@@ -33,8 +33,7 @@ pub struct Turn;
 
 #[derive(Event)]
 pub struct EntityMoveEvent {
-    pub entity: Entity,
-    pub destination: Vector2Int
+    pub entity: Entity
 }
 
 #[derive(Event)]

@@ -1,13 +1,19 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, transform::commands};
 
 pub mod components;
 mod events;
 
-use crate::{states::{GameState, EngineState}, game::combat::components::{ActionPoints, CombatInfos}, map_builders::map::Map};
+use crate::{states::{GameState, EngineState}, game::combat::components::{ActionPoints, CombatInfos, MovePath}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent}, components::CurrentEntityTurnQueue};
 
 use super::{pieces::components::{Health, Stats, Npc, Occupier}, player::{Player, Cursor}, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition};
+
+
+
+
+pub const AP_COST_MOVE:u32 = 1;
+
 
 
 pub struct CombatPlugin;
@@ -155,7 +161,7 @@ pub fn combat_input(
         let Ok(result) = player_query.get_single() else { return };
         let entity = result.0;
         ev_endturn.send(EntityEndTurnEvent {entity});
-        println!("Player asked for End of round for {:?}.", entity);
+        //println!("Player asked for End of round for {:?}.", entity);
     }
     if buttons.just_released(MouseButton::Left) {
         let Ok(result) = player_query.get_single() else { return };
@@ -172,11 +178,11 @@ pub fn plan_action_forfeit(
     mut query_npc: Query<(Entity, &ActionPoints, &Turn), With<Npc>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,
 ){
-    println!("Planning forfeit...");
+    //println!("Planning forfeit...");
     let Some(_entity) = combat_info.current_entity else { return };  //TODO : Toujours necessaire avec le Component Turn?
     for (entity, _action_points, _turn) in query_npc.iter() {
         //TODO : Dans quelles circonstances un NPC decide de Forfeit.
-        println!("planning: Entity is a NPC.");
+        //println!("planning: Entity is a NPC.");
         ev_endturn.send(EntityEndTurnEvent {entity})     
     }  
 }
@@ -187,7 +193,7 @@ pub fn action_entity_end_turn(
     mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
     mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
-    println!("action entity forfeit turn");
+    //println!("action entity forfeit turn");
     for event in ev_endturn.iter() {
         //L'entité n'a pas de Action points / Pas son tour, on ignore.
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
@@ -204,16 +210,38 @@ pub fn action_entity_end_turn(
 
 /// Test de l'action Move.
 pub fn action_entity_try_move(
-    mut query_character_turn: Query<(&ActionPoints, Option<&Player>), With<Turn>>,
+    mut commands: Commands,
+    mut query_character_turn: Query<(&ActionPoints, &BoardPosition, Option<&Player>), With<Turn>>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
     mut ev_try_move: EventReader<EntityTryMoveEvent>,
     mut ev_move: EventWriter<EntityMoveEvent>
 ){
     for event in ev_try_move.iter() {
-        println!("action entity try move");
+        //println!("action entity try move");
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { return };
-        let (_action_points, _is_player) = entity_infos;
+        let (action_points, position, _is_player) = entity_infos;
+
+        let path_to_destination = find_path(
+            position.v,
+            event.destination,
+            &board.entity_tiles.keys().cloned().collect(),
+            &query_occupied.iter().map(|p| p.v).collect()
+        ); 
+
+        let Some(path) = path_to_destination else { return };
+        let ap_cost = path.len() as u32;
+        if action_points.current < ap_cost { return };
+
+        let mut pathing = path.clone();
+
+
+        println!("Try move: OK for {:?}. PA cost for moving is : {:?}", event.entity, ap_cost);
+        commands.entity(event.entity).insert(MovePath {path: pathing});
+        ev_move.send(EntityMoveEvent {entity: event.entity});
+
+
+        /* 
         if !board.entity_tiles.contains_key(&event.destination) { return };    //Hors map.
         if board.is_blocked(event.destination.x, event.destination.y) { return };
         for occupier_position in query_occupied.iter() {
@@ -221,25 +249,40 @@ pub fn action_entity_try_move(
                 return;
             }
         }
-        println!("Try move: OK for {:?}", event.entity);
-        ev_move.send(EntityMoveEvent {entity: event.entity, destination: event.destination});
+        */
+
     }
 }
 
 
 /// Gestion de l'action Move.
 pub fn action_entity_move(
-    //mut commands: Commands,
-    mut query_character_turn: Query<(Entity, &ActionPoints, &mut BoardPosition, Option<&Player>), With<Turn>>,
-    mut ev_move: EventReader<EntityMoveEvent>
+    mut commands: Commands,
+    mut query_character_turn: Query<(Entity, &mut ActionPoints, &mut BoardPosition, &mut MovePath, Option<&Player>), With<Turn>>,
+    mut ev_move: EventReader<EntityMoveEvent>,
+    mut ev_interface: EventWriter<ReloadUiEvent>
 ){    
     for event in ev_move.iter() {
         println!("action entity move");
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
-        let (_entity, _action_points,mut board_position, _is_player) = entity_infos;
-        board_position.v = event.destination;   //TODO : anim, step by step, pathfinding, etc.
+        let (entity, mut action_points,mut board_position, mut move_path, is_player) = entity_infos;
 
-        //TODO: Move animation & Queue.
+        while !move_path.path.is_empty() {
+            let destination = move_path.path.pop_front();
+            let Some(new_position) = destination else { break };    // Normalement, il y a tjrs qq chose.
+            board_position.v = new_position;
+            action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
+
+            if is_player.is_some() {
+                ev_interface.send(ReloadUiEvent);
+            }
+        }
+        
+        // On supprime à la fin.
+        commands.entity(entity).remove::<MovePath>();
+        println!("Entity {:?} has MovePath removed.", entity);
+        
+        //TODO : anim
         //commands.entity(entity).insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
     }
 }
@@ -253,7 +296,7 @@ pub fn combat_turn_entity_check(
     query_action_points: Query<(&ActionPoints, Option<&Player>)>,
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
 ) {
-    println!("Combat turn entity check...");
+    //println!("Combat turn entity check...");
     // On recupere l'entité de CombatInfos.
     if let Some(entity) = current_combat.current_entity {
         //println!("There is a current entity in CombatInfos");
@@ -266,10 +309,10 @@ pub fn combat_turn_entity_check(
                 commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {
-                println!("This entity has AP and is the Player.");
+                //println!("This entity has AP and is the Player.");
                 //combat_state.set(CombatState::PlayerTurn);
            } else {
-           println!("This entity has AP but is not the player");
+            //println!("This entity has AP but is not the player");
            }
         }
        // println!("Turn Entity check: {:?} turn.", entity);
