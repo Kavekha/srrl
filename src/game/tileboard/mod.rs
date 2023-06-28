@@ -3,7 +3,7 @@ use bevy::{prelude::*};
 mod system_map;
 pub mod components;
 
-pub use components::{GridPosition, Tile};
+pub use components::Tile;
 
 use self::{system_map::spawn_map};
 

@@ -3,22 +3,12 @@ use bevy::prelude::*;
 pub mod components;
 mod events;
 
-use crate::{states::{GameState, EngineState}, game::combat::components::{ActionPoints, CombatInfos}};
+use crate::{states::{GameState, EngineState}, game::combat::components::{ActionPoints, CombatInfos}, map_builders::map::Map};
 
-use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn}, components::CurrentEntityTurnQueue};
+use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent}, components::CurrentEntityTurnQueue};
 
-use super::{pieces::components::{Health, Stats, Npc}, player::{Player}, ui::ReloadUiEvent, rules::consume_actionpoints};
+use super::{pieces::components::{Health, Stats, Npc, Occupier}, player::{Player, Cursor}, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition};
 
-
-
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum CombatState {
-    #[default]
-    None, 
-    StartTurn,
-    PlayerTurn,
-    TurnUpdate
-}
 
 
 pub struct CombatPlugin;
@@ -27,8 +17,6 @@ impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
         //SECONDE REFACTO
-            .add_state::<CombatState>()     // Les infos du combat: Tour, Personnage dont c'est le tour.
-            
             .init_resource::<CombatTurnQueue>()     // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
 
@@ -37,6 +25,9 @@ impl Plugin for CombatPlugin {
             .add_event::<CombatTurnEndEvent>()              // Envoyé quand plus aucun acteur dans la Queue du Tour de Combat.
 
             .add_event::<EntityEndTurnEvent>()                  // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC.                 
+            .add_event::<EntityTryMoveEvent>()
+            .add_event::<EntityMoveEvent>()
+            
             // Init Combat.
             .add_systems(OnEnter(GameState::GameMap), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
            // Le tour commence.
@@ -50,8 +41,12 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)))
             
+            // Check des actions demandées.
+            .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)))
+            
             // Gestion des actions demandées.
             .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, action_entity_move.run_if(in_state(GameState::GameMap)))
 
 
             // Check de la situation PA-wise.
@@ -69,7 +64,6 @@ impl Plugin for CombatPlugin {
 /// Donne AP aux participants, créé le CombatInfos ressource, passe en StartTurn.
 pub fn combat_start(    
     mut commands: Commands,
-    mut combat_state: ResMut<NextState<CombatState>>,
     mut engine_state: ResMut<NextState<EngineState>>,   // TODO: Gerer le passage Combat / FreeMode.
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
     fighters: Query<(Entity, &Health, &Stats, Option<&Player>)>,
@@ -128,7 +122,6 @@ pub fn combat_turn_next_entity(
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,       
     q_player: Query<&Player>,
-    mut combat_state: ResMut<NextState<CombatState>>,
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
@@ -140,23 +133,9 @@ pub fn combat_turn_next_entity(
     current_combat.current_entity = Some(entity);
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);
-
-    combat_state.set(CombatState::TurnUpdate);
-
-    /* 
-    // si joueur, on mets le PlayerTurn State.
-    if let Ok(_player) = q_player.get(entity) {
-        //println!("Next entity is player : {:?}", entity);
-        combat_state.set(CombatState::PlayerTurn);
-    } else {    
-        //println!("Next entity is a npc : {:?}", entity);
-        combat_state.set(CombatState::TurnUpdate);
-    }
-    */
 }
 
 pub fn combat_turn_end(    
-    mut combat_state: ResMut<NextState<CombatState>>,
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
 ){
     println!("Combat turn End.");    
@@ -168,14 +147,23 @@ pub fn combat_turn_end(
 pub fn combat_input(
     keys: Res<Input<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
+    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
     player_query: Query<(Entity, With<Player>)>,
+    buttons: Res<Input<MouseButton>>,
+    res_cursor: Res<Cursor>,    //TODO : On click event?
 ){
     if keys.just_pressed(KeyCode::T) {
-        if let Ok(result) = player_query.get_single() {
-            let entity = result.0;
-            ev_endturn.send(EntityEndTurnEvent {entity});
-            println!("Player asked for End of round for {:?}.", entity);
-        }        
+        let Ok(result) = player_query.get_single() else { return };
+        let entity = result.0;
+        ev_endturn.send(EntityEndTurnEvent {entity});
+        println!("Player asked for End of round for {:?}.", entity);
+    }
+    if buttons.just_released(MouseButton::Left) {
+        let Ok(result) = player_query.get_single() else { return };
+        let entity = result.0;
+        let destination = res_cursor.grid_position;
+        ev_try_move.send(EntityTryMoveEvent {entity: entity, destination: destination});
+
     }
 }
 
@@ -197,18 +185,18 @@ pub fn plan_action_forfeit(
 /// Gestion de l'action de forfeit.
 pub fn action_entity_end_turn(
     mut ev_endturn: EventReader<EntityEndTurnEvent>,
-    mut query_character_turn: Query<(Entity, &mut ActionPoints, &Turn, Option<&Player>)>,
+    mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
     mut combat_queue: ResMut<CurrentEntityTurnQueue>,
     //mut combat_state: ResMut<NextState<CombatState>>,
     //mut ev_interface: EventWriter<ReloadUiEvent>,    
     //mut ev_tick: EventWriter<CombatTickEvent>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
-    println!("action entity turn");
+    println!("action entity forfeit turn");
     for event in ev_endturn.iter() {
         //L'entité n'a pas de Action points / Pas son tour, on ignore.
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
-        let (_entity, mut action_points, _turn, is_player) = entity_infos;
+        let (_entity, mut action_points, is_player) = entity_infos;
 
         let lost_value = action_points.max.saturating_add(0);
         consume_actionpoints(&mut action_points, lost_value);
@@ -219,14 +207,52 @@ pub fn action_entity_end_turn(
     }
 }
 
+/// Test de l'action Move.
+pub fn action_entity_try_move(
+    mut query_character_turn: Query<(&ActionPoints, Option<&Player>), With<Turn>>,
+    mut query_occupied: Query<&BoardPosition, With<Occupier>>,
+    board: Res<Map>,
+    mut ev_try_move: EventReader<EntityTryMoveEvent>,
+    mut ev_move: EventWriter<EntityMoveEvent>
+){
+    for event in ev_try_move.iter() {
+        println!("action entity try move");
+        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { return };
+        let (_action_points, _is_player) = entity_infos;
+        if !board.entity_tiles.contains_key(&event.destination) { return };    //Hors map.
+        if board.is_blocked(event.destination.x, event.destination.y) { return };
+        for (occupier_position) in query_occupied.iter() {
+            if occupier_position.v == event.destination {
+                return;
+            }
+        }
+        println!("Try move: OK for {:?}", event.entity);
+        ev_move.send(EntityMoveEvent {entity: event.entity, destination: event.destination});
+    }
+}
+
+
+/// Gestion de l'action Move.
+pub fn action_entity_move(
+    mut query_character_turn: Query<(Entity, &ActionPoints, &mut BoardPosition, Option<&Player>), With<Turn>>,
+    mut ev_move: EventReader<EntityMoveEvent>
+){    
+    for event in ev_move.iter() {
+        println!("action entity move");
+        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
+        let (_entity, _action_points,mut board_position, _is_player) = entity_infos;
+        board_position.v = event.destination;
+    }
+}
+
+
 /// Regarde si tous les PA ont été dépensé par le personnage dont c'est le tour.
 /// Si c'est le cas, passe au perso suivant.
 pub fn combat_turn_entity_check(
     mut commands: Commands,
     current_combat: ResMut<CombatInfos>,
     query_action_points: Query<(&ActionPoints, Option<&Player>)>,
-    mut ev_next: EventWriter<CombatTurnNextEntityEvent>, 
-    mut combat_state: ResMut<NextState<CombatState>>,    
+    mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
 ) {
     println!("Combat turn entity check...");
     // On recupere l'entité de CombatInfos.
@@ -255,7 +281,6 @@ pub fn combat_turn_entity_check(
 pub fn combat_end(
     mut commands: Commands,
     fighters: Query<(Entity, &ActionPoints)>,
-    mut combat_state: ResMut<NextState<CombatState>>,
     mut queue: ResMut<CombatTurnQueue>,
 ){
     for (entity, _fighter) in fighters.iter() {
