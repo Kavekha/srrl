@@ -41,3 +41,10 @@ pub struct EntityTryMoveEvent {
     pub entity: Entity,
     pub destination: Vector2Int
 }
+
+#[derive(Event)]
+pub struct AnimateEvent {
+    //anim_type?
+    pub entity: Entity,
+    pub path: VecDeque<Vector2Int>
+}

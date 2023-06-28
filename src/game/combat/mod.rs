@@ -1,13 +1,15 @@
+use std::collections::VecDeque;
+
 use bevy::{prelude::*, transform::commands};
 
 pub mod components;
 mod events;
 
-use crate::{states::{GameState, EngineState}, game::combat::components::{ActionPoints, CombatInfos, MovePath}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos, MovePath}, events::AnimateEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{components::PathAnimator, get_final_world_position}};
 
 use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent}, components::CurrentEntityTurnQueue};
 
-use super::{pieces::components::{Health, Stats, Npc, Occupier}, player::{Player, Cursor}, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition};
+use super::{pieces::components::{Health, Stats, Npc, Occupier, Piece}, player::{Player, Cursor}, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition};
 
 
 
@@ -33,6 +35,7 @@ impl Plugin for CombatPlugin {
             .add_event::<EntityTryMoveEvent>()
             .add_event::<EntityMoveEvent>()
    
+            .add_event::<AnimateEvent>()    //Animation //TODO : Deplacer.
             
             // Init Combat.
             .add_systems(OnEnter(GameState::GameMap), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
@@ -41,7 +44,7 @@ impl Plugin for CombatPlugin {
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
             // toutes les entités ont fait leur tour.
-            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))
+            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).before(combat_turn_start))
 
             // Generation des actions à faire.
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)))
@@ -54,9 +57,11 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::GameMap)))
             .add_systems(Update, action_entity_move.run_if(in_state(GameState::GameMap)))
 
-
             // Check de la situation PA-wise.
             .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)))
+
+            // ANIME : //TODO : Changer d'endroit.
+            .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)))
 
             // TODO: Quitter le combat. PLACEHOLDER.
             .add_systems(OnExit(GameState::GameMap), combat_end)
@@ -130,7 +135,7 @@ pub fn combat_turn_next_entity(
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
-        //println!("Combat Turn Next Entity: Plus de combattants dans la Queue.");        
+        println!("Combat Turn Next Entity: Plus de combattants dans la Queue.");        
         ev_turn_end.send(CombatTurnEndEvent);
         return;
     };
@@ -142,10 +147,11 @@ pub fn combat_turn_next_entity(
 
 pub fn combat_turn_end(    
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
+    mut queue: ResMut<CombatTurnQueue>,
 ){
     println!("Combat turn End.");    
+    queue.0.clear();
     ev_newturn.send(CombatTurnStartEvent);
-    //combat_state.set(CombatState::StartTurn);
 }
 
 /// Les events du Joueur.
@@ -233,7 +239,7 @@ pub fn action_entity_try_move(
         let ap_cost = path.len() as u32;
         if action_points.current < ap_cost { return };
 
-        let mut pathing = path.clone();
+        let pathing = path.clone();
 
 
         println!("Try move: OK for {:?}. PA cost for moving is : {:?}", event.entity, ap_cost);
@@ -260,30 +266,53 @@ pub fn action_entity_move(
     mut commands: Commands,
     mut query_character_turn: Query<(Entity, &mut ActionPoints, &mut BoardPosition, &mut MovePath, Option<&Player>), With<Turn>>,
     mut ev_move: EventReader<EntityMoveEvent>,
-    mut ev_interface: EventWriter<ReloadUiEvent>
+    mut ev_interface: EventWriter<ReloadUiEvent>,
+    mut ev_animate: EventWriter<AnimateEvent>
 ){    
     for event in ev_move.iter() {
         println!("action entity move");
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
         let (entity, mut action_points,mut board_position, mut move_path, is_player) = entity_infos;
 
+        let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         while !move_path.path.is_empty() {
             let destination = move_path.path.pop_front();
             let Some(new_position) = destination else { break };    // Normalement, il y a tjrs qq chose.
             board_position.v = new_position;
             action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
+            path_animation.push_back(new_position);
 
             if is_player.is_some() {
                 ev_interface.send(ReloadUiEvent);
             }
         }
-        
+        ev_animate.send(AnimateEvent {entity: entity, path: path_animation});
         // On supprime à la fin.
         commands.entity(entity).remove::<MovePath>();
         println!("Entity {:?} has MovePath removed.", entity);
         
         //TODO : anim
         //commands.entity(entity).insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
+    }
+}
+
+pub fn walk_combat_animation(    
+    mut commands: Commands,
+    mut ev_animate: EventReader<AnimateEvent>,
+    query_piece: Query<&Piece>,
+) {
+    for ev in ev_animate.iter() {
+        let Ok(piece) = query_piece.get(ev.entity) else { continue };
+        let mut path = ev.path.clone();
+
+        let mut path_animation: VecDeque<Vec3> = VecDeque::new();
+        while !ev.path.is_empty() {
+            let step = path.pop_front();
+            let Some(current_step) = step else { break };
+            let target = get_final_world_position(current_step, piece.size);
+            path_animation.push_back(target);
+        }
+        commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: false});        
     }
 }
 

@@ -57,6 +57,9 @@ pub fn player_mouse_input(
     if buttons.just_released(MouseButton::Left) {
         //println!("Doing new actions instead...");
         // MoveTo.
+
+        // TODO : DEPRECATED? On desactive pour le CombatSystem for now.
+        /*
         let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
         let destination = res_cursor.grid_position;
         
@@ -65,6 +68,7 @@ pub fn player_mouse_input(
         queue.0 = VecDeque::from([entity]);
         ev_action.send(PlayerActionEvent);
         //println!("MoveToAction sent from player mouse input. Actor queue len is : {:?}", actor.0.len())
+         */
     }
 }
 

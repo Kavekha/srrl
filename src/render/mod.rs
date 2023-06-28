@@ -67,7 +67,7 @@ fn get_iso_y_modifier_from_elevation(
     ((tile_elevation - TILE_HEIGHT_MEDIUM) / 2) as f32
 }
 
-fn get_final_world_position(
+pub fn get_final_world_position(
     v: Vector2Int,
     size:i32
 ) -> Vec3 {
