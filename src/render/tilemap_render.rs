@@ -1,11 +1,9 @@
 use bevy::prelude::*;
-use rand::Rng;
 
 use crate::{
 
     globals::{
-        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_HIGH, MAP_WALL_LOW, TILE_HEIGHT_MEDIUM_HIGH, TILE_HEIGHT_HIGH,
-        TILE_HEIGHT_VERY_HIGH, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, MAP_WALL},
+        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH},
     map_builders::TileType, game::{Tile, tileboard::components::BoardPosition}, 
     render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render}
 };

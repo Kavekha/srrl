@@ -10,7 +10,6 @@ use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityE
 use super::{pieces::components::{Health, Stats, Npc, Occupier}, player::{Player, Cursor}, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition};
 
 
-
 pub struct CombatPlugin;
 
 impl Plugin for CombatPlugin {
@@ -27,6 +26,7 @@ impl Plugin for CombatPlugin {
             .add_event::<EntityEndTurnEvent>()                  // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC.                 
             .add_event::<EntityTryMoveEvent>()
             .add_event::<EntityMoveEvent>()
+   
             
             // Init Combat.
             .add_systems(OnEnter(GameState::GameMap), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
@@ -120,8 +120,7 @@ pub fn combat_turn_next_entity(
     mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
-    mut current_combat: ResMut<CombatInfos>,       
-    q_player: Query<&Player>,
+    mut current_combat: ResMut<CombatInfos>,
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
@@ -186,10 +185,6 @@ pub fn plan_action_forfeit(
 pub fn action_entity_end_turn(
     mut ev_endturn: EventReader<EntityEndTurnEvent>,
     mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
-    mut combat_queue: ResMut<CurrentEntityTurnQueue>,
-    //mut combat_state: ResMut<NextState<CombatState>>,
-    //mut ev_interface: EventWriter<ReloadUiEvent>,    
-    //mut ev_tick: EventWriter<CombatTickEvent>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
     println!("action entity forfeit turn");
@@ -210,7 +205,7 @@ pub fn action_entity_end_turn(
 /// Test de l'action Move.
 pub fn action_entity_try_move(
     mut query_character_turn: Query<(&ActionPoints, Option<&Player>), With<Turn>>,
-    mut query_occupied: Query<&BoardPosition, With<Occupier>>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
     mut ev_try_move: EventReader<EntityTryMoveEvent>,
     mut ev_move: EventWriter<EntityMoveEvent>
@@ -221,7 +216,7 @@ pub fn action_entity_try_move(
         let (_action_points, _is_player) = entity_infos;
         if !board.entity_tiles.contains_key(&event.destination) { return };    //Hors map.
         if board.is_blocked(event.destination.x, event.destination.y) { return };
-        for (occupier_position) in query_occupied.iter() {
+        for occupier_position in query_occupied.iter() {
             if occupier_position.v == event.destination {
                 return;
             }
@@ -234,6 +229,7 @@ pub fn action_entity_try_move(
 
 /// Gestion de l'action Move.
 pub fn action_entity_move(
+    //mut commands: Commands,
     mut query_character_turn: Query<(Entity, &ActionPoints, &mut BoardPosition, Option<&Player>), With<Turn>>,
     mut ev_move: EventReader<EntityMoveEvent>
 ){    
@@ -241,7 +237,10 @@ pub fn action_entity_move(
         println!("action entity move");
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
         let (_entity, _action_points,mut board_position, _is_player) = entity_infos;
-        board_position.v = event.destination;
+        board_position.v = event.destination;   //TODO : anim, step by step, pathfinding, etc.
+
+        //TODO: Move animation & Queue.
+        //commands.entity(entity).insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
     }
 }
 
