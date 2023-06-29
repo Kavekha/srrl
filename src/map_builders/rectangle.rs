@@ -1,7 +1,7 @@
 use bevy::reflect::{Reflect, FromReflect};
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Copy, Clone, Debug, Reflect, FromReflect, Deserialize, Serialize)]
+#[derive(PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
 pub struct Rectangle {
     pub x1 : i32,
     pub x2 : i32,

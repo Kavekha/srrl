@@ -66,10 +66,11 @@ pub fn path_animator_update(
     for (entity, mut animator, mut transform) in query.iter_mut() {
         if animator.path.len() == 0 {
             // this entity has completed it's animation
-            //println!("PathAnimator: Anim completed.");
+            println!("PathAnimator: Anim completed.");
             commands.entity(entity).remove::<PathAnimator>();
             continue;
         }
+        println!("Anim update");
         let target = *animator.path.get(0).unwrap();  
         //let destination = (target - transform.translation).length();
         let destination = target - transform.translation;

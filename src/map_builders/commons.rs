@@ -9,7 +9,7 @@ use crate::map_builders::{
 
 
 
-#[derive(PartialEq, Copy, Clone, Debug, Reflect, FromReflect, Deserialize, Serialize)]
+#[derive(PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum TileType {
     Wall, 
     Floor,
