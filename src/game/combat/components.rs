@@ -12,6 +12,7 @@ pub struct ActionPoints {
     pub current: u32
 }
 
+// DEPRECATED ?
 #[derive(Component, Default, Debug, Serialize, Deserialize)]
 pub struct MovePath {
     pub path: VecDeque<Vector2Int>

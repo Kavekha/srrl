@@ -264,12 +264,13 @@ pub fn action_entity_try_move(
 
         let pathing = path.clone();
 
-
+        /* 
         println!("Try move: OK for {:?}. PA cost for moving is : {:?}", event.entity, ap_cost);
         let move_path = MovePath {path: pathing};
         commands.entity(event.entity).insert(move_path);//(MovePath {path: pathing});
         println!("Move path added");
-        ev_move.send(EntityMoveEvent {entity: event.entity});
+        */
+        ev_move.send(EntityMoveEvent {entity: event.entity, path: pathing});
 
 
         /* 
@@ -289,7 +290,7 @@ pub fn action_entity_try_move(
 /// Gestion de l'action Move.
 pub fn action_entity_move(
     mut commands: Commands,
-    mut query_character_turn: Query<(Entity, &mut ActionPoints, &mut BoardPosition, &mut MovePath, Option<&Player>), With<Turn>>,
+    mut query_character_turn: Query<(Entity, &mut ActionPoints, &mut BoardPosition, Option<&Player>), With<Turn>>,
     mut ev_move: EventReader<EntityMoveEvent>,
     mut ev_interface: EventWriter<ReloadUiEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
@@ -299,11 +300,12 @@ pub fn action_entity_move(
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
             println!("ActionMove: Je n'ai pas les infos Entité");   // TODO : Quand Action_entity_try_move pose le component MovePath, le Query action_entity_move ne le recupere pas pour le moment (asynchrone?)
             continue };
-        let (entity, mut action_points,mut board_position, mut move_path, is_player) = entity_infos;
+        let (entity, mut action_points,mut board_position, is_player) = entity_infos;
 
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
-        while !move_path.path.is_empty() {
-            let destination = move_path.path.pop_front();
+        let mut path = event.path.clone();
+        while !path.is_empty() {
+            let destination = path.pop_front();
             let Some(new_position) = destination else { 
                 println!("Je n'ai pas de nouvelle position à faire");
                 break };    // Normalement, il y a tjrs qq chose.
@@ -317,8 +319,8 @@ pub fn action_entity_move(
         }
         ev_animate.send(AnimateEvent {entity: entity, path: path_animation});
         // On supprime à la fin.
-        commands.entity(entity).remove::<MovePath>();
-        println!("Entity {:?} has MovePath removed.", entity);
+        //commands.entity(entity).remove::<MovePath>();
+        //println!("Entity {:?} has MovePath removed.", entity);
         
         //TODO : anim
         //commands.entity(entity).insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
