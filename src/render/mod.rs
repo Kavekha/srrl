@@ -13,7 +13,7 @@ use self::{
 
 use crate::{
     globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
-    states::{GameState, TurnSet}, vectors::Vector2Int,
+    states::{GameState, TurnSet}, vectors::Vector2Int, game::combat::CombatSet,
 };
 
 pub struct GraphicsPlugin;
@@ -27,7 +27,8 @@ impl Plugin for GraphicsPlugin {
             .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
             .add_systems(OnEnter(GameState::GameMap), spawn_game_cursor)         
 
-            .add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
+            //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
+            .add_systems(Update, (path_animator_update, melee_animation).in_set(CombatSet::Animation))
             .add_systems(Update, update_game_cursor)         
             ;
     }
@@ -67,7 +68,7 @@ fn get_iso_y_modifier_from_elevation(
     ((tile_elevation - TILE_HEIGHT_MEDIUM) / 2) as f32
 }
 
-fn get_final_world_position(
+pub fn get_final_world_position(
     v: Vector2Int,
     size:i32
 ) -> Vec3 {

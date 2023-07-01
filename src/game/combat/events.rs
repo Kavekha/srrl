@@ -34,11 +34,18 @@ pub struct Turn;
 #[derive(Event)]
 pub struct EntityMoveEvent {
     pub entity: Entity,
-    pub destination: Vector2Int
+    pub path: VecDeque<Vector2Int>
 }
 
 #[derive(Event)]
 pub struct EntityTryMoveEvent {
     pub entity: Entity,
     pub destination: Vector2Int
+}
+
+#[derive(Event)]
+pub struct AnimateEvent {
+    //anim_type?
+    pub entity: Entity,
+    pub path: VecDeque<Vector2Int>
 }
