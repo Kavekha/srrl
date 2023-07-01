@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     game::{pieces::components::{Health, Monster}, player::{Player, Cursor}, combat::components::ActionPoints},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}, render::components::GameCursorRender
 };
 
 use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
@@ -48,59 +48,86 @@ pub fn display_action_points_on_cursor(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     cursor: Res<Cursor>,
-    camera_q: Query<(&Camera, &GlobalTransform)>,    
+    camera_q: Query<(&Camera, &GlobalTransform)>, 
+    query_game_cursor: Query<(&GameCursorRender, &mut Transform)>,
     interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
 ){
     clear_action_points_cursor_ui(&mut commands, interface_query);
 
-    //let (camera, camera_transform) = camera_q.single();
-    //let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
-    let Some(screen_position) = cursor.screen_position else { return };
-    let left = screen_position.x + (CHAR_SIZE as f32 / 2.0);
-    let top = screen_position.y + (CHAR_SIZE as f32 / 2.0); 
+    let (camera, camera_transform) = camera_q.single();
+    let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+    //let Some(screen_position) = cursor.screen_position else { return };
 
-    let width = CHAR_SIZE as f32; 
-    let height = CHAR_SIZE as f32 / 2.0;
+    //println!("Camera physical viewport size is {:?}", screen_size);
 
-    let grow = CHAR_SIZE as f32 * 2.0;
+    for (cursor, transform) in query_game_cursor.iter() {
+        let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
+        //If not in screen, we don't display.
+        if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
+      
+      /*
+        let left =screen_position.x - (TILE_WIDTH_HALF as f32);
+        //let right =screen_size.x - screen_position.x;
+        let top =screen_position.y - (TILE_HEIGHT_HALF as f32); // REMEMBER : world = y goes from bottom to top (++)
+        //let bottom = screen_size.y - screen_position.y;
+        let width = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
+        let height = INTERFACE_HP_CHUNK_HEIGHT/ 2.0;
+        //println!("Character screen position is : {:?}", screen_position);
+        //println!("left : {:?}, right : {:?}, top : {:?}, bottom : {:?}, width: {:?}, height: {:?}", left ,right ,top ,bottom, width, height );
 
-    let ap_container = commands.spawn(NodeBundle {
-        style: Style {                
-            left: Val::Px(left),
-            //right: Val::Px(right),
-            top: Val::Px(top),
-            //bottom: Val::Px(bottom),
-            width: Val::Px(width),
-            height: Val::Px(height),
-            flex_grow: grow,
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
-            flex_direction: FlexDirection::Row,
-            position_type: PositionType::Absolute,
-            ..default()
-        },
-        //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
-        ..default()
-    }).id();  
 
-    let cursor_action_display = commands.spawn(
-        TextBundle::from_section(
-            format!("5"),     //("{}",action_points),
-            TextStyle { 
-                font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
-                font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
-                color: Color::YELLOW,
+        let grow = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0;
+     */    
+    
+        //let (camera, camera_transform) = camera_q.single();
+        //let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+        
+        let left = screen_position.x + (CHAR_SIZE as f32 / 2.0);
+        let top = screen_position.y + (CHAR_SIZE as f32 / 2.0); 
+
+        let width = CHAR_SIZE as f32; 
+        let height = CHAR_SIZE as f32 / 2.0;
+
+        let grow = CHAR_SIZE as f32 * 2.0;
+
+        let ap_container = commands.spawn(NodeBundle {
+            style: Style {                
+                left: Val::Px(left),
+                //right: Val::Px(right),
+                top: Val::Px(top),
+                //bottom: Val::Px(bottom),
+                width: Val::Px(width),
+                height: Val::Px(height),
+                flex_grow: grow,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                flex_direction: FlexDirection::Row,
+                position_type: PositionType::Absolute,
+                ..default()
             },
-        )
-        .with_style(Style {
-            margin: UiRect::all(Val::Px(8.)),            
+            //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
             ..default()
-        }),
-    ).id();
+        }).id();  
+
+        let cursor_action_display = commands.spawn(
+            TextBundle::from_section(
+                format!("5"),     //("{}",action_points),
+                TextStyle { 
+                    font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                    font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                    color: Color::YELLOW,
+                },
+            )
+            .with_style(Style {
+                margin: UiRect::all(Val::Px(8.)),            
+                ..default()
+            }),
+        ).id();
 
 
-    commands.entity(ap_container).insert(UiActionPointsOnCursor);
-    commands.entity(ap_container).add_child(cursor_action_display);
+        commands.entity(ap_container).insert(UiActionPointsOnCursor);
+        commands.entity(ap_container).add_child(cursor_action_display);
+    }
 
 }
 
