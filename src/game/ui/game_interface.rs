@@ -13,7 +13,6 @@ const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
 const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
 
-
 pub fn clear_interface(
     commands: &mut Commands,
     interface_query: Query<Entity, With<InterfaceGame>>,
@@ -41,7 +40,6 @@ pub fn clear_action_points_cursor_ui(
     }
 }
 
-
 pub fn display_action_points_on_cursor(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -61,10 +59,11 @@ pub fn display_action_points_on_cursor(
     let Ok(player) = player_q.get_single() else { return };
     let ap_cost_result = get_ap_cost(query_character, query_occupied, board, cursor.grid_position, player);
  
-    let mut ap_result = 'x';
+    let mut ap_valid = false;
+    let mut ap_result = format!("x");
     if let Some(ap_cost) = ap_cost_result.cost {
-        let Some(ap_char) = char::from_digit(ap_cost, 10) else { return };
-        println!("Ap char is {:?}", ap_char);
+        let ap_char = ap_cost.to_string(); 
+        ap_valid = true;
         ap_result = ap_char;
     }
 
@@ -106,13 +105,18 @@ pub fn display_action_points_on_cursor(
             ..default()
         }).id();  
 
+        let mut ap_color = Color::RED;
+        if ap_valid {
+            ap_color = Color::YELLOW;
+        };
+
         let cursor_action_display = commands.spawn(
             TextBundle::from_section(
                 format!("{}", ap_result),     //("{}",action_points),
                 TextStyle { 
                     font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
                     font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
-                    color: Color::YELLOW,
+                    color: ap_color,
                 },
             )
             .with_style(Style {
