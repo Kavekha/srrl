@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{pieces::components::{Health, Monster}, player::Player, combat::components::ActionPoints},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF}
+    game::{pieces::components::{Health, Monster}, player::{Player, Cursor}, combat::components::ActionPoints},
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}
 };
+
+use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
 
 const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
 const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
@@ -13,14 +15,8 @@ const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
 
 
-#[derive(Component)]
-pub struct InterfaceGame;
 
-#[derive(Component)]
-pub struct UiEnemyHp;
-
-
-fn clear_interface(
+pub fn clear_interface(
     commands: &mut Commands,
     interface_query: Query<Entity, With<InterfaceGame>>,
 ) {
@@ -29,7 +25,7 @@ fn clear_interface(
     }
 }
 
-fn clear_enemy_hp_ui(
+pub fn clear_enemy_hp_ui(
     commands: &mut Commands,    
     interface_query: Query<Entity, With<UiEnemyHp>>,
 ) {
@@ -37,6 +33,78 @@ fn clear_enemy_hp_ui(
         commands.entity(entity).despawn_recursive();
     }
 }
+
+pub fn clear_action_points_cursor_ui(
+    commands: &mut Commands,    
+    interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
+) {
+    for entity in interface_query.iter() {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+
+pub fn display_action_points_on_cursor(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    cursor: Res<Cursor>,
+    camera_q: Query<(&Camera, &GlobalTransform)>,    
+    interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
+){
+    clear_action_points_cursor_ui(&mut commands, interface_query);
+
+    //let (camera, camera_transform) = camera_q.single();
+    //let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+    let Some(screen_position) = cursor.screen_position else { return };
+    let left = screen_position.x + (CHAR_SIZE as f32 / 2.0);
+    let top = screen_position.y + (CHAR_SIZE as f32 / 2.0); 
+
+    let width = CHAR_SIZE as f32; 
+    let height = CHAR_SIZE as f32 / 2.0;
+
+    let grow = CHAR_SIZE as f32 * 2.0;
+
+    let ap_container = commands.spawn(NodeBundle {
+        style: Style {                
+            left: Val::Px(left),
+            //right: Val::Px(right),
+            top: Val::Px(top),
+            //bottom: Val::Px(bottom),
+            width: Val::Px(width),
+            height: Val::Px(height),
+            flex_grow: grow,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Row,
+            position_type: PositionType::Absolute,
+            ..default()
+        },
+        //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
+        ..default()
+    }).id();  
+
+    let cursor_action_display = commands.spawn(
+        TextBundle::from_section(
+            format!("5"),     //("{}",action_points),
+            TextStyle { 
+                font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                color: Color::YELLOW,
+            },
+        )
+        .with_style(Style {
+            margin: UiRect::all(Val::Px(8.)),            
+            ..default()
+        }),
+    ).id();
+
+
+    commands.entity(ap_container).insert(UiActionPointsOnCursor);
+    commands.entity(ap_container).add_child(cursor_action_display);
+
+}
+
+
 
 
 pub fn draw_interface(

@@ -1,27 +1,32 @@
 use bevy::prelude::*;
 
 pub mod game_interface;
+mod components;
 
 
-use crate::{states::{EngineState, GameState}};
+use crate::{states::GameState};
 
-use self::game_interface::{draw_interface, InterfaceGame, draw_enemy_health, UiEnemyHp};
+use self::{game_interface::{draw_interface, draw_enemy_health, display_action_points_on_cursor}, components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor}};
 
-use super::{actions::ActionExecutedEvent, despawn_component};
+use super::despawn_component;
 
 
 pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<ReloadUiEvent>()
-            .add_systems(OnEnter(EngineState::PlayerInput), turn_update_end)
-            .add_systems(Update, turn_update_end.run_if(on_event::<ActionExecutedEvent>()).run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, draw_interface.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::GameMap)))
+        app
+            .add_event::<ReloadUiEvent>()
 
-            //.add_systems(Update, draw_enemy_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::GameMap)))
+            .add_systems(OnEnter(GameState::GameMap), display_interface)
+
+            .add_systems(Update, draw_interface.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, draw_enemy_health.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, display_action_points_on_cursor.run_if(in_state(GameState::GameMap)))
+            
+
             .add_systems(OnExit(GameState::GameMap), despawn_component::<InterfaceGame>)
             .add_systems(OnExit(GameState::GameMap), despawn_component::<UiEnemyHp>)
+            .add_systems(OnExit(GameState::GameMap), despawn_component::<UiActionPointsOnCursor>)
             ;
     }
 }
@@ -30,7 +35,7 @@ impl Plugin for UiPlugin {
 #[derive(Event)]
 pub struct ReloadUiEvent;
 
-fn turn_update_end(
+fn display_interface(
     mut ev_ui: EventWriter<ReloadUiEvent>
 ) {
     ev_ui.send(ReloadUiEvent);
