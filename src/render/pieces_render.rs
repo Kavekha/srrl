@@ -64,6 +64,7 @@ pub fn path_animator_update(
     mut ev_wait: EventWriter<GraphicsWaitEvent>
 ) {
     for (entity, mut animator, mut transform) in query.iter_mut() {
+        println!("Anim: Entity is : {:?}", entity);
         if animator.path.len() == 0 {
             // this entity has completed it's animation
             println!("PathAnimator: Anim completed.");

@@ -1,11 +1,11 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, transform::commands};
+use bevy::prelude::*;
 
 pub mod components;
 mod events;
 
-use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos, MovePath}, events::AnimateEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{components::PathAnimator, get_final_world_position, pieces_render::path_animator_update}};
+use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{components::PathAnimator, get_final_world_position, pieces_render::path_animator_update}};
 
 use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent}, components::CurrentEntityTurnQueue};
 
@@ -198,7 +198,7 @@ pub fn combat_input(
 /// NPC : Generate / Choice to forfeit their turn.
 pub fn plan_action_forfeit(
     combat_info: Res<CombatInfos>,
-    mut query_npc: Query<(Entity, &ActionPoints, &Turn), With<Npc>>,
+    query_npc: Query<(Entity, &ActionPoints, &Turn), With<Npc>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,
 ){
     //println!("Planning forfeit...");
@@ -233,7 +233,6 @@ pub fn action_entity_end_turn(
 
 /// Test de l'action Move.
 pub fn action_entity_try_move(
-    mut commands: Commands,
     mut query_character_turn: Query<(&ActionPoints, &BoardPosition, Option<&Player>), With<Turn>>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
@@ -289,7 +288,6 @@ pub fn action_entity_try_move(
 
 /// Gestion de l'action Move.
 pub fn action_entity_move(
-    mut commands: Commands,
     mut query_character_turn: Query<(Entity, &mut ActionPoints, &mut BoardPosition, Option<&Player>), With<Turn>>,
     mut ev_move: EventReader<EntityMoveEvent>,
     mut ev_interface: EventWriter<ReloadUiEvent>,
