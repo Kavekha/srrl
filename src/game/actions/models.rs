@@ -33,7 +33,8 @@ impl Action for MoveToAction {
            position.v,
            self.1,
            &map.entity_tiles.keys().cloned().collect(),
-           &world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).map(|p| p.v).collect()
+           &world.query_filtered::<&BoardPosition, With<Occupier>>().iter(world).map(|p| p.v).collect(),
+           true,
        ); 
 
        if let Some(path) = path_to_destination {

@@ -60,7 +60,8 @@ pub fn on_click_action(
             position.v,
             event.tile,
             &board.entity_tiles.keys().cloned().collect(),
-            &query_occupied.iter().map(|p| p.v).collect()
+            &query_occupied.iter().map(|p| p.v).collect(),
+            has_target,
         ); 
 
         let Some(path) = path_to_destination else { 
@@ -68,9 +69,11 @@ pub fn on_click_action(
             return };
 
         let pathing = path.clone();
-        //ev_move.send(EntityMoveEvent {entity: event.entity, path: pathing});
-
-        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: pathing});
+        let mut target = None;
+        if has_target {
+            target = Some(event.tile);
+        }
+        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: pathing, target});
     }
 }
 
@@ -88,10 +91,19 @@ pub fn action_entity_try_move(
         let Ok(action_points) = query_actions.get(event.entity) else { continue };
         if action_points.current < AP_COST_MOVE { continue };
 
-        // TODO : Specific checks at destination?
+        // Destination check
+        let destination = event.path.get(0);
+        let Some(new_position) = destination else { continue };
+        if let Some(current_target) = event.target {
+            if &current_target == new_position {
+                println!("J'attaque ma cible!!!");
+                continue
+            }
+        }
+        
 
         let mut path = event.path.clone();
-        ev_move.send(EntityMoveEvent {entity: event.entity, path: path});
+        ev_move.send(EntityMoveEvent {entity: event.entity, path: path, target: event.target});
 
         /* 
         println!("action entity try move: {:?}", event.entity);
@@ -142,7 +154,7 @@ pub fn action_entity_move(
         let Some(new_position) = destination.clone() else { break };
         
         board_position.v = new_position;
-        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: path});
+        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: path, target: event.target});
 
         action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
         if is_player.is_some() {
@@ -233,7 +245,8 @@ pub fn get_ap_cost(
         position.v,
         tile_position,
         &board.entity_tiles.keys().cloned().collect(),
-        &query_occupied.iter().map(|p| p.v).collect()
+        &query_occupied.iter().map(|p| p.v).collect(),
+        true,
     ); 
 
     let Some(path) = path_to_destination else { 

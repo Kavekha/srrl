@@ -36,7 +36,8 @@ pub fn plan_walk(
         position.v,
         player_position.v,
         &map.entity_tiles.keys().cloned().collect(),
-        &occupier_query.iter().map(|p| p.v).collect()
+        &occupier_query.iter().map(|p| p.v).collect(),
+        false
     );    
     
     let mut rng = thread_rng();
