@@ -8,18 +8,19 @@ pub struct CursorPlugin;
 impl Plugin for CursorPlugin{
     fn build(&self, app: &mut App) {
         app 
-            .insert_resource(Cursor{grid_position:Vector2Int{x:0,y:0},world_position:Vec3::new(0.0, 0.0, 0.0)}) 
+            .insert_resource(Cursor{grid_position:Vector2Int{x:0,y:0},world_position:Vec3::new(0.0, 0.0, 0.0), screen_position: None}) 
             .add_systems(Update, cursor_position.run_if(in_state(GameState::GameMap)))
         ;
     }
 }
 
 
-
+//camera.logical_viewport_size() donne la taille de l'ecran en pixel, de 0 à +X, et de 0 à +Y.
 #[derive(Resource, Component)]
 pub struct Cursor {    
     pub grid_position: Vector2Int,
-    pub world_position: Vec3
+    pub world_position: Vec3,
+    pub screen_position: Option<Vec2>       // OptionVec2.
 }
 
 pub fn cursor_position(
@@ -38,6 +39,7 @@ pub fn cursor_position(
                 res_cursor.world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
                 res_cursor.grid_position = get_grid_position(world_position.x, world_position.y);
         }
+        res_cursor.screen_position = camera.world_to_viewport(camera_transform, res_cursor.world_position);
         //println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
         //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
     }

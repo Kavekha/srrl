@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{globals::{CURSOR_FRONT, POSITION_TOLERANCE, CURSOR_SPEED, SPEED_MULTIPLIER, CURSOR_BACK}, game::player::Cursor, render::get_world_z};
+use crate::{
+    globals::{CURSOR_FRONT, POSITION_TOLERANCE, CURSOR_SPEED, SPEED_MULTIPLIER, CURSOR_BACK},
+    game::player::Cursor, 
+    render::{get_world_z, get_final_world_position},
+};
 
 use super::{components::{GameCursorRender}, get_world_position};
 
@@ -45,17 +49,18 @@ pub fn update_game_cursor(
     for (_game_cursor, mut transform, ) in query_game_cursor.iter_mut(){
         let (position_x, position_y) = get_world_position(&cursor_position.grid_position);
         let world_z = get_world_z(&cursor_position.grid_position);
-        //let world_z = 0.0;
 
         let target = Vec3::new(position_x, position_y, world_z);
         let destination = (target - transform.translation).length();  
-        //println!("Cursor update: target is {:?}, destination is : {:?}", target, destination);
+        //println!("Cursor update: target is {:?}, transform is : {:?}, destination is : {:?}", target, transform.translation, destination);
         
         if destination > POSITION_TOLERANCE {
             transform.translation = transform.translation.lerp(
                 target,
                 CURSOR_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
             );
+        } else {
+            transform.translation = target;
         }
     }
 }

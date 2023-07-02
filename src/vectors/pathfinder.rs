@@ -27,8 +27,8 @@ pub fn find_path(
             let new_cost = cost.saturating_add(dir_cost);   // Diagonal = 2 donc cost > 1.
             // Si !tiles.contains(&n), ca veut dire qu'on est hors map.
             if !tiles.contains(&n) { continue }
-            // we allow the target to be a blocker
-            if blockers.contains(&n) && n != end { continue }
+            
+            if blockers.contains(&n) { continue }   //We dont allow target to be a blocker anymore  // Previously: && n != end { continue } // we allow the target to be a blocker
             match visited.get(&n) {
                 Some(c) if *c <= new_cost => (),
                 _ => {

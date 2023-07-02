@@ -29,7 +29,7 @@ impl Plugin for GraphicsPlugin {
 
             //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
             .add_systems(Update, (path_animator_update, melee_animation).in_set(CombatSet::Animation))
-            .add_systems(Update, update_game_cursor)         
+            .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))         
             ;
     }
 }
