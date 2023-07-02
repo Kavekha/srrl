@@ -2,9 +2,9 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{player::Player, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece}, combat::AP_COST_MOVE}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}};
+use crate::{game::{player::Player, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}};
 
-use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent}, components::ActionPoints};
+use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, components::ActionPoints};
 
 
 /// Gestion de l'action de forfeit.
@@ -80,29 +80,31 @@ pub fn on_click_action(
 
 /// Test de l'action Move.
 pub fn action_entity_try_move(
-    mut query_character_turn: Query<(&ActionPoints, &BoardPosition, Option<&Player>), With<Turn>>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-    board: Res<Map>,
+    //mut query_character_turn: Query<(&ActionPoints, &BoardPosition, Option<&Player>), With<Turn>>,
+    //query_occupied: Query<&BoardPosition, With<Occupier>>,
+    //board: Res<Map>,
     mut ev_try_move: EventReader<EntityTryMoveEvent>,
     mut ev_move: EventWriter<EntityMoveEvent>,
+    mut ev_try_attack: EventWriter<EntityHitTryEvent>,
     query_actions: Query<&ActionPoints>,
 ){
     for event in ev_try_move.iter() {
         let Ok(action_points) = query_actions.get(event.entity) else { continue };
         if action_points.current < AP_COST_MOVE { continue };
 
-        // Destination check
+        // Target check
         let destination = event.path.get(0);
         let Some(new_position) = destination else { continue };
         if let Some(current_target) = event.target {
             if &current_target == new_position {
+                if action_points.current < AP_COST_MELEE { continue };
                 println!("J'attaque ma cible!!!");
+                ev_try_attack.send( EntityHitTryEvent {entity: event.entity, target: current_target});
                 continue
             }
-        }
-        
+        }        
 
-        let mut path = event.path.clone();
+        let path = event.path.clone();
         ev_move.send(EntityMoveEvent {entity: event.entity, path: path, target: event.target});
 
         /* 
@@ -134,6 +136,95 @@ pub fn action_entity_try_move(
     }
 }
 
+
+pub fn action_entity_try_attack(
+    mut ev_try_attack: EventReader<EntityHitTryEvent>,    
+    mut ev_gethit: EventWriter<EntityGetHitEvent>,
+    //position_q: Query<&BoardPosition>,
+    available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
+    stats_q: Query<&Stats>,
+){
+    for event in ev_try_attack.iter() {
+        println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
+
+        /*  
+        let Ok(attacker_position) = position_q.get(event.entity) else { 
+            println!("Pas de position pour l'attaquant");
+            continue };
+
+        //NOT: We dont do this check because: Manhattan is > 1 for Diagonal & we should be melee already when this check happens.
+        if attacker_position.v.manhattan(event.target) > 1 { 
+            println!("Cible hors de portée.");
+            continue };
+        */
+        // Targets de la case:
+
+        let target_entities = available_targets.iter().filter(|(_, position,_)| position.v == event.target).collect::<Vec<_>>(); 
+        if target_entities.len() == 0 { 
+            println!("Pas de cible ici.");
+            continue }; 
+
+        let Ok(attacker_stats) = stats_q.get(event.entity) else { 
+            println!("Pas de stats pour l'attaquant");
+            continue };        
+        for (target_entity, _target_position, target_stats) in target_entities.iter() {     
+            // Can't hit yourself.
+            if event.entity == * target_entity { 
+                println!("On ne peut pas s'attaquer soit même.");
+                continue; } 
+
+            let dice_roll = roll_dices_against(attacker_stats.attack, target_stats.dodge);   
+            let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
+            if dice_roll.success > 0 {
+                println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
+                ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg })
+            } else {
+                println!("Miss target.");
+            }
+        }
+    }
+}
+
+
+pub fn action_entity_get_hit(
+    mut ev_gethit: EventReader<EntityGetHitEvent>,
+    mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,
+    mut ev_die: EventWriter<EntityDeathEvent>,
+
+) {
+    for event in ev_gethit.iter() {
+        println!("Entity {:?} has been hit by {:?} for {:?} dmg.", event.entity, event.attacker, event.dmg);
+        let Ok(defender_infos) = stats_health_q.get_mut(event.entity) else { 
+            println!("Pas de stats / health pour le defender");
+            return };
+        let (defender_stats, mut defender_health, is_player) = defender_infos;
+
+        // Roll resist.
+        let dice_roll = roll_dices_against(defender_stats.resilience, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
+        let dmg = event.dmg.saturating_sub(dice_roll.success); 
+
+        // Reducing health.
+        defender_health.current = defender_health.current.saturating_sub(dmg);
+        println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
+        if defender_health.current == 0 {
+            if let Some(_is_player) = is_player {
+                println!("GAME OVER !");    //TODO
+            } else {
+                ev_die.send(EntityDeathEvent { entity: event.entity })
+            }
+        }
+    }
+}
+
+pub fn entity_dies(
+    mut ev_die: EventReader<EntityDeathEvent>,
+){
+    for event in ev_die.iter() {
+        println!("Entity {:?} is dead", event.entity);
+        //TODO : Retirer les Composants Health and Co.
+        //TODO : Transformer en Corps.
+    }
+}
 
 /// Gestion de l'action Move.
 pub fn action_entity_move(

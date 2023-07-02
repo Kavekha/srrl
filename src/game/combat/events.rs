@@ -58,3 +58,21 @@ pub struct OnClickEvent {
     pub entity: Entity,
     pub tile: Vector2Int,
 }
+
+#[derive(Event)]
+pub struct EntityHitTryEvent {
+    pub entity: Entity,
+    pub target: Vector2Int,
+}
+
+#[derive(Event)]
+pub struct EntityGetHitEvent {
+    pub entity: Entity,
+    pub attacker: Entity,
+    pub dmg: u32,
+}
+
+#[derive(Event)]
+pub struct EntityDeathEvent {
+    pub entity: Entity
+}
