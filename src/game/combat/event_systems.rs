@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{player::Player, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}};
+use crate::{game::{player::Player, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}, globals::SPRITE_PLAYER_DWARF};
 
 use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, components::ActionPoints};
 
@@ -217,12 +217,16 @@ pub fn action_entity_get_hit(
 }
 
 pub fn entity_dies(
+    mut commands: Commands,
     mut ev_die: EventReader<EntityDeathEvent>,
 ){
     for event in ev_die.iter() {
+        //TODO: Remove components, transform texture to Corpse.
+        //commands.entity(event.entity).remove::<Stats>();
+        //commands.entity(event.entity).remove::<Health>();
+        //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
-        //TODO : Retirer les Composants Health and Co.
-        //TODO : Transformer en Corps.
+        commands.entity(event.entity).despawn()
     }
 }
 

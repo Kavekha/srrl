@@ -160,6 +160,7 @@ pub fn combat_turn_start(
 pub fn combat_turn_next_entity(
     mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
+    action_points_q: Query<&ActionPoints>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,
 ) {
@@ -169,7 +170,11 @@ pub fn combat_turn_next_entity(
         ev_turn_end.send(CombatTurnEndEvent);
         return;
     };
+
     // On mets à jour CombatInfos pour savoir qui est l'entité dont c'est le Tour.
+    // Check pour voir si Entité existe tjrs, sinon crash. //TODO: Facon plus logique?
+    let Ok(_action_points) = action_points_q.get(entity) else { return };
+
     current_combat.current_entity = Some(entity);
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);
