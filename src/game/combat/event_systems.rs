@@ -36,8 +36,16 @@ pub fn on_click_action(
     mut query_character_turn: Query<(&BoardPosition, Option<&Player>), With<Turn>>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
+    action_infos: Res<ActionInfos>,
 ){
-    for event in ev_onclick.iter() {
+    for _event in ev_onclick.iter() {
+        let path = action_infos.path.clone();
+        let Some(entity) = action_infos.entity else { continue };
+        let Some(path) = path else { continue };
+        let Some(target) = action_infos.target else { continue };
+
+        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: Some(target) });
+        /* 
         println!("Click for entity : {:?}, with tile {:?}", event.entity, event.tile);
         if !board.entity_tiles.contains_key(&event.tile) { return };    //Hors map.
 
@@ -74,6 +82,7 @@ pub fn on_click_action(
             target = Some(event.tile);
         }
         ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: pathing, target});
+        */
     }
 }
 
@@ -140,9 +149,11 @@ pub fn action_entity_try_move(
 pub fn action_entity_try_attack(
     mut ev_try_attack: EventReader<EntityHitTryEvent>,    
     mut ev_gethit: EventWriter<EntityGetHitEvent>,
-    //position_q: Query<&BoardPosition>,
+    mut action_q: Query<&mut ActionPoints>,
+    player_q: Query<&Player>,
     available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
     stats_q: Query<&Stats>,
+    mut ev_interface: EventWriter<ReloadUiEvent>
 ){
     for event in ev_try_attack.iter() {
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
@@ -157,8 +168,17 @@ pub fn action_entity_try_attack(
             println!("Cible hors de portée.");
             continue };
         */
-        // Targets de la case:
+        
 
+        // TODO : maybe refresh in consume? Maybe consume in some Event?
+        let Ok(mut action_points) = action_q.get_mut(event.entity) else { continue };
+        consume_actionpoints(&mut action_points, AP_COST_MELEE);
+        if let Ok(_is_player) = player_q.get(event.entity) {
+        //if is_player.is_some() {
+            ev_interface.send(ReloadUiEvent);
+        }
+
+        // Targets de la case:
         let target_entities = available_targets.iter().filter(|(_, position,_)| position.v == event.target).collect::<Vec<_>>(); 
         if target_entities.len() == 0 { 
             println!("Pas de cible ici.");
@@ -196,7 +216,7 @@ pub fn action_entity_get_hit(
         println!("Entity {:?} has been hit by {:?} for {:?} dmg.", event.entity, event.attacker, event.dmg);
         let Ok(defender_infos) = stats_health_q.get_mut(event.entity) else { 
             println!("Pas de stats / health pour le defender");
-            return };
+            continue };
         let (defender_stats, mut defender_health, is_player) = defender_infos;
 
         // Roll resist.
@@ -251,7 +271,8 @@ pub fn action_entity_move(
         board_position.v = new_position;
         ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: path, target: event.target});
 
-        action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
+        consume_actionpoints(&mut action_points, AP_COST_MOVE);
+        //action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
         }
