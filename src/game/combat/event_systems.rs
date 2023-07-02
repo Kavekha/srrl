@@ -32,10 +32,45 @@ pub fn action_entity_end_turn(
 pub fn on_click_action(
     mut ev_onclick: EventReader<OnClickEvent>,
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,
+    piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
+    mut query_character_turn: Query<(&BoardPosition, Option<&Player>), With<Turn>>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
+    board: Res<Map>,
 ){
     for event in ev_onclick.iter() {
         println!("Click for entity : {:?}, with tile {:?}", event.entity, event.tile);
-        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, destination: event.tile});
+        if !board.entity_tiles.contains_key(&event.tile) { return };    //Hors map.
+
+        let mut has_target = false;
+        if piece_position.iter().any(|(_entity, board_position)| board_position.v == event.tile) {
+            has_target = true;
+        }
+
+        if has_target {
+            println!("J'ai une cible!");
+        }
+
+        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
+            println!("Caracter info querry None");
+            return };
+        let (position, _is_player) = entity_infos;
+
+
+        let path_to_destination = find_path(
+            position.v,
+            event.tile,
+            &board.entity_tiles.keys().cloned().collect(),
+            &query_occupied.iter().map(|p| p.v).collect()
+        ); 
+
+        let Some(path) = path_to_destination else { 
+            println!("Pas de Path");
+            return };
+
+        let pathing = path.clone();
+        //ev_move.send(EntityMoveEvent {entity: event.entity, path: pathing});
+
+        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: pathing});
     }
 }
 
@@ -46,9 +81,19 @@ pub fn action_entity_try_move(
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
     mut ev_try_move: EventReader<EntityTryMoveEvent>,
-    mut ev_move: EventWriter<EntityMoveEvent>
+    mut ev_move: EventWriter<EntityMoveEvent>,
+    query_actions: Query<&ActionPoints>,
 ){
     for event in ev_try_move.iter() {
+        let Ok(action_points) = query_actions.get(event.entity) else { continue };
+        if action_points.current < AP_COST_MOVE { continue };
+
+        // TODO : Specific checks at destination?
+
+        let mut path = event.path.clone();
+        ev_move.send(EntityMoveEvent {entity: event.entity, path: path});
+
+        /* 
         println!("action entity try move: {:?}", event.entity);
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
             println!("Caracter info querry None");
@@ -72,25 +117,8 @@ pub fn action_entity_try_move(
 
         let pathing = path.clone();
 
-        /* 
-        println!("Try move: OK for {:?}. PA cost for moving is : {:?}", event.entity, ap_cost);
-        let move_path = MovePath {path: pathing};
-        commands.entity(event.entity).insert(move_path);//(MovePath {path: pathing});
-        println!("Move path added");
-        */
         ev_move.send(EntityMoveEvent {entity: event.entity, path: pathing});
-
-
-        /* 
-        if !board.entity_tiles.contains_key(&event.destination) { return };    //Hors map.
-        if board.is_blocked(event.destination.x, event.destination.y) { return };
-        for occupier_position in query_occupied.iter() {
-            if occupier_position.v == event.destination {
-                return;
-            }
-        }
         */
-
     }
 }
 
@@ -101,7 +129,31 @@ pub fn action_entity_move(
     mut ev_move: EventReader<EntityMoveEvent>,
     mut ev_interface: EventWriter<ReloadUiEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
+    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
 ){    
+    for event in ev_move.iter() {
+        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
+            //println!("ActionMove: Je n'ai pas les infos Entité");   // TODO : Quand Action_entity_try_move pose le component MovePath, le Query action_entity_move ne le recupere pas pour le moment (asynchrone?)
+            continue };
+        let (entity, mut action_points,mut board_position, is_player) = entity_infos;  
+
+        let mut path = event.path.clone();
+        let destination = path.pop_front();
+        let Some(new_position) = destination.clone() else { break };
+        
+        board_position.v = new_position;
+        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: path});
+
+        action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
+        if is_player.is_some() {
+            ev_interface.send(ReloadUiEvent);
+        }
+
+        let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
+        path_animation.push_back(new_position);
+        ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
+    }
+    /* 
     for event in ev_move.iter() {
         println!("action entity move");        
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
@@ -132,6 +184,7 @@ pub fn action_entity_move(
         //TODO : anim
         //commands.entity(entity).insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
     }
+    */
 }
 
 pub fn walk_combat_animation(    
