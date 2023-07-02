@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{game::{player::Player, ui::ReloadUiEvent, rules::consume_actionpoints, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece}, combat::AP_COST_MOVE}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}};
 
-use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent}, components::ActionPoints};
+use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent}, components::ActionPoints};
 
 
 /// Gestion de l'action de forfeit.
@@ -27,6 +27,18 @@ pub fn action_entity_end_turn(
         }
     }
 }
+
+/// Player clicked on a tile.
+pub fn on_click_action(
+    mut ev_onclick: EventReader<OnClickEvent>,
+    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
+){
+    for event in ev_onclick.iter() {
+        println!("Click for entity : {:?}, with tile {:?}", event.entity, event.tile);
+        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, destination: event.tile});
+    }
+}
+
 
 /// Test de l'action Move.
 pub fn action_entity_try_move(

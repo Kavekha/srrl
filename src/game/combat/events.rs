@@ -49,3 +49,9 @@ pub struct AnimateEvent {
     pub entity: Entity,
     pub path: VecDeque<Vector2Int>
 }
+
+#[derive(Event)]
+pub struct OnClickEvent {
+    pub entity: Entity,
+    pub tile: Vector2Int,
+}

@@ -6,7 +6,7 @@ pub mod event_systems;  //TODO deplacer les elements publiques?
 
 use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, render::pieces_render::path_animator_update};
 
-use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent}, components::CurrentEntityTurnQueue, event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation}};
+use self::{events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent}, components::CurrentEntityTurnQueue, event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action}};
 
 use super::{pieces::components::{Health, Stats, Npc}, player::{Player, Cursor}, ui::ReloadUiEvent};
 
@@ -41,6 +41,7 @@ impl Plugin for CombatPlugin {
             .add_event::<EntityEndTurnEvent>()                  // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC.                 
             .add_event::<EntityTryMoveEvent>()
             .add_event::<EntityMoveEvent>()
+            .add_event::<OnClickEvent>()
    
             .add_event::<AnimateEvent>()    //Animation //TODO : Deplacer.
 
@@ -62,6 +63,7 @@ impl Plugin for CombatPlugin {
             // Generation des actions à faire.
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            .add_systems(Update, on_click_action.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic).after(combat_input))
             
             // Check des actions demandées.
             .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
@@ -177,6 +179,7 @@ pub fn combat_input(
     player_query: Query<(Entity, With<Player>)>,
     buttons: Res<Input<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
+    mut ev_on_click: EventWriter<OnClickEvent>
 ){
     if keys.just_pressed(KeyCode::T) {
         let Ok(result) = player_query.get_single() else { return };
@@ -188,8 +191,14 @@ pub fn combat_input(
         let Ok(result) = player_query.get_single() else { return };
         let entity = result.0;
         let destination = res_cursor.grid_position;
+
+        println!("Click !");
+        ev_on_click.send(OnClickEvent { entity: entity, tile: destination });
+
+        /* 
         println!("Clic to move!");
         ev_try_move.send(EntityTryMoveEvent {entity: entity, destination: destination});
+        */
 
     }
 }
