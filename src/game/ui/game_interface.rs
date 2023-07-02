@@ -48,12 +48,20 @@ pub fn display_action_points_on_cursor(
     query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
     interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
     player_q: Query<Entity, With<Player>>,
-    mut query_character: Query<(&ActionPoints, &BoardPosition)>,
+    query_character: Query<(&ActionPoints, &BoardPosition)>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
-    //tile_position: Vector2Int,
-    //entity: Entity,
+    mut cursor_moved_events: EventReader<CursorMoved>,
 ){
+    let mut should_update = false;
+    for _event in cursor_moved_events.iter() {
+        should_update = true;
+        break;
+    }
+
+    if !should_update { return };
+    //println!("Update display action points");
+
     clear_action_points_cursor_ui(&mut commands, interface_query);
 
     let Ok(player) = player_q.get_single() else { return };
