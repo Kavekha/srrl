@@ -1,10 +1,10 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, input::mouse::MouseMotion};
 
-use crate::{game::{player::Player, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}, globals::SPRITE_PLAYER_DWARF};
+use crate::{game::{player::{Player, Cursor}, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}, globals::SPRITE_PLAYER_DWARF};
 
-use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, components::ActionPoints};
+use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, components::{ActionPoints, CombatInfos}};
 
 
 /// Gestion de l'action de forfeit.
@@ -315,10 +315,77 @@ pub fn walk_combat_animation(
     }
 }
 
-pub struct ActionMoveToTarget {
+#[derive(Resource)]
+pub struct ActionInfos {
     pub cost: Option<u32>,
     pub path: Option<VecDeque<Vector2Int>>,
-    pub target: Option<Vector2Int>
+    pub target: Option<Vector2Int>,
+    pub entity: Option<Entity>,
+}
+
+pub fn create_action_infos(
+    mut ev_mouse_move: EventReader<MouseMotion>,
+    mut query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), (With<Turn>,With<Player>)>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
+    combat_infos: Res<CombatInfos>,
+    board: Res<Map>,
+    mut action_infos: ResMut<ActionInfos>,
+    cursor: Res<Cursor>,
+    piece_position: Query<&BoardPosition, With<Piece>>,
+) {
+    for _event in ev_mouse_move.iter() {
+        println!("Updating ActionInfos ");
+        //Reset:
+        action_infos.cost = None;
+        action_infos.path = None;
+        action_infos.target = Some(cursor.grid_position);
+        action_infos.entity = None;
+
+        let Ok(player_infos) = query_character_turn.get_single() else { return };
+        let (entity, action_points, position) = player_infos;
+        action_infos.entity = Some(entity);
+
+        let tile_position = cursor.grid_position;
+        if !board.entity_tiles.contains_key(&tile_position) { return }
+
+        let mut has_target = false;
+        if piece_position.iter().any(|board_position| board_position.v == tile_position) {
+            has_target = true;
+        }
+
+        let path_to_destination = find_path(
+            position.v,
+            tile_position,
+            &board.entity_tiles.keys().cloned().collect(),
+            &query_occupied.iter().map(|p| p.v).collect(),
+            has_target,
+        ); 
+
+        let Some(path) = path_to_destination else { 
+                println!("Pas de Path");
+            return };
+
+        let mut ap_cost = path.len() as u32;
+        if has_target {
+            let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
+            ap_cost = ap_cost.saturating_add(ap_melee_cost)
+        }
+
+        if action_points.current >= ap_cost {
+            action_infos.cost = Some(ap_cost);
+            action_infos.path = Some(path);
+        };
+        println!("End of ActionInfos update.");
+    }
+}
+
+
+/// DEPRECATED
+pub struct ActionMoveToTarget {
+pub cost: Option<u32>,
+pub path: Option<VecDeque<Vector2Int>>,
+pub target: Option<Vector2Int>,
+pub entity: Option<Entity>,
 }
 
 pub fn get_ap_cost(
@@ -328,7 +395,7 @@ pub fn get_ap_cost(
     tile_position: Vector2Int,
     entity: Entity,
 ) -> Option<u32> {
-    let mut result = ActionMoveToTarget { cost: None, path: None, target: None};
+    let mut result = ActionMoveToTarget { cost: None, path: None, target: None, entity: None};
 
     let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
         println!("Caracter info querry None");

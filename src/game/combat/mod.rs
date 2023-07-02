@@ -9,7 +9,7 @@ use crate::{states::{GameState, EngineState}, game::combat::{components::{Action
 use self::{
     events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, 
     components::CurrentEntityTurnQueue, 
-    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies}
+    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos}
 };
 
 use super::{pieces::components::{Health, Stats, Npc}, player::{Player, Cursor}, ui::ReloadUiEvent};
@@ -38,6 +38,7 @@ impl Plugin for CombatPlugin {
         //SECONDE REFACTO
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
+            .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None })
 
             .add_event::<CombatTurnStartEvent>()        // Lance le tour.
             .add_event::<CombatTurnNextEntityEvent>()   // Envoyé pour prendre le nouvel acteur.
