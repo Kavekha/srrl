@@ -143,8 +143,10 @@ pub fn walk_combat_animation(
     }
 }
 
-pub struct ApCost {
-    pub cost: Option<u32>
+pub struct ActionMoveToTarget {
+    pub cost: Option<u32>,
+    pub path: Option<VecDeque<Vector2Int>>,
+    pub target: Option<Vector2Int>
 }
 
 pub fn get_ap_cost(
@@ -153,12 +155,12 @@ pub fn get_ap_cost(
     board: Res<Map>,
     tile_position: Vector2Int,
     entity: Entity,
-) -> ApCost {
-    let mut result = ApCost { cost: None};
+) -> Option<u32> {
+    let mut result = ActionMoveToTarget { cost: None, path: None, target: None};
 
     let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
         println!("Caracter info querry None");
-    return result};
+    return result.cost};
     
     let (action_points, position) = entity_infos;
 
@@ -171,12 +173,12 @@ pub fn get_ap_cost(
 
     let Some(path) = path_to_destination else { 
         println!("Pas de Path");
-    return result};
+    return result.cost};
 
     let ap_cost = path.len() as u32;
     
     if action_points.current >= ap_cost {
         result.cost = Some(ap_cost);
     };
-    result
+    result.cost
 }

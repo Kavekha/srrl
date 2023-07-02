@@ -69,7 +69,7 @@ pub fn display_action_points_on_cursor(
  
     let mut ap_valid = false;
     let mut ap_result = format!("x");
-    if let Some(ap_cost) = ap_cost_result.cost {
+    if let Some(ap_cost) = ap_cost_result {
         let ap_char = ap_cost.to_string(); 
         ap_valid = true;
         ap_result = ap_char;
