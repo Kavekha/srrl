@@ -9,7 +9,7 @@ use crate::{states::{GameState, EngineState}, game::combat::{components::{Action
 use self::{
     events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, 
     components::CurrentEntityTurnQueue, 
-    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos}
+    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos, create_action_infos}
 };
 
 use super::{pieces::components::{Health, Stats, Npc}, player::{Player, Cursor}, ui::ReloadUiEvent};
@@ -75,6 +75,7 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             .add_systems(Update, on_click_action.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic).after(combat_input))
+            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).in_set(CombatSet::Logic))  //.after(player_mouse_input))
             
             // Check des actions demandées.
             .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
@@ -163,8 +164,10 @@ pub fn combat_turn_next_entity(
     mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
     action_points_q: Query<&ActionPoints>,
+    is_player_q: Query<Option<&Player>>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,
+    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
@@ -178,6 +181,12 @@ pub fn combat_turn_next_entity(
     let Ok(_action_points) = action_points_q.get(entity) else { return };
 
     current_combat.current_entity = Some(entity);
+    if let Ok(is_player) = is_player_q.get(entity) {
+        if is_player.is_some() { 
+            ev_refresh_ap.send(RefreshActionCostEvent);
+        };
+    };
+
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);
 }

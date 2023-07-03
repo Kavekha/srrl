@@ -15,7 +15,7 @@ use crate::{
     states::{GameState}
 };
 
-use super::combat::{components::CombatInfos, event_systems::create_action_infos};
+use super::combat::{components::CombatInfos};
 
 
 
@@ -28,8 +28,7 @@ impl Plugin for PlayerPlugin{
             .add_event::<PlayerInputReadyEvent>()
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             //.add_systems(Update, player_mouse_input.run_if(in_state(EngineState::PlayerInput)))
-            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).after(player_mouse_input))
+            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::GameMap)))            
             
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{pieces::components::{Health, Monster, Occupier}, player::{Player, Cursor}, combat::{components::ActionPoints, event_systems::{get_ap_cost, ActionInfos}}, tileboard::components::BoardPosition},
+    game::{pieces::components::{Health, Monster, Occupier}, player::{Player, Cursor}, combat::{components::ActionPoints, event_systems::{get_ap_cost, ActionInfos}, events::RefreshActionCostEvent}, tileboard::components::BoardPosition},
     globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}, render::components::GameCursorRender, map_builders::map::Map
 };
 
@@ -53,9 +53,14 @@ pub fn display_action_points_on_cursor(
     board: Res<Map>,
     action_infos: Res<ActionInfos>,
     mut cursor_moved_events: EventReader<CursorMoved>,
+    mut ev_refresh_ap: EventReader<RefreshActionCostEvent>,
 ){
     let mut should_update = false;
     for _event in cursor_moved_events.iter() {
+        should_update = true;
+        break;
+    }
+    for _event in ev_refresh_ap.iter() {
         should_update = true;
         break;
     }

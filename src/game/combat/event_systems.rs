@@ -382,7 +382,7 @@ pub fn create_action_infos(
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
 ) {
     for _event in ev_refresh_action.iter() {
-        //println!("Updating ActionInfos ");
+        println!("Updating ActionInfos ");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;
@@ -424,7 +424,6 @@ pub fn create_action_infos(
             action_infos.cost = Some(ap_cost);
             action_infos.path = Some(path);
         };
-        println!("End of ActionInfos update.");
     }
 }
 
