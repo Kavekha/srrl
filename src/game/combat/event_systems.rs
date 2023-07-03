@@ -42,9 +42,10 @@ pub fn on_click_action(
         let path = action_infos.path.clone();
         let Some(entity) = action_infos.entity else { continue };
         let Some(path) = path else { continue };
-        let Some(target) = action_infos.target else { continue };
+        //let Some(target) = action_infos.target else { continue };
 
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: Some(target) });
+        println!("On clic action: OK. Send event.");
+        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
         /* 
         println!("Click for entity : {:?}, with tile {:?}", event.entity, event.tile);
         if !board.entity_tiles.contains_key(&event.tile) { return };    //Hors map.
@@ -96,12 +97,26 @@ pub fn action_entity_try_move(
     mut ev_move: EventWriter<EntityMoveEvent>,
     mut ev_try_attack: EventWriter<EntityHitTryEvent>,
     query_actions: Query<&ActionPoints>,
+    piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
 ){
     for event in ev_try_move.iter() {
+        println!("Action entity try move event received.");
+
         let Ok(action_points) = query_actions.get(event.entity) else { continue };
         if action_points.current < AP_COST_MOVE { continue };
 
         // Target check
+        let Some(destination) = event.path.get(0) else { continue };
+        if let Some(current_target) = event.target {
+            if current_target == * destination {
+                if action_points.current < AP_COST_MELEE { continue };
+                println!("J'attaque ma cible!!!");
+                ev_try_attack.send( EntityHitTryEvent {entity: event.entity, target: current_target});
+                continue
+            }
+        }
+
+        /* 
         let destination = event.path.get(0);
         let Some(new_position) = destination else { continue };
         if let Some(current_target) = event.target {
@@ -111,7 +126,7 @@ pub fn action_entity_try_move(
                 ev_try_attack.send( EntityHitTryEvent {entity: event.entity, target: current_target});
                 continue
             }
-        }        
+        }   */     
 
         let path = event.path.clone();
         ev_move.send(EntityMoveEvent {entity: event.entity, path: path, target: event.target});
@@ -352,14 +367,14 @@ pub fn create_action_infos(
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,
-    piece_position: Query<&BoardPosition, With<Piece>>,
+    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>)>,
 ) {
     for _event in ev_mouse_move.iter() {
-        println!("Updating ActionInfos ");
+        //println!("Updating ActionInfos ");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;
-        action_infos.target = Some(cursor.grid_position);
+        action_infos.target = None; //Some(cursor.grid_position);
         action_infos.entity = None;
 
         let Ok(player_infos) = query_character_turn.get_single() else { return };
@@ -372,6 +387,7 @@ pub fn create_action_infos(
         let mut has_target = false;
         if piece_position.iter().any(|board_position| board_position.v == tile_position) {
             has_target = true;
+            action_infos.target = Some(tile_position);
         }
 
         let path_to_destination = find_path(
