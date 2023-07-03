@@ -76,3 +76,6 @@ pub struct EntityGetHitEvent {
 pub struct EntityDeathEvent {
     pub entity: Entity
 }
+
+#[derive(Event)]
+pub struct RefreshActionCostEvent;

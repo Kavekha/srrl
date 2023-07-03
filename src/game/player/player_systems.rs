@@ -1,13 +1,13 @@
 use std::collections::VecDeque;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::{
     save_load_system::ShouldSave, 
     commons::tile_collision_check,
     render::components::{TileExit}, 
     states::GameState, 
-    game::{actions::{ActorQueue, MoveToAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition}, 
+    game::{actions::{ActorQueue, MoveToAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition, combat::events::RefreshActionCostEvent}, 
     vectors::Vector2Int};
 
 
@@ -44,7 +44,12 @@ pub fn player_mouse_input(
     mut queue: ResMut<ActorQueue>,
     mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,    
     //mut player_queue: ResMut<PlayerActions>, 
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut mouse_move: EventReader<MouseMotion>,
 ){
+    for event in mouse_move.iter() {
+        ev_refresh_action.send(RefreshActionCostEvent);
+    }
     if buttons.just_pressed(MouseButton::Right) {
         ev_cancel.send(CancelPlayerPendingActionsEvent);
     }

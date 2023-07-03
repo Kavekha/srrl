@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
 pub mod components;
-mod events;
+pub mod events;
 pub mod event_systems;  //TODO deplacer les elements publiques?
 
 use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, render::pieces_render::path_animator_update};
 
 use self::{
-    events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, 
+    events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, 
     components::CurrentEntityTurnQueue, 
     event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos}
 };
@@ -43,6 +43,7 @@ impl Plugin for CombatPlugin {
             .add_event::<CombatTurnStartEvent>()        // Lance le tour.
             .add_event::<CombatTurnNextEntityEvent>()   // Envoyé pour prendre le nouvel acteur.
             .add_event::<CombatTurnEndEvent>()          // Envoyé quand plus aucun acteur dans la Queue du Tour de Combat.
+            .add_event::<RefreshActionCostEvent>()              // Recalcule le cout d'une action / deplacement.
 
             .add_event::<EntityEndTurnEvent>()         // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC. 
             .add_event::<OnClickEvent>()               // Joueur clique: Attaque ou mouvement?                

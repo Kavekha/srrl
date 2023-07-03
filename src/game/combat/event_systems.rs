@@ -4,7 +4,7 @@ use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::{game::{player::{Player, Cursor}, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}, globals::SPRITE_PLAYER_DWARF};
 
-use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent}, components::{ActionPoints, CombatInfos}};
+use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, components::{ActionPoints, CombatInfos}};
 
 
 /// Gestion de l'action de forfeit.
@@ -12,6 +12,7 @@ pub fn action_entity_end_turn(
     mut ev_endturn: EventReader<EntityEndTurnEvent>,
     mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
     mut ev_interface: EventWriter<ReloadUiEvent>,  
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ) {
     //println!("action entity forfeit turn");
     for event in ev_endturn.iter() {
@@ -24,6 +25,7 @@ pub fn action_entity_end_turn(
         
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
+            ev_refresh_action.send(RefreshActionCostEvent);
         }
     }
 }
@@ -98,6 +100,7 @@ pub fn action_entity_try_move(
     mut ev_try_attack: EventWriter<EntityHitTryEvent>,
     query_actions: Query<&ActionPoints>,
     piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){
     for event in ev_try_move.iter() {
         println!("Action entity try move event received.");
@@ -127,6 +130,7 @@ pub fn action_entity_try_move(
                 continue
             }
         }   */     
+        ev_refresh_action.send(RefreshActionCostEvent);
 
         let path = event.path.clone();
         ev_move.send(EntityMoveEvent {entity: event.entity, path: path, target: event.target});
@@ -168,7 +172,8 @@ pub fn action_entity_try_attack(
     player_q: Query<&Player>,
     available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
     stats_q: Query<&Stats>,
-    mut ev_interface: EventWriter<ReloadUiEvent>
+    mut ev_interface: EventWriter<ReloadUiEvent>,    
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){
     for event in ev_try_attack.iter() {
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
@@ -217,6 +222,7 @@ pub fn action_entity_try_attack(
                 println!("Miss target.");
             }
         }
+        ev_refresh_action.send(RefreshActionCostEvent);
     }
 }
 
@@ -253,7 +259,8 @@ pub fn action_entity_get_hit(
 
 pub fn entity_dies(
     mut commands: Commands,
-    mut ev_die: EventReader<EntityDeathEvent>,
+    mut ev_die: EventReader<EntityDeathEvent>,    
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){
     for event in ev_die.iter() {
         //TODO: Remove components, transform texture to Corpse.
@@ -261,7 +268,8 @@ pub fn entity_dies(
         //commands.entity(event.entity).remove::<Health>();
         //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
-        commands.entity(event.entity).despawn()
+        commands.entity(event.entity).despawn();
+        ev_refresh_action.send(RefreshActionCostEvent);
     }
 }
 
@@ -271,7 +279,8 @@ pub fn action_entity_move(
     mut ev_move: EventReader<EntityMoveEvent>,
     mut ev_interface: EventWriter<ReloadUiEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
+    mut ev_try_move: EventWriter<EntityTryMoveEvent>,    
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){    
     for event in ev_move.iter() {
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
@@ -291,6 +300,8 @@ pub fn action_entity_move(
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
         }
+
+        ev_refresh_action.send(RefreshActionCostEvent);
 
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
@@ -368,8 +379,9 @@ pub fn create_action_infos(
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,
     piece_position: Query<&BoardPosition, (With<Health>, With<Stats>)>,
+    mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
 ) {
-    for _event in ev_mouse_move.iter() {
+    for _event in ev_refresh_action.iter() {
         //println!("Updating ActionInfos ");
         //Reset:
         action_infos.cost = None;
