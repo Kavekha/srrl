@@ -10,7 +10,7 @@ use crate::{states::{GameState, EngineState}, game::combat::{components::{Action
 use self::{
     events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, 
     components::CurrentEntityTurnQueue, 
-    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos, create_action_infos}, npc_planning_systems::plan_action_forfeit
+    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos, create_action_infos}, npc_planning_systems::{plan_action_forfeit, npc_planning}
 };
 
 use super::{pieces::components::{Health, Stats, Npc}, player::{Player, Cursor}, ui::ReloadUiEvent};
@@ -78,8 +78,8 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, on_click_action.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic).after(combat_input))
             
             // Plan NPC
-            .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             //.add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            .add_systems(Update, npc_planning.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             
             // Check des actions demandées.
             .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
