@@ -3,10 +3,10 @@ use bevy::prelude::*;
 use crate::{
     globals::{CURSOR_FRONT, POSITION_TOLERANCE, CURSOR_SPEED, SPEED_MULTIPLIER, CURSOR_BACK},
     game::player::Cursor, 
-    render::{get_world_z, get_final_world_position},
+    render::get_world_z,
 };
 
-use super::{components::{GameCursorRender}, get_world_position};
+use super::{components::GameCursorRender, get_world_position};
 
 
 pub fn spawn_game_cursor(

@@ -7,13 +7,10 @@ pub mod cursor;
 pub use components::Player;
 pub use cursor::Cursor;
 
-use self::{
-    player_systems::{player_input, camera_follow, player_step_check, player_mouse_input}
-};
+use self::player_systems::{player_input, camera_follow, player_step_check, player_mouse_input};
 
-use crate::{
-    states::{GameState, EngineState}
-};
+use crate::states::GameState;
+
 
 
 
@@ -26,7 +23,7 @@ impl Plugin for PlayerPlugin{
             .add_event::<PlayerInputReadyEvent>()
             .add_systems(Update, player_input.run_if(in_state(GameState::GameMap)))
             //.add_systems(Update, player_mouse_input.run_if(in_state(EngineState::PlayerInput)))
-            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::GameMap)))            
             
             .add_systems(Update, camera_follow.after(player_input).run_if(in_state(GameState::GameMap)))
             .add_systems(Update, player_step_check.run_if(in_state(GameState::GameMap)))

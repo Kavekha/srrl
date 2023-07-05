@@ -6,7 +6,7 @@ use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF,},
-    game::{player::{Player}, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
+    game::{player::Player, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
 
 use super::components::PathAnimator;
 
@@ -36,6 +36,7 @@ pub fn melee_animation(
     }
 }
 
+/*
 pub fn walk_animation(
     mut commands: Commands,
     mut ev_action: EventReader<ActionExecutedEvent>,
@@ -55,7 +56,7 @@ pub fn walk_animation(
         }
     }
 }
-
+ */
 
 pub fn path_animator_update(
     mut commands: Commands,

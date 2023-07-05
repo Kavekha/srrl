@@ -52,7 +52,6 @@ pub fn roll_dice() -> u32 {
 }
 
 
-
 pub fn consume_actionpoints(
     actionpoints_component: &mut ActionPoints,
     lost_value: u32,

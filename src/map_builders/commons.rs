@@ -1,6 +1,5 @@
 use std::cmp::{max, min};
 use serde::{Deserialize, Serialize};
-use bevy::reflect::{Reflect, FromReflect};
 
 use crate::map_builders::{
     rectangle::Rectangle,

@@ -34,13 +34,16 @@ pub struct Turn;
 #[derive(Event)]
 pub struct EntityMoveEvent {
     pub entity: Entity,
-    pub path: VecDeque<Vector2Int>
+    pub path: VecDeque<Vector2Int>,    
+    pub target: Option<Vector2Int>,
 }
 
 #[derive(Event)]
 pub struct EntityTryMoveEvent {
     pub entity: Entity,
-    pub destination: Vector2Int
+    pub path: VecDeque<Vector2Int>,
+    pub target: Option<Vector2Int>,
+    //pub destination: Vector2Int
 }
 
 #[derive(Event)]
@@ -49,3 +52,30 @@ pub struct AnimateEvent {
     pub entity: Entity,
     pub path: VecDeque<Vector2Int>
 }
+
+#[derive(Event)]
+pub struct OnClickEvent {
+    pub entity: Entity,
+    pub tile: Vector2Int,
+}
+
+#[derive(Event)]
+pub struct EntityHitTryEvent {
+    pub entity: Entity,
+    pub target: Vector2Int,
+}
+
+#[derive(Event)]
+pub struct EntityGetHitEvent {
+    pub entity: Entity,
+    pub attacker: Entity,
+    pub dmg: u32,
+}
+
+#[derive(Event)]
+pub struct EntityDeathEvent {
+    pub entity: Entity
+}
+
+#[derive(Event)]
+pub struct RefreshActionCostEvent;

@@ -9,7 +9,8 @@ pub fn find_path(
     start: Vector2Int,
     end: Vector2Int,
     tiles: &HashSet<Vector2Int>,
-    blockers: &HashSet<Vector2Int>
+    blockers: &HashSet<Vector2Int>,
+    end_not_check: bool,
 ) -> Option<VecDeque<Vector2Int>> {
     
     let mut queue = BinaryHeap::new();
@@ -28,7 +29,9 @@ pub fn find_path(
             // Si !tiles.contains(&n), ca veut dire qu'on est hors map.
             if !tiles.contains(&n) { continue }
             
-            if blockers.contains(&n) { continue }   //We dont allow target to be a blocker anymore  // Previously: && n != end { continue } // we allow the target to be a blocker
+            if !end_not_check && blockers.contains(&n) { continue }  // End path block check
+            if blockers.contains(&n) && n != end { continue }   // No block check on end (for if we have a target here)
+
             match visited.get(&n) {
                 Some(c) if *c <= new_cost => (),
                 _ => {
