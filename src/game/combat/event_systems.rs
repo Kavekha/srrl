@@ -178,11 +178,13 @@ pub fn action_entity_try_attack(
     mut ev_try_attack: EventReader<EntityHitTryEvent>,    
     mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut action_q: Query<&mut ActionPoints>,
+    position_q: Query<&BoardPosition>,
     player_q: Query<&Player>,
     available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
     stats_q: Query<&Stats>,
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut ev_animate: EventWriter<AnimateEvent>,
 ){
     for event in ev_try_attack.iter() {
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
@@ -216,7 +218,7 @@ pub fn action_entity_try_attack(
         let Ok(attacker_stats) = stats_q.get(event.entity) else { 
             println!("Pas de stats pour l'attaquant");
             continue };        
-        for (target_entity, _target_position, target_stats) in target_entities.iter() {     
+        for (target_entity, target_position, target_stats) in target_entities.iter() {     
             // Can't hit yourself.
             if event.entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
@@ -230,6 +232,15 @@ pub fn action_entity_try_attack(
             } else {
                 println!("Miss target.");
             }
+
+            // Animation.
+            if let Ok(entity_position) = position_q.get(event.entity) {
+                let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
+                path_animation.push_back(target_position.v);            
+                path_animation.push_back(entity_position.v);
+                ev_animate.send(AnimateEvent { entity: event.entity, path: path_animation });
+            }
+
         }
         ev_refresh_action.send(RefreshActionCostEvent);
     }
