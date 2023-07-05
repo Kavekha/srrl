@@ -68,6 +68,7 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()).in_set(CombatSet::Logic))
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start).in_set(CombatSet::Logic))
+           
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
 
@@ -75,7 +76,7 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             .add_systems(Update, on_click_action.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic).after(combat_input))
-            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).in_set(CombatSet::Logic))  //.after(player_mouse_input))
+              //.after(player_mouse_input))
             
             // Check des actions demandées.
             .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
@@ -89,7 +90,8 @@ impl Plugin for CombatPlugin {
  
 
             // Check de la situation PA-wise.
-            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick))
+            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
 
             // ANIME : //TODO : Changer d'endroit.
             .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Animation))
@@ -164,10 +166,10 @@ pub fn combat_turn_next_entity(
     mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
     action_points_q: Query<&ActionPoints>,
-    is_player_q: Query<Option<&Player>>,
+    //is_player_q: Query<Option<&Player>>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,
-    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,
+    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,    
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
@@ -179,16 +181,11 @@ pub fn combat_turn_next_entity(
     // On mets à jour CombatInfos pour savoir qui est l'entité dont c'est le Tour.
     // Check pour voir si Entité existe tjrs, sinon crash. //TODO: Facon plus logique?
     let Ok(_action_points) = action_points_q.get(entity) else { return };
-
     current_combat.current_entity = Some(entity);
-    if let Ok(is_player) = is_player_q.get(entity) {
-        if is_player.is_some() { 
-            ev_refresh_ap.send(RefreshActionCostEvent);
-        };
-    };
 
     // On lui donne le composant "Turn".
-    commands.entity(entity).insert(Turn);
+    commands.entity(entity).insert(Turn);   
+    ev_refresh_ap.send(RefreshActionCostEvent);
 }
 
 pub fn combat_turn_end(    
@@ -204,7 +201,7 @@ pub fn combat_turn_end(
 pub fn combat_input(
     keys: Res<Input<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
+    //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
     player_query: Query<(Entity, With<Player>)>,
     buttons: Res<Input<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?

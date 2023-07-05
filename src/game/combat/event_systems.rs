@@ -1,10 +1,19 @@
 use std::collections::VecDeque;
 
-use bevy::{prelude::*, input::mouse::MouseMotion};
+use bevy::prelude::*;
 
-use crate::{game::{player::{Player, Cursor}, ui::ReloadUiEvent, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, pieces::components::{Occupier, Piece, Stats, Health}, combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, render::{get_final_world_position, components::PathAnimator}, globals::SPRITE_PLAYER_DWARF};
+use crate::{
+    game::{player::{Player, Cursor}, ui::ReloadUiEvent, 
+    rules::{consume_actionpoints, roll_dices_against}, 
+    tileboard::components::BoardPosition,
+     pieces::components::{Occupier, Piece, Stats, Health}, 
+     combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, 
+     render::{get_final_world_position, components::PathAnimator}};
 
-use super::{events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, components::{ActionPoints, CombatInfos}};
+use super::{
+    events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent},
+    components::ActionPoints
+};
 
 
 /// Gestion de l'action de forfeit.
@@ -34,10 +43,10 @@ pub fn action_entity_end_turn(
 pub fn on_click_action(
     mut ev_onclick: EventReader<OnClickEvent>,
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
-    mut query_character_turn: Query<(&BoardPosition, Option<&Player>), With<Turn>>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-    board: Res<Map>,
+    //piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
+    //mut query_character_turn: Query<(&BoardPosition, Option<&Player>), With<Turn>>,
+    //query_occupied: Query<&BoardPosition, With<Occupier>>,
+    //board: Res<Map>,
     action_infos: Res<ActionInfos>,
 ){
     for _event in ev_onclick.iter() {
@@ -99,7 +108,7 @@ pub fn action_entity_try_move(
     mut ev_move: EventWriter<EntityMoveEvent>,
     mut ev_try_attack: EventWriter<EntityHitTryEvent>,
     query_actions: Query<&ActionPoints>,
-    piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
+    //piece_position: Query<(Entity, &BoardPosition), With<Piece>>,
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){
     for event in ev_try_move.iter() {
@@ -371,10 +380,10 @@ pub struct ActionInfos {
 }
 
 pub fn create_action_infos(
-    mut ev_mouse_move: EventReader<MouseMotion>,
-    mut query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), (With<Turn>,With<Player>)>,
+    //mut ev_mouse_move: EventReader<MouseMotion>,
+    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
-    combat_infos: Res<CombatInfos>,
+    //combat_infos: Res<CombatInfos>,
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,
@@ -389,18 +398,23 @@ pub fn create_action_infos(
         action_infos.target = None; //Some(cursor.grid_position);
         action_infos.entity = None;
 
-        let Ok(player_infos) = query_character_turn.get_single() else { return };
+        let Ok(player_infos) = query_character_turn.get_single() else { 
+            println!("create action: No player infos");
+            return };
         let (entity, action_points, position) = player_infos;
         action_infos.entity = Some(entity);
 
         let tile_position = cursor.grid_position;
-        if !board.entity_tiles.contains_key(&tile_position) { return }
+        if !board.entity_tiles.contains_key(&tile_position) { 
+            println!("Create action: out of map");
+            return }
 
         let mut has_target = false;
         if piece_position.iter().any(|board_position| board_position.v == tile_position) {
             has_target = true;
             action_infos.target = Some(tile_position);
         }
+        println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
 
         let path_to_destination = find_path(
             position.v,
@@ -414,6 +428,7 @@ pub fn create_action_infos(
                 println!("Pas de Path");
             return };
 
+        println!("All return checks are done.");
         let mut ap_cost = path.len() as u32;
         if has_target {
             let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
@@ -424,49 +439,7 @@ pub fn create_action_infos(
             action_infos.cost = Some(ap_cost);
             action_infos.path = Some(path);
         };
+
+        println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
     }
-}
-
-
-/// DEPRECATED
-pub struct ActionMoveToTarget {
-pub cost: Option<u32>,
-pub path: Option<VecDeque<Vector2Int>>,
-pub target: Option<Vector2Int>,
-pub entity: Option<Entity>,
-}
-
-pub fn get_ap_cost(
-    mut query_character_turn: Query<(&ActionPoints, &BoardPosition)>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-    board: Res<Map>,
-    tile_position: Vector2Int,
-    entity: Entity,
-) -> Option<u32> {
-    let mut result = ActionMoveToTarget { cost: None, path: None, target: None, entity: None};
-
-    let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
-        println!("Caracter info querry None");
-    return result.cost};
-    
-    let (action_points, position) = entity_infos;
-
-    let path_to_destination = find_path(
-        position.v,
-        tile_position,
-        &board.entity_tiles.keys().cloned().collect(),
-        &query_occupied.iter().map(|p| p.v).collect(),
-        true,
-    ); 
-
-    let Some(path) = path_to_destination else { 
-        println!("Pas de Path");
-    return result.cost};
-
-    let ap_cost = path.len() as u32;
-    
-    if action_points.current >= ap_cost {
-        result.cost = Some(ap_cost);
-    };
-    result.cost
 }

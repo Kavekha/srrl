@@ -7,13 +7,13 @@ pub mod cursor_render;
 
 
 use self::{
-    tilemap_render::{spawn_map_render},
-    pieces_render::{spawn_piece_renderer, path_animator_update, walk_animation, melee_animation}, cursor_render::{spawn_game_cursor, update_game_cursor},
+    tilemap_render::spawn_map_render,
+    pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation}, cursor_render::{spawn_game_cursor, update_game_cursor},
 };
 
 use crate::{
     globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
-    states::{GameState, TurnSet}, vectors::Vector2Int, game::combat::CombatSet,
+    states::GameState, vectors::Vector2Int, game::combat::CombatSet,
 };
 
 pub struct GraphicsPlugin;

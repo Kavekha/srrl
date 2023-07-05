@@ -9,7 +9,7 @@ mod plan_systems;
 pub use models::{WalkAction, Action, MeleeHitAction, MoveToAction, WalkOrHitAction};
 
 use crate::states::{EngineState, TurnSet};
-use self::{models::{PendingActions}, plan_systems::{plan_melee, plan_walk}, action_queue_system::{populate_actor_queue, process_action_queue}};
+use self::{models::PendingActions, plan_systems::{plan_melee, plan_walk}, action_queue_system::{populate_actor_queue, process_action_queue}};
 
 use super::player::PlayerActionEvent;
 

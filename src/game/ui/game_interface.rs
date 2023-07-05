@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{pieces::components::{Health, Monster, Occupier}, player::{Player, Cursor}, combat::{components::ActionPoints, event_systems::{get_ap_cost, ActionInfos}, events::RefreshActionCostEvent}, tileboard::components::BoardPosition},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}, render::components::GameCursorRender, map_builders::map::Map
+    game::{pieces::components::{Health, Monster}, player::Player, combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}},
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}, render::components::GameCursorRender
 };
 
 use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
@@ -43,14 +43,14 @@ pub fn clear_action_points_cursor_ui(
 pub fn display_action_points_on_cursor(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    cursor: Res<Cursor>,
+    //cursor: Res<Cursor>,
     camera_q: Query<(&Camera, &GlobalTransform)>, 
     query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
     interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
     player_q: Query<Entity, With<Player>>,
-    query_character: Query<(&ActionPoints, &BoardPosition)>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-    board: Res<Map>,
+    //query_character: Query<(&ActionPoints, &BoardPosition)>,
+    //query_occupied: Query<&BoardPosition, With<Occupier>>,
+    //board: Res<Map>,
     action_infos: Res<ActionInfos>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut ev_refresh_ap: EventReader<RefreshActionCostEvent>,
@@ -66,11 +66,11 @@ pub fn display_action_points_on_cursor(
     }
 
     if !should_update { return };
-    //println!("Update display action points");
+    println!("Update display action points");
 
     clear_action_points_cursor_ui(&mut commands, interface_query);
 
-    let Ok(player) = player_q.get_single() else { return };
+    let Ok(_player) = player_q.get_single() else { return };
     //let ap_cost_result = get_ap_cost(query_character, query_occupied, board, cursor.grid_position, player);
  
     let mut ap_valid = false;

@@ -5,13 +5,13 @@ use bevy::{prelude::*, input::mouse::MouseMotion};
 use crate::{
     save_load_system::ShouldSave, 
     commons::tile_collision_check,
-    render::components::{TileExit}, 
+    render::components::TileExit, 
     states::GameState, 
-    game::{actions::{ActorQueue, MoveToAction, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::{Actor}, tileboard::components::BoardPosition, combat::events::RefreshActionCostEvent}, 
+    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::BoardPosition, combat::events::RefreshActionCostEvent}, 
     vectors::Vector2Int};
 
 
-use super::{components::{Player}, PlayerActionEvent, Cursor};
+use super::{components::Player, PlayerActionEvent};
 
 //
 pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
@@ -38,16 +38,16 @@ pub fn clear_player_pending_actions_2(
 
 pub fn player_mouse_input(
     buttons: Res<Input<MouseButton>>,
-    mut ev_action: EventWriter<PlayerActionEvent>,
-    mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
-    res_cursor: Res<Cursor>,
-    mut queue: ResMut<ActorQueue>,
+    //mut ev_action: EventWriter<PlayerActionEvent>,
+    //mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
+    //res_cursor: Res<Cursor>,
+    //mut queue: ResMut<ActorQueue>,
     mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,    
     //mut player_queue: ResMut<PlayerActions>, 
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut mouse_move: EventReader<MouseMotion>,
 ){
-    for event in mouse_move.iter() {
+    for _event in mouse_move.iter() {
         ev_refresh_action.send(RefreshActionCostEvent);
     }
     if buttons.just_pressed(MouseButton::Right) {
