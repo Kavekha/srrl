@@ -3,13 +3,14 @@ use bevy::prelude::*;
 pub mod components;
 pub mod events;
 pub mod event_systems;  //TODO deplacer les elements publiques?
+mod npc_planning_systems;
 
 use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, render::pieces_render::path_animator_update};
 
 use self::{
     events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, 
     components::CurrentEntityTurnQueue, 
-    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos, create_action_infos}
+    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos, create_action_infos}, npc_planning_systems::{plan_action_forfeit, npc_planning}
 };
 
 use super::{pieces::components::{Health, Stats, Npc}, player::{Player, Cursor}, ui::ReloadUiEvent};
@@ -74,9 +75,11 @@ impl Plugin for CombatPlugin {
 
             // Generation des actions à faire.
             .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
-            .add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             .add_systems(Update, on_click_action.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic).after(combat_input))
-              //.after(player_mouse_input))
+            
+            // Plan NPC
+            //.add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            .add_systems(Update, npc_planning.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
             
             // Check des actions demandées.
             .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
@@ -227,21 +230,6 @@ pub fn combat_input(
         */
 
     }
-}
-
-/// NPC : Generate / Choice to forfeit their turn.
-pub fn plan_action_forfeit(
-    combat_info: Res<CombatInfos>,
-    query_npc: Query<(Entity, &ActionPoints, &Turn), With<Npc>>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,
-){
-    //println!("Planning forfeit...");
-    let Some(_entity) = combat_info.current_entity else { return };  //TODO : Toujours necessaire avec le Component Turn?
-    for (entity, _action_points, _turn) in query_npc.iter() {
-        //TODO : Dans quelles circonstances un NPC decide de Forfeit.
-        //println!("planning: Entity is a NPC.");
-        ev_endturn.send(EntityEndTurnEvent {entity})     
-    }  
 }
 
 /// Regarde si tous les PA ont été dépensé par le personnage dont c'est le tour.
