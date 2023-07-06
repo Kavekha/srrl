@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{game::actions::Action};
+use crate::game::actions::Action;
 
 use super::spawners::Kind;
 
@@ -48,4 +48,4 @@ pub struct Stats {
     pub attack: u32,
     pub dodge: u32,
     pub resilience: u32
-}
+} 

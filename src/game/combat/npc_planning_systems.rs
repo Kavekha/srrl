@@ -39,7 +39,7 @@ pub fn npc_planning(
     board: Res<Map>,
     mut ev_try_move: EventWriter<EntityTryMoveEvent>
 ) {
-    println!("Planing: First step:");
+    //println!("Planing: First step:");
     
     let Some(entity) = combat_info.current_entity else { return };
     let Ok(entity_infos) = query_npc.get(entity) else { return };
