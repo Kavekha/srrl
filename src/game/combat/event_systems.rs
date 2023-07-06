@@ -8,7 +8,7 @@ use crate::{
     tileboard::components::BoardPosition,
      pieces::components::{Occupier, Piece, Stats, Health}, 
      combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, 
-     render::{get_final_world_position, components::PathAnimator}};
+     render::{get_final_world_position, components::PathAnimator}, states::GameState};
 
 use super::{
     events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent},
@@ -268,11 +268,7 @@ pub fn action_entity_get_hit(
         defender_health.current = defender_health.current.saturating_sub(dmg);
         println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
         if defender_health.current == 0 {
-            if let Some(_is_player) = is_player {
-                println!("GAME OVER !");    //TODO
-            } else {
-                ev_die.send(EntityDeathEvent { entity: event.entity })
-            }
+            ev_die.send(EntityDeathEvent { entity: event.entity })
         }
     }
 }
@@ -281,6 +277,8 @@ pub fn entity_dies(
     mut commands: Commands,
     mut ev_die: EventReader<EntityDeathEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    player_q: Query<&Player>,
+    mut game_state: ResMut<NextState<GameState>>,
 ){
     for event in ev_die.iter() {
         //TODO: Remove components, transform texture to Corpse.
@@ -288,6 +286,9 @@ pub fn entity_dies(
         //commands.entity(event.entity).remove::<Health>();
         //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
+        if let Ok(is_player) = player_q.get(event.entity) {  
+            game_state.set(GameState::GameOverScreen);            
+        }
         commands.entity(event.entity).despawn();
         ev_refresh_action.send(RefreshActionCostEvent);
     }
