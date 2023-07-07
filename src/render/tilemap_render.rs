@@ -5,7 +5,7 @@ use crate::{
     globals::{
         MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, SPRITE_PLAYER_TROLL, SIZE_TROLL},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
-    render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
+    render::{get_world_position, components::{TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
 };
 
 use super::get_iso_y_modifier_from_elevation;
@@ -109,19 +109,6 @@ pub fn spawn_map_render_new(
             );
             
             floor_tiles.push(floor_tile);
-
-            // Specific components. For some reason, match doesnt work here.
-            // TODO : N'a rien à faire ici : Elements logiques!
-            /* 
-            if (x < 0 || x > board.width -1 || y < 0 || y > board.height - 1) { continue };
-            let board_tile = board.tiles[board.xy_idx(x, y)];
-            if board_tile == TileType::Wall {
-                commands.entity(tile).insert(TileCollider);
-            }
-            if board_tile == TileType::Exit {
-                commands.entity(tile).insert(TileExit);
-            } 
-            */ 
         }
     }
     
@@ -165,15 +152,6 @@ pub fn spawn_map_render(
                 world_z,
                 texture,
             );
-
-        // Specific components. For some reason, match doesnt work here.
-        // TODO : N'a rien à faire ici : Elements logiques!
-        if logic_tile.tiletype == TileType::Wall {
-            commands.entity(tile).insert(TileCollider);
-        }
-        if logic_tile.tiletype == TileType::Exit {
-            commands.entity(tile).insert(TileExit);
-        }
 
         tiles.push(tile); 
     }
