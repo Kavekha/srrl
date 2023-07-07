@@ -83,9 +83,12 @@ pub fn spawn_map_render_new(
             // On est sur la Dual Grid: Il faut un offset de 1/4 car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
             world_x -= TILE_WIDTH_HALF as f32;
             //world_y += TILE_HEIGHT_HALF as f32;    // REMEMBER : En World, +Y permets de "monter" dans la map.       
-
-            let (modified_y, world_z) = get_y_z_rendering(x, y);
             
+            //let modified_y = get_iso_y_modifier_from_elevation(SIZE_TROLL);
+            //let world_z = get_world_z(&position.v) - 1.0;
+
+            let (modified_y, mut world_z) = get_y_z_rendering(x, y);          
+
             let texture = wall_corners(&board, x, y);
 
             let tile = spawn_sprite_render(
