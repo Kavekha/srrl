@@ -3,9 +3,9 @@ use bevy::prelude::*;
 use crate::{
 
     globals::{
-        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF},
+        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, SPRITE_PLAYER_TROLL, SIZE_TROLL},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
-    render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render}, vectors::Vector2Int
+    render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
 };
 
 use super::get_iso_y_modifier_from_elevation;
@@ -76,16 +76,17 @@ pub fn spawn_map_render_new(
 
     for y in 0..board.height {
         for x in 0..board.width {
+            
             let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Moche.
             let (mut world_x, mut world_y) = get_world_position(&position.v);
 
             // On est sur la Dual Grid: Il faut un offset de 1/4 car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
-            world_x -= TILE_WIDTH_HALF as f32  / 2.0 ;
-            world_y += TILE_HEIGHT_HALF as f32  / 2.0 ;    // REMEMBER : En World, +Y permets de "monter" dans la map.
+            world_x -= TILE_WIDTH_HALF as f32;
+            //world_y += TILE_HEIGHT_HALF as f32;    // REMEMBER : En World, +Y permets de "monter" dans la map.       
 
-            let texture = wall_corners(&board, x, y);
             let (modified_y, world_z) = get_y_z_rendering(x, y);
             
+            let texture = wall_corners(&board, x, y);
 
             let tile = spawn_sprite_render(
                 &mut commands,

@@ -24,13 +24,14 @@ pub fn get_random_kind(
 ) -> (Kind, i32) {
     let mut rng = rand::thread_rng();
     let rand = rng.gen_range(0..4);
+    //TODO : Le size n'a plus de sens, c'etait une donnée "image" et toutes les images sont maintenant en 64x96.
     match rand {
-        0 => { return (Kind::Dwarf, SIZE_DWARF); }
-        1 => { return (Kind::Elf, SIZE_ELF); }
-        2 => { return (Kind::Orc, SIZE_ORC);}
+        0 => { return (Kind::Dwarf, SIZE_TROLL); }
+        1 => { return (Kind::Elf, SIZE_TROLL); }
+        2 => { return (Kind::Orc, SIZE_TROLL);}
         3 => { return (Kind::Troll, SIZE_TROLL);}
-        4 => { return (Kind::Human, SIZE_HUMAN);}
-        _ => { return (Kind::Human, SIZE_HUMAN);}
+        4 => { return (Kind::Human, SIZE_TROLL);}
+        _ => { return (Kind::Human, SIZE_TROLL);}
     }
 }
 
