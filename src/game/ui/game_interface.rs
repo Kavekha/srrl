@@ -66,7 +66,7 @@ pub fn display_action_points_on_cursor(
     }
 
     if !should_update { return };
-    println!("Update display action points");
+    //println!("Update display action points");
 
     clear_action_points_cursor_ui(&mut commands, interface_query);
 

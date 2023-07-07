@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
 
     globals::{
-        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH},
+        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
     render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render}, vectors::Vector2Int
 };
@@ -77,10 +77,12 @@ pub fn spawn_map_render_new(
     for y in 0..board.height {
         for x in 0..board.width {
             let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Moche.
+            let (mut world_x, mut world_y) = get_world_position(&position.v);
 
-            let (world_x, world_y) = get_world_position(&position.v);
-            let board_tile = board.tiles[board.xy_idx(x, y)];
-            //let (mut texture, modified_y, world_z) =  get_tile_infos_render(&position, board_tile);
+            // On est sur la Dual Grid: Il faut un offset de 1/4 car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
+            world_x -= TILE_WIDTH_HALF as f32  / 2.0 ;
+            world_y += TILE_HEIGHT_HALF as f32  / 2.0 ;    // REMEMBER : En World, +Y permets de "monter" dans la map.
+
             let texture = wall_corners(&board, x, y);
             let (modified_y, world_z) = get_y_z_rendering(x, y);
             
@@ -96,6 +98,7 @@ pub fn spawn_map_render_new(
 
             // Specific components. For some reason, match doesnt work here.
             // TODO : N'a rien à faire ici : Elements logiques!
+            let board_tile = board.tiles[board.xy_idx(x, y)];
             if board_tile == TileType::Wall {
                 commands.entity(tile).insert(TileCollider);
             }
@@ -178,6 +181,7 @@ fn get_y_z_rendering(
     y: i32
 ) -> (f32, f32) {
     let y_modifier = get_iso_y_modifier_from_elevation(TILE_HEIGHT_EXTREMELY_HIGH);
+    //let y_modifier = 0.0;   //TODO : Refacto de tout ce bordel.
     let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Sad! Change this
     let world_z = get_world_z(&position.v);
     (y_modifier, world_z)
