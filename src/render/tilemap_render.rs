@@ -66,28 +66,35 @@ pub fn wall_corners(
 
 pub fn spawn_map_render_new(
     mut commands: Commands,
-    all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
+    //all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
     asset_server: Res<AssetServer>,
     board: Res<Map>,
 ) {
     println!("New rendering map begins...");
 
     let mut graphic_tiles:Vec<Entity> = Vec::new();
+    let mut floor_tiles:Vec<Entity> = Vec::new();
 
     for y in 0..board.height {
         for x in 0..board.width {
             
             let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Moche.
-            let (mut world_x, mut world_y) = get_world_position(&position.v);
+            let (mut world_x, world_y) = get_world_position(&position.v);
 
             // On est sur la Dual Grid: Il faut un offset de 1/4 car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
             world_x -= TILE_WIDTH_HALF as f32;
-            //world_y += TILE_HEIGHT_HALF as f32;    // REMEMBER : En World, +Y permets de "monter" dans la map.       
             
-            //let modified_y = get_iso_y_modifier_from_elevation(SIZE_TROLL);
-            //let world_z = get_world_z(&position.v) - 1.0;
+            // On créé le sol.
+            let floor_tile = spawn_sprite_render(
+                &mut commands,
+                &asset_server,
+                world_x,
+                world_y,
+                0.0,
+                "temp_tiles/Sewers_wall96_0.png",
+            );
 
-            let (modified_y, mut world_z) = get_y_z_rendering(x, y);          
+            let (modified_y, world_z) = get_y_z_rendering(x, y);          
 
             let texture = wall_corners(&board, x, y);
 
@@ -111,6 +118,7 @@ pub fn spawn_map_render_new(
             }
     
             graphic_tiles.push(tile); 
+            floor_tiles.push(floor_tile);
         }
     }
     
@@ -122,7 +130,8 @@ pub fn spawn_map_render_new(
     .insert(SpatialBundle{
         ..default()
     })
-    .push_children(&graphic_tiles);
+    .push_children(&graphic_tiles)
+    .push_children(&floor_tiles);
 }
 
 
