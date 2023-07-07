@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 use::bevy::prelude::*;
 
 use crate::{
-    map_builders::{    
-        commons::TileType
-    },
+    map_builders::commons::TileType,
     globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}, vectors::Vector2Int
 };
 
@@ -32,6 +30,15 @@ impl Map {
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
+    /* TODO: Never tested, may not work at all.
+    pub fn idx_xy(
+        &self,
+        idx: usize
+    ) -> (i32, i32) {
+        let y = (idx / self.width as usize) as i32;
+        let x = (idx - (y as usize * self.width as usize)) as i32;
+        (x, y)
+    }*/
     pub fn is_blocked(
         &self,
         x: i32,
@@ -39,6 +46,13 @@ impl Map {
     ) -> bool {
         let idx = self.xy_idx(x, y);
         self.blocked[idx]   
+    }
+    pub fn out_of_bounds(
+        &self,
+        x: i32,
+        y: i32
+    ) -> bool {
+        if x < 0 || x > self.width -1 || y < 0 || y > self.height -1 { return true; } else { return false; };
     }
 
     /// Default map.
