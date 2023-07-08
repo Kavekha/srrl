@@ -2,8 +2,6 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-#[derive(Component)]
-pub struct TileExit;
 
 #[derive(Component)]
 pub struct GameCursorRender;

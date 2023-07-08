@@ -25,18 +25,14 @@ pub use tileboard::components::Tile;
 
 use crate::ecs_elements::MapGenHistory;
 use crate::game::pieces::components::Monster;
-use crate::game::pieces::spawners::{spawn_player, spawn_npc};
-use crate::game::tileboard::components::BoardPosition;
+use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
+use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
 use crate::render::components::{GameMapRender, GameCursorRender};
 use crate::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
-    map_builders::{
-        map::Map, 
-    },
-    map_builders::{
-        random_builder,
-    },    
+    map_builders::map::Map,
+    map_builders::random_builder,
     menus::{
         victory::VictoryPlugin,
         gameover::GameOverPlugin,
@@ -146,6 +142,12 @@ fn init_new_game(
         .insert(Monster)
         ;
     }
+
+    // EXIT 
+    let exit_position = builder.get_exit_position();
+    let exit = spawn_exit(&mut commands);
+    commands.entity(exit).insert(BoardPosition{ v:exit_position});
+    
     
     builder.build_data.map.populate_blocked(); 
 

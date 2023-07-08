@@ -258,7 +258,7 @@ pub fn action_entity_get_hit(
         let Ok(defender_infos) = stats_health_q.get_mut(event.entity) else { 
             println!("Pas de stats / health pour le defender");
             continue };
-        let (defender_stats, mut defender_health, is_player) = defender_infos;
+        let (defender_stats, mut defender_health, _is_player) = defender_infos;
 
         // Roll resist.
         let dice_roll = roll_dices_against(defender_stats.resilience, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
@@ -286,7 +286,7 @@ pub fn entity_dies(
         //commands.entity(event.entity).remove::<Health>();
         //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
-        if let Ok(is_player) = player_q.get(event.entity) {  
+        if let Ok(_is_player) = player_q.get(event.entity) {  
             game_state.set(GameState::GameOverScreen);            
         }
         commands.entity(event.entity).despawn();

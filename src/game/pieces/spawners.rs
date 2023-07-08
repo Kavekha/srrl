@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{
     globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, 
-    game::{player::Player, pieces::components::{Health, Occupier, Stats}}};
+    game::{player::Player, pieces::components::{Health, Occupier, Stats}, tileboard::components::ExitMapTile}};
 
 use super::components::{Piece, Actor, Walk, Melee, Npc, Monster};
 
@@ -85,5 +85,15 @@ pub fn spawn_npc(
         .id()  
 }
 
+
+pub fn spawn_exit(
+    commands: &mut Commands,
+) -> Entity {
+    commands
+        .spawn_empty()
+        .insert(Name::new(format!("Exit")))
+        .insert(ExitMapTile)
+        .id()
+}
 
 

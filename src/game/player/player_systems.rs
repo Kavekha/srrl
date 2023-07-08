@@ -4,10 +4,8 @@ use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::{
     save_load_system::ShouldSave, 
-    commons::tile_collision_check,
-    render::components::TileExit, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::BoardPosition, combat::events::RefreshActionCostEvent}, 
+    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
     vectors::Vector2Int};
 
 
@@ -146,19 +144,16 @@ pub fn camera_follow(
 
 }
 
-
-pub fn player_step_check(
-    player_query: Query<(&Player, &mut Transform)>,
-    exit_query: Query<&Transform, (With<TileExit>, Without<Player>)>,
-    mut game_state: ResMut<NextState<GameState>>
-) {
-    // If player on collision with an exit...
-    let Ok((_player, player_transform)) = player_query.get_single() else {return };
-    if exit_query
-        .iter()
-        .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
-        {
+pub fn exit_step_check(
+    player_query: Query<&BoardPosition, With<Player>>,
+    exit_query: Query<&BoardPosition, With<ExitMapTile>>,
+    mut game_state: ResMut<NextState<GameState>>,
+){
+    let Ok(player_position) = player_query.get_single() else { return };
+    for exit_position in exit_query.iter() {
+        if player_position.v == exit_position.v {
             println!("Exit !");      
             game_state.set(GameState::VictoryScreen); 
         }
+    }
 }

@@ -13,6 +13,7 @@ pub const CHAR_SIZE: f32 = 16.0;
 pub const TILE_WIDTH_HALF:i32 = 32;         //TODO : Why i32?
 //pub const STANDARD_TILE_HEIGHT:i32 = 32;
 pub const TILE_HEIGHT_HALF:i32 = 16; 
+pub const BASE_SIZE: i32 = 96;
 
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
