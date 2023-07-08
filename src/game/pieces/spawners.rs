@@ -86,4 +86,10 @@ pub fn spawn_npc(
 }
 
 
+pub fn spawn_exit(
+    commands: &mut Commands,
+) -> Entity {
+    commands.spawn_empty().id()
+}
+
 

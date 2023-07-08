@@ -15,7 +15,7 @@ use crate::{
             room_based_spawner::RoomBasedSpawner,
             room_based_starting_position::RoomBasedStartingPosition,
         },
-        maps::{sewer_map::SewerMapBuilder,},
+        maps::sewer_map::SewerMapBuilder,
         map::Map,      
     },
     globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
@@ -28,7 +28,8 @@ pub struct BuilderMap {
     pub map: Map,
     pub starting_position: Option<Vector2Int>,
     pub rooms: Option<Vec<Rectangle>>,
-    pub history: Vec<Map>
+    pub history: Vec<Map>,
+    pub exit_position: Option<Vector2Int>   // TODO ; plusieurs sorties.
 }
 
 impl BuilderMap {
@@ -58,6 +59,7 @@ impl BuilderChain {
                 starting_position: None,
                 rooms: None,
                 history: Vec::new(),
+                exit_position: None,    //TODO: Plusieurs sorties?
             }
         }
     }
@@ -90,6 +92,13 @@ impl BuilderChain {
     pub fn get_starting_position(&mut self) -> Vector2Int {
         if let Some(starting_position) = self.build_data.starting_position {
             starting_position
+        } else {
+            panic!("Pas de position de depart")
+        }
+    }
+    pub fn get_exit_position(&mut self) -> Vector2Int {
+        if let Some(exit_position) = self.build_data.exit_position {
+            exit_position
         } else {
             panic!("Pas de position de depart")
         }

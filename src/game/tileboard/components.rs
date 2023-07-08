@@ -19,3 +19,6 @@ pub struct GameMap;
 pub struct BoardPosition{
     pub v: Vector2Int
 }
+
+#[derive(Component)]
+pub struct ExitMapTile;
