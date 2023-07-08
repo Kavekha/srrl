@@ -1,14 +1,17 @@
 use bevy::prelude::*;
+
+mod components;
+
 use crate::{
     AppState,
     GameState,
-    ecs_elements::resources::MusicController,
 };
+
+use self::components::CurrentMusic;
+
 
 
 pub struct GameAudioPlugin;
-
-
 
 impl Plugin for GameAudioPlugin{
     fn build(
@@ -37,50 +40,62 @@ fn setup_audio_mainmenu(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn(AudioBundle {
-        source: asset_server.load("audios/Seattle-2050.ogg"),
-        ..default()
-    });
+    commands.spawn((
+        AudioBundle {
+            source: asset_server.load("audios/Seattle-2050.ogg"),
+            ..default()},
+        CurrentMusic,
+        ));
 }
 
 fn setup_audio_death(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn(AudioBundle {
+    commands.spawn((AudioBundle {
         source: asset_server.load("audios/Dead.ogg"),
-        ..default()
-    });
+        ..default()},
+        CurrentMusic,
+        ));
 }
 
 fn setup_audio_victory(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn(AudioBundle {
+    commands.spawn((AudioBundle {
         source: asset_server.load("audios/Ending.ogg"),
-        ..default()
-    });
+        ..default()},
+        CurrentMusic,
+        ));
 }
 
 fn setup_audio_gamemap(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    commands.spawn(AudioBundle {
+    commands.spawn((
+        AudioBundle {
         source: asset_server.load("audios/Morgue.ogg"),
-        ..default()
-    });
+        ..default()},
+        CurrentMusic,
+    ));
 }
 
 
 fn stop_music(
     // `AudioSink` will be inserted by Bevy when the audio starts playing
-    query_music: Query<&AudioSink, With<MusicController>>,
+    query_music: Query<&AudioSink>  //, With<CurrentMusic>>,
 ) {
+    println!("Stop Music: Start");
+    for sink in query_music.iter() {
+        sink.stop();
+    };
+    /* 
     if let Ok(sink) = query_music.get_single() {
-        sink.toggle();
-    }
+        sink.stop();
+        println!("Stop Music: Sink.Stop");
+    };*/
 }
 
 /* 
