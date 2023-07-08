@@ -20,4 +20,4 @@ http://www.cr31.co.uk/stagecast/wang/2corn.html
 13 => "L" le plus visible (SW, NW, NE). Peut être connecté à 8 et 9.  
 14 => "L" avec SE,SW,NW. Peut être connecté à 4 et 12.  
 15 => Les 4 directions. On ne voit que le sommet si toutes ont la même taille. 
-![image](screenshots/img:v0_14_Tiles_Mask.png) 
+![image](screenshots/v0_14_Tiles_Mask.png) 
