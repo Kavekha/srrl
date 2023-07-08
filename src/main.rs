@@ -7,7 +7,7 @@ use bevy::{
 };
 
 mod ascii;
-mod audio;
+mod audios;
 mod commons;
 mod menus;
 mod map_builders;   //mod
@@ -23,7 +23,7 @@ pub use render::GraphicsWaitEvent;
 
 use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
-use audio::GameAudioPlugin;
+use audios::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
 use states::{AppState, GameState, EngineState};

@@ -1,14 +1,17 @@
 use bevy::prelude::*;
+
+mod components;
+
 use crate::{
     AppState,
     GameState,
-    ecs_elements::resources::MusicController,
 };
+
+use self::components::CurrentMusic;
+
 
 
 pub struct GameAudioPlugin;
-
-
 
 impl Plugin for GameAudioPlugin{
     fn build(
@@ -32,6 +35,70 @@ impl Plugin for GameAudioPlugin{
     }
 }
 
+//TODO : Refacto audio to avoid duplicate.
+fn setup_audio_mainmenu(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn((
+        AudioBundle {
+            source: asset_server.load("audios/Seattle-2050.ogg"),
+            ..default()},
+        CurrentMusic,
+        ));
+}
+
+fn setup_audio_death(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn((AudioBundle {
+        source: asset_server.load("audios/Dead.ogg"),
+        ..default()},
+        CurrentMusic,
+        ));
+}
+
+fn setup_audio_victory(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn((AudioBundle {
+        source: asset_server.load("audios/Ending.ogg"),
+        ..default()},
+        CurrentMusic,
+        ));
+}
+
+fn setup_audio_gamemap(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn((
+        AudioBundle {
+        source: asset_server.load("audios/Morgue.ogg"),
+        ..default()},
+        CurrentMusic,
+    ));
+}
+
+
+fn stop_music(
+    // `AudioSink` will be inserted by Bevy when the audio starts playing
+    query_music: Query<&AudioSink>  //, With<CurrentMusic>>,
+) {
+    println!("Stop Music: Start");
+    for sink in query_music.iter() {
+        sink.stop();
+    };
+    /* 
+    if let Ok(sink) = query_music.get_single() {
+        sink.stop();
+        println!("Stop Music: Sink.Stop");
+    };*/
+}
+
+/* 
 
 fn stop_music(
     audio_sinks: Res<Assets<AudioSink>>,
@@ -41,6 +108,7 @@ fn stop_music(
         sink.stop()
     }
 }
+
 
 pub fn setup_audio_death(
     mut commands: Commands,
@@ -97,3 +165,4 @@ pub fn setup_audio_mainmenu(
     let handle = audio_sinks.get_handle(music);
     commands.insert_resource(MusicController(handle));
 }
+*/
