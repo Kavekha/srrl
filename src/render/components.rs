@@ -2,10 +2,6 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-
-#[derive(Component)]
-pub struct TileCollider;
-
 #[derive(Component)]
 pub struct TileExit;
 

@@ -5,7 +5,7 @@ use crate::{
     globals::{
         MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, SPRITE_PLAYER_TROLL, SIZE_TROLL},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
-    render::{get_world_position, components::{TileCollider, TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
+    render::{get_world_position, components::{TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
 };
 
 use super::get_iso_y_modifier_from_elevation;
@@ -19,7 +19,7 @@ pub fn wall_corners(
     board: &Map,
     x: i32,
     y: i32
-) -> &str {
+) -> Option<&str> {
     let mut mask: u8 = 0;
 
     let ne = (x, y);
@@ -41,76 +41,74 @@ pub fn wall_corners(
     }
  
     match mask {
-        0 => { "temp_tiles/Sewers_wall96_0.png" },      //No wall at all.
-        1 => { "temp_tiles/Sewers_wall96_1.png" },
-        2 => { "temp_tiles/Sewers_wall96_2.png" },
-        3 => { "temp_tiles/Sewers_wall96_3.png" },
-        4 => { "temp_tiles/Sewers_wall96_4.png" },
-        5 => { "temp_tiles/Sewers_wall96_5.png" },
-        6 => { "temp_tiles/Sewers_wall96_6.png" },
-        7 => { "temp_tiles/Sewers_wall96_7.png" },
-        8 => { "temp_tiles/Sewers_wall96_8.png" },
-        9 => { "temp_tiles/Sewers_wall96_9.png" },
-        10 => { "temp_tiles/Sewers_wall96_10.png" },
-        11 => { "temp_tiles/Sewers_wall96_11.png" },
-        12 => { "temp_tiles/Sewers_wall96_12.png" },
-        13 => { "temp_tiles/Sewers_wall96_13.png" },
-        14 => { "temp_tiles/Sewers_wall96_14.png" },
-        15 =>  { "temp_tiles/Sewers_wall96_15.png" },
-        _ => { MAP_WALL_VERY_HIGH }
+        0 => None,  //{ "temp_tiles/Sewers_wall96_0.png" },      //No wall at all.
+        1 => { Some("temp_tiles/Sewers_wall96_1.png") },
+        2 => { Some("temp_tiles/Sewers_wall96_2.png") },
+        3 => { Some("temp_tiles/Sewers_wall96_3.png") },
+        4 => { Some("temp_tiles/Sewers_wall96_4.png") },
+        5 => { Some("temp_tiles/Sewers_wall96_5.png") },
+        6 => { Some("temp_tiles/Sewers_wall96_6.png") },
+        7 => { Some("temp_tiles/Sewers_wall96_7.png") },
+        8 => { Some("temp_tiles/Sewers_wall96_8.png") },
+        9 => { Some("temp_tiles/Sewers_wall96_9.png") },
+        10 => { Some("temp_tiles/Sewers_wall96_10.png") },
+        11 => { Some("temp_tiles/Sewers_wall96_11.png") },
+        12 => { Some("temp_tiles/Sewers_wall96_12.png") },
+        13 => { Some("temp_tiles/Sewers_wall96_13.png") },
+        14 => { Some("temp_tiles/Sewers_wall96_14.png") },
+        15 =>  { Some("temp_tiles/Sewers_wall96_15.png") },
+        _ => { Some(MAP_WALL_VERY_HIGH) }
     }
     //return mask;
 
 }
 
 
-pub fn spawn_map_render_new(
+pub fn spawn_map_render(
     mut commands: Commands,
-    all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
+    //all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
     asset_server: Res<AssetServer>,
     board: Res<Map>,
 ) {
     println!("New rendering map begins...");
 
     let mut graphic_tiles:Vec<Entity> = Vec::new();
+    let mut floor_tiles:Vec<Entity> = Vec::new();
 
-    for y in 0..board.height {
-        for x in 0..board.width {
+    for y in 0..board.height -1 {
+        for x in 0..board.width -1 {
             
             let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Moche.
-            let (mut world_x, mut world_y) = get_world_position(&position.v);
+            let (mut world_x, world_y) = get_world_position(&position.v);
 
-            // On est sur la Dual Grid: Il faut un offset de 1/4 car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
-            world_x -= TILE_WIDTH_HALF as f32;
-            //world_y += TILE_HEIGHT_HALF as f32;    // REMEMBER : En World, +Y permets de "monter" dans la map.       
-            
-            //let modified_y = get_iso_y_modifier_from_elevation(SIZE_TROLL);
-            //let world_z = get_world_z(&position.v) - 1.0;
+            // On est sur la Dual Grid: Il faut un offset car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
+            world_x -= TILE_WIDTH_HALF as f32;          
 
-            let (modified_y, mut world_z) = get_y_z_rendering(x, y);          
+            let (modified_y, world_z) = get_y_z_rendering(x, y);          
 
-            let texture = wall_corners(&board, x, y);
-
-            let tile = spawn_sprite_render(
+            if let Some(texture) = wall_corners(&board, x, y) {
+                // Wall
+                let wall_tile = spawn_sprite_render(
+                    &mut commands,
+                    &asset_server,
+                    world_x,
+                    world_y + modified_y,
+                    world_z,
+                    texture,
+                );
+                graphic_tiles.push(wall_tile); 
+            }
+            // On créé le sol 
+            let floor_tile = spawn_sprite_render(
                 &mut commands,
                 &asset_server,
                 world_x,
-                world_y + modified_y,
-                world_z,
-                texture,
+                world_y  + modified_y,
+                0.0,
+                "temp_tiles/Sewers_floor_0.png",
             );
-
-            // Specific components. For some reason, match doesnt work here.
-            // TODO : N'a rien à faire ici : Elements logiques!
-            let board_tile = board.tiles[board.xy_idx(x, y)];
-            if board_tile == TileType::Wall {
-                commands.entity(tile).insert(TileCollider);
-            }
-            if board_tile == TileType::Exit {
-                commands.entity(tile).insert(TileExit);
-            }
-    
-            graphic_tiles.push(tile); 
+            
+            floor_tiles.push(floor_tile);
         }
     }
     
@@ -122,11 +120,13 @@ pub fn spawn_map_render_new(
     .insert(SpatialBundle{
         ..default()
     })
-    .push_children(&graphic_tiles);
+    .push_children(&graphic_tiles)
+    .push_children(&floor_tiles);
 }
 
 
 
+/* 
 pub fn spawn_map_render(
     mut commands: Commands,
     all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
@@ -154,15 +154,6 @@ pub fn spawn_map_render(
                 texture,
             );
 
-        // Specific components. For some reason, match doesnt work here.
-        // TODO : N'a rien à faire ici : Elements logiques!
-        if logic_tile.tiletype == TileType::Wall {
-            commands.entity(tile).insert(TileCollider);
-        }
-        if logic_tile.tiletype == TileType::Exit {
-            commands.entity(tile).insert(TileExit);
-        }
-
         tiles.push(tile); 
     }
 
@@ -177,7 +168,7 @@ pub fn spawn_map_render(
     .push_children(&tiles)
     ;
 }
-
+*/
 
 /// Return y modifier for elevation and z rendering order.
 fn get_y_z_rendering(
@@ -192,6 +183,7 @@ fn get_y_z_rendering(
 }
 
 
+/* 
 /// Return texture, y modifier for elevation and z rendering order for TileType.
 fn get_tile_infos_render(
     position: &BoardPosition,
@@ -239,3 +231,4 @@ fn get_tile_infos_render(
 
     (texture, y_modifier, world_z)  //Return
 }
+*/
