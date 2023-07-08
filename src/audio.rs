@@ -32,6 +32,58 @@ impl Plugin for GameAudioPlugin{
     }
 }
 
+//TODO : Refacto audio to avoid duplicate.
+fn setup_audio_mainmenu(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn(AudioBundle {
+        source: asset_server.load("audios/Seattle-2050.ogg"),
+        ..default()
+    });
+}
+
+fn setup_audio_death(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn(AudioBundle {
+        source: asset_server.load("audios/Dead.ogg"),
+        ..default()
+    });
+}
+
+fn setup_audio_victory(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn(AudioBundle {
+        source: asset_server.load("audios/Ending.ogg"),
+        ..default()
+    });
+}
+
+fn setup_audio_gamemap(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn(AudioBundle {
+        source: asset_server.load("audios/Morgue.ogg"),
+        ..default()
+    });
+}
+
+
+fn stop_music(
+    // `AudioSink` will be inserted by Bevy when the audio starts playing
+    query_music: Query<&AudioSink, With<MusicController>>,
+) {
+    if let Ok(sink) = query_music.get_single() {
+        sink.toggle();
+    }
+}
+
+/* 
 
 fn stop_music(
     audio_sinks: Res<Assets<AudioSink>>,
@@ -41,6 +93,7 @@ fn stop_music(
         sink.stop()
     }
 }
+
 
 pub fn setup_audio_death(
     mut commands: Commands,
@@ -97,3 +150,4 @@ pub fn setup_audio_mainmenu(
     let handle = audio_sinks.get_handle(music);
     commands.insert_resource(MusicController(handle));
 }
+*/
