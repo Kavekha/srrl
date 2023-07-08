@@ -5,7 +5,7 @@ use crate::{
     globals::{
         MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, SPRITE_PLAYER_TROLL, SIZE_TROLL},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
-    render::{get_world_position, components::{TileExit, GameMapRender}, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
+    render::{get_world_position, components::GameMapRender, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
 };
 
 use super::get_iso_y_modifier_from_elevation;

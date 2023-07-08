@@ -7,7 +7,7 @@ pub mod cursor;
 pub use components::Player;
 pub use cursor::Cursor;
 
-use self::player_systems::{player_input, camera_follow, player_step_check, player_mouse_input, exit_step_check};
+use self::player_systems::{player_input, camera_follow, player_mouse_input, exit_step_check};
 
 use crate::states::GameState;
 

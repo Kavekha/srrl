@@ -4,8 +4,6 @@ use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::{
     save_load_system::ShouldSave, 
-    commons::tile_collision_check,
-    render::components::TileExit, 
     states::GameState, 
     game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
     vectors::Vector2Int};
@@ -158,21 +156,4 @@ pub fn exit_step_check(
             game_state.set(GameState::VictoryScreen); 
         }
     }
-}
-
-
-pub fn player_step_check(
-    player_query: Query<(&Player, &mut Transform)>,
-    exit_query: Query<&Transform, (With<TileExit>, Without<Player>)>,
-    mut game_state: ResMut<NextState<GameState>>
-) {
-    // If player on collision with an exit...
-    let Ok((_player, player_transform)) = player_query.get_single() else {return };
-    if exit_query
-        .iter()
-        .any(|&transform|tile_collision_check(player_transform.translation, transform.translation))
-        {
-            println!("Exit !");      
-            game_state.set(GameState::VictoryScreen); 
-        }
 }

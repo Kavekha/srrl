@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 
 use crate::{
-    map_builders::{map::Map, TileType}, 
+    map_builders::map::Map, 
     states::GameState, 
-    game::{tileboard::components::{Tile, GameMap, BoardPosition}, pieces::components::Occupier}, vectors::Vector2Int, render::components::TileExit
+    game::{tileboard::components::{Tile, GameMap, BoardPosition}, pieces::components::Occupier}, vectors::Vector2Int,
 };
 
 
@@ -32,9 +32,6 @@ pub fn spawn_map(
 
         if map.is_blocked(x, y) {
             commands.entity(tile).insert(Occupier); //TODO : Something else? Occupier is used by Pieces too.
-        }
-        if map.tiles[map.xy_idx(x, y)] == TileType::Exit {
-            commands.entity(tile).insert(TileExit);
         }
         tiles.insert(v, tile); 
         tile_entities.push(tile);
