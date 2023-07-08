@@ -64,7 +64,7 @@ pub fn wall_corners(
 }
 
 
-pub fn spawn_map_render_new(
+pub fn spawn_map_render(
     mut commands: Commands,
     //all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
     asset_server: Res<AssetServer>,
@@ -126,6 +126,7 @@ pub fn spawn_map_render_new(
 
 
 
+/* 
 pub fn spawn_map_render(
     mut commands: Commands,
     all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
@@ -167,7 +168,7 @@ pub fn spawn_map_render(
     .push_children(&tiles)
     ;
 }
-
+*/
 
 /// Return y modifier for elevation and z rendering order.
 fn get_y_z_rendering(
@@ -182,6 +183,7 @@ fn get_y_z_rendering(
 }
 
 
+/* 
 /// Return texture, y modifier for elevation and z rendering order for TileType.
 fn get_tile_infos_render(
     position: &BoardPosition,
@@ -229,3 +231,4 @@ fn get_tile_infos_render(
 
     (texture, y_modifier, world_z)  //Return
 }
+*/
