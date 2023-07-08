@@ -8,7 +8,7 @@ pub mod cursor_render;
 
 use self::{
     tilemap_render::spawn_map_render,
-    pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation}, cursor_render::{spawn_game_cursor, update_game_cursor},
+    pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation, spawn_exit_render}, cursor_render::{spawn_game_cursor, update_game_cursor},
 };
 
 use crate::{
@@ -23,10 +23,10 @@ impl Plugin for GraphicsPlugin {
         app
             .add_event::<GraphicsWaitEvent>()
     
-            .add_systems(OnEnter(GameState::GameMap), spawn_map_render)       
-            
+            .add_systems(OnEnter(GameState::GameMap), spawn_map_render)                  
             .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
-            .add_systems(OnEnter(GameState::GameMap), spawn_game_cursor)         
+            .add_systems(OnEnter(GameState::GameMap), spawn_game_cursor)     
+            .add_systems(OnEnter(GameState::GameMap), spawn_exit_render)    
 
             //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
             .add_systems(Update, (path_animator_update, melee_animation).in_set(CombatSet::Animation))

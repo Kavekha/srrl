@@ -146,7 +146,7 @@ fn init_new_game(
     // EXIT 
     let exit_position = builder.get_exit_position();
     let exit = spawn_exit(&mut commands);
-    commands.entity(exit).insert(BoardPosition{ v:exit_position}).insert(ExitMapTile);
+    commands.entity(exit).insert(BoardPosition{ v:exit_position});
     
     
     builder.build_data.map.populate_blocked(); 

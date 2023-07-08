@@ -5,10 +5,10 @@ use bevy::prelude::*;
 use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF,},
-    game::{player::Player, pieces::{components::Piece, spawners::Kind}, tileboard::components::BoardPosition, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
+        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, BASE_SIZE, MAP_EXIT,},
+    game::{player::Player, pieces::{components::Piece, spawners::Kind}, tileboard::components::{BoardPosition, ExitMapTile}, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
 
-use super::components::PathAnimator;
+use super::components::{PathAnimator, TileExit};
 
 
 pub fn melee_animation(
@@ -93,6 +93,32 @@ pub fn path_animator_update(
             //println!("wait_anim: True");
         }
     }
+}
+
+
+pub fn spawn_exit_render(
+    mut commands: Commands,
+    query: Query<(Entity, &BoardPosition, &ExitMapTile)>,
+    asset_server: Res<AssetServer>
+){
+    println!("Rendering Exit begins...");
+    for (entity, position, exit) in query.iter() {
+        let translation = get_final_world_position(position.v, BASE_SIZE);
+        let texture = MAP_EXIT;
+
+        commands.entity(entity)
+            .insert(SpriteBundle {
+                texture: asset_server.load(texture),    
+                transform: Transform {
+                    translation: translation,    //Vec3::new(x, y, z),
+                    scale: Vec3::splat(1.0),
+                    ..default()
+                },
+                ..default()
+            });
+        println!("An Exit has been rendered.");
+    }
+    println!("Rendering Exit ends.");
 }
 
 
