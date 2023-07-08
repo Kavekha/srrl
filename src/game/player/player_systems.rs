@@ -7,7 +7,7 @@ use crate::{
     commons::tile_collision_check,
     render::components::TileExit, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::BoardPosition, combat::events::RefreshActionCostEvent}, 
+    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
     vectors::Vector2Int};
 
 
@@ -144,6 +144,20 @@ pub fn camera_follow(
     camera_transform.translation.x = player_transform.translation.x;
     camera_transform.translation.y = player_transform.translation.y;
 
+}
+
+pub fn exit_step_check(
+    player_query: Query<&BoardPosition, With<Player>>,
+    exit_query: Query<&BoardPosition, With<ExitMapTile>>,
+    mut game_state: ResMut<NextState<GameState>>,
+){
+    let Ok(player_position) = player_query.get_single() else { return };
+    for exit_position in exit_query.iter() {
+        if player_position.v == exit_position.v {
+            println!("Exit !");      
+            game_state.set(GameState::VictoryScreen); 
+        }
+    }
 }
 
 
