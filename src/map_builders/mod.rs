@@ -124,12 +124,12 @@ pub fn random_builder() -> BuilderChain {
 
     //let (random_starter, has_rooms) = random_initial_builder(rng);
     //if has_rooms {
-        builder.with(RoomBasedSpawner::new());
         builder.with(RoomSorter::new(RoomSort::LEFTMOST));
         builder.with(DoglegCorridors::new());
         builder.with(DiagonalCleanUp::new());
         builder.with(RoomBasedStartingPosition::new());
         builder.with(RoomBasedExits::new());
+        builder.with(RoomBasedSpawner::new());
     /* 
     } else {
         builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
