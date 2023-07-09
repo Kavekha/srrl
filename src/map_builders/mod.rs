@@ -21,7 +21,7 @@ use crate::{
     globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
 };
 
-use self::builders::{rooms_corridors_dogleg::DoglegCorridors, room_sorter::{RoomSorter, RoomSort}, map_diagonal_cleanup::DiagonalCleanUp, room_drawer::RoomDrawer};
+use self::builders::{rooms_corridors_dogleg::DoglegCorridors, room_sorter::{RoomSorter, RoomSort}, map_diagonal_cleanup::DiagonalCleanUp, room_drawer::RoomDrawer, room_corridors_nearest::NearestCorridors};
 
 
 #[derive(Clone)]
@@ -127,6 +127,7 @@ pub fn random_builder() -> BuilderChain {
         builder.with(RoomDrawer::new());
         builder.with(RoomSorter::new(RoomSort::CENTRAL));
         builder.with(DoglegCorridors::new(3));
+        //builder.with(NearestCorridors::new());
         builder.with(DiagonalCleanUp::new());
         builder.with(RoomBasedStartingPosition::new());
         builder.with(RoomBasedExits::new());
