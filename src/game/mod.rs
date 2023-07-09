@@ -91,6 +91,7 @@ pub fn clean_game_screen(
     despawn_gamemap_render: Query<Entity, With<GameMapRender>>,
     despawn_player: Query<Entity, With<Player>>,
     despawn_gamecursor: Query<Entity, With<GameCursorRender>>,
+    despawn_exit: Query<Entity, With<ExitMapTile>>,
     
 ) {
     despawn_screen(despawn_npc, &mut commands);
@@ -98,6 +99,7 @@ pub fn clean_game_screen(
     despawn_screen(despawn_gamemap_render, &mut commands);    
     despawn_screen(despawn_player, &mut commands);
     despawn_screen(despawn_gamecursor, &mut commands);
+    despawn_screen(despawn_exit, &mut commands);
 }
 
 
