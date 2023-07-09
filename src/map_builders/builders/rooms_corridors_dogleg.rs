@@ -2,7 +2,9 @@ use rand::Rng;
 
 use crate::map_builders::{MetaMapBuilder, BuilderMap, commons::{apply_horizontal_tunnel, apply_vertical_tunnel}, rectangle::Rectangle};
 
-pub struct DoglegCorridors {}
+pub struct DoglegCorridors {
+    corridor_size: i32
+}
 
 impl MetaMapBuilder for DoglegCorridors {
     #[allow(dead_code)]
@@ -13,8 +15,8 @@ impl MetaMapBuilder for DoglegCorridors {
 
 impl DoglegCorridors {
     #[allow(dead_code)]
-    pub fn new() -> Box<DoglegCorridors> {
-        Box::new(DoglegCorridors{})
+    pub fn new( corridor_size: i32) -> Box<DoglegCorridors> {
+        Box::new(DoglegCorridors { corridor_size })
     }
 
     fn corridors(&mut self, build_data : &mut BuilderMap) {
@@ -32,11 +34,15 @@ impl DoglegCorridors {
                 let (new_x, new_y) = room.center();
                 let (prev_x, prev_y) = rooms[i as usize -1].center();
                 if rng.gen_range(0.. 2) == 1 {
-                    apply_horizontal_tunnel(&mut build_data.map, prev_x, new_x, prev_y);
-                    apply_vertical_tunnel(&mut build_data.map, prev_y, new_y, new_x);
+                    for size in -1.. self.corridor_size -1 {
+                        apply_horizontal_tunnel(&mut build_data.map, prev_x + size, new_x + size, prev_y + size);
+                        apply_vertical_tunnel(&mut build_data.map, prev_y + size, new_y + size, new_x + size);
+                    }
                 } else {
-                    apply_vertical_tunnel(&mut build_data.map, prev_y, new_y, prev_x);
-                    apply_horizontal_tunnel(&mut build_data.map, prev_x, new_x, new_y);
+                    for size in -1.. self.corridor_size -1 {                        
+                        apply_vertical_tunnel(&mut build_data.map, prev_y + size, new_y + size, new_x + size);
+                        apply_horizontal_tunnel(&mut build_data.map, prev_x + size, new_x + size, prev_y + size);
+                    }
                 }
                 build_data.take_snapshot();
             }

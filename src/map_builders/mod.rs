@@ -15,7 +15,7 @@ use crate::{
             room_based_spawner::RoomBasedSpawner,
             room_based_starting_position::RoomBasedStartingPosition,
         },
-        maps::{sewer_map::SewerMapBuilder,simple_map::SimpleMapBuilder},
+        maps::simple_map::SimpleMapBuilder,
         map::Map,      
     },
     globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
@@ -125,7 +125,7 @@ pub fn random_builder() -> BuilderChain {
     //let (random_starter, has_rooms) = random_initial_builder(rng);
     //if has_rooms {
         builder.with(RoomSorter::new(RoomSort::LEFTMOST));
-        builder.with(DoglegCorridors::new());
+        builder.with(DoglegCorridors::new(2));
         builder.with(DiagonalCleanUp::new());
         builder.with(RoomBasedStartingPosition::new());
         builder.with(RoomBasedExits::new());

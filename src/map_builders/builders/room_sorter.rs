@@ -20,7 +20,7 @@ impl MetaMapBuilder for RoomSorter {
     fn build_map(&mut self, build_data : &mut BuilderMap) {
         self.sorter(build_data);
     }
-}
+} 
 
 impl RoomSorter {
     #[allow(dead_code)]
