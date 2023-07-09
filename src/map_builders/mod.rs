@@ -15,11 +15,13 @@ use crate::{
             room_based_spawner::RoomBasedSpawner,
             room_based_starting_position::RoomBasedStartingPosition,
         },
-        maps::sewer_map::SewerMapBuilder,
+        maps::simple_map::SimpleMapBuilder,
         map::Map,      
     },
     globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
 };
+
+use self::builders::{rooms_corridors_dogleg::DoglegCorridors, room_sorter::{RoomSorter, RoomSort}, map_diagonal_cleanup::DiagonalCleanUp};
 
 
 #[derive(Clone)]
@@ -117,14 +119,17 @@ pub fn random_builder() -> BuilderChain {
     //let mut rng = rand::thread_rng();   //TODO : Seed & refacto.
 
     let mut builder = BuilderChain::new();
-    //builder.start_with(SimpleMapBuilder::new());
-    builder.start_with(SewerMapBuilder::new());    
+    builder.start_with(SimpleMapBuilder::new());
+    //builder.start_with(SewerMapBuilder::new());    
 
     //let (random_starter, has_rooms) = random_initial_builder(rng);
     //if has_rooms {
-        builder.with(RoomBasedSpawner::new());
-        builder.with(RoomBasedExits::new());
+        builder.with(RoomSorter::new(RoomSort::LEFTMOST));
+        builder.with(DoglegCorridors::new(2));
+        builder.with(DiagonalCleanUp::new());
         builder.with(RoomBasedStartingPosition::new());
+        builder.with(RoomBasedExits::new());
+        builder.with(RoomBasedSpawner::new());
     /* 
     } else {
         builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));

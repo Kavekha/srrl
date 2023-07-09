@@ -1,3 +1,2 @@
-pub mod sewer_map;
-mod simple_map;
+pub mod simple_map;
 
