@@ -1,4 +1,4 @@
-use bevy::{prelude::*};
+use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
 use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, };
 
@@ -52,9 +52,17 @@ fn display_gameover_screen(
 
 fn gameover_menu_input(
     keys: Res<Input<KeyCode>>,
-    mut game_state: ResMut<NextState<GameState>>
+    mut game_state: ResMut<NextState<GameState>>,    
+    mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
         game_state.set(GameState::NewGame);
+    }
+    for event in mouse_button_input_events.iter() {
+        //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
+        if event.button == MouseButton::Left {
+            game_state.set(GameState::NewGame);
+        }
+        info!("{:?}", event);
     }
 }
