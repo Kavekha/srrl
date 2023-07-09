@@ -1,4 +1,4 @@
-//#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
+#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
     prelude::*, 
