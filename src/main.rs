@@ -8,7 +8,6 @@ use bevy::{
 
 mod ascii;
 mod audios;
-mod commons;
 mod menus;
 mod map_builders;   //mod
 mod game;           //mod

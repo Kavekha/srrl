@@ -15,19 +15,6 @@ pub enum TileType {
     Exit
 }
 
-/// Randomly apply a room on a map.
-pub fn apply_room_to_map(
-    map: &mut Map,
-    room: &Rectangle
-) {
-    for y in room.y1 +1 ..= room.y2 {
-        for x in room.x1 + 1 ..= room.x2 {
-            let idx = map.xy_idx(x, y);
-            map.tiles[idx] = TileType::Floor;
-        }
-    }
-} 
-
 pub fn apply_horizontal_tunnel(
     map: &mut Map,
     x1:i32, 

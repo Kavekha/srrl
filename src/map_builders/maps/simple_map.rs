@@ -4,7 +4,6 @@ use rand::prelude::*;
 use crate::{
     map_builders::{
         rectangle::Rectangle,
-        commons::{apply_room_to_map, apply_horizontal_tunnel, apply_vertical_tunnel},
         InitialMapBuilder, BuilderMap,
     },  
     //SHOW_MAPGEN_VISUALIZER, 
@@ -57,11 +56,7 @@ impl SimpleMapBuilder {
                 
             }
             if can_add_room {
-                //println!("Room ajoutée à la map");
-                apply_room_to_map(&mut build_data.map, &new_room);  
-                build_data.take_snapshot(); 
-                rooms.push(new_room);   
-                build_data.take_snapshot();         
+                rooms.push(new_room);       
             }
         }
         build_data.rooms = Some(rooms);
