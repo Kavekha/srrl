@@ -126,7 +126,7 @@ pub fn random_builder() -> BuilderChain {
     //if has_rooms {
         builder.with(RoomDrawer::new());
         builder.with(RoomSorter::new(RoomSort::CENTRAL));
-        builder.with(DoglegCorridors::new(2));
+        builder.with(DoglegCorridors::new(3));
         builder.with(DiagonalCleanUp::new());
         builder.with(RoomBasedStartingPosition::new());
         builder.with(RoomBasedExits::new());

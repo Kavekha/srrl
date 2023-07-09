@@ -1,4 +1,6 @@
-use crate::map_builders::{MetaMapBuilder, BuilderMap, rectangle::Rectangle, TileType};
+use rand::Rng;
+
+use crate::{map_builders::{MetaMapBuilder, BuilderMap, rectangle::Rectangle, TileType}, vectors::Vector2Int};
 
 pub struct RoomDrawer {}
 
@@ -23,15 +25,43 @@ impl RoomDrawer {
         }
 
         for room in rooms.iter() {
-            for y in room.y1 +1 ..= room.y2 {
-                for x in room.x1 + 1 ..= room.x2 {
-                    let idx = build_data.map.xy_idx(x, y);
-                    if idx > 0 && idx < ((build_data.map.width * build_data.map.height)-1) as usize {
-                        build_data.map.tiles[idx] = TileType::Floor;
-                    }
-                }
-            }
+            let mut rng = rand::thread_rng();
+            let room_type = rng.gen_range(0.. 4);
+            match room_type {
+                1 => self.circle(build_data, room),
+                _ => self.rectangle(build_data, room)
+            }                       
             build_data.take_snapshot();
         }
     }
+
+    fn rectangle(&mut self, build_data : &mut BuilderMap, room : &Rectangle) {
+        for y in room.y1 +1 ..= room.y2 {
+            for x in room.x1 + 1 ..= room.x2 {
+                let idx = build_data.map.xy_idx(x, y);
+                if idx > 0 && idx < ((build_data.map.width * build_data.map.height)-1) as usize {
+                    build_data.map.tiles[idx] = TileType::Floor;
+                }
+            }
+        }
+    }
+
+    fn circle(&mut self, build_data : &mut BuilderMap, room : &Rectangle) {
+        let radius = i32::min(room.x2 - room.x1, room.y2 - room.y1) as f32 / 2.0;
+        let center = room.center();
+        let center_pt = Vector2Int { x:center.0, y:center.1 };
+        for y in room.y1 ..= room.y2 {
+            for x in room.x1 ..= room.x2 {
+                let idx = build_data.map.xy_idx(x, y);
+                let distance = center_pt.manhattan(Vector2Int {x: x, y: y }); //rltk::DistanceAlg::Pythagoras.distance2d(center_pt, rltk::Point::new(x, y));
+                if idx > 0 
+                    && idx < ((build_data.map.width * build_data.map.height)-2) as usize 
+                    && distance as f32 <= radius
+                {
+                    build_data.map.tiles[idx] = TileType::Floor;
+                }
+            }
+        }
+    }
+
 }
