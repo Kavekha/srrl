@@ -12,7 +12,7 @@ use self::{
 };
 
 use crate::{
-    globals::{TILE_HEIGHT_MEDIUM, STANDARD_TILE_HEIGHT, STANDARD_TILE_WIDTH, STANDARD_TILE_SIZE, }, 
+    globals::STANDARD_TILE_SIZE, 
     states::GameState, vectors::Vector2Int, game::combat::CombatSet,
 };
 
@@ -61,7 +61,7 @@ fn get_world_z(
     z
 }
 
-
+/* 
 fn get_iso_y_modifier_from_elevation(
     tile_elevation: i32
 ) -> f32 {
@@ -78,3 +78,4 @@ pub fn get_final_world_position(
 
     return Vec3::new(w_x, w_y, w_z)
 }
+*/

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{vectors::Vector2Int, states::GameState, globals::{STANDARD_TILE_WIDTH, STANDARD_TILE_HEIGHT}};
+use crate::{vectors::Vector2Int, states::GameState, globals::STANDARD_TILE_SIZE};
 
 
 pub struct CursorPlugin;
@@ -56,8 +56,8 @@ pub fn get_grid_position(
     let world_x = x;
     let mut world_y = y - (y * 2.0);
 
-    let grid_x_floor = world_x / STANDARD_TILE_WIDTH as f32;
-    let grid_y_floor = world_y / STANDARD_TILE_HEIGHT as f32;
+    let grid_x_floor = world_x / STANDARD_TILE_SIZE as f32;
+    let grid_y_floor = world_y / STANDARD_TILE_SIZE as f32;
 
     Vector2Int{x:grid_x_floor as i32, y:grid_y_floor as i32}
 }

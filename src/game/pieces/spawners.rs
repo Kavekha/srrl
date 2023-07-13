@@ -3,7 +3,7 @@ use rand::Rng;
 use serde::{Serialize, Deserialize};
 
 use crate::{
-    globals::{SIZE_GHOUL, SIZE_HUMAN, SIZE_ELF, SIZE_TROLL, SIZE_DWARF, SIZE_ORC}, 
+    globals::{SIZE_GHOUL, SIZE_TROLL}, 
     game::{player::Player, pieces::components::{Health, Occupier, Stats}, tileboard::components::ExitMapTile}};
 
 use super::components::{Piece, Actor, Walk, Melee, Npc, Monster};

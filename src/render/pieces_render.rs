@@ -5,8 +5,14 @@ use bevy::prelude::*;
 use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, BASE_SIZE, MAP_EXIT,},
-    game::{player::Player, pieces::{components::Piece, spawners::Kind}, tileboard::components::{BoardPosition, ExitMapTile}, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::{get_final_world_position, get_world_position}};
+        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, MAP_EXIT,},
+    game::{
+        player::Player, pieces::{components::Piece, spawners::Kind}, 
+        tileboard::components::{BoardPosition, ExitMapTile}, 
+        actions::{ActionExecutedEvent, MeleeHitAction}}, 
+        GraphicsWaitEvent, 
+        render::get_world_position
+    };
 
 use super::components::PathAnimator;
 
@@ -42,27 +48,6 @@ pub fn melee_animation(
     }
 }
 
-/*
-pub fn walk_animation(
-    mut commands: Commands,
-    mut ev_action: EventReader<ActionExecutedEvent>,
-    query_piece: Query<&Piece>,
-) {
-    for ev in ev_action.iter() {
-        let action = ev.0.as_any();
-        // WalkAction: On recupere Entity + Position + Piece
-        if let Some(action) = action.downcast_ref::<WalkAction>() {
-            let Ok(piece) = query_piece.get(action.0) else { return };
-            // Converti pour ISO.
-            let target = get_final_world_position(action.1, piece.size);
-
-            commands.entity(action.0)
-                .insert(PathAnimator{path:VecDeque::from([target]), wait_anim: false});
-            //ev_wait.send(GraphicsWaitEvent);
-        }
-    }
-}
- */
 
 pub fn path_animator_update(
     mut commands: Commands,

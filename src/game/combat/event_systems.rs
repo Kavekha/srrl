@@ -8,7 +8,7 @@ use crate::{
     tileboard::components::BoardPosition,
      pieces::components::{Occupier, Piece, Stats, Health}, 
      combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, 
-     render::{get_final_world_position, components::PathAnimator}, states::GameState};
+     render::{components::PathAnimator, get_world_position}, states::GameState};
 
 use super::{
     events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent},
@@ -375,7 +375,8 @@ pub fn walk_combat_animation(
         while !ev.path.is_empty() {
             let step = path.pop_front();
             let Some(current_step) = step else { break };
-            let target = get_final_world_position(current_step, piece.size);
+            let world_position = get_world_position(&current_step);        //TODO Est ce qu'un calcul de position Render doit etre là? Bof.
+            let target = Vec3::new(world_position.0, world_position.1, 2.0);
             path_animation.push_back(target);
         }
         println!("PathAnimator created");

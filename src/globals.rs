@@ -10,16 +10,10 @@ pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
 pub const STANDARD_TILE_SIZE:i32 = 64;
-pub const STANDARD_TILE_WIDTH:i32 = 64;
-//pub const TILE_WIDTH_HALF:i32 = 32;         
-pub const STANDARD_TILE_HEIGHT:i32 = 64;
-//pub const TILE_HEIGHT_HALF:i32 = 16; 
-pub const BASE_SIZE: i32 = 96;
 
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_FLOOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_floor_64.png";
-pub const MAP_EXIT: &str = "temp_tiles/exit.png";       
-pub const MAP_DEFAULT: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.png";
+pub const MAP_EXIT: &str = "temp_tiles/exit.png";
 pub const MAP_WALL_1: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_1.png";
 pub const MAP_WALL_2: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_2.png";
 pub const MAP_WALL_3: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_3.png";
@@ -38,19 +32,10 @@ pub const MAP_WALL_15: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.
 
 
 // size : 1 pix = 4 cm. 
-pub const TILE_HEIGHT_EXTREMELY_HIGH: i32 = 96; // 1/3 more than the player.
-//pub const TILE_HEIGHT_VERY_HIGH: i32 = 72; // 1/3 more than the player.
-//pub const TILE_HEIGHT_HIGH: i32 = 64; // Same as Medium & floor : 2 Y Cell higher exactly, provoke confusion.
-//pub const TILE_HEIGHT_MEDIUM_HIGH: i32 = 48; // Same as player.
-pub const TILE_HEIGHT_MEDIUM: i32 = 32; // Same as a floor tile but 1 Y cell higher exactly, so no real relief. May lead to confusion if different "floors" of tiles can be used.
-//pub const TILE_HEIGHT_FLOOR: i32 = 0;
-//pub const TILE_HEIGHT_LOW: i32 = 24;
+//pub const TILE_HEIGHT_EXTREMELY_HIGH: i32 = 96; // 1/3 more than the player.
+//pub const TILE_HEIGHT_MEDIUM: i32 = 32; // Same as a floor tile but 1 Y cell higher exactly, so no real relief. May lead to confusion if different "floors" of tiles can be used.
 
-//size: 1 pix = 4 cm. Character sprite are on tile center, so there is a TILE_HEIGHT_HALF to adds.
-pub const SIZE_DWARF: i32 = 44; // 16 + 28 px (112 cm)
-pub const SIZE_HUMAN: i32 = 64; // 16 + 48 px (192 cm)
-pub const SIZE_ELF: i32 = 64; // 16 + 48 px (192 cm)
-pub const SIZE_ORC: i32 = 64; // 16 + 48 px (192 cm)
+
 pub const SIZE_TROLL: i32 = 80; // 16 + 64 pix (256 cm)
 pub const SIZE_GHOUL: i32 = 64;
 //pub const SIZE_DEFAULT: i32 = 64;
