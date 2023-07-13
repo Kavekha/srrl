@@ -8,6 +8,7 @@ use super::{components::{CombatInfos, ActionPoints}, events::{EntityEndTurnEvent
 
 
 /// NPC : Generate / Choice to forfeit their turn.
+#[allow(dead_code)]
 pub fn plan_action_forfeit(
     combat_info: Res<CombatInfos>,
     query_npc: Query<(Entity, &ActionPoints, &Turn), With<Npc>>,
@@ -24,6 +25,7 @@ pub fn plan_action_forfeit(
 
 
 /// NPC preconditions to resolve their goal.
+#[allow(dead_code)]
 pub struct NpcGoal {
     pub can_see_target: bool,
     pub have_path_to_target: bool,

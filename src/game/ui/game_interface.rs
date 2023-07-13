@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     game::{pieces::components::{Health, Monster}, player::Player, combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, CHAR_SIZE}, render::components::GameCursorRender
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, CHAR_SIZE, STANDARD_TILE_SIZE}, render::components::GameCursorRender
 };
 
 use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
@@ -300,9 +300,9 @@ pub fn draw_enemy_health(
         //If not in screen, we don't display.
         if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
       
-        let left =screen_position.x - (TILE_WIDTH_HALF as f32);
+        let left =screen_position.x - ((STANDARD_TILE_SIZE / 2) as f32);
         //let right =screen_size.x - screen_position.x;
-        let top =screen_position.y - (TILE_HEIGHT_HALF as f32); // REMEMBER : world = y goes from bottom to top (++)
+        let top =screen_position.y - ((STANDARD_TILE_SIZE / 2) as f32); // REMEMBER : world = y goes from bottom to top (++)
         //let bottom = screen_size.y - screen_position.y;
         let width = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
         let height = INTERFACE_HP_CHUNK_HEIGHT/ 2.0;

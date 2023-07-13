@@ -1,9 +1,8 @@
 use crate::{
     map_builders::{
         MetaMapBuilder,
-        commons::{TileType},
         BuilderMap,
-    }, vectors::{Vector2Int, find_path},  
+    }, vectors::Vector2Int,  
     //SHOW_MAPGEN_VISUALIZER, 
 };
 

@@ -12,7 +12,7 @@ use self::{
 };
 
 use crate::{
-    globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF, TILE_HEIGHT_MEDIUM, }, 
+    globals::STANDARD_TILE_SIZE, 
     states::GameState, vectors::Vector2Int, game::combat::CombatSet,
 };
 
@@ -39,43 +39,16 @@ impl Plugin for GraphicsPlugin {
 pub struct GraphicsWaitEvent;
 
 
-
 pub fn get_world_position(
     v: &Vector2Int
 ) -> (f32, f32) {
         // REMEMBER : Y in bevy2d = Negative when going down!
-        let iso_x = (v.x - v.y) * TILE_WIDTH_HALF;
-        let iso_y = (v.x + v.y) * TILE_HEIGHT_HALF;
+        let x = v.x * STANDARD_TILE_SIZE;
+        let y = v.y  * STANDARD_TILE_SIZE;
 
         //println!("GetWorldPosition : {:?} gives {:?}. World position get grid position : {:?}", (v.x, v.y), (iso_x, iso_y), get_grid_position(iso_x as f32, 0.0 - iso_y as f32));
 
-        (iso_x as f32,
-        0.0 - iso_y as f32)     // REMEMBER : Y in bevy2d = Negative when going down!
+        (x as f32,
+        0.0 - y as f32)     // REMEMBER : Y in bevy2d = Negative when going down!
 
-}
-
-/// z doit être calculé pour les objets à relief du genre mur. Le floor doit rester à 0 par contre.
-fn get_world_z(
-    position: &Vector2Int
-) -> f32 {
-    let z = (position.x as f32 / 10.0) + (position.y as f32 / 5.0);
-    z
-}
-
-
-fn get_iso_y_modifier_from_elevation(
-    tile_elevation: i32
-) -> f32 {
-    ((tile_elevation - TILE_HEIGHT_MEDIUM) / 2) as f32
-}
-
-pub fn get_final_world_position(
-    v: Vector2Int,
-    size:i32
-) -> Vec3 {
-    let (w_x, mut w_y) = get_world_position(&v); 
-    let w_z = get_world_z(&v);
-    w_y += get_iso_y_modifier_from_elevation(size);
-
-    return Vec3::new(w_x, w_y, w_z)
 }

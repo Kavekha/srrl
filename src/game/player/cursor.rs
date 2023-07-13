@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{vectors::Vector2Int, states::GameState, globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF}};
+use crate::{vectors::Vector2Int, states::GameState, globals::STANDARD_TILE_SIZE, game::tileboard::components::BoardPosition};
+
+use super::Player;
 
 
 pub struct CursorPlugin;
@@ -28,6 +30,7 @@ pub fn cursor_position(
     mut res_cursor: ResMut<Cursor>,
     window_query: Query<&Window>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
+    query_player_pos: Query<&BoardPosition, With<Player>>,
 ) {
     for _event in cursor_moved_events.iter() {
         let Ok((camera, camera_transform)) = camera_q.get_single() else { return };
@@ -40,7 +43,9 @@ pub fn cursor_position(
                 res_cursor.grid_position = get_grid_position(world_position.x, world_position.y);
         }
         res_cursor.screen_position = camera.world_to_viewport(camera_transform, res_cursor.world_position);
-        //println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
+        println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
+        let Ok(player_position) = query_player_pos.get_single() else { return };
+        println!("Player Grid Position : {:?}", player_position.v);
         //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
     }
 }
@@ -51,18 +56,25 @@ pub fn get_grid_position(
     x: f32,
     y: f32
 ) -> Vector2Int {
+    let mut grid_x = x;
+    let mut grid_y= y - (y * 2.0);
+    grid_x +=  (STANDARD_TILE_SIZE / 2) as f32;
+    grid_y += (STANDARD_TILE_SIZE / 2) as f32;
+
+    grid_x = grid_x / STANDARD_TILE_SIZE as f32;
+    grid_y = grid_y / STANDARD_TILE_SIZE as f32;
+
+    Vector2Int{x:grid_x as i32, y:grid_y as i32}
+
+    /*
     //println!("GetGridPosition: {:?}", (x, y));
     // We need to reverse the numbers.
     let world_x = x;
-    let mut world_y = y - (y * 2.0);
-    //println!("GetGridPosition, reverse: {:?}", (world_x, world_y));
-    // We also need to add half tile for each because...?? Trust me... //TODO : Understand why... -_-
-    world_y += TILE_HEIGHT_HALF as f32;
+    let world_y = y - (y * 2.0);
 
-    let grid_x_floor = (world_x / TILE_WIDTH_HALF as f32 + world_y / TILE_HEIGHT_HALF as f32).floor() / 2.0;
-    let grid_y_floor = (world_y / TILE_HEIGHT_HALF as f32 - (world_x/ TILE_WIDTH_HALF as f32).floor()) / 2.0;
-
-
+    let grid_x_floor = world_x / STANDARD_TILE_SIZE as f32;
+    let grid_y_floor = world_y / STANDARD_TILE_SIZE as f32;
 
     Vector2Int{x:grid_x_floor as i32, y:grid_y_floor as i32}
+     */
 }

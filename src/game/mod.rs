@@ -2,7 +2,6 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
-use self::manager::ManagerPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player};
 use self::tileboard::TileBoardPlugin;
@@ -15,7 +14,6 @@ pub mod player;
 pub mod pieces;
 pub mod actions;
 pub mod tileboard;
-pub mod manager;
 pub mod rules;
 pub mod ui;
 pub mod combat;
@@ -54,8 +52,7 @@ impl Plugin for GamePlugin {
             .add_plugins(GameOverPlugin)
             .add_plugins(GraphicsPlugin)
             .add_plugins(TileBoardPlugin)
-            .add_plugins(ActionsPlugin)   
-            .add_plugins(ManagerPlugin)   
+            .add_plugins(ActionsPlugin)  
             .add_plugins(CursorPlugin)
             .add_plugins(UiPlugin)
             .add_plugins(CombatPlugin)
