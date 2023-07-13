@@ -5,7 +5,7 @@ use crate::{
     game::player::Cursor
 };
 
-use super::components::GameCursorRender;
+use super::{components::GameCursorRender, get_world_position};
 
 
 pub fn spawn_game_cursor(
@@ -33,9 +33,13 @@ pub fn update_game_cursor(
     time: Res<Time>
 ){
     for (_game_cursor, mut transform, ) in query_game_cursor.iter_mut(){
-        let position = &cursor_position.world_position;
+        let grid_position = &cursor_position.grid_position;
+        let position = get_world_position(grid_position);
 
-        let target = Vec3::new(position.x, position.y, 5.0);
+
+        //let position = &cursor_position.world_position;
+
+        let target = Vec3::new(position.0, position.1, 5.0);
         let destination = (target - transform.translation).length();  
         //println!("Cursor update: target is {:?}, transform is : {:?}, destination is : {:?}", target, transform.translation, destination);
         
