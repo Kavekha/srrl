@@ -10,6 +10,13 @@ pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
 pub const STANDARD_TILE_SIZE:i32 = 64;
+// RENDERING ORDER
+pub const ORDER_FLOOR: f32 = 0.0;
+pub const ORDER_WALL: f32 = 5.0;
+pub const ORDER_NPC: f32 = 8.0;
+pub const ORDER_EXIT: f32 = 9.0;
+pub const ORDER_PLAYER: f32 = 10.0;
+pub const ORDER_CURSOR: f32 = 11.0;
 
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_FLOOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_floor_64.png";

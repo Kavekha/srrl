@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    globals::{ POSITION_TOLERANCE, CURSOR_SPEED, SPEED_MULTIPLIER, CURSOR},
+    globals::{ POSITION_TOLERANCE, CURSOR_SPEED, SPEED_MULTIPLIER, CURSOR, ORDER_CURSOR},
     game::player::Cursor
 };
 
@@ -16,7 +16,7 @@ pub fn spawn_game_cursor(
             .insert(SpriteBundle {
                 texture: asset_server.load(CURSOR),    
                 transform: Transform {
-                    translation: Vec3::new(0.0, 0.0, 5.0),  //TODO : Order.
+                    translation: Vec3::new(0.0, 0.0, ORDER_CURSOR),  
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
@@ -39,7 +39,7 @@ pub fn update_game_cursor(
 
         //let position = &cursor_position.world_position;
 
-        let target = Vec3::new(position.0, position.1, 5.0);
+        let target = Vec3::new(position.0, position.1, ORDER_CURSOR);
         let destination = (target - transform.translation).length();  
         //println!("Cursor update: target is {:?}, transform is : {:?}, destination is : {:?}", target, transform.translation, destination);
         

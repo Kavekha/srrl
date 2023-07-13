@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, MAP_EXIT,},
+        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER,},
     game::{
         player::Player, pieces::{components::Piece, spawners::Kind}, 
         tileboard::components::{BoardPosition, ExitMapTile}, 
@@ -17,6 +17,7 @@ use crate::{
 use super::components::PathAnimator;
 
 
+//TODO : Pourquoi des actions dedans encore? Tjrs utilisé?
 pub fn melee_animation(
     mut commands: Commands,
     query_position: Query<&BoardPosition>,
@@ -33,6 +34,8 @@ pub fn melee_animation(
 
             let base_world_position = get_world_position(&base_position.v);
             let target_world_position = get_world_position(&action.target);
+
+
 
             let base = Vec3::new(base_world_position.0, base_world_position.1, 2.0);
             let target = Vec3::new(target_world_position.0, target_world_position.1, 2.0);
@@ -100,7 +103,7 @@ pub fn spawn_exit_render(
             .insert(SpriteBundle {
                 texture: asset_server.load(texture),    
                 transform: Transform {
-                    translation: Vec3::new(translation.0, translation.1, 1.5),  //TODO : ORDER pour determiner le Z.
+                    translation: Vec3::new(translation.0, translation.1, ORDER_EXIT),  
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
@@ -122,12 +125,18 @@ pub fn spawn_piece_renderer(
     for (entity, position, piece, player) in query.iter() {
         let translation= get_world_position(&position.v);   //TODO : get world position retourne un Vector2Int
         let texture = get_texture_from_kind(piece.kind);
+        let mut order_z = ORDER_NPC;
+
+        if let Some(_player) = player {
+            println!("player rendered.");
+            order_z = ORDER_PLAYER;
+        }
 
         commands.entity(entity)
             .insert(SpriteBundle {
                 texture: asset_server.load(texture),    
                 transform: Transform {
-                    translation: Vec3::new(translation.0, translation.1, 2.0),
+                    translation: Vec3::new(translation.0, translation.1, order_z),
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
