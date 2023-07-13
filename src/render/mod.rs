@@ -12,7 +12,7 @@ use self::{
 };
 
 use crate::{
-    globals::{TILE_HEIGHT_MEDIUM, STANDARD_TILE_HEIGHT, STANDARD_TILE_WIDTH, }, 
+    globals::{TILE_HEIGHT_MEDIUM, STANDARD_TILE_HEIGHT, STANDARD_TILE_WIDTH, STANDARD_TILE_SIZE, }, 
     states::GameState, vectors::Vector2Int, game::combat::CombatSet,
 };
 
@@ -43,8 +43,8 @@ pub fn get_world_position(
     v: &Vector2Int
 ) -> (f32, f32) {
         // REMEMBER : Y in bevy2d = Negative when going down!
-        let x = v.x * STANDARD_TILE_WIDTH;
-        let y = v.y  * STANDARD_TILE_HEIGHT;
+        let x = v.x * STANDARD_TILE_SIZE;
+        let y = v.y  * STANDARD_TILE_SIZE;
 
         //println!("GetWorldPosition : {:?} gives {:?}. World position get grid position : {:?}", (v.x, v.y), (iso_x, iso_y), get_grid_position(iso_x as f32, 0.0 - iso_y as f32));
 

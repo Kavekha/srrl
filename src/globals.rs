@@ -9,9 +9,10 @@ pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
+pub const STANDARD_TILE_SIZE:i32 = 64;
 pub const STANDARD_TILE_WIDTH:i32 = 64;
 //pub const TILE_WIDTH_HALF:i32 = 32;         
-pub const STANDARD_TILE_HEIGHT:i32 = 32;
+pub const STANDARD_TILE_HEIGHT:i32 = 64;
 //pub const TILE_HEIGHT_HALF:i32 = 16; 
 pub const BASE_SIZE: i32 = 96;
 
@@ -36,12 +37,6 @@ pub const MAP_WALL_14: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_14.
 pub const MAP_WALL_15: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.png";
 
 
-
-//pub const MAP_WALL: &str = "temp_tiles/Sewers_wall64.png";
-//pub const MAP_WALL_LOW: &str = "temp_tiles/Sewers_wall48.png";
-//pub const MAP_WALL_HIGH: &str = "temp_tiles/Sewers_wall72.png";
-pub const MAP_WALL_VERY_HIGH: &str = "temp_tiles/Sewers_wall96.png";
-
 // size : 1 pix = 4 cm. 
 pub const TILE_HEIGHT_EXTREMELY_HIGH: i32 = 96; // 1/3 more than the player.
 //pub const TILE_HEIGHT_VERY_HIGH: i32 = 72; // 1/3 more than the player.
@@ -62,12 +57,12 @@ pub const SIZE_GHOUL: i32 = 64;
 
 // sprite
 //pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
-pub const SPRITE_GHOUL: &str = "temp_tiles/Nosferatu.png";
-pub const SPRITE_PLAYER_DWARF: &str = "temp_tiles/cube_dwarf_.png";
-pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/cube_human_.png";
-pub const SPRITE_PLAYER_ORC: &str = "temp_tiles/cube_orc_.png";
-pub const SPRITE_PLAYER_ELF: &str = "temp_tiles/cube_elf_.png";
-pub const SPRITE_PLAYER_TROLL: &str = "temp_tiles/cube_troll_.png";
+pub const SPRITE_GHOUL: &str = "temp_tiles/2D_TOPDOWN_TILES/base_ghoul_64.png";
+pub const SPRITE_PLAYER_DWARF: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
+pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
+pub const SPRITE_PLAYER_ORC: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
+pub const SPRITE_PLAYER_ELF: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
+pub const SPRITE_PLAYER_TROLL: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
 
 pub const CURSOR_FRONT: &str = "temp_tiles/cursor_front.png";
 pub const CURSOR_BACK: &str = "temp_tiles/cursor_back.png";

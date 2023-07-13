@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
 
     globals::{
-        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, SPRITE_PLAYER_TROLL, SIZE_TROLL, MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14},
+        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, TILE_HEIGHT_EXTREMELY_HIGH, SPRITE_PLAYER_TROLL, SIZE_TROLL, MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
     render::{get_world_position, components::GameMapRender, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
 };

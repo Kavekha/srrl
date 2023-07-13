@@ -6,7 +6,7 @@ use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, BASE_SIZE, MAP_EXIT,},
-    game::{player::Player, pieces::{components::Piece, spawners::Kind}, tileboard::components::{BoardPosition, ExitMapTile}, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::get_final_world_position};
+    game::{player::Player, pieces::{components::Piece, spawners::Kind}, tileboard::components::{BoardPosition, ExitMapTile}, actions::{ActionExecutedEvent, WalkAction, MeleeHitAction}}, GraphicsWaitEvent, render::{get_final_world_position, get_world_position}};
 
 use super::components::PathAnimator;
 
@@ -24,10 +24,16 @@ pub fn melee_animation(
         if let Some(action) = action.downcast_ref::<MeleeHitAction>() {
             //println!("MELEE ATTACK ANIM !");
             let Ok(base_position) = query_position.get(action.attacker) else { continue };
-            let Ok(base_piece) = query_piece.get(action.attacker) else { continue };
+            //let Ok(base_piece) = query_piece.get(action.attacker) else { continue };
 
-            let base = get_final_world_position(base_position.v, base_piece.size);
-            let target = get_final_world_position(action.target, base_piece.size);
+            let base_world_position = get_world_position(&base_position.v);
+            let target_world_position = get_world_position(&action.target);
+
+            let base = Vec3::new(base_world_position.0, base_world_position.1, 2.0);
+            let target = Vec3::new(target_world_position.0, target_world_position.1, 2.0);
+
+            //let base = get_final_world_position(base_position.v, base_piece.size);
+            //let target = get_final_world_position(action.target, base_piece.size);
 
             commands.entity(action.attacker)
                 .insert(PathAnimator{path:VecDeque::from([target, base]), wait_anim: true});
@@ -103,14 +109,14 @@ pub fn spawn_exit_render(
 ){
     println!("Rendering Exit begins...");
     for (entity, position, exit) in query.iter() {
-        let translation = get_final_world_position(position.v, BASE_SIZE);
+        let translation = get_world_position(&position.v);
         let texture = MAP_EXIT;
 
         commands.entity(entity)
             .insert(SpriteBundle {
                 texture: asset_server.load(texture),    
                 transform: Transform {
-                    translation: translation,    //Vec3::new(x, y, z),
+                    translation: Vec3::new(translation.0, translation.1, 1.5),  //TODO : ORDER pour determiner le Z.
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
@@ -130,14 +136,14 @@ pub fn spawn_piece_renderer(
     println!("Rendering Pieces begins..."); 
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
-        let translation= get_final_world_position(position.v, piece.size);
+        let translation= get_world_position(&position.v);   //TODO : get world position retourne un Vector2Int
         let texture = get_texture_from_kind(piece.kind);
 
         commands.entity(entity)
             .insert(SpriteBundle {
                 texture: asset_server.load(texture),    
                 transform: Transform {
-                    translation: translation,    //Vec3::new(x, y, z),
+                    translation: Vec3::new(translation.0, translation.1, 2.0),
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
