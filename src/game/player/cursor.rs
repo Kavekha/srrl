@@ -54,7 +54,7 @@ pub fn get_grid_position(
     //println!("GetGridPosition: {:?}", (x, y));
     // We need to reverse the numbers.
     let world_x = x;
-    let mut world_y = y - (y * 2.0);
+    let world_y = y - (y * 2.0);
 
     let grid_x_floor = world_x / STANDARD_TILE_SIZE as f32;
     let grid_y_floor = world_y / STANDARD_TILE_SIZE as f32;

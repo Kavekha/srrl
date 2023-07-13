@@ -31,15 +31,6 @@ pub const MAP_WALL_14: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_14.
 pub const MAP_WALL_15: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.png";
 
 
-// size : 1 pix = 4 cm. 
-//pub const TILE_HEIGHT_EXTREMELY_HIGH: i32 = 96; // 1/3 more than the player.
-//pub const TILE_HEIGHT_MEDIUM: i32 = 32; // Same as a floor tile but 1 Y cell higher exactly, so no real relief. May lead to confusion if different "floors" of tiles can be used.
-
-
-pub const SIZE_TROLL: i32 = 80; // 16 + 64 pix (256 cm)
-pub const SIZE_GHOUL: i32 = 64;
-//pub const SIZE_DEFAULT: i32 = 64;
-
 // sprite
 //pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
 pub const SPRITE_GHOUL: &str = "temp_tiles/2D_TOPDOWN_TILES/base_ghoul_64.png";
@@ -48,15 +39,12 @@ pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.
 pub const SPRITE_PLAYER_ORC: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
 pub const SPRITE_PLAYER_ELF: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
 pub const SPRITE_PLAYER_TROLL: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
-
-pub const CURSOR_FRONT: &str = "temp_tiles/cursor_front.png";
-pub const CURSOR_BACK: &str = "temp_tiles/cursor_back.png";
+pub const CURSOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_cursor_64.png";
 
 // MAP GENERATOR
 pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
-#[warn(dead_code)]
-//pub const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
-//default
+#[allow(dead_code)]
+pub const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
 pub const MAPWIDTH : usize = 80;
 pub const MAPHEIGHT : usize = 50;
 pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;

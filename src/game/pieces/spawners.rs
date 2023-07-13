@@ -2,9 +2,7 @@ use bevy::prelude::*;
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
-use crate::{
-    globals::{SIZE_GHOUL, SIZE_TROLL}, 
-    game::{player::Player, pieces::components::{Health, Occupier, Stats}, tileboard::components::ExitMapTile}};
+use crate::game::{player::Player, pieces::components::{Health, Occupier, Stats}, tileboard::components::ExitMapTile};
 
 use super::components::{Piece, Actor, Walk, Melee, Npc, Monster};
 
@@ -21,17 +19,17 @@ pub enum Kind {
 
 /// TEMP : Renvoie infos rendus pour les differentes races jouables par le PJ.
 pub fn get_random_kind(
-) -> (Kind, i32) {
+) -> Kind {
     let mut rng = rand::thread_rng();
     let rand = rng.gen_range(0..4);
     //TODO : Le size n'a plus de sens, c'etait une donnée "image" et toutes les images sont maintenant en 64x96.
     match rand {
-        0 => { return (Kind::Dwarf, SIZE_TROLL); }
-        1 => { return (Kind::Elf, SIZE_TROLL); }
-        2 => { return (Kind::Orc, SIZE_TROLL);}
-        3 => { return (Kind::Troll, SIZE_TROLL);}
-        4 => { return (Kind::Human, SIZE_TROLL);}
-        _ => { return (Kind::Human, SIZE_TROLL);}
+        0 => { return Kind::Dwarf; }
+        1 => { return Kind::Elf; }
+        2 => { return Kind::Orc; }
+        3 => { return Kind::Troll; }
+        4 => { return Kind::Human; }
+        _ => { return Kind::Human; }
     }
 }
 
@@ -40,9 +38,9 @@ pub fn spawn_player(
     commands: &mut Commands
 ) -> Entity {
     // Random choice of kind.
-    let (kind, size) = get_random_kind();
+    let kind = get_random_kind();
 
-    let player = commands.spawn(Piece{kind: kind, size: size }).id();
+    let player = commands.spawn(Piece{kind: kind }).id();
     println!("Player is : {:?}", kind);
     commands
         .entity(player)
@@ -65,7 +63,7 @@ pub fn spawn_player(
 pub fn spawn_npc(
     commands: &mut Commands,
 ) -> Entity {
-    let npc = commands.spawn(Piece{kind: Kind::Ghoul, size: SIZE_GHOUL}).id();
+    let npc = commands.spawn(Piece{kind: Kind::Ghoul }).id();
     commands
         .entity(npc)
         .insert(Name::new(format!("Ghoul")))

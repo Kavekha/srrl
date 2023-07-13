@@ -7,8 +7,7 @@ use super::spawners::Kind;
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Piece {
-    pub kind: Kind,
-    pub size: i32
+    pub kind: Kind
 }
 
 #[derive(Component, Default)]
