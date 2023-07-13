@@ -1,10 +1,7 @@
 use std::cmp::{max, min};
 use serde::{Deserialize, Serialize};
 
-use crate::map_builders::{
-    rectangle::Rectangle,
-    map::Map,
-};
+use crate::map_builders::map::Map;
 
 
 

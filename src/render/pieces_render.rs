@@ -20,7 +20,6 @@ use super::components::PathAnimator;
 pub fn melee_animation(
     mut commands: Commands,
     query_position: Query<&BoardPosition>,
-    query_piece: Query<&Piece>,
     mut ev_action: EventReader<ActionExecutedEvent>,
     mut ev_wait: EventWriter<super::GraphicsWaitEvent>
 ) {
@@ -89,11 +88,11 @@ pub fn path_animator_update(
 
 pub fn spawn_exit_render(
     mut commands: Commands,
-    query: Query<(Entity, &BoardPosition, &ExitMapTile)>,
+    query: Query<(Entity, &BoardPosition), With<ExitMapTile>>,
     asset_server: Res<AssetServer>
 ){
     println!("Rendering Exit begins...");
-    for (entity, position, exit) in query.iter() {
+    for (entity, position) in query.iter() {
         let translation = get_world_position(&position.v);
         let texture = MAP_EXIT;
 

@@ -1,7 +1,7 @@
 use crate::{map_builders::{MetaMapBuilder, BuilderMap, rectangle::Rectangle}, vectors::Vector2Int};
 
 
-
+#[allow(dead_code)]
 pub enum RoomSort { 
     LEFTMOST,
     RIGHTMOST,

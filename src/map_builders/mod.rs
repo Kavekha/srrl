@@ -21,7 +21,10 @@ use crate::{
     globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
 };
 
-use self::builders::{rooms_corridors_dogleg::DoglegCorridors, room_sorter::{RoomSorter, RoomSort}, map_diagonal_cleanup::DiagonalCleanUp, room_drawer::RoomDrawer, room_corridors_nearest::NearestCorridors};
+use self::builders::{
+    rooms_corridors_dogleg::DoglegCorridors, room_sorter::{RoomSorter, RoomSort},
+    map_diagonal_cleanup::DiagonalCleanUp, room_drawer::RoomDrawer
+};
 
 
 #[derive(Clone)]

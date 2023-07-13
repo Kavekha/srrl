@@ -52,30 +52,3 @@ pub fn get_world_position(
         0.0 - y as f32)     // REMEMBER : Y in bevy2d = Negative when going down!
 
 }
-
-/// z doit être calculé pour les objets à relief du genre mur. Le floor doit rester à 0 par contre.
-fn get_world_z(
-    position: &Vector2Int
-) -> f32 {
-    let z = (position.x as f32 / 10.0) + (position.y as f32 / 5.0);
-    z
-}
-
-/* 
-fn get_iso_y_modifier_from_elevation(
-    tile_elevation: i32
-) -> f32 {
-    ((tile_elevation - TILE_HEIGHT_MEDIUM) / 2) as f32
-}
-
-pub fn get_final_world_position(
-    v: Vector2Int,
-    size:i32
-) -> Vec3 {
-    let (w_x, mut w_y) = get_world_position(&v); 
-    let w_z = get_world_z(&v);
-    w_y += get_iso_y_modifier_from_elevation(size);
-
-    return Vec3::new(w_x, w_y, w_z)
-}
-*/
