@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{vectors::Vector2Int, states::GameState, globals::{TILE_WIDTH_HALF, TILE_HEIGHT_HALF}};
+use crate::{vectors::Vector2Int, states::GameState, globals::{STANDARD_TILE_WIDTH, STANDARD_TILE_HEIGHT}};
 
 
 pub struct CursorPlugin;
@@ -55,14 +55,9 @@ pub fn get_grid_position(
     // We need to reverse the numbers.
     let world_x = x;
     let mut world_y = y - (y * 2.0);
-    //println!("GetGridPosition, reverse: {:?}", (world_x, world_y));
-    // We also need to add half tile for each because...?? Trust me... //TODO : Understand why... -_-
-    world_y += TILE_HEIGHT_HALF as f32;
 
-    let grid_x_floor = (world_x / TILE_WIDTH_HALF as f32 + world_y / TILE_HEIGHT_HALF as f32).floor() / 2.0;
-    let grid_y_floor = (world_y / TILE_HEIGHT_HALF as f32 - (world_x/ TILE_WIDTH_HALF as f32).floor()) / 2.0;
-
-
+    let grid_x_floor = world_x / STANDARD_TILE_WIDTH as f32;
+    let grid_y_floor = world_y / STANDARD_TILE_HEIGHT as f32;
 
     Vector2Int{x:grid_x_floor as i32, y:grid_y_floor as i32}
 }

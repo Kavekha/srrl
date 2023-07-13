@@ -6,19 +6,37 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 800.0;
 pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 
+
 // RENDERING
-pub const TILE_SIZE: f32 = 32.0;        // Deprecated : 2d grid based.
 pub const CHAR_SIZE: f32 = 16.0; 
-//pub const STANDARD_TILE_WIDTH:i32 = 64;
-pub const TILE_WIDTH_HALF:i32 = 32;         //TODO : Why i32?
-//pub const STANDARD_TILE_HEIGHT:i32 = 32;
-pub const TILE_HEIGHT_HALF:i32 = 16; 
+pub const STANDARD_TILE_WIDTH:i32 = 64;
+//pub const TILE_WIDTH_HALF:i32 = 32;         
+pub const STANDARD_TILE_HEIGHT:i32 = 32;
+//pub const TILE_HEIGHT_HALF:i32 = 16; 
 pub const BASE_SIZE: i32 = 96;
 
 // Tiles    //TEMPORARY : TODO : Loader.
-pub const MAP_FLOOR: &str = "temp_tiles/Sewers_floor.png";
-pub const MAP_EXIT: &str = "temp_tiles/exit.png";        //TODO : Ajouter.
-pub const MAP_DEFAULT: &str = "temp_tiles/Sewers_wall64.png";        //TODO : Trouver une image.
+pub const MAP_FLOOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_floor_64.png";
+pub const MAP_EXIT: &str = "temp_tiles/exit.png";       
+pub const MAP_DEFAULT: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.png";
+pub const MAP_WALL_1: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_1.png";
+pub const MAP_WALL_2: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_2.png";
+pub const MAP_WALL_3: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_3.png";
+pub const MAP_WALL_4: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_4.png";
+pub const MAP_WALL_5: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_5.png";
+pub const MAP_WALL_6: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_6.png";
+pub const MAP_WALL_7: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_7.png";
+pub const MAP_WALL_8: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_8.png";
+pub const MAP_WALL_9: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_9.png";
+pub const MAP_WALL_10: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_10.png";
+pub const MAP_WALL_11: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_11.png";
+pub const MAP_WALL_12: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_12.png";
+pub const MAP_WALL_13: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_13.png";
+pub const MAP_WALL_14: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_14.png";
+pub const MAP_WALL_15: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.png";
+
+
+
 //pub const MAP_WALL: &str = "temp_tiles/Sewers_wall64.png";
 //pub const MAP_WALL_LOW: &str = "temp_tiles/Sewers_wall48.png";
 //pub const MAP_WALL_HIGH: &str = "temp_tiles/Sewers_wall72.png";

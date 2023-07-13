@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
 
     globals::{
-        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, TILE_WIDTH_HALF, TILE_HEIGHT_HALF, SPRITE_PLAYER_TROLL, SIZE_TROLL},
+        MAP_DEFAULT, MAP_EXIT, MAP_FLOOR, MAP_WALL_VERY_HIGH, TILE_HEIGHT_EXTREMELY_HIGH, SPRITE_PLAYER_TROLL, SIZE_TROLL, MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14},
     map_builders::{TileType, map::Map}, game::{Tile, tileboard::components::BoardPosition}, 
     render::{get_world_position, components::GameMapRender, get_world_z, pieces_render::spawn_sprite_render, get_final_world_position}, vectors::Vector2Int
 };
@@ -42,22 +42,22 @@ pub fn wall_corners(
  
     match mask {
         0 => None,  //{ "temp_tiles/Sewers_wall96_0.png" },      //No wall at all.
-        1 => { Some("temp_tiles/Sewers_wall96_1.png") },
-        2 => { Some("temp_tiles/Sewers_wall96_2.png") },
-        3 => { Some("temp_tiles/Sewers_wall96_3.png") },
-        4 => { Some("temp_tiles/Sewers_wall96_4.png") },
-        5 => { Some("temp_tiles/Sewers_wall96_5.png") },
-        6 => { Some("temp_tiles/Sewers_wall96_6.png") },
-        7 => { Some("temp_tiles/Sewers_wall96_7.png") },
-        8 => { Some("temp_tiles/Sewers_wall96_8.png") },
-        9 => { Some("temp_tiles/Sewers_wall96_9.png") },
-        10 => { Some("temp_tiles/Sewers_wall96_10.png") },
-        11 => { Some("temp_tiles/Sewers_wall96_11.png") },
-        12 => { Some("temp_tiles/Sewers_wall96_12.png") },
-        13 => { Some("temp_tiles/Sewers_wall96_13.png") },
-        14 => { Some("temp_tiles/Sewers_wall96_14.png") },
-        15 =>  { Some("temp_tiles/Sewers_wall96_15.png") },
-        _ => { Some(MAP_WALL_VERY_HIGH) }
+        1 => { Some(MAP_WALL_1) },
+        2 => { Some(MAP_WALL_2)  },
+        3 => { Some(MAP_WALL_3)  },
+        4 => { Some(MAP_WALL_4)  },
+        5 => { Some(MAP_WALL_5)  },
+        6 => { Some(MAP_WALL_6)  },
+        7 => { Some(MAP_WALL_7)  },
+        8 => { Some(MAP_WALL_8)  },
+        9 => { Some(MAP_WALL_9)  },
+        10 => { Some(MAP_WALL_10)  },
+        11 => { Some(MAP_WALL_11)  },
+        12 => { Some(MAP_WALL_12)  },
+        13 => { Some(MAP_WALL_13)  },
+        14 => { Some(MAP_WALL_14)  },
+        15 =>  { Some(MAP_WALL_15)  },
+        _ => { Some(MAP_WALL_15) }
     }
     //return mask;
 
@@ -79,12 +79,8 @@ pub fn spawn_map_render(
         for x in 0..board.width -1 {
             
             let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Moche.
-            let (mut world_x, world_y) = get_world_position(&position.v);
-
-            // On est sur la Dual Grid: Il faut un offset car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
-            world_x -= TILE_WIDTH_HALF as f32;          
-
-            let (modified_y, world_z) = get_y_z_rendering(x, y);          
+            let (world_x, world_y) = get_world_position(&position.v);
+                   
 
             if let Some(texture) = wall_corners(&board, x, y) {
                 // Wall
@@ -92,8 +88,8 @@ pub fn spawn_map_render(
                     &mut commands,
                     &asset_server,
                     world_x,
-                    world_y + modified_y,
-                    world_z,
+                    world_y,
+                    1.0,
                     texture,
                 );
                 graphic_tiles.push(wall_tile); 
@@ -103,9 +99,9 @@ pub fn spawn_map_render(
                 &mut commands,
                 &asset_server,
                 world_x,
-                world_y  + modified_y,
+                world_y,
                 0.0,
-                "temp_tiles/Sewers_floor_0.png",
+                MAP_FLOOR,
             );
             
             floor_tiles.push(floor_tile);
