@@ -4,7 +4,7 @@ use crate::{
 
     globals::{
         MAP_FLOOR, MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, 
-        MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14
+        MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14, STANDARD_TILE_SIZE
     },
     map_builders::map::Map, game:: tileboard::components::BoardPosition, 
     render::{get_world_position, components::GameMapRender, pieces_render::spawn_sprite_render}, vectors::Vector2Int
@@ -79,8 +79,11 @@ pub fn spawn_map_render(
         for x in 0..board.width -1 {
             
             let position = BoardPosition {v : Vector2Int { x, y } };    //TODO : Moche.
-            let (world_x, world_y) = get_world_position(&position.v);
-                   
+            let (mut world_x, mut world_y) = get_world_position(&position.v);
+
+            // On est sur la Dual Grid: Il faut un offset car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
+            world_x -= (STANDARD_TILE_SIZE / 2) as f32;         
+            world_y -= (STANDARD_TILE_SIZE / 2) as f32;  
 
             if let Some(texture) = wall_corners(&board, x, y) {
                 // Wall
