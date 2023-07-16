@@ -18,6 +18,7 @@ mod render;
 mod states;
 mod vectors;
 
+
 pub use render::GraphicsWaitEvent;
 
 use ascii::AsciiPlugin;
@@ -25,6 +26,8 @@ use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
+use render::assets::AssetsPlugin;
+
 use states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR, BASE_SCREEN_SCALE};
 
@@ -57,6 +60,7 @@ fn main() {
         .add_plugins(GameAudioPlugin)     
         .add_plugins(GamePlugin)
         .add_plugins(SaveLoadPlugin)
+        .add_plugins(AssetsPlugin)
 
         .add_state::<AppState>()
         .add_state::<GameState>()  
@@ -77,4 +81,5 @@ fn spawn_camera(mut commands: Commands) {
     };
     commands.spawn(camera_bundle);
 }
+
 

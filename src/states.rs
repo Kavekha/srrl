@@ -18,6 +18,7 @@ pub enum GameState {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum AppState {
     #[default]
+    AssetLoader,
     MainMenu,
     Game
 }

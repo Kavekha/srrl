@@ -1,6 +1,6 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
-use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text};
+use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, render::assets::GraphicsAssets};
 
 use super::{components::OnScreenMenu, AsciiSheet, mainmenu::menu_camera, clean_menu};
 
@@ -22,7 +22,8 @@ impl Plugin for VictoryPlugin {
 
 fn display_victory_screen(
     mut commands: Commands,
-    ascii: Res<AsciiSheet>
+    //ascii: Res<AsciiSheet>
+    ascii: Res<GraphicsAssets>,
 ){
     let victory_message = "VICTORY !";
     let victory_description= "You flee the place.";
