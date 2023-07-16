@@ -4,12 +4,13 @@ use bevy::{prelude::*, asset::LoadState};
 
 mod ascii;
 mod graphic_resources;
+mod audio_resources;
 
 pub use ascii::{spawn_ascii_text, spawn_nine_slice, NineSliceIndices};
-pub use graphic_resources::{AssetList, GraphicsAssets};
+pub use graphic_resources::GraphicsAssets;
+pub use audio_resources::AudioAssets;
 
 use crate::states::AppState;
-
 
 
 const ATLAS_PATH: &str = "ascii.png";
@@ -19,6 +20,12 @@ const SEWERS_TILES_TEXTURES: [&str; 17] = [
     "floor", "wall_0","wall_1","wall_2","wall_3","wall_4","wall_5","wall_6","wall_7","wall_8",
     "wall_9","wall_10","wall_11","wall_12","wall_13","wall_14","wall_15"];
 const SEWERS_ITEMS: [&str;1] = ["exit"];
+
+const MUSICS: [&str;5] = ["main_menu", "combat", "gamemap", "gameover", "victory"];
+
+#[derive(Default, Resource)]
+pub struct AssetList (pub Vec<HandleUntyped>);
+
 
 pub struct AssetsPlugin;
 
@@ -91,6 +98,13 @@ pub fn load_assets(
         sewer_items.insert(name, handle);
     }
 
+    // Musics
+    let mut musics = HashMap::new();
+    for name in MUSICS {
+        let handle:Handle<AudioSource> = asset_server.load(format!("audios/{}.ogg", name));
+        asset_list.0.push(handle.clone_untyped());
+        musics.insert(name, handle);
+    }
  
     commands.insert_resource(
         GraphicsAssets { 
@@ -101,6 +115,12 @@ pub fn load_assets(
             map_items: sewer_items,
         }
     );
+
+    commands.insert_resource(
+        AudioAssets {
+            musics: musics
+        }
+    )
 }
 
 

@@ -4,11 +4,10 @@ mod components;
 
 use crate::{
     AppState,
-    GameState,
+    GameState, asset_loaders::AudioAssets,
 };
 
 use self::components::CurrentMusic;
-
 
 
 pub struct GameAudioPlugin;
@@ -38,11 +37,13 @@ impl Plugin for GameAudioPlugin{
 //TODO : Refacto audio to avoid duplicate.
 fn setup_audio_mainmenu(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    //asset_server: Res<AssetServer>,
+    assets: Res<AudioAssets>
 ) {
     commands.spawn((
         AudioBundle {
-            source: asset_server.load("audios/Seattle-2050.ogg"),
+            //source: asset_server.load("audios/Seattle-2050.ogg"),
+            source: assets.musics["main_menu"].clone(),
             ..default()},
         CurrentMusic,
         ));
@@ -50,10 +51,10 @@ fn setup_audio_mainmenu(
 
 fn setup_audio_death(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<AudioAssets>
 ) {
     commands.spawn((AudioBundle {
-        source: asset_server.load("audios/Dead.ogg"),
+        source: assets.musics["gameover"].clone(),
         ..default()},
         CurrentMusic,
         ));
@@ -61,10 +62,10 @@ fn setup_audio_death(
 
 fn setup_audio_victory(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<AudioAssets>
 ) {
     commands.spawn((AudioBundle {
-        source: asset_server.load("audios/Ending.ogg"),
+        source: assets.musics["victory"].clone(),
         ..default()},
         CurrentMusic,
         ));
@@ -72,11 +73,11 @@ fn setup_audio_victory(
 
 fn setup_audio_gamemap(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    assets: Res<AudioAssets>
 ) {
     commands.spawn((
         AudioBundle {
-        source: asset_server.load("audios/Morgue.ogg"),
+            source: assets.musics["gamemap"].clone(),
         ..default()},
         CurrentMusic,
     ));
@@ -97,72 +98,3 @@ fn stop_music(
         println!("Stop Music: Sink.Stop");
     };*/
 }
-
-/* 
-
-fn stop_music(
-    audio_sinks: Res<Assets<AudioSink>>,
-    music_controller: Res<MusicController>,
-){
-    if let Some(sink) = audio_sinks.get(&music_controller.0){
-        sink.stop()
-    }
-}
-
-
-pub fn setup_audio_death(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
-    audio_sinks: Res<Assets<AudioSink>>,
-){
-    let music = audio.play_with_settings(
-        asset_server.load("audios/Dead.ogg"),
-        PlaybackSettings::LOOP,
-    );
-    let handle = audio_sinks.get_handle(music);
-    commands.insert_resource(MusicController(handle));
-}
-
-pub fn setup_audio_victory(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
-    audio_sinks: Res<Assets<AudioSink>>,
-){
-    let music = audio.play_with_settings(
-        asset_server.load("audios/Ending.ogg"),
-        PlaybackSettings::LOOP,
-    );
-    let handle = audio_sinks.get_handle(music);
-    commands.insert_resource(MusicController(handle));
-}
-
-pub fn setup_audio_gamemap(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
-    audio_sinks: Res<Assets<AudioSink>>,
-){
-    let music = audio.play_with_settings(
-        asset_server.load("audios/Morgue.ogg"),
-        PlaybackSettings::LOOP,
-    );
-    let handle = audio_sinks.get_handle(music);
-    commands.insert_resource(MusicController(handle));
-}
-
-pub fn setup_audio_mainmenu(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    audio: Res<Audio>,
-    audio_sinks: Res<Assets<AudioSink>>,
-){
-    let music = audio.play_with_settings(
-        asset_server.load("audios/Seattle-2050.ogg"),
-        PlaybackSettings::LOOP,
-    );
-    let handle = audio_sinks.get_handle(music);
-    commands.insert_resource(MusicController(handle));
-}
-*/
