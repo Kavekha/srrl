@@ -1,6 +1,11 @@
 use bevy::{prelude::*, asset::LoadState};
 
+mod ascii;
+pub use ascii::{spawn_ascii_text, spawn_nine_slice, NineSliceIndices};
+
 use crate::states::AppState;
+
+
 
 
 const ATLAS_PATH: &str = "ascii.png";
@@ -12,6 +17,17 @@ impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
         app
             .init_resource::<AssetList>()
+            
+            .insert_resource(NineSliceIndices{
+                center: 2 * 16,
+                upper_left_index: 13 * 16 + 10,
+                upper_right_index: 11 * 16 + 15,
+                lower_left_index: 12 * 16,
+                lower_right_index: 13 * 16 + 9,
+                horizontal_index: 12 * 16 + 4,
+                vertical_index: 11 * 16 + 3,
+            })
+
             .add_systems(OnEnter(AppState::AssetLoader), check_asset_loading)
             .add_systems(PreStartup, load_assets)
             ;

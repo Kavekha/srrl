@@ -1,10 +1,10 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{states::{AppState, GameState}, ascii::{NineSliceIndices, spawn_ascii_text, spawn_nine_slice}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, render::assets::GraphicsAssets};
+use crate::{states::{AppState, GameState}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, asset_loaders::{GraphicsAssets, spawn_nine_slice, spawn_ascii_text, NineSliceIndices}};
 
 use super::{
     components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
-    NineSlice, AsciiSheet, 
+    NineSlice, 
     menus_input::{menu_input_mouse, main_menu_input}, clean_menu, 
 };
 

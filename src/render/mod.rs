@@ -4,13 +4,12 @@ pub mod tilemap_render;
 pub mod pieces_render;
 pub mod components;
 pub mod cursor_render;
-pub mod assets;
 
 
 use self::{
     tilemap_render::spawn_map_render,
     pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation, spawn_exit_render}, 
-    cursor_render::{spawn_game_cursor, update_game_cursor}, assets::load_assets,
+    cursor_render::{spawn_game_cursor, update_game_cursor},
 };
 
 use crate::{

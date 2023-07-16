@@ -6,7 +6,7 @@ use bevy::{
     window::PresentMode::Fifo,
 };
 
-mod ascii;
+
 mod audios;
 mod menus;
 mod map_builders;   //mod
@@ -17,16 +17,15 @@ mod globals;
 mod render;
 mod states;
 mod vectors;
-
+mod asset_loaders;
 
 pub use render::GraphicsWaitEvent;
 
-use ascii::AsciiPlugin;
 use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
-use render::assets::AssetsPlugin;
+use asset_loaders::AssetsPlugin;
 
 use states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR, BASE_SCREEN_SCALE};
@@ -54,8 +53,7 @@ fn main() {
                     ImagePlugin::default_nearest()
                 )
         )
-
-        .add_plugins(AsciiPlugin) 
+ 
         .add_plugins(MainMenuPlugin)
         .add_plugins(GameAudioPlugin)     
         .add_plugins(GamePlugin)

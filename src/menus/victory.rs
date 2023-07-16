@@ -1,8 +1,8 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
-use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, render::assets::GraphicsAssets};
+use crate::{states::GameState, globals::CHAR_SIZE, asset_loaders::{GraphicsAssets, spawn_ascii_text}};
 
-use super::{components::OnScreenMenu, AsciiSheet, mainmenu::menu_camera, clean_menu};
+use super::{components::OnScreenMenu, mainmenu::menu_camera, clean_menu};
 
 
 
