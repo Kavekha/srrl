@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bevy::{prelude::*, asset::LoadState};
 
 mod ascii;
@@ -12,6 +14,10 @@ use crate::states::AppState;
 
 const ATLAS_PATH: &str = "ascii.png";
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
+const TEXTURES: [&str; 2] = ["human", "ghoul"];
+const SEWERS_TILES_TEXTURES: [&str; 17] = [
+    "floor", "wall_0","wall_1","wall_2","wall_3","wall_4","wall_5","wall_6","wall_7","wall_8",
+    "wall_9","wall_10","wall_11","wall_12","wall_13","wall_14","wall_15"];
 
 
 pub struct AssetsPlugin;
@@ -59,13 +65,31 @@ pub fn load_assets(
 
     // Font
     let font_handle:Handle<Font> = asset_server.load(FONT_PATH);
-    asset_list.0.push(font_handle.clone_untyped());   //TODO: la liste permets de checker si toutes les resources sont load.
+    asset_list.0.push(font_handle.clone_untyped());   
+
+    // Sprites
+    let mut textures = HashMap::new();
+    for name in TEXTURES {
+        let handle:Handle<Image> = asset_server.load(format!("characters/{}.png", name));
+        asset_list.0.push(handle.clone_untyped());
+        textures.insert(name, handle);
+    }
+
+    // Sewer Map textures
+    let mut sewer_textures = HashMap::new();
+    for name in SEWERS_TILES_TEXTURES {
+        let handle:Handle<Image> = asset_server.load(format!("tiles/sewers_{}.png", name));
+        asset_list.0.push(handle.clone_untyped());
+        sewer_textures.insert(name, handle);
+    }
 
  
     commands.insert_resource(
         GraphicsAssets { 
             ascii_sheet: atlas_handle,
-            font: font_handle
+            font: font_handle,
+            textures: textures,
+            map_textures: sewer_textures
         }
     );
 }

@@ -7,7 +7,7 @@ use crate::{
         MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14, STANDARD_TILE_SIZE, ORDER_FLOOR, ORDER_WALL
     },
     map_builders::map::Map, game:: tileboard::components::BoardPosition, 
-    render::{get_world_position, components::GameMapRender, pieces_render::spawn_sprite_render}, vectors::Vector2Int
+    render::{get_world_position, components::GameMapRender, pieces_render::spawn_sprite_render}, vectors::Vector2Int, asset_loaders::GraphicsAssets
 };
 
 
@@ -66,8 +66,8 @@ pub fn wall_corners(
 
 pub fn spawn_map_render(
     mut commands: Commands,
-    //all_tiles_query: Query<(Entity, &BoardPosition, &Tile)>,
-    asset_server: Res<AssetServer>,
+    //asset_server: Res<AssetServer>,
+    assets: Res<GraphicsAssets>,
     board: Res<Map>,
 ) {
     println!("New rendering map begins...");
@@ -89,22 +89,22 @@ pub fn spawn_map_render(
                 // Wall
                 let wall_tile = spawn_sprite_render(
                     &mut commands,
-                    &asset_server,
+                    &assets.map_textures[texture], //&asset_server,  //&assets.textures["card"]
                     world_x,
                     world_y,
                     ORDER_WALL,
-                    texture,
+                    //texture,
                 );
                 graphic_tiles.push(wall_tile); 
             }
             // On créé le sol 
             let floor_tile = spawn_sprite_render(
                 &mut commands,
-                &asset_server,
+                &assets.map_textures["floor"],
                 world_x,
                 world_y,
                 ORDER_FLOOR,
-                MAP_FLOOR,
+                //MAP_FLOOR,
             );
             
             floor_tiles.push(floor_tile);
