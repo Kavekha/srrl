@@ -19,8 +19,7 @@ pub const ORDER_PLAYER: f32 = 10.0;
 pub const ORDER_CURSOR: f32 = 11.0;
 
 // Tiles    //TEMPORARY : TODO : Loader.
-pub const MAP_FLOOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_floor_64.png";
-pub const MAP_EXIT: &str = "temp_tiles/exit.png";
+pub const MAP_EXIT: &str = "exit";
 pub const MAP_WALL_1: &str = "wall_1";
 pub const MAP_WALL_2: &str = "wall_2";
 pub const MAP_WALL_3: &str = "wall_3";

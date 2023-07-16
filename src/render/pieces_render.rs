@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER,},
+        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, MAP_EXIT,},
     game::{
         player::Player, pieces::{components::Piece, spawners::Kind}, 
         tileboard::components::{BoardPosition, ExitMapTile}, 
@@ -92,16 +92,17 @@ pub fn path_animator_update(
 pub fn spawn_exit_render(
     mut commands: Commands,
     query: Query<(Entity, &BoardPosition), With<ExitMapTile>>,
-    asset_server: Res<AssetServer>
+    //asset_server: Res<AssetServer>
+    assets: Res<GraphicsAssets>
 ){
     println!("Rendering Exit begins...");
     for (entity, position) in query.iter() {
         let translation = get_world_position(&position.v);
-        let texture = MAP_EXIT;
+        let texture = assets.map_items[MAP_EXIT].clone();
 
         commands.entity(entity)
             .insert(SpriteBundle {
-                texture: asset_server.load(texture),    
+                texture: texture,    
                 transform: Transform {
                     translation: Vec3::new(translation.0, translation.1, ORDER_EXIT),  
                     scale: Vec3::splat(1.0),

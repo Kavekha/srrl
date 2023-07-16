@@ -18,7 +18,7 @@ const TEXTURES: [&str; 2] = ["human", "ghoul"];
 const SEWERS_TILES_TEXTURES: [&str; 17] = [
     "floor", "wall_0","wall_1","wall_2","wall_3","wall_4","wall_5","wall_6","wall_7","wall_8",
     "wall_9","wall_10","wall_11","wall_12","wall_13","wall_14","wall_15"];
-
+const SEWERS_ITEMS: [&str;1] = ["exit"];
 
 pub struct AssetsPlugin;
 
@@ -83,13 +83,22 @@ pub fn load_assets(
         sewer_textures.insert(name, handle);
     }
 
+    // Sewer items
+    let mut sewer_items = HashMap::new();
+    for name in SEWERS_ITEMS {
+        let handle:Handle<Image> = asset_server.load(format!("map_items/sewers_{}.png", name));
+        asset_list.0.push(handle.clone_untyped());
+        sewer_items.insert(name, handle);
+    }
+
  
     commands.insert_resource(
         GraphicsAssets { 
             ascii_sheet: atlas_handle,
             font: font_handle,
             textures: textures,
-            map_textures: sewer_textures
+            map_textures: sewer_textures,
+            map_items: sewer_items,
         }
     );
 }

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
 
     globals::{
-        MAP_FLOOR, MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, 
+        MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, 
         MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14, STANDARD_TILE_SIZE, ORDER_FLOOR, ORDER_WALL
     },
     map_builders::map::Map, game:: tileboard::components::BoardPosition, 

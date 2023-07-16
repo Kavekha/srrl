@@ -12,4 +12,5 @@ pub struct GraphicsAssets {
     pub font: Handle<Font>,
     pub textures: HashMap<&'static str, Handle<Image>>,
     pub map_textures: HashMap<&'static str, Handle<Image>>,
+    pub map_items: HashMap<&'static str, Handle<Image>>
 }
