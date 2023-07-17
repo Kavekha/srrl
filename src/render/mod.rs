@@ -8,7 +8,8 @@ pub mod cursor_render;
 
 use self::{
     tilemap_render::spawn_map_render,
-    pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation, spawn_exit_render}, cursor_render::{spawn_game_cursor, update_game_cursor},
+    pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation, spawn_exit_render}, 
+    cursor_render::{spawn_game_cursor, update_game_cursor},
 };
 
 use crate::{

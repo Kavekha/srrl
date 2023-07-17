@@ -1,8 +1,8 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
-use crate::{states::GameState, globals::CHAR_SIZE, ascii::spawn_ascii_text, };
+use crate::{states::GameState, globals::CHAR_SIZE, asset_loaders::{spawn_ascii_text, GraphicsAssets}, };
 
-use super::{components::OnScreenMenu, mainmenu::menu_camera, AsciiSheet, clean_menu};
+use super::{components::OnScreenMenu, mainmenu::menu_camera, clean_menu};
 
 
 
@@ -24,7 +24,8 @@ impl Plugin for GameOverPlugin {
 
 fn display_gameover_screen(
     mut commands: Commands,
-    ascii: Res<AsciiSheet>
+    //ascii: Res<AsciiSheet>
+    ascii: Res<GraphicsAssets>,
 ){
     println!("Afficher YOU DIED"); //DEBUG
     let gameover_message = "YOU DIED.";

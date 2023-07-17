@@ -1,3 +1,4 @@
 /target
 cargo.lock
 /assets/saves/save.srrl
+/.vscode/settings.json

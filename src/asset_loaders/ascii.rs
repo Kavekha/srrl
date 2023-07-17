@@ -1,48 +1,30 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 use crate::{
-    globals::{CHAR_SIZE},
-    ecs_elements::components::{AsciiText}, menus::{AsciiSheet, NineSlice}
+    globals::CHAR_SIZE,
+    ecs_elements::components::AsciiText, menus::NineSlice,
 };
 
-pub struct AsciiPlugin;
+use super::GraphicsAssets;
 
-
-
-
-impl Plugin for AsciiPlugin {
-    fn build(&self, app: &mut App) {
-        app
-            .add_systems(PreStartup, load_ascii)
-            .insert_resource(NineSliceIndices{
-                center: 2 * 16,
-                upper_left_index: 13 * 16 + 10,
-                upper_right_index: 11 * 16 + 15,
-                lower_left_index: 12 * 16,
-                lower_right_index: 13 * 16 + 9,
-                horizontal_index: 12 * 16 + 4,
-                vertical_index: 11 * 16 + 3,
-            });
-
-    }
-}
 
 #[derive(Resource, Copy, Clone)]
 pub struct NineSliceIndices {
-    center: usize,
-    upper_left_index: usize,
-    upper_right_index: usize,
-    lower_left_index: usize,
-    lower_right_index: usize,
-    horizontal_index: usize,
-    vertical_index: usize
+    pub center: usize,
+    pub upper_left_index: usize,
+    pub upper_right_index: usize,
+    pub lower_left_index: usize,
+    pub lower_right_index: usize,
+    pub horizontal_index: usize,
+    pub vertical_index: usize
 }
 
 
 
 pub fn spawn_nine_slice(
     commands: &mut Commands,
-    ascii: &AsciiSheet,
+    //ascii: &AsciiSheet,
+    ascii: &GraphicsAssets,
     indices: &NineSliceIndices,
     width: f32,
     height: f32
@@ -154,7 +136,8 @@ pub fn spawn_nine_slice(
 
 pub fn spawn_ascii_text(
     commands: &mut Commands,
-    ascii: &AsciiSheet,
+    //ascii: &AsciiSheet,
+    ascii: &GraphicsAssets,
     to_print: &str,
     left_center: Vec3
 ) -> Entity {
@@ -185,7 +168,8 @@ pub fn spawn_ascii_text(
 
 pub fn spawn_ascii_sprite(
     commands: &mut Commands,
-    ascii: &AsciiSheet,
+    //ascii: &AsciiSheet,
+    assets: &GraphicsAssets,
     index: usize,
     color: Color,
     translation: Vec3,
@@ -193,6 +177,7 @@ pub fn spawn_ascii_sprite(
 ) -> Entity {
     assert!(index < 256, "Index out of Ascii range");
 
+    //assets.sprite_texture.clone()
     let mut sprite = TextureAtlasSprite::new(index);
     sprite.color = color;
     sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
@@ -200,7 +185,8 @@ pub fn spawn_ascii_sprite(
     commands 
         .spawn(SpriteSheetBundle {
             sprite,
-            texture_atlas: ascii.0.clone(),
+            //texture_atlas: ascii.0.clone(),
+            texture_atlas: assets.ascii_sheet.clone(),
             transform: Transform {
                 translation: translation,
                 scale: scale,
@@ -211,13 +197,13 @@ pub fn spawn_ascii_sprite(
         .id()
 }
 
-
+/* 
 fn load_ascii(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>)
     {
-        let image = asset_server.load("Ascii.png");        
+        let image = asset_server.load("acii.png");        
         let atlas = TextureAtlas::from_grid(
             image,
             Vec2::splat(9.0),
@@ -229,3 +215,4 @@ fn load_ascii(
 
         commands.insert_resource(AsciiSheet(atlas_handle));
     }
+*/

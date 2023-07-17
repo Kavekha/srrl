@@ -19,33 +19,32 @@ pub const ORDER_PLAYER: f32 = 10.0;
 pub const ORDER_CURSOR: f32 = 11.0;
 
 // Tiles    //TEMPORARY : TODO : Loader.
-pub const MAP_FLOOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_floor_64.png";
-pub const MAP_EXIT: &str = "temp_tiles/exit.png";
-pub const MAP_WALL_1: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_1.png";
-pub const MAP_WALL_2: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_2.png";
-pub const MAP_WALL_3: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_3.png";
-pub const MAP_WALL_4: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_4.png";
-pub const MAP_WALL_5: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_5.png";
-pub const MAP_WALL_6: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_6.png";
-pub const MAP_WALL_7: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_7.png";
-pub const MAP_WALL_8: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_8.png";
-pub const MAP_WALL_9: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_9.png";
-pub const MAP_WALL_10: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_10.png";
-pub const MAP_WALL_11: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_11.png";
-pub const MAP_WALL_12: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_12.png";
-pub const MAP_WALL_13: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_13.png";
-pub const MAP_WALL_14: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_14.png";
-pub const MAP_WALL_15: &str = "temp_tiles/2D_TOPDOWN_TILES/base_wall_64_mask_15.png";
+pub const MAP_EXIT: &str = "exit";
+pub const MAP_WALL_1: &str = "wall_1";
+pub const MAP_WALL_2: &str = "wall_2";
+pub const MAP_WALL_3: &str = "wall_3";
+pub const MAP_WALL_4: &str = "wall_4";
+pub const MAP_WALL_5: &str = "wall_5";
+pub const MAP_WALL_6: &str = "wall_6";
+pub const MAP_WALL_7: &str = "wall_7";
+pub const MAP_WALL_8: &str = "wall_8";
+pub const MAP_WALL_9: &str = "wall_9";
+pub const MAP_WALL_10: &str = "wall_10";
+pub const MAP_WALL_11: &str = "wall_11";
+pub const MAP_WALL_12: &str = "wall_12";
+pub const MAP_WALL_13: &str = "wall_13";
+pub const MAP_WALL_14: &str = "wall_14";
+pub const MAP_WALL_15: &str = "wall_15";
 
 
 // sprite
 //pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
-pub const SPRITE_GHOUL: &str = "temp_tiles/2D_TOPDOWN_TILES/base_ghoul_64.png";
-pub const SPRITE_PLAYER_DWARF: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
-pub const SPRITE_PLAYER_HUMAN: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
-pub const SPRITE_PLAYER_ORC: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
-pub const SPRITE_PLAYER_ELF: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
-pub const SPRITE_PLAYER_TROLL: &str = "temp_tiles/2D_TOPDOWN_TILES/base_char_64.png";
+pub const SPRITE_GHOUL: &str = "ghoul";
+pub const SPRITE_PLAYER_DWARF: &str = "human";
+pub const SPRITE_PLAYER_HUMAN: &str = "human";
+pub const SPRITE_PLAYER_ORC: &str = "human";
+pub const SPRITE_PLAYER_ELF: &str = "human";
+pub const SPRITE_PLAYER_TROLL: &str = "human";
 pub const CURSOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_cursor_64.png";
 
 // MAP GENERATOR

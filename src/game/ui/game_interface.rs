@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     game::{pieces::components::{Health, Monster}, player::Player, combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, CHAR_SIZE, STANDARD_TILE_SIZE}, render::components::GameCursorRender
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, CHAR_SIZE, STANDARD_TILE_SIZE}, render::components::GameCursorRender, asset_loaders::GraphicsAssets
 };
 
 use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
@@ -42,15 +42,12 @@ pub fn clear_action_points_cursor_ui(
 
 pub fn display_action_points_on_cursor(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    //cursor: Res<Cursor>,
+    //asset_server: Res<AssetServer>,
+    assets: Res<GraphicsAssets>,
     camera_q: Query<(&Camera, &GlobalTransform)>, 
     query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
     interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
     player_q: Query<Entity, With<Player>>,
-    //query_character: Query<(&ActionPoints, &BoardPosition)>,
-    //query_occupied: Query<&BoardPosition, With<Occupier>>,
-    //board: Res<Map>,
     action_infos: Res<ActionInfos>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut ev_refresh_ap: EventReader<RefreshActionCostEvent>,
@@ -128,7 +125,8 @@ pub fn display_action_points_on_cursor(
             TextBundle::from_section(
                 format!("{}", ap_result),     //("{}",action_points),
                 TextStyle { 
-                    font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                    font: assets.font.clone(),  
+                    //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
                     font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
                     color: ap_color,
                 },
@@ -151,7 +149,8 @@ pub fn display_action_points_on_cursor(
 
 pub fn draw_interface(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    //asset_server: Res<AssetServer>,
+    assets: Res<GraphicsAssets>,
     interface_query: Query<Entity, With<InterfaceGame>>,
     player_info_query: Query<(Entity, &Name, &Health), With<Player>>,
     player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
@@ -192,7 +191,8 @@ pub fn draw_interface(
         TextBundle::from_section(
             format!("{}",action_points),
             TextStyle { 
-                font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                font: assets.font.clone(),  
                 font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
                 color: Color::YELLOW,
             },
@@ -207,7 +207,8 @@ pub fn draw_interface(
         TextBundle::from_section(
             player_name,
             TextStyle {
-                font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                font: assets.font.clone(),  
                 font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
                 color: Color::WHITE,
             },

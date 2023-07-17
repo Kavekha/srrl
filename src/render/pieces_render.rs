@@ -5,13 +5,13 @@ use bevy::prelude::*;
 use crate::{
     globals::{
         SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER,},
+        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, MAP_EXIT,},
     game::{
         player::Player, pieces::{components::Piece, spawners::Kind}, 
         tileboard::components::{BoardPosition, ExitMapTile}, 
         actions::{ActionExecutedEvent, MeleeHitAction}}, 
         GraphicsWaitEvent, 
-        render::get_world_position
+        render::get_world_position, asset_loaders::GraphicsAssets
     };
 
 use super::components::PathAnimator;
@@ -92,16 +92,17 @@ pub fn path_animator_update(
 pub fn spawn_exit_render(
     mut commands: Commands,
     query: Query<(Entity, &BoardPosition), With<ExitMapTile>>,
-    asset_server: Res<AssetServer>
+    //asset_server: Res<AssetServer>
+    assets: Res<GraphicsAssets>
 ){
     println!("Rendering Exit begins...");
     for (entity, position) in query.iter() {
         let translation = get_world_position(&position.v);
-        let texture = MAP_EXIT;
+        let texture = assets.map_items[MAP_EXIT].clone();
 
         commands.entity(entity)
             .insert(SpriteBundle {
-                texture: asset_server.load(texture),    
+                texture: texture,    
                 transform: Transform {
                     translation: Vec3::new(translation.0, translation.1, ORDER_EXIT),  
                     scale: Vec3::splat(1.0),
@@ -118,13 +119,14 @@ pub fn spawn_exit_render(
 pub fn spawn_piece_renderer(
     mut commands: Commands,
     query: Query<(Entity, &BoardPosition, &mut Piece, Option<&Player>)>,
-    asset_server: Res<AssetServer>
+    //asset_server: Res<AssetServer>
+    assets: Res<GraphicsAssets>,
 ) {
     println!("Rendering Pieces begins..."); 
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
         let translation= get_world_position(&position.v);   //TODO : get world position retourne un Vector2Int
-        let texture = get_texture_from_kind(piece.kind);
+        let texture = assets.textures[get_texture_from_kind(piece.kind)].clone();
         let mut order_z = ORDER_NPC;
 
         if let Some(_player) = player {
@@ -134,7 +136,7 @@ pub fn spawn_piece_renderer(
 
         commands.entity(entity)
             .insert(SpriteBundle {
-                texture: asset_server.load(texture),    
+                texture: texture, //asset_server.load(texture),    
                 transform: Transform {
                     translation: Vec3::new(translation.0, translation.1, order_z),
                     scale: Vec3::splat(1.0),
@@ -167,14 +169,15 @@ pub fn get_texture_from_kind(
 
 pub fn spawn_sprite_render(
     commands: &mut Commands,
-    asset_server: &AssetServer,
+    //asset_server: &AssetServer,
+    texture: &Handle<Image>,
     x: f32,
     y: f32,
     z: f32,
-    img: &str,
+    //img: &str,
 ) -> Entity {
     let sprite = commands.spawn(SpriteBundle {
-        texture: asset_server.load(img), 
+        texture: texture.clone(), 
         transform: Transform {
             translation: Vec3::new(x, y, z),
             scale: Vec3::splat(1.0),  
