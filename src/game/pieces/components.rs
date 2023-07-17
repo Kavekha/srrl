@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::game::actions::Action;
-
 use super::spawners::Kind;
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]
@@ -10,10 +8,6 @@ pub struct Piece {
     pub kind: Kind
 }
 
-/* 
-#[derive(Component, Default)]
-pub struct Actor(pub Vec<(Box<dyn Action>, i32)>);    // The Action, Value of the Action for this NPC.
-*/
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
