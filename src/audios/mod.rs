@@ -20,16 +20,12 @@ impl Plugin for GameAudioPlugin{
             //TODO: Something else than a function & system by music...
             //GameMap
             .add_systems(OnEnter(GameState::GameMap), setup_audio_gamemap)
-            .add_systems(OnExit(GameState::GameMap), stop_music)
             //Victory
             .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
-            .add_systems(OnExit(GameState::VictoryScreen), stop_music)
             //Main Menu
-            .add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)
-            .add_systems(OnExit(AppState::MainMenu), stop_music)           
+            .add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)     
             //Death
             .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
-            .add_systems(OnExit(GameState::GameOverScreen), stop_music)
             ;         
     }
 }
@@ -38,8 +34,10 @@ impl Plugin for GameAudioPlugin{
 fn setup_audio_mainmenu(
     mut commands: Commands,
     //asset_server: Res<AssetServer>,
-    assets: Res<AudioAssets>
+    assets: Res<AudioAssets>,
+    query_music: Query<&AudioSink> 
 ) {
+    stop_music(query_music);
     commands.spawn((
         AudioBundle {
             //source: asset_server.load("audios/Seattle-2050.ogg"),
@@ -51,8 +49,10 @@ fn setup_audio_mainmenu(
 
 fn setup_audio_death(
     mut commands: Commands,
-    assets: Res<AudioAssets>
+    assets: Res<AudioAssets>,
+    query_music: Query<&AudioSink> 
 ) {
+    stop_music(query_music);
     commands.spawn((AudioBundle {
         source: assets.musics["gameover"].clone(),
         ..default()},
@@ -62,8 +62,10 @@ fn setup_audio_death(
 
 fn setup_audio_victory(
     mut commands: Commands,
-    assets: Res<AudioAssets>
+    assets: Res<AudioAssets>,
+    query_music: Query<&AudioSink> 
 ) {
+    stop_music(query_music);
     commands.spawn((AudioBundle {
         source: assets.musics["victory"].clone(),
         ..default()},
@@ -73,8 +75,10 @@ fn setup_audio_victory(
 
 fn setup_audio_gamemap(
     mut commands: Commands,
-    assets: Res<AudioAssets>
+    assets: Res<AudioAssets>,
+    query_music: Query<&AudioSink> 
 ) {
+    stop_music(query_music);
     commands.spawn((
         AudioBundle {
             source: assets.musics["gamemap"].clone(),
@@ -92,9 +96,4 @@ fn stop_music(
     for sink in query_music.iter() {
         sink.stop();
     };
-    /* 
-    if let Ok(sink) = query_music.get_single() {
-        sink.stop();
-        println!("Stop Music: Sink.Stop");
-    };*/
 }

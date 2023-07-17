@@ -12,7 +12,7 @@ pub use audio_resources::AudioAssets;
 
 use crate::states::AppState;
 
-
+const LOGO_PATH: &str = "title/shadowrun_title_alone.png";
 const ATLAS_PATH: &str = "ascii.png";
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
 const TEXTURES: [&str; 2] = ["human", "ghoul"];
@@ -57,7 +57,10 @@ pub fn load_assets(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
     mut asset_list: ResMut<AssetList>,
  ) {
- 
+    // logo title
+    let logo = asset_server.load(LOGO_PATH);
+    asset_list.0.push(logo.clone_untyped());
+
     // Ascii
     let texture = asset_server.load(ATLAS_PATH);
     asset_list.0.push(texture.clone_untyped());
@@ -108,6 +111,7 @@ pub fn load_assets(
  
     commands.insert_resource(
         GraphicsAssets { 
+            logo: logo,
             ascii_sheet: atlas_handle,
             font: font_handle,
             textures: textures,
