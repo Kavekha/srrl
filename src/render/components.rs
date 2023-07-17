@@ -9,6 +9,7 @@ pub struct GameCursorRender;
 #[derive(Component)]
 pub struct GameMapRender;
 
+
 #[derive(Component)]
 pub struct PathAnimator {
     pub path:VecDeque<Vec3>,

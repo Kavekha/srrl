@@ -5,7 +5,9 @@ use bevy::{prelude::*, input::mouse::MouseMotion};
 use crate::{
     save_load_system::ShouldSave, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
+    game::{actions::
+        {ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, //, pieces::components::Actor
+        tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
     vectors::Vector2Int};
 
 
@@ -76,7 +78,8 @@ pub fn player_mouse_input(
 }
 
 pub fn player_input(
-    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
+    //mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
+    mut query_player_position: Query<(Entity, &BoardPosition), With<Player>>,
     keys: Res<Input<KeyCode>>,
     mut should_save: ResMut<ShouldSave>,
     mut queue: ResMut<ActorQueue>,
@@ -90,6 +93,7 @@ pub fn player_input(
         return;
     }
     
+    /* 
     // DEPLACEMENT
     //if keys.any_pressed([KeyCode::Up, KeyCode::Down, KeyCode::Left, KeyCode::Right]){
     if keys.any_pressed([
@@ -129,6 +133,7 @@ pub fn player_input(
         ev_action.send(PlayerActionEvent);
         //println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
     }
+    */
 }
 
 

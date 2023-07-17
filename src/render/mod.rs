@@ -8,7 +8,7 @@ pub mod cursor_render;
 
 use self::{
     tilemap_render::spawn_map_render,
-    pieces_render::{spawn_piece_renderer, path_animator_update, melee_animation, spawn_exit_render}, 
+    pieces_render::{spawn_piece_renderer, path_animator_update, spawn_exit_render}, //melee_animation
     cursor_render::{spawn_game_cursor, update_game_cursor},
 };
 
@@ -22,7 +22,7 @@ pub struct GraphicsPlugin;
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_event::<GraphicsWaitEvent>()
+            //.add_event::<GraphicsWaitEvent>()
     
             .add_systems(OnEnter(GameState::GameMap), spawn_map_render)                  
             .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
@@ -30,15 +30,16 @@ impl Plugin for GraphicsPlugin {
             .add_systems(OnEnter(GameState::GameMap), spawn_exit_render)    
 
             //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
-            .add_systems(Update, (path_animator_update, melee_animation).in_set(CombatSet::Animation))
+            .add_systems(Update, (path_animator_update).in_set(CombatSet::Animation))   //melee_animation
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))         
             ;
     }
 }
 
+/* 
 #[derive(Event)]
 pub struct GraphicsWaitEvent;
-
+*/
 
 pub fn get_world_position(
     v: &Vector2Int

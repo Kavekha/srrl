@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use rand::{thread_rng, Rng};
 
 use crate::{
-    game::{pieces::components::{Actor, Walk, Melee, Occupier}, player::{Player}, tileboard::components::BoardPosition}, 
+    game::{pieces::components::{Walk, Melee, Occupier}, player::{Player}, tileboard::components::BoardPosition},    //Actor
     map_builders::{map::Map}, 
     globals::{NPC_MOVE_SCORE_BONUS, NPC_MOVE_SCORE_DEFAULT, NPC_ATTACK_SCORE_DEFAULT}, vectors::{MULTI_DIRECTIONS, find_path}};
 
@@ -10,7 +10,7 @@ use super::{ActorQueue, models::{MeleeHitAction, WalkAction}};
 
 
 
-
+/* 
 pub fn plan_walk(
     mut query: Query<(&BoardPosition, &mut Actor), With<Walk>>,
     queue: Res<ActorQueue>,
@@ -74,3 +74,4 @@ pub fn plan_melee(
     });
     actor.0.push((action, NPC_ATTACK_SCORE_DEFAULT))
 }
+*/

@@ -19,7 +19,7 @@ mod states;
 mod vectors;
 mod asset_loaders;
 
-pub use render::GraphicsWaitEvent;
+//pub use render::GraphicsWaitEvent;
 
 use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;

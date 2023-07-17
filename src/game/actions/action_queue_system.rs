@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::{player::Player, pieces::components::Actor};
+use crate::game::{player::Player};  //, pieces::components::Actor};
 
 use super::{ActorQueue, ActionsCompleteEvent, InvalidPlayerActionEvent, NextActorEvent, models::PendingActions, ActionExecutedEvent};
 
@@ -18,7 +18,7 @@ fn execute_action(action: Box<dyn super::Action>, world: &mut World) -> bool {
     false
 }
 
-
+/* 
 pub fn process_action_queue(world: &mut World) {
     println!("Processing action queue...");
     // Y a-t-il des actions en attente à faire?
@@ -64,7 +64,7 @@ pub fn process_action_queue(world: &mut World) {
     //println!("Action processed for {:?}", entity);
     world.send_event(NextActorEvent);
 }
-
+*/
 
 pub fn process_pending_actions(world: &mut World) -> bool {
     // Retourne True si un Pending a été processé.
@@ -81,6 +81,7 @@ pub fn process_pending_actions(world: &mut World) -> bool {
     success
 }
 
+/* 
 pub fn populate_actor_queue(
     query: Query<Entity, (With<Actor>, Without<Player>)>,
     mut queue: ResMut<ActorQueue>
@@ -89,3 +90,4 @@ pub fn populate_actor_queue(
         query.iter()
     );
 }
+*/

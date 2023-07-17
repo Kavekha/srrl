@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::game::{player::Player, pieces::components::{Health, Occupier, Stats}, tileboard::components::ExitMapTile};
 
-use super::components::{Piece, Actor, Walk, Melee, Npc, Monster};
+use super::components::{Piece, Walk, Melee, Npc, Monster};      //Actor
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -53,7 +53,7 @@ pub fn spawn_player(
             dodge: 6,
             resilience: 3
         })
-        .insert(Actor::default(),)
+        //.insert(Actor::default(),)
         .insert(Health { max: 10, current: 10 })
         .insert(Melee { damage: 1 })
         .insert(Occupier)
@@ -73,7 +73,7 @@ pub fn spawn_npc(
             dodge: 3,
             resilience: 4
         })
-        .insert(Actor::default(),)
+        //.insert(Actor::default(),)
         .insert(Npc)
         .insert(Monster)
         .insert(Walk)

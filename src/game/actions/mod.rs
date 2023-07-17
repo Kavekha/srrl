@@ -9,7 +9,11 @@ mod plan_systems;
 pub use models::{WalkAction, Action, MeleeHitAction, MoveToAction, WalkOrHitAction};
 
 use crate::states::{EngineState, TurnSet};
-use self::{models::PendingActions, plan_systems::{plan_melee, plan_walk}, action_queue_system::{populate_actor_queue, process_action_queue}};
+use self::{
+    models::PendingActions, 
+    //plan_systems::{plan_melee, plan_walk}, 
+    //action_queue_system::{process_action_queue}};   //populate_actor_queue, 
+};
 
 use super::player::PlayerActionEvent;
 
@@ -35,13 +39,13 @@ impl Plugin for ActionsPlugin {
             .configure_sets(Update, (ActionSet::Planning, ActionSet::Late).in_set(TurnSet::Logic))
             .configure_set(Update, ActionSet::Planning.run_if(on_event::<NextActorEvent>()).before(ActionSet::Late))  
               
-            .add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
-            .add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
+            //.add_systems(Update, plan_melee.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
+            //.add_systems(Update, plan_walk.run_if(on_event::<NextActorEvent>()).in_set(ActionSet::Planning))
             
             //Execute
-            .add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>()).in_set(ActionSet::Late))
+            //.add_systems(Update, process_action_queue.run_if(on_event::<TickEvent>()).in_set(ActionSet::Late))
 
-            .add_systems(OnExit(EngineState::PlayerInput), populate_actor_queue)
+            //.add_systems(OnExit(EngineState::PlayerInput), populate_actor_queue)
             ;
     }
 }

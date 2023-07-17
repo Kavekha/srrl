@@ -11,7 +11,7 @@ use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
-use crate::game::pieces::components::{Actor, Walk, Piece, Health, Melee, Occupier, Stats, Npc, Monster};
+use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stats, Npc, Monster};   //Actor
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
@@ -232,7 +232,7 @@ pub fn load_game(
         }
         if let Some(piece) = entity.piece {
             e.insert(piece);
-            e.insert(Actor::default()); // Actor component can't be save, so we have to add it there if NPC or Player.
+           // e.insert(Actor::default()); // Actor component can't be save, so we have to add it there if NPC or Player.
         }
         if let Some(position) = entity.position {
             println!("Load: Position of {:?} is now : {:?}", entity, position);
