@@ -2,15 +2,13 @@ use std::collections::HashMap;
 
 use bevy::{prelude::*, asset::LoadState};
 
-mod ascii;
 mod graphic_resources;
 mod audio_resources;
 
-pub use ascii::{spawn_ascii_text, spawn_nine_slice, NineSliceIndices};
 pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
-use crate::states::AppState;
+use crate::{states::AppState, render::ascii::NineSliceIndices};
 
 const LOGO_PATH: &str = "title/shadowrun_title_alone.png";
 const ATLAS_PATH: &str = "ascii.png";

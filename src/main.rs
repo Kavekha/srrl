@@ -12,7 +12,6 @@ mod menus;
 mod map_builders;   //mod
 mod game;           //mod
 mod save_load_system;
-mod ecs_elements;
 mod globals;
 mod render;
 mod states;

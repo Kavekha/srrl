@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use crate::map_builders::map::Map;
 
 
-
 #[derive(PartialEq, Copy, Clone, Debug, Deserialize, Serialize)]
 pub enum TileType {
     Wall, 

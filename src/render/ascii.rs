@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    globals::CHAR_SIZE,
-    ecs_elements::components::AsciiText, menus::NineSlice,
+    globals::CHAR_SIZE, menus::NineSlice, render::components::AsciiText, asset_loaders::GraphicsAssets,
 };
-
-use super::GraphicsAssets;
 
 
 #[derive(Resource, Copy, Clone)]
@@ -197,22 +194,3 @@ pub fn spawn_ascii_sprite(
         .id()
 }
 
-/* 
-fn load_ascii(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>)
-    {
-        let image = asset_server.load("acii.png");        
-        let atlas = TextureAtlas::from_grid(
-            image,
-            Vec2::splat(9.0),
-            16,
-            16,
-            Some(Vec2::splat(2.0)),
-            None);
-        let atlas_handle = texture_atlases.add(atlas);
-
-        commands.insert_resource(AsciiSheet(atlas_handle));
-    }
-*/

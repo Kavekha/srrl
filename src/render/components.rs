@@ -18,3 +18,6 @@ pub struct PathAnimator {
 
 #[derive(Component)]
 pub struct GameInterface;
+
+#[derive(Component)]
+pub struct AsciiText;

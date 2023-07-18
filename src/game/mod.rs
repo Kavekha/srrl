@@ -18,11 +18,10 @@ pub mod combat;
 
 pub use tileboard::components::Tile;
 
-
-use crate::ecs_elements::MapGenHistory;
 use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
 use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
+use crate::map_builders::components::MapGenHistory;
 use crate::render::components::{GameMapRender, GameCursorRender};
 use crate::save_load_system::ShouldSave;
 use crate::{
