@@ -5,14 +5,12 @@ use self::combat::CombatPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player};
 use self::tileboard::TileBoardPlugin;
-use self::actions::ActionsPlugin;
 use self::player::cursor::CursorPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 
 pub mod player;
 pub mod pieces;
-pub mod actions;
 pub mod tileboard;
 pub mod rules;
 pub mod ui;
@@ -52,8 +50,7 @@ impl Plugin for GamePlugin {
             .add_plugins(GameOverPlugin)
             .add_plugins(GraphicsPlugin)
             .add_plugins(TileBoardPlugin)
-            .add_plugins(ActionsPlugin)  
-            .add_plugins(CursorPlugin)
+             .add_plugins(CursorPlugin)
             .add_plugins(UiPlugin)
             .add_plugins(CombatPlugin)
             
