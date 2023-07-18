@@ -1,134 +1,34 @@
-use std::collections::VecDeque;
-
 use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::{
     save_load_system::ShouldSave, 
     states::GameState, 
-    game::{actions::{ActorQueue, WalkOrHitAction, CancelPlayerPendingActionsEvent}, pieces::components::Actor, tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
-    vectors::Vector2Int};
+    game::{
+        tileboard::components::{BoardPosition, ExitMapTile}, combat::events::RefreshActionCostEvent}, 
+    };
 
 
-use super::{components::Player, PlayerActionEvent};
+use super::components::Player;
 
-//
-pub const MULTI_DIR_KEY_MAPPING: [(KeyCode, Vector2Int); 8] = [
-    (KeyCode::Numpad8, Vector2Int::UP), (KeyCode::Numpad2, Vector2Int::DOWN),
-    (KeyCode::Numpad4, Vector2Int::LEFT), (KeyCode::Numpad6, Vector2Int::RIGHT),
-    (KeyCode::Numpad7, Vector2Int::UPPER_LEFT), (KeyCode::Numpad9, Vector2Int::UPPER_RIGHT),
-    (KeyCode::Numpad1, Vector2Int::BOTTOM_LEFT), (KeyCode::Numpad3, Vector2Int::BOTTOM_RIGHT),  
-];
-
-pub const MULTI_DIR_KEY_MAPPING_NO_NUM: [(KeyCode, Vector2Int); 8] = [
-    (KeyCode::Z, Vector2Int::UP), (KeyCode::S, Vector2Int::DOWN),
-    (KeyCode::Q, Vector2Int::LEFT), (KeyCode::D, Vector2Int::RIGHT),
-    (KeyCode::A, Vector2Int::UPPER_LEFT), (KeyCode::E, Vector2Int::UPPER_RIGHT),
-    (KeyCode::W, Vector2Int::BOTTOM_LEFT), (KeyCode::X, Vector2Int::BOTTOM_RIGHT),  
-];
-//
-
-/* 
-pub fn clear_player_pending_actions_2(
-    mut player_queue: ResMut<PlayerActions>, 
-){
-    player_queue.0.clear();
-}*/
 
 pub fn player_mouse_input(
-    buttons: Res<Input<MouseButton>>,
-    //mut ev_action: EventWriter<PlayerActionEvent>,
-    //mut query_player_actor: Query<(Entity, &mut Actor), With<Player>>,
-    //res_cursor: Res<Cursor>,
-    //mut queue: ResMut<ActorQueue>,
-    mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,    
-    //mut player_queue: ResMut<PlayerActions>, 
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut mouse_move: EventReader<MouseMotion>,
 ){
     for _event in mouse_move.iter() {
         ev_refresh_action.send(RefreshActionCostEvent);
     }
-    if buttons.just_pressed(MouseButton::Right) {
-        ev_cancel.send(CancelPlayerPendingActionsEvent);
-    }
-    if buttons.just_pressed(MouseButton::Left) {
-        //println!("Mouse button press Left");
-        // On annule les actions en attente:
-        ev_cancel.send(CancelPlayerPendingActionsEvent);
-        //println!("Canceling current actions....");
-    }
-    if buttons.just_released(MouseButton::Left) {
-        //println!("Doing new actions instead...");
-        // MoveTo.
-
-        // TODO : DEPRECATED? On desactive pour le CombatSystem for now.
-        /*
-        let Ok((entity, mut actor)) = query_player_actor.get_single_mut() else {return};
-        let destination = res_cursor.grid_position;
-        
-        let action = MoveToAction(entity, destination);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        queue.0 = VecDeque::from([entity]);
-        ev_action.send(PlayerActionEvent);
-        //println!("MoveToAction sent from player mouse input. Actor queue len is : {:?}", actor.0.len())
-         */
-    }
 }
 
 pub fn player_input(
-    mut query_player_position: Query<(Entity, &BoardPosition, &mut Actor), With<Player>>,
     keys: Res<Input<KeyCode>>,
-    mut should_save: ResMut<ShouldSave>,
-    mut queue: ResMut<ActorQueue>,
-    //mut ev_input: EventWriter<PlayerInputReadyEvent>,
-    mut ev_action: EventWriter<PlayerActionEvent>,      
-    mut ev_cancel: EventWriter<CancelPlayerPendingActionsEvent>,  
+    mut should_save: ResMut<ShouldSave>
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         should_save.to_save = true;
         return;
-    }
-    
-    // DEPLACEMENT
-    //if keys.any_pressed([KeyCode::Up, KeyCode::Down, KeyCode::Left, KeyCode::Right]){
-    if keys.any_pressed([
-        KeyCode::Numpad1, KeyCode::Numpad2, KeyCode::Numpad3, KeyCode::Numpad4, KeyCode::Numpad6, KeyCode::Numpad7, KeyCode::Numpad8, KeyCode::Numpad9,
-        KeyCode::Z, KeyCode::Q, KeyCode::S, KeyCode::D, KeyCode::A, KeyCode::E, KeyCode::W, KeyCode::X,
-        ]){
-        // On check si ca appartient à DIR_KEY_MAPPING et si rien du tout, on se barre car on veut pas envoyer d'event.
-        let Ok((entity, position, mut actor)) = query_player_position.get_single_mut() else {return};
-
-        // On annule les actions en cours.
-        //TODO : Qq chose de plus generique, car trop de duplication de code pour ca.
-        /*
-        let action = ClearPendingAction(entity);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        queue.0 = VecDeque::from([entity]);
-        println!("Player pending actions cleared.");
-        */
-        ev_cancel.send(CancelPlayerPendingActionsEvent);
-        //println!("Keyboard Input: Canceling current actions....");
-
-        let mut destination = position.v;
-        for (key, dir_position) in MULTI_DIR_KEY_MAPPING {
-            if keys.pressed(key) {
-                destination += dir_position;
-            }
-        }        
-        for (key, dir_position) in MULTI_DIR_KEY_MAPPING_NO_NUM {
-            if keys.pressed(key) {
-                destination += dir_position;
-            }
-        }
-
-        //let action = WalkAction(entity, destination);
-        let action = WalkOrHitAction(entity, destination);
-        actor.0 = vec![(Box::new(action), 0)];      // 0 => Player doesn't care for Action Score.
-        queue.0 = VecDeque::from([entity]);
-        ev_action.send(PlayerActionEvent);
-        //println!("Keyboard: WalkAction: PlayeractionEvent sent 2");
-    }
+    }    
 }
 
 

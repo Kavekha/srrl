@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::map_builders::map::Map;
+use super::map::Map;
 
 
 #[derive(Resource)]

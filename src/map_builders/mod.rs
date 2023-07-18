@@ -1,5 +1,6 @@
 pub mod map;
 pub mod commons;
+pub mod components;
 
 mod rectangle;
 mod builders;

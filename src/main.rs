@@ -12,14 +12,13 @@ mod menus;
 mod map_builders;   //mod
 mod game;           //mod
 mod save_load_system;
-mod ecs_elements;
 mod globals;
 mod render;
 mod states;
 mod vectors;
 mod asset_loaders;
 
-pub use render::GraphicsWaitEvent;
+//pub use render::GraphicsWaitEvent;
 
 use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;

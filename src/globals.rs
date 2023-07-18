@@ -67,11 +67,5 @@ pub const BASE_SPEED: f32 = 3.0;
 pub const SPEED_MULTIPLIER: f32 = 5.0;      // FAST debug / balance on speed movement.
 pub const CURSOR_SPEED: f32 = 20.0;
 
-
-// Npc planning
-pub const NPC_MOVE_SCORE_BONUS: i32 = 5;      // Bonus si cette position autour est sur le chemin menant au Joueur. Favorise largement ce choix.
-pub const NPC_MOVE_SCORE_DEFAULT: i32 = 50;     // Combien vaut le fait de se deplacer pour un NPC. Aide a faire un choix entre plusieurs actions à choisir à la fin. Permets de planifier plusieurs choses. 
-pub const NPC_ATTACK_SCORE_DEFAULT: i32 = 750;
-
 // Interface
 pub const INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE: f32 = 16.0;

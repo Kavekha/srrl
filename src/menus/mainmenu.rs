@@ -1,6 +1,7 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{states::{AppState, GameState}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, asset_loaders::{GraphicsAssets, spawn_nine_slice, spawn_ascii_text, NineSliceIndices}};
+use crate::{states::{AppState, GameState}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, 
+asset_loaders::GraphicsAssets, render::ascii::{NineSliceIndices, spawn_nine_slice, spawn_ascii_text}};
 
 use super::{
     components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
