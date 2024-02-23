@@ -22,7 +22,7 @@ const SEWERS_ITEMS: [&str;1] = ["exit"];
 const MUSICS: [&str;5] = ["main_menu", "combat", "gamemap", "gameover", "victory"];
 
 #[derive(Default, Resource)]
-pub struct AssetList (pub Vec<HandleUntyped>);
+pub struct AssetList (pub Vec<UntypedHandle>);
 
 
 pub struct AssetsPlugin;
@@ -57,7 +57,7 @@ pub fn load_assets(
  ) {
     // logo title
     let logo = asset_server.load(LOGO_PATH);
-    asset_list.0.push(logo.clone_untyped());
+    asset_list.0.push(logo.typed_unchecked());
 
     // Ascii
     let texture = asset_server.load(ATLAS_PATH);
