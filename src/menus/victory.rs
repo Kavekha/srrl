@@ -52,7 +52,7 @@ fn display_victory_screen(
 
 
 fn victory_menu_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,    
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {

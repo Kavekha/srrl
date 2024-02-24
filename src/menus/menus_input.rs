@@ -8,7 +8,7 @@ use super::components::{MainMenuClickable, MainMenuSelection, MainMenuOptions};
 
 // TODO : Deplacer avec meilleure visibilité dans un Mod menu?
 pub fn main_menu_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut menu_selection: ResMut<MainMenuSelection>,

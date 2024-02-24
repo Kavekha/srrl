@@ -202,11 +202,11 @@ pub fn combat_turn_end(
 
 /// Les events du Joueur.
 pub fn combat_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
     //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    player_query: Query<(Entity, With<Player>)>,
-    buttons: Res<Input<MouseButton>>,
+    player_query: Query<(Entity, Has<Player>)>,
+    buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_on_click: EventWriter<OnClickEvent>
 ){
