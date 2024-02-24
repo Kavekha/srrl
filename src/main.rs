@@ -22,7 +22,7 @@ use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
-use asset_loaders::AssetsPlugin;
+use asset_loaders::{AssetsPlugin, GraphicsAssets};
 
 use states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR, BASE_SCREEN_SCALE};
@@ -60,12 +60,16 @@ fn main() {
         .add_state::<GameState>()  
         .add_state::<EngineState>()
 
-        .add_systems(Startup, spawn_camera)
+        //.add_systems(Startup, spawn_camera)
+        .add_systems(Startup, setup)    //TO DELETE
         .run(); 
 }
 
 
 fn spawn_camera(mut commands: Commands) {
+    println!("Camera is spawned");
+    commands.spawn(Camera2dBundle::default());  //DEBUG
+    /* 
     let camera_bundle = Camera2dBundle {
         projection: OrthographicProjection{
             scaling_mode: ScalingMode::WindowSize(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
@@ -73,7 +77,21 @@ fn spawn_camera(mut commands: Commands) {
         },
         ..default()
     };
-    commands.spawn(camera_bundle);
+    commands.spawn(camera_bundle);   
+    */
 }
 
-
+//TO DELETE
+fn setup(
+    mut commands: Commands, 
+    asset_server: Res<AssetServer>,
+    asset_logo: Res<GraphicsAssets>
+) {
+    //let texture = asset_server.load("title/shadowrun_title_alone.png"); // 1. DOESNT WORK
+    commands.spawn(SpriteBundle {
+        texture: asset_server.load("title/shadowrun_title_alone.png"), // 3. WORK
+        //texture: asset_logo.logo.clone(), // 2. DOESNT WORK 
+        //texture: texture,   // 1. DOESNT WORK 
+        ..default()
+    });
+}
