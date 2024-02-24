@@ -32,7 +32,7 @@ pub fn cursor_position(
     camera_q: Query<(&Camera, &GlobalTransform)>,
     query_player_pos: Query<&BoardPosition, With<Player>>,
 ) {
-    for _event in cursor_moved_events.iter() {
+    for _event in cursor_moved_events.read() {
         let Ok((camera, camera_transform)) = camera_q.get_single() else { return };
 
         if let Some(world_position) = window_query.single().cursor_position() 

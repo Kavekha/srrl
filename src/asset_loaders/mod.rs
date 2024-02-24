@@ -8,7 +8,7 @@ mod audio_resources;
 pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
-use crate::{states::AppState, render::ascii::NineSliceIndices};
+use crate::render::ascii::NineSliceIndices;
 
 const LOGO_PATH: &str = "title/shadowrun_title_alone.png";
 const ATLAS_PATH: &str = "ascii.png";

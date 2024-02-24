@@ -15,7 +15,7 @@ pub fn player_mouse_input(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut mouse_move: EventReader<MouseMotion>,
 ){
-    for _event in mouse_move.iter() {
+    for _event in mouse_move.read() {
         ev_refresh_action.send(RefreshActionCostEvent);
     }
 }

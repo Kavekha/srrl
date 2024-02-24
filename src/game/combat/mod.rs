@@ -57,9 +57,9 @@ impl Plugin for CombatPlugin {
    
             .add_event::<AnimateEvent>()    //Animation //TODO : Deplacer.
 
-            .configure_set(Update, CombatSet::Logic)      
-            .configure_set(Update, CombatSet::Tick.after(CombatSet::Logic))
-            .configure_set(Update, CombatSet::Animation.after(CombatSet::Tick))      
+            .configure_sets(Update, CombatSet::Logic)      
+            .configure_sets(Update, CombatSet::Tick.after(CombatSet::Logic))
+            .configure_sets(Update, CombatSet::Animation.after(CombatSet::Tick))      
             
             
             

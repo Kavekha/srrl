@@ -59,7 +59,7 @@ fn gameover_menu_input(
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
         game_state.set(GameState::NewGame);
     }
-    for event in mouse_button_input_events.iter() {
+    for event in mouse_button_input_events.read() {
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
         if event.button == MouseButton::Left {
             game_state.set(GameState::NewGame);

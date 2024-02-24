@@ -53,11 +53,11 @@ pub fn display_action_points_on_cursor(
     mut ev_refresh_ap: EventReader<RefreshActionCostEvent>,
 ){
     let mut should_update = false;
-    for _event in cursor_moved_events.iter() {
+    for _event in cursor_moved_events.read() {
         should_update = true;
         break;
     }
-    for _event in ev_refresh_ap.iter() {
+    for _event in ev_refresh_ap.read() {
         should_update = true;
         break;
     }
