@@ -2,6 +2,7 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
+//use self::manager::ManagerPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player};
 use self::tileboard::TileBoardPlugin;
@@ -15,6 +16,7 @@ pub mod tileboard;
 pub mod rules;
 pub mod ui;
 pub mod combat;
+//pub mod manager;
 
 pub use tileboard::components::Tile;
 
@@ -52,6 +54,7 @@ impl Plugin for GamePlugin {
              .add_plugins(CursorPlugin)
             .add_plugins(UiPlugin)
             .add_plugins(CombatPlugin)
+            //.add_plugins(ManagerPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)

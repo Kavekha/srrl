@@ -18,8 +18,6 @@ mod states;
 mod vectors;
 mod asset_loaders;
 
-//pub use render::GraphicsWaitEvent;
-
 use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;
 use game::GamePlugin;
@@ -28,7 +26,6 @@ use asset_loaders::AssetsPlugin;
 
 use states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR, BASE_SCREEN_SCALE};
-
 
 
 fn main() {
