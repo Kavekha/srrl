@@ -24,7 +24,7 @@ pub fn action_entity_end_turn(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ) {
     //println!("action entity forfeit turn");
-    for event in ev_endturn.iter() {
+    for event in ev_endturn.read() {
         //L'entité n'a pas de Action points / Pas son tour, on ignore.
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
         let (_entity, mut action_points, is_player) = entity_infos;
@@ -45,7 +45,7 @@ pub fn on_click_action(
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,
     action_infos: Res<ActionInfos>,
 ){
-    for _event in ev_onclick.iter() {
+    for _event in ev_onclick.read() {
         let path = action_infos.path.clone();
         let Some(entity) = action_infos.entity else { continue };
         let Some(path) = path else { continue };
@@ -65,7 +65,7 @@ pub fn action_entity_try_move(
     query_actions: Query<&ActionPoints>,
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){
-    for event in ev_try_move.iter() {
+    for event in ev_try_move.read() {
         println!("Action entity try move event received.");
 
         let Ok(action_points) = query_actions.get(event.entity) else { continue };
@@ -101,7 +101,7 @@ pub fn action_entity_try_attack(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
 ){
-    for event in ev_try_attack.iter() {
+    for event in ev_try_attack.read() {
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
 
         // TODO : maybe refresh in consume? Maybe consume in some Event?
@@ -156,7 +156,7 @@ pub fn action_entity_get_hit(
     mut ev_die: EventWriter<EntityDeathEvent>,
 
 ) {
-    for event in ev_gethit.iter() {
+    for event in ev_gethit.read() {
         println!("Entity {:?} has been hit by {:?} for {:?} dmg.", event.entity, event.attacker, event.dmg);
         let Ok(defender_infos) = stats_health_q.get_mut(event.entity) else { 
             println!("Pas de stats / health pour le defender");
@@ -183,7 +183,7 @@ pub fn entity_dies(
     player_q: Query<&Player>,
     mut game_state: ResMut<NextState<GameState>>,
 ){
-    for event in ev_die.iter() {
+    for event in ev_die.read() {
         //TODO: Remove components, transform texture to Corpse.
         //commands.entity(event.entity).remove::<Stats>();
         //commands.entity(event.entity).remove::<Health>();
@@ -206,7 +206,7 @@ pub fn action_entity_move(
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){    
-    for event in ev_move.iter() {
+    for event in ev_move.read() {
         let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
             //println!("ActionMove: Je n'ai pas les infos Entité");   // TODO : Quand Action_entity_try_move pose le component MovePath, le Query action_entity_move ne le recupere pas pour le moment (asynchrone?)
             continue };
@@ -238,7 +238,7 @@ pub fn walk_combat_animation(
     mut commands: Commands,
     mut ev_animate: EventReader<AnimateEvent>,
 ) {
-    for ev in ev_animate.iter() {
+    for ev in ev_animate.read() {
         let mut path = ev.path.clone();
 
         let mut path_animation: VecDeque<Vec3> = VecDeque::new();
@@ -271,7 +271,7 @@ pub fn create_action_infos(
     piece_position: Query<&BoardPosition, (With<Health>, With<Stats>)>,
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
 ) {
-    for _event in ev_refresh_action.iter() {
+    for _event in ev_refresh_action.read() {
         //println!("Updating ActionInfos ");
         //Reset:
         action_infos.cost = None;

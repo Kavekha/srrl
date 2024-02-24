@@ -28,8 +28,8 @@ pub enum AppState {
 pub enum EngineState {
     #[default]
     None,
-    PlayerInput,
-    TurnUpdate
+    //PlayerInput,
+    //TurnUpdate
 }
 
 
@@ -37,7 +37,7 @@ pub enum EngineState {
 pub enum TurnSet {
     #[default]
     Logic,
-    Animation,
-    Tick
+    //Animation,
+    //Tick
 }
 

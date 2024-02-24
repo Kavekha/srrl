@@ -18,8 +18,6 @@ pub mod ui;
 pub mod combat;
 //pub mod manager;
 
-pub use tileboard::components::Tile;
-
 use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
 use crate::game::tileboard::components::{BoardPosition, ExitMapTile};

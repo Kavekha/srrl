@@ -6,7 +6,7 @@ pub mod victory;
 pub mod menus_input;
 mod components;
 
-pub use components::{AsciiSheet, NineSlice, OnScreenMenu};
+pub use components::{NineSlice, OnScreenMenu};
 
 use crate::game::despawn_screen;
 

@@ -1,11 +1,9 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 mod system_map;
 pub mod components;
 
-pub use components::Tile;
-
-use self::{system_map::spawn_map};
+use self::system_map::spawn_map;
 
 use crate::states::GameState;
 
