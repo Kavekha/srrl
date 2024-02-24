@@ -2,7 +2,7 @@
 name = "sr-rl"
 version = "0.15.0"
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.76"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -34,3 +34,6 @@ opt-level = 3
 
 [profile.release]
 codegen-units = 1
+
+[patch.crates-io]
+#wgpu = { git = "https://github.com/gfx-rs/wgpu" , rev = "3d10678a91b78557b0dea537407eb4a4ff754872" } #https://github.com/bevyengine/bevy/issues/4461#issuecomment-1097560344

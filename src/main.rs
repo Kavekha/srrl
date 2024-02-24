@@ -60,7 +60,7 @@ fn main() {
         .add_state::<GameState>()  
         .add_state::<EngineState>()
 
-        //.add_systems(Startup, spawn_camera)
+        .add_systems(Startup, spawn_camera)
         .add_systems(Startup, setup)    //TO DELETE
         .run(); 
 }
@@ -69,29 +69,31 @@ fn main() {
 fn spawn_camera(mut commands: Commands) {
     println!("Camera is spawned");
     commands.spawn(Camera2dBundle::default());  //DEBUG
+
     /* 
     let camera_bundle = Camera2dBundle {
         projection: OrthographicProjection{
-            scaling_mode: ScalingMode::WindowSize(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
+            //scaling_mode: ScalingMode::WindowSize(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
+            
             ..default()
         },
         ..default()
     };
     commands.spawn(camera_bundle);   
-    */
+     */
 }
 
 //TO DELETE
 fn setup(
     mut commands: Commands, 
-    asset_server: Res<AssetServer>,
-    asset_logo: Res<GraphicsAssets>
+    //asset_server: Res<AssetServer>, // 1 & 3
+    asset_logo: Res<GraphicsAssets> // 2.
 ) {
-    //let texture = asset_server.load("title/shadowrun_title_alone.png"); // 1. DOESNT WORK
+    //let texture = asset_server.load("title/shadowrun_title_alone.png"); // 1. 
     commands.spawn(SpriteBundle {
-        texture: asset_server.load("title/shadowrun_title_alone.png"), // 3. WORK
-        //texture: asset_logo.logo.clone(), // 2. DOESNT WORK 
-        //texture: texture,   // 1. DOESNT WORK 
+        //texture: asset_server.load("title/shadowrun_title_alone.png"), // 3. 
+        texture: asset_logo.logo.clone(), // 2. 
+        //texture: texture,   // 1.       
         ..default()
     });
 }
