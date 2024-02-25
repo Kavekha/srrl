@@ -99,6 +99,25 @@ fn load_assets(
         musics.insert(name, handle);
     }
 
+    commands.insert_resource(
+        GraphicsAssets { 
+            logo: logo,
+            ascii_sheet_layout: atlas_handle,
+            ascii_sheet_img: texture,
+            font: font_handle,
+            textures: textures,
+            map_textures: sewer_textures,
+            map_items: sewer_items,
+        }
+    );
+
+    commands.insert_resource(
+        AudioAssets {
+            musics: musics
+        }
+    );
+
+    /* 
     *graphic_assets = GraphicsAssets {
         logo: logo,
         ascii_sheet_layout: atlas_handle,
@@ -112,6 +131,7 @@ fn load_assets(
     *audio_assets = AudioAssets {
         musics: musics
     };
+    */
 
     println!("INFO: Assets loaded");
 }

@@ -1,9 +1,7 @@
 //#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
-    prelude::*, 
-    render::camera::ScalingMode,
-    window::PresentMode::Fifo,
+    a11y::{accesskit::{NodeBuilder, Role}, AccessibilityNode}, prelude::*, render::camera::ScalingMode, window::PresentMode::Fifo
 };
 
 
@@ -61,15 +59,15 @@ fn main() {
         .init_state::<EngineState>()
 
         .add_systems(Startup, spawn_camera)
-        .add_systems(Startup, setup)    //TO DELETE
+        //.add_systems(Startup, setup)    //TO DELETE
         .run(); 
 }
 
 
 fn spawn_camera(mut commands: Commands) {
     println!("Camera is spawned");
-    commands.spawn(Camera2dBundle::default());  //DEBUG
-
+    commands.spawn(Camera2dBundle::default()); //DEBUG
+    
     /* 
     let camera_bundle = Camera2dBundle {
         projection: OrthographicProjection{
@@ -80,7 +78,8 @@ fn spawn_camera(mut commands: Commands) {
         ..default()
     };
     commands.spawn(camera_bundle);   
-     */
+   */ 
+    
 }
 
 //TO DELETE
