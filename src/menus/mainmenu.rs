@@ -18,7 +18,7 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin{
     fn build(&self, app: &mut App) {
         app
-            .add_systems(OnEnter(AppState::MainMenu), spawn_title)
+            //.add_systems(OnEnter(AppState::MainMenu), spawn_title)
             .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(AppState::MainMenu), menu_camera)    
             .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
@@ -113,12 +113,165 @@ fn spawn_menu_button(
         .id()
 }
 
+// Bevy example
+const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
+const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
+const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+
+#[derive(Component)]
+enum MenuButtonAction {
+    Play,
+    Settings,
+    SettingsDisplay,
+    SettingsSound,
+    BackToMainMenu,
+    BackToSettings,
+    Quit,
+}
+
+#[derive(Component)]
+    struct OnMainMenuScreen;
+
 fn spawn_main_menu(
+    mut commands: Commands, 
+    asset_server: Res<AssetServer>,
+    graphics_assets: Res<GraphicsAssets>
+) {
+    // Common style for all buttons on the screen
+    let button_style = Style {
+        width: Val::Px(250.0),
+        height: Val::Px(65.0),
+        margin: UiRect::all(Val::Px(20.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+    let button_icon_style = Style {
+        width: Val::Px(30.0),
+        // This takes the icons out of the flexbox flow, to be positioned exactly
+        position_type: PositionType::Absolute,
+        // The icon will be close to the left border of the button
+        left: Val::Px(10.0),
+        ..default()
+    };
+    let button_text_style = TextStyle {
+        font_size: 40.0,
+        color: TEXT_COLOR,
+        ..default()
+    };
+
+    commands
+        .spawn((
+            // L'ensemble de la fenetre UI. Tout s'organise autour de ca.
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+                ..default()
+            },
+            OnMainMenuScreen,
+        ))
+        .with_children(|parent| {
+            // Titre
+            let logo = graphics_assets.logo.clone();
+                            parent.spawn(ImageBundle {
+                                image: UiImage::new(logo),
+                                ..default()
+                            });
+            parent
+                .spawn(NodeBundle {
+                    // Cadre du menu en lui-même.
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    //background_color: Color::CRIMSON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    
+                    // Display three buttons for each action available from the main menu:
+                    // - new game
+                    // - settings
+                    // - quit
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::Play,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("textures/Game Icons/right.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style.clone(),
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section(
+                                "New Game",
+                                button_text_style.clone(),
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::Settings,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("textures/Game Icons/wrench.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style.clone(),
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section(
+                                "Settings",
+                                button_text_style.clone(),
+                            ));
+                        });
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style,
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::Quit,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("textures/Game Icons/exitRight.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style,
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section("Quit", button_text_style));
+                        });
+                });
+        });
+}
+
+fn spawn_main_menu_old(
     mut commands: Commands,
     ascii: Res<GraphicsAssets>,
     nine_slice_indices: Res<NineSliceIndices>
 ){
-    println!("Main Menu spawned");
+    println!("INFO: Main Menu spawned");
 
     let box_height = 3.0;
     let box_center_x = 0.0;

@@ -50,8 +50,8 @@ impl Plugin for AssetsPlugin {
 
 fn load_assets(
     mut commands: Commands,
-    mut graphic_assets: ResMut<GraphicsAssets>, 
-    mut audio_assets: ResMut<AudioAssets>,
+    //mut graphic_assets: ResMut<GraphicsAssets>, 
+    //mut audio_assets: ResMut<AudioAssets>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     asset_server: Res<AssetServer>
 ) {

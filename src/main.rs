@@ -1,7 +1,7 @@
 //#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
-    a11y::{accesskit::{NodeBuilder, Role}, AccessibilityNode}, prelude::*, render::camera::ScalingMode, window::PresentMode::Fifo
+    prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
 
 
@@ -20,10 +20,10 @@ use menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
-use asset_loaders::{AssetsPlugin, GraphicsAssets};
+use asset_loaders::AssetsPlugin;
 
 use states::{AppState, GameState, EngineState};
-use globals::{HEIGHT, RESOLUTION, CLEAR, BASE_SCREEN_SCALE};
+use globals::{HEIGHT, RESOLUTION, CLEAR};   //, BASE_SCREEN_SCALE};
 
 
 fn main() {
@@ -66,17 +66,18 @@ fn main() {
 fn spawn_camera(mut commands: Commands) {
     println!("Camera is spawned");
     commands.spawn(Camera2dBundle::default()); //DEBUG
-    
-    /* 
+
+    // Before 0.13. 
+    /*      
     let camera_bundle = Camera2dBundle {
         projection: OrthographicProjection{
-            //scaling_mode: ScalingMode::WindowSize(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
-            
+            far: 100.0,
+            near: -100.0,
+            scaling_mode: ScalingMode::WindowSize(500.0), //(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
             ..default()
         },
         ..default()
     };
     commands.spawn(camera_bundle);   
-   */ 
-    
+    */ 
 }

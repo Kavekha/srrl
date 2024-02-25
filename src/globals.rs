@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 800.0;
-pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
+//pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 
 
 // RENDERING
