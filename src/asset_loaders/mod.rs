@@ -66,7 +66,7 @@ fn load_assets(
         16,
         Some(Vec2::splat(2.0)),
         None);
-    let atlas_handle:Handle<TextureAtlas> = texture_atlases.add(atlas);
+    let atlas_handle = texture_atlases.add(atlas);
 
     // Font
     let font_handle:Handle<Font> = asset_server.load(FONT_PATH);

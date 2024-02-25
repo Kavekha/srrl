@@ -25,5 +25,7 @@ pub struct MainMenuSelection {
     pub selected: MainMenuOptions
 }
 
+/* TO DELETE  
 # [derive(Resource)]
 pub struct AsciiSheet(pub Handle<TextureAtlas>);
+*/

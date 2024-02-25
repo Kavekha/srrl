@@ -19,7 +19,7 @@ pub fn plan_action_forfeit(
     for (entity, _action_points, _turn) in query_npc.iter() {
         //TODO : Dans quelles circonstances un NPC decide de Forfeit.
         //println!("planning: Entity is a NPC.");
-        ev_endturn.send(EntityEndTurnEvent {entity})     
+        ev_endturn.send(EntityEndTurnEvent {entity});
     }  
 }
 
@@ -99,6 +99,6 @@ pub fn npc_planning(
         }
     }
     println!("Planning: {:?} has nothing better than forfeit.", {entity});
-    ev_endturn.send(EntityEndTurnEvent {entity})
+    ev_endturn.send(EntityEndTurnEvent {entity});
 
 }

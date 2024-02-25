@@ -1,4 +1,4 @@
-use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, sprite::collide_aabb::collide, app::AppExit};
+use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, app::AppExit};
 
 use crate::{globals::{CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, menus::mainmenu::main_menu_selecting, states::{AppState, GameState}, save_load_system::has_save_file};
 
@@ -105,6 +105,7 @@ pub fn menu_input_mouse(
                     .map(|ray| ray.origin.truncate())      {
             // Cursor in window
             let cursor_world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
+            /* TO DELETE : clic on sprite in menu. Obsolete. 
             for (clickable, transform) in button_query.iter() {
                 if mouse_on_clickable(cursor_world_position, transform.translation, clickable.size) {
                     menu_selection.selected = clickable.id;
@@ -112,6 +113,7 @@ pub fn menu_input_mouse(
                 }
                 //println!("Mouse collide between {:?} and {:?} ? : {:?}", world_position, transform.translation, mouse_on_clickable(cursor_world_position, transform.translation, clickable.size));
             }
+            */
         }
         //info!("{:?}", event);
     }
@@ -122,6 +124,8 @@ pub fn menu_input_mouse(
     */
 }
 
+
+/* TO REMOVE  
 pub fn mouse_on_clickable(
     target_pos: Vec3,
     some_translation: Vec3,
@@ -137,3 +141,4 @@ pub fn mouse_on_clickable(
     );
     collision.is_some()
 }
+*/

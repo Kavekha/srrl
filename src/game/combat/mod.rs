@@ -210,7 +210,7 @@ pub fn combat_input(
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_on_click: EventWriter<OnClickEvent>
 ){
-    if keys.just_pressed(KeyCode::T) {
+    if keys.just_pressed(KeyCode::KeyT) {
         let Ok(result) = player_query.get_single() else { return };
         let entity = result.0;
         ev_endturn.send(EntityEndTurnEvent {entity});

@@ -196,37 +196,3 @@ pub fn spawn_ascii_sprite(
         })
         .id()
 }
-
-/* Ne fonctionne plus depuis 0.13. Migration en cours. TO DELETE 
-pub fn spawn_ascii_sprite(
-    commands: &mut Commands,
-    //ascii: &AsciiSheet,
-    assets: &GraphicsAssets,
-    index: usize,
-    color: Color,
-    translation: Vec3,
-    scale: Vec3
-) -> Entity {
-    assert!(index < 256, "Index out of Ascii range");
-
-    //assets.sprite_texture.clone()
-    let mut sprite = TextureAtlasSprite::new(index);
-    sprite.color = color;
-    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
-
-    commands 
-        .spawn(SpriteSheetBundle {
-            sprite,
-            //texture_atlas: ascii.0.clone(),
-            texture_atlas: assets.ascii_sheet.clone(),
-            transform: Transform {
-                translation: translation,
-                scale: scale,
-                ..default()
-            },
-            ..default()
-        })
-        .id()
-}
-
-*/
