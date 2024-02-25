@@ -11,7 +11,7 @@ pub use audio_resources::AudioAssets;
 use crate::render::ascii::NineSliceIndices;
 
 const LOGO_PATH: &str = "title/shadowrun_title_alone.png";
-const ATLAS_PATH: &str = "ascii.png";
+const ASCII_PATH: &str = "ascii.png";
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
 const TEXTURES: [&str; 2] = ["human", "ghoul"];
 const SEWERS_TILES_TEXTURES: [&str; 17] = [
@@ -52,16 +52,15 @@ fn load_assets(
     mut commands: Commands,
     mut graphic_assets: ResMut<GraphicsAssets>, 
     mut audio_assets: ResMut<AudioAssets>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     asset_server: Res<AssetServer>
 ) {
     // logo title
     let logo = asset_server.load(LOGO_PATH);
 
     // Ascii
-    let texture = asset_server.load(ATLAS_PATH);
-    let atlas = TextureAtlas::from_grid(
-        texture,
+    let texture = asset_server.load(ASCII_PATH);
+    let atlas = TextureAtlasLayout::from_grid(
         Vec2::splat(9.0),
         16,
         16,
@@ -102,7 +101,8 @@ fn load_assets(
 
     *graphic_assets = GraphicsAssets {
         logo: logo,
-        ascii_sheet: atlas_handle,
+        ascii_sheet_layout: atlas_handle,
+        ascii_sheet_img: texture,
         font: font_handle,
         textures: textures,
         map_textures: sewer_textures,

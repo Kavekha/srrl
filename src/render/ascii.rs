@@ -163,6 +163,41 @@ pub fn spawn_ascii_text(
 }
 
 
+// https://bevyengine.org/learn/migration-guides/0-12-to-0-13/#texture-atlas-rework
+pub fn spawn_ascii_sprite(
+    commands: &mut Commands,
+    assets: &GraphicsAssets,
+    index: usize,
+    color: Color,
+    translation: Vec3,
+    scale: Vec3
+) -> Entity {
+    assert!(index < 256, "Index out of Ascii range");
+
+    //assets.sprite_texture.clone()
+    let mut sprite = TextureAtlas::new(index);
+    sprite.color = color;
+    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
+
+    commands 
+        .spawn(SpriteSheetBundle {
+            sprite: Sprite::default(),
+            atlas: TextureAtlas {
+                layout: assets.ascii_sheet_layout.clone(),
+                index: 0
+            },            
+            texture: assets.ascii_sheet_img.clone(),
+            transform: Transform {
+                translation: translation,
+                scale: scale,
+                ..default()
+            },
+            ..default()
+        })
+        .id()
+}
+
+/* Ne fonctionne plus depuis 0.13. Migration en cours. TO DELETE 
 pub fn spawn_ascii_sprite(
     commands: &mut Commands,
     //ascii: &AsciiSheet,
@@ -194,3 +229,4 @@ pub fn spawn_ascii_sprite(
         .id()
 }
 
+*/
