@@ -24,7 +24,6 @@ impl Plugin for GameOverPlugin {
 
 fn display_gameover_screen(
     mut commands: Commands,
-    //ascii: Res<AsciiSheet>
     ascii: Res<GraphicsAssets>,
 ){
     println!("Afficher YOU DIED"); //DEBUG
@@ -56,7 +55,7 @@ fn gameover_menu_input(
     mut game_state: ResMut<NextState<GameState>>,    
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         game_state.set(GameState::NewGame);
     }
     for event in mouse_button_input_events.read() {

@@ -15,7 +15,7 @@ pub fn main_menu_input(
     mut app_exit_events: EventWriter<AppExit>
 ) {
     let mut current_selection = menu_selection.selected as isize;
-    if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
+    if keys.any_just_pressed([KeyCode::ArrowUp, KeyCode::KeyZ]) {
         current_selection -=1;
         //TODO : crado, si pas de save.
         //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
@@ -23,7 +23,7 @@ pub fn main_menu_input(
             current_selection -= 1;
         }
     }
-    if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
+    if keys.any_just_pressed([KeyCode::ArrowDown, KeyCode::KeyD]) {
         current_selection +=1;
         //TODO : crado, si pas de save.
         //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
@@ -50,7 +50,7 @@ pub fn main_menu_input(
     };
 
 
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         main_menu_selecting(menu_selection.selected, &mut app_state, &mut game_state, &mut app_exit_events);
         /*
         match menu_selection.selected {

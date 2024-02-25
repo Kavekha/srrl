@@ -20,7 +20,6 @@ pub struct NineSliceIndices {
 
 pub fn spawn_nine_slice(
     commands: &mut Commands,
-    //ascii: &AsciiSheet,
     ascii: &GraphicsAssets,
     indices: &NineSliceIndices,
     width: f32,
@@ -133,7 +132,6 @@ pub fn spawn_nine_slice(
 
 pub fn spawn_ascii_text(
     commands: &mut Commands,
-    //ascii: &AsciiSheet,
     ascii: &GraphicsAssets,
     to_print: &str,
     left_center: Vec3
@@ -174,14 +172,16 @@ pub fn spawn_ascii_sprite(
 ) -> Entity {
     assert!(index < 256, "Index out of Ascii range");
 
-    //assets.sprite_texture.clone()
+     // DESACTIVATE 0.13. TO CHECK / FIX
+     /* 
     let mut sprite = TextureAtlas::new(index);
     sprite.color = color;
-    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
+    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));   
+    */
 
     commands 
         .spawn(SpriteSheetBundle {
-            sprite: Sprite::default(),
+            sprite: default(), //sprite
             atlas: TextureAtlas {
                 layout: assets.ascii_sheet_layout.clone(),
                 index: 0
