@@ -102,7 +102,7 @@ impl SaveState {
 
             for archetype_entity in archetype.entities() {
 
-                let current_entity = &archetype_entity.entity();
+                let current_entity = &archetype_entity.id();
     
                 let mut has_component_to_save = false;
                 if world.get::<Player>(world.entity(*current_entity).id()).is_some()

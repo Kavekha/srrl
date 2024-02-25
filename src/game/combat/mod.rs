@@ -94,7 +94,7 @@ impl Plugin for CombatPlugin {
 
             // Check de la situation PA-wise.
             .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
-            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
+            // DEACTIVATE 0.13, TO CHECK    // .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
 
             // ANIME : //TODO : Changer d'endroit.
             .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Animation))

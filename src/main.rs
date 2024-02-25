@@ -56,9 +56,9 @@ fn main() {
         .add_plugins(SaveLoadPlugin)
         .add_plugins(AssetsPlugin)
 
-        .add_state::<AppState>()
-        .add_state::<GameState>()  
-        .add_state::<EngineState>()
+        .init_state::<AppState>()
+        .init_state::<GameState>()  
+        .init_state::<EngineState>()
 
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, setup)    //TO DELETE
