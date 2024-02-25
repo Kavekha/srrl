@@ -94,7 +94,7 @@ impl Plugin for CombatPlugin {
 
             // Check de la situation PA-wise.
             .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
-            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
+            // DEACTIVATE 0.13, TO CHECK    // .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
 
             // ANIME : //TODO : Changer d'endroit.
             .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Animation))
@@ -202,15 +202,15 @@ pub fn combat_turn_end(
 
 /// Les events du Joueur.
 pub fn combat_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
     //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    player_query: Query<(Entity, With<Player>)>,
-    buttons: Res<Input<MouseButton>>,
+    player_query: Query<(Entity, Has<Player>)>,
+    buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_on_click: EventWriter<OnClickEvent>
 ){
-    if keys.just_pressed(KeyCode::T) {
+    if keys.just_pressed(KeyCode::KeyT) {
         let Ok(result) = player_query.get_single() else { return };
         let entity = result.0;
         ev_endturn.send(EntityEndTurnEvent {entity});

@@ -21,7 +21,7 @@ pub fn player_mouse_input(
 }
 
 pub fn player_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut should_save: ResMut<ShouldSave>
 ){
     // MENU etc

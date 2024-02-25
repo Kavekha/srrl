@@ -66,7 +66,7 @@ fn hightligh_menu_button(
     menu_state: Res<MainMenuSelection>,
     button_query: Query<(&Children, &MainMenuOptions)>,
     nine_slice_query: Query<&Children, With<NineSlice>>,
-    mut sprites_query: Query<&mut TextureAtlasSprite>
+    mut sprites_query: Query<&mut TextureAtlas>
 ){
     // On se balade dans la hierarchie du menu pour choisir la couleur du bouton selon que son id = menu_state.selected
     for (button_children, button_id) in button_query.iter() {
@@ -75,9 +75,9 @@ fn hightligh_menu_button(
                 for nine_slice_child in nine_slice_children.iter() {
                     if let Ok(mut sprite) = sprites_query.get_mut(*nine_slice_child){
                         if menu_state.selected == *button_id {
-                            sprite.color = Color::RED;
+                            //sprite.color = Color::RED;    // TO FIX migration 0.13 Atlas Layout and co.
                         } else {
-                            sprite.color = Color::WHITE;
+                            //sprite.color = Color::WHITE;    // TO FIX migration 0.13 Atlas Layout and co.
                         }
                     }
                 }
@@ -88,7 +88,6 @@ fn hightligh_menu_button(
 
 fn spawn_menu_button(
     commands: &mut Commands,
-    //ascii: &AsciiSheet,
     ascii: &GraphicsAssets,
     indices: &NineSliceIndices,
     translation: Vec3,
@@ -116,7 +115,6 @@ fn spawn_menu_button(
 
 fn spawn_main_menu(
     mut commands: Commands,
-    //ascii: Res<AsciiSheet>,
     ascii: Res<GraphicsAssets>,
     nine_slice_indices: Res<NineSliceIndices>
 ){

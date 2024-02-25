@@ -1,4 +1,4 @@
-use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, sprite::collide_aabb::collide, app::AppExit};
+use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, app::AppExit};
 
 use crate::{globals::{CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, menus::mainmenu::main_menu_selecting, states::{AppState, GameState}, save_load_system::has_save_file};
 
@@ -8,14 +8,14 @@ use super::components::{MainMenuClickable, MainMenuSelection, MainMenuOptions};
 
 // TODO : Deplacer avec meilleure visibilité dans un Mod menu?
 pub fn main_menu_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut menu_selection: ResMut<MainMenuSelection>,
     mut app_exit_events: EventWriter<AppExit>
 ) {
     let mut current_selection = menu_selection.selected as isize;
-    if keys.any_just_pressed([KeyCode::Up, KeyCode::Z]) {
+    if keys.any_just_pressed([KeyCode::ArrowUp, KeyCode::KeyZ]) {
         current_selection -=1;
         //TODO : crado, si pas de save.
         //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
@@ -23,7 +23,7 @@ pub fn main_menu_input(
             current_selection -= 1;
         }
     }
-    if keys.any_just_pressed([KeyCode::Down, KeyCode::D]) {
+    if keys.any_just_pressed([KeyCode::ArrowDown, KeyCode::KeyD]) {
         current_selection +=1;
         //TODO : crado, si pas de save.
         //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
@@ -50,7 +50,7 @@ pub fn main_menu_input(
     };
 
 
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         main_menu_selecting(menu_selection.selected, &mut app_state, &mut game_state, &mut app_exit_events);
         /*
         match menu_selection.selected {
@@ -105,6 +105,7 @@ pub fn menu_input_mouse(
                     .map(|ray| ray.origin.truncate())      {
             // Cursor in window
             let cursor_world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
+            /* TO DELETE : clic on sprite in menu. Obsolete. 
             for (clickable, transform) in button_query.iter() {
                 if mouse_on_clickable(cursor_world_position, transform.translation, clickable.size) {
                     menu_selection.selected = clickable.id;
@@ -112,6 +113,7 @@ pub fn menu_input_mouse(
                 }
                 //println!("Mouse collide between {:?} and {:?} ? : {:?}", world_position, transform.translation, mouse_on_clickable(cursor_world_position, transform.translation, clickable.size));
             }
+            */
         }
         //info!("{:?}", event);
     }
@@ -122,6 +124,8 @@ pub fn menu_input_mouse(
     */
 }
 
+
+/* TO REMOVE  
 pub fn mouse_on_clickable(
     target_pos: Vec3,
     some_translation: Vec3,
@@ -137,3 +141,4 @@ pub fn mouse_on_clickable(
     );
     collision.is_some()
 }
+*/

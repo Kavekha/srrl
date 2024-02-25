@@ -20,7 +20,6 @@ pub struct NineSliceIndices {
 
 pub fn spawn_nine_slice(
     commands: &mut Commands,
-    //ascii: &AsciiSheet,
     ascii: &GraphicsAssets,
     indices: &NineSliceIndices,
     width: f32,
@@ -133,7 +132,6 @@ pub fn spawn_nine_slice(
 
 pub fn spawn_ascii_text(
     commands: &mut Commands,
-    //ascii: &AsciiSheet,
     ascii: &GraphicsAssets,
     to_print: &str,
     left_center: Vec3
@@ -163,9 +161,9 @@ pub fn spawn_ascii_text(
 }
 
 
+// https://bevyengine.org/learn/migration-guides/0-12-to-0-13/#texture-atlas-rework
 pub fn spawn_ascii_sprite(
     commands: &mut Commands,
-    //ascii: &AsciiSheet,
     assets: &GraphicsAssets,
     index: usize,
     color: Color,
@@ -174,16 +172,21 @@ pub fn spawn_ascii_sprite(
 ) -> Entity {
     assert!(index < 256, "Index out of Ascii range");
 
-    //assets.sprite_texture.clone()
-    let mut sprite = TextureAtlasSprite::new(index);
+     // DESACTIVATE 0.13. TO CHECK / FIX
+     /* 
+    let mut sprite = TextureAtlas::new(index);
     sprite.color = color;
-    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));
+    sprite.custom_size = Some(Vec2::splat(CHAR_SIZE));   
+    */
 
     commands 
         .spawn(SpriteSheetBundle {
-            sprite,
-            //texture_atlas: ascii.0.clone(),
-            texture_atlas: assets.ascii_sheet.clone(),
+            sprite: default(), //sprite
+            atlas: TextureAtlas {
+                layout: assets.ascii_sheet_layout.clone(),
+                index: 0
+            },            
+            texture: assets.ascii_sheet_img.clone(),
             transform: Transform {
                 translation: translation,
                 scale: scale,
@@ -193,4 +196,3 @@ pub fn spawn_ascii_sprite(
         })
         .id()
 }
-

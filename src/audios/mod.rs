@@ -26,8 +26,9 @@ impl Plugin for GameAudioPlugin{
             .add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)     
             //Death
             .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
-            ;         
-    }
+            ;
+        println!("INFO: Audioplugin loaded.");    
+    }    
 }
 
 //TODO : Refacto audio to avoid duplicate.
@@ -37,6 +38,7 @@ fn setup_audio_mainmenu(
     assets: Res<AudioAssets>,
     query_music: Query<&AudioSink> 
 ) {
+    println!("audio: setup audio mainmenu");
     stop_music(query_music);
     commands.spawn((
         AudioBundle {

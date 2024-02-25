@@ -22,7 +22,6 @@ impl Plugin for VictoryPlugin {
 
 fn display_victory_screen(
     mut commands: Commands,
-    //ascii: Res<AsciiSheet>
     ascii: Res<GraphicsAssets>,
 ){
     let victory_message = "VICTORY !";
@@ -52,11 +51,11 @@ fn display_victory_screen(
 
 
 fn victory_menu_input(
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,    
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {
-    if keys.any_just_pressed([KeyCode::Space, KeyCode::Return]) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         game_state.set(GameState::NewGame);
     }
     for event in mouse_button_input_events.read() {

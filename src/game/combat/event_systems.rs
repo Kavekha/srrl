@@ -131,7 +131,7 @@ pub fn action_entity_try_attack(
             let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
             if dice_roll.success > 0 {
                 println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
-                ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg })
+                ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg });
             } else {
                 println!("Miss target.");
             }
@@ -171,7 +171,7 @@ pub fn action_entity_get_hit(
         defender_health.current = defender_health.current.saturating_sub(dmg);
         println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
         if defender_health.current == 0 {
-            ev_die.send(EntityDeathEvent { entity: event.entity })
+            ev_die.send(EntityDeathEvent { entity: event.entity });
         }
     }
 }
