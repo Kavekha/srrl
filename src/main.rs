@@ -59,7 +59,6 @@ fn main() {
         .init_state::<EngineState>()
 
         .add_systems(Startup, spawn_camera)
-        //.add_systems(Startup, setup)    //TO DELETE
         .run(); 
 }
 
@@ -80,19 +79,4 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn(camera_bundle);   
    */ 
     
-}
-
-//TO DELETE
-fn setup(
-    mut commands: Commands, 
-    //asset_server: Res<AssetServer>, // 1 & 3
-    asset_logo: Res<GraphicsAssets> // 2.
-) {
-    //let texture = asset_server.load("title/shadowrun_title_alone.png"); // 1. 
-    commands.spawn(SpriteBundle {
-        //texture: asset_server.load("title/shadowrun_title_alone.png"), // 3. 
-        texture: asset_logo.logo.clone(), // 2. 
-        //texture: texture,   // 1.       
-        ..default()
-    });
 }
