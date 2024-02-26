@@ -115,7 +115,7 @@ fn spawn_menu_button(
 
 // Bevy example
 const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
+const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
 const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
 const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
@@ -141,9 +141,9 @@ fn spawn_main_menu(
 ) {
     // Common style for all buttons on the screen
     let button_style = Style {
-        width: Val::Px(250.0),
-        height: Val::Px(65.0),
-        margin: UiRect::all(Val::Px(20.0)),
+        width: Val::Px(125.0),
+        height: Val::Px(32.5),
+        margin: UiRect::all(Val::Px(10.0)),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
@@ -157,7 +157,7 @@ fn spawn_main_menu(
         ..default()
     };
     let button_text_style = TextStyle {
-        font_size: 40.0,
+        font_size: 20.0,    //40
         color: TEXT_COLOR,
         ..default()
     };
@@ -181,16 +181,17 @@ fn spawn_main_menu(
         .with_children(|parent| {
             // Titre
             let logo = graphics_assets.logo.clone();
-                            parent.spawn(ImageBundle {
+            parent.spawn(ImageBundle {
                                 image: UiImage::new(logo),
                                 ..default()
-                            });
+            });
             parent
                 .spawn(NodeBundle {
                     // Cadre du menu en lui-même.
                     style: Style {
                         flex_direction: FlexDirection::Column,
                         align_items: AlignItems::Center,
+                        align_self: AlignSelf::Center,
                         ..default()
                     },
                     //background_color: Color::CRIMSON.into(),
