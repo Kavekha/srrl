@@ -1,12 +1,19 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{states::{AppState, GameState}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, 
-asset_loaders::GraphicsAssets, render::ascii::{NineSliceIndices, spawn_nine_slice, spawn_ascii_text}};
+use crate::{
+    states::{AppState, GameState}, 
+    //globals::{CHAR_SIZE, HEIGHT}, 
+    //save_load_system::has_save_file, 
+    asset_loaders::GraphicsAssets, 
+//render::ascii::{NineSliceIndices, spawn_nine_slice, spawn_ascii_text}
+};
 
 use super::{
-    components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
-    NineSlice, 
-    menus_input::{menu_input_mouse, main_menu_input}, clean_menu, 
+    components::OnScreenMenu,
+    //components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
+    //NineSlice, 
+    //menus_input::{menu_input_mouse, main_menu_input}, 
+    clean_menu, 
 };
 
 
@@ -55,6 +62,7 @@ fn load_saved_game(
     //load_game(app_state, game_state);
 }
 
+/* 
 pub fn main_menu_selecting(
     menu_selection: MainMenuOptions,
     app_state: &mut ResMut<NextState<AppState>>,
@@ -76,6 +84,7 @@ pub fn main_menu_selecting(
         }
     }
 }
+*/
 
 /// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
 pub fn menu_camera(
@@ -165,6 +174,7 @@ fn menu_action(
 
 // This system updates the settings when a new value for a setting is selected, and marks
 // the button as the one currently selected
+/* 
 fn setting_button<T: Resource + Component + PartialEq + Copy>(
     interaction_query: Query<(&Interaction, &T, Entity), (Changed<Interaction>, With<Button>)>,
     mut selected_query: Query<(Entity, &mut BackgroundColor), With<SelectedOption>>,
@@ -181,7 +191,7 @@ fn setting_button<T: Resource + Component + PartialEq + Copy>(
         }
     }
 }
-
+*/
 
 fn spawn_main_menu(
     mut commands: Commands, 

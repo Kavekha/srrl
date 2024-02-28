@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use bevy::{prelude::*, tasks::IoTaskPool};
 use std::fs;
 use std::{fs::File, io::Write};
-use std::path::Path;
+//use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
@@ -38,10 +38,11 @@ pub struct ShouldSave {
     pub to_save: bool
 }
 
-
+/* 
 pub fn has_save_file() -> bool {
     Path::new(SCENE_FILE_PATH).exists()
 }
+*/
 
 pub fn should_save(
     must_save: Res<ShouldSave>

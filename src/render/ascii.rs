@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    globals::CHAR_SIZE, menus::NineSlice, render::components::AsciiText, asset_loaders::GraphicsAssets,
-};
+//use crate::{globals::CHAR_SIZE, menus::NineSlice, render::components::AsciiText, asset_loaders::GraphicsAssets};
 
 
 #[derive(Resource, Copy, Clone)]
@@ -17,7 +15,7 @@ pub struct NineSliceIndices {
 }
 
 
-
+/*
 pub fn spawn_nine_slice(
     commands: &mut Commands,
     ascii: &GraphicsAssets,
@@ -127,9 +125,10 @@ pub fn spawn_nine_slice(
         })
         .push_children(&sprites)
         .id()
-
 }
+ */
 
+/* 
 pub fn spawn_ascii_text(
     commands: &mut Commands,
     ascii: &GraphicsAssets,
@@ -159,8 +158,9 @@ pub fn spawn_ascii_text(
     .push_children(&character_sprites)
     .id()
 }
+*/
 
-
+/* 
 // https://bevyengine.org/learn/migration-guides/0-12-to-0-13/#texture-atlas-rework
 pub fn spawn_ascii_sprite(
     commands: &mut Commands,
@@ -196,3 +196,4 @@ pub fn spawn_ascii_sprite(
         })
         .id()
 }
+*/

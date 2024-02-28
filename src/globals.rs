@@ -56,7 +56,7 @@ pub const MAPHEIGHT : usize = 50;
 pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
 
 // MENUS
-pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'une option dans l'input.
+//pub const MAIN_MENU_OPTIONS_COUNT: isize = 3;  //Necessaire pour la selection d'une option dans l'input.
 
 //SAVE
 pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";
