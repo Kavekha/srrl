@@ -13,7 +13,7 @@ pub struct MainMenuClickable {
 pub struct NineSlice;
 
 
-#[derive(Component, PartialEq, Clone, Copy, Debug)]
+#[derive(Resource, Component, PartialEq, Clone, Copy, Debug)]
 pub enum MainMenuOptions {
     StartGame,
     LoadGame,
