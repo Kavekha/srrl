@@ -10,11 +10,7 @@ pub struct NineSlice;
 
 /* 
 
-#[derive(Component)]
-pub struct NineSlice;
 
-
-/* 
 #[derive(Component)]
 pub struct MainMenuClickable {
     pub size: Vec2,

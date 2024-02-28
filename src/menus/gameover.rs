@@ -9,7 +9,7 @@ use crate::{
 
 use super::{
     //components::OnScreenMenu, 
-    mainmenu::menu_camera, clean_menu};
+    clean_menu, mainmenu::menu_camera, OnScreenMenu};
 
 
 
@@ -33,17 +33,20 @@ fn display_gameover_screen(
 ) {
 
     commands
-            .spawn(NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::SpaceAround,
-                    flex_direction: FlexDirection::Column,
+            .spawn((
+                NodeBundle {
+                    style: Style {
+                        width: Val::Percent(100.0),
+                        height: Val::Percent(100.0),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::SpaceAround,
+                        flex_direction: FlexDirection::Column,
+                        ..default()
+                    },
                     ..default()
                 },
-                ..default()
-            })
+                OnScreenMenu
+            ))
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(
                     "YOU DIED.",
