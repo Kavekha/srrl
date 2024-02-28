@@ -1,8 +1,8 @@
+
+/* 
 use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, app::AppExit};
 
-use crate::{globals::{CHAR_SIZE, MAIN_MENU_OPTIONS_COUNT}, menus::mainmenu::main_menu_selecting, states::{AppState, GameState}, save_load_system::has_save_file};
-
-use super::components::{MainMenuClickable, MainMenuSelection, MainMenuOptions};
+use crate::{globals::CHAR_SIZE, states::{AppState, GameState}, save_load_system::has_save_file};
 
 
 
@@ -123,7 +123,7 @@ pub fn menu_input_mouse(
     }
     */
 }
-
+*/
 
 /* TO REMOVE  
 pub fn mouse_on_clickable(
