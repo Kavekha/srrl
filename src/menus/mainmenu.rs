@@ -21,14 +21,14 @@ impl Plugin for MainMenuPlugin{
             //.add_systems(OnEnter(AppState::MainMenu), spawn_title)
             .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(AppState::MainMenu), menu_camera)    
-            .insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
-            .add_systems(Update, main_menu_input.run_if(in_state(AppState::MainMenu)))
-            .add_systems(Update, menu_input_mouse.run_if(in_state(AppState::MainMenu)))
+            //.insert_resource(MainMenuSelection { selected: MainMenuOptions::StartGame })      
+            //.add_systems(Update, main_menu_input.run_if(in_state(AppState::MainMenu)))
+            //.add_systems(Update, menu_input_mouse.run_if(in_state(AppState::MainMenu)))
             //.add_systems(Update, hightligh_menu_button.run_if(in_state(AppState::MainMenu)))
             .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            //.add_systems(Update, setting_button.run_if(in_state(AppState::MainMenu)))
+            //.add_systems(Update, setting_button::<MainMenuOptions>.run_if(in_state(AppState::MainMenu)))
+            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))          
 
-            
             .add_systems(OnExit(AppState::MainMenu), clean_menu);
     }
 }
@@ -120,6 +120,48 @@ fn button_system(
         }
     }
 }
+
+fn menu_action(
+    interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
+    mut app_exit_events: EventWriter<AppExit>,
+    //mut menu_state: ResMut<NextState<MenuState>>,
+    //app_state: &mut ResMut<NextState<AppState>>,
+    //game_state: &mut ResMut<NextState<GameState>>,
+    mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    for (interaction, menu_button_action) in &interaction_query {
+        if *interaction == Interaction::Pressed {
+            match menu_button_action {
+                MenuButtonAction::Quit => {
+                    //app_exit_events.send(AppExit);
+                    println!("Quit App");
+                    app_exit_events.send(AppExit);
+                }
+                MenuButtonAction::Play => {
+                    println!("Go to game !");
+                    start_new_game(&mut app_state, &mut game_state);
+                    //game_state.set(GameState::Game);
+                    //menu_state.set(MenuState::Disabled);
+                }
+                MenuButtonAction::Load => {
+                    //game_state.set(GameState::Game);
+                    //menu_state.set(MenuState::Disabled);
+                    println!("Load a saved game!");
+                    load_saved_game(&mut app_state, &mut game_state);
+                }
+                MenuButtonAction::Settings => {
+                    println!("Settings!");
+                    //game_state.set(GameState::Game);
+                    //menu_state.set(MenuState::Disabled);
+                }
+            }
+        }
+    }
+}
+
+
+
 
 // This system updates the settings when a new value for a setting is selected, and marks
 // the button as the one currently selected
