@@ -3,6 +3,13 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct OnScreenMenu;
 
+
+#[derive(Component)]
+pub struct NineSlice;
+
+
+/* 
+
 #[derive(Component)]
 pub struct NineSlice;
 
@@ -14,6 +21,12 @@ pub struct MainMenuClickable {
     pub id: MainMenuOptions
 }
 
+
+#[derive(Resource)]
+pub struct MainMenuSelection {
+    pub selected: MainMenuOptions
+}
+
 #[derive(Resource, Component, PartialEq, Clone, Copy, Debug)]
 pub enum MainMenuOptions {
     StartGame,
@@ -21,12 +34,12 @@ pub enum MainMenuOptions {
     Quit
 }
 
+
 #[derive(Resource)]
 pub struct MainMenuSelection {
     pub selected: MainMenuOptions
 }
 */
-
 
 /* TO DELETE  
 # [derive(Resource)]

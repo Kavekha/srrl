@@ -8,6 +8,8 @@ use crate::{
 
 //use super::components::{MainMenuClickable, MainMenuSelection, MainMenuOptions};
 
+/* 
+
 
 
 // TODO : Deplacer avec meilleure visibilité dans un Mod menu?
@@ -127,7 +129,7 @@ pub fn menu_input_mouse(
     }
     */
 }
-
+*/
 
 /* TO REMOVE  
 pub fn mouse_on_clickable(
@@ -145,7 +147,4 @@ pub fn mouse_on_clickable(
     );
     collision.is_some()
 }
-*/
-
-
 */
