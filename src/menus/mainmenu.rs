@@ -1,6 +1,6 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::{states::{AppState, GameState}, globals::{CHAR_SIZE, HEIGHT}, save_load_system::has_save_file, 
+use crate::{states::{AppState, GameState},  //save_load_system::has_save_file, 
 asset_loaders::GraphicsAssets};
 
 use super::{components::OnScreenMenu, clean_menu};
@@ -154,7 +154,7 @@ fn menu_action(
 
 
 
-
+/* 
 // This system updates the settings when a new value for a setting is selected, and marks
 // the button as the one currently selected
 fn setting_button<T: Resource + Component + PartialEq + Copy>(
@@ -173,6 +173,7 @@ fn setting_button<T: Resource + Component + PartialEq + Copy>(
         }
     }
 }
+*/
 
 
 fn spawn_main_menu(

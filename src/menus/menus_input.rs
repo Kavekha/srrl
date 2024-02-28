@@ -1,9 +1,10 @@
+
+/* 
 use bevy::{prelude::*, input::{mouse::MouseButtonInput, ButtonState}, app::AppExit};
 
 use crate::{globals::CHAR_SIZE, states::{AppState, GameState}, save_load_system::has_save_file};
 
 
-/* 
 
 // TODO : Deplacer avec meilleure visibilité dans un Mod menu?
 pub fn main_menu_input(
