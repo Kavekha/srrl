@@ -9,7 +9,7 @@ pub const HEIGHT: f32 = 800.0;
 
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
-pub const STANDARD_TILE_SIZE:i32 = 64;
+pub const STANDARD_TILE_SIZE:i32 = 32;  //64;
 // RENDERING ORDER
 pub const ORDER_FLOOR: f32 = 0.0;
 pub const ORDER_WALL: f32 = 5.0;
@@ -45,7 +45,7 @@ pub const SPRITE_PLAYER_HUMAN: &str = "human";
 pub const SPRITE_PLAYER_ORC: &str = "human";
 pub const SPRITE_PLAYER_ELF: &str = "human";
 pub const SPRITE_PLAYER_TROLL: &str = "human";
-pub const CURSOR: &str = "temp_tiles/2D_TOPDOWN_TILES/base_cursor_64.png";
+pub const CURSOR: &str = "cursors/base_cursor_32.png";      //TODO to put in Assets
 
 // MAP GENERATOR
 pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
