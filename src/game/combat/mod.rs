@@ -8,9 +8,7 @@ mod npc_planning_systems;
 use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, render::pieces_render::path_animator_update};
 
 use self::{
-    events::{CombatTurnQueue, CombatTurnStartEvent, CombatTurnNextEntityEvent, CombatTurnEndEvent, EntityEndTurnEvent, Turn, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent}, 
-    components::CurrentEntityTurnQueue, 
-    event_systems::{action_entity_try_move, action_entity_move, action_entity_end_turn, walk_combat_animation, on_click_action, action_entity_try_attack, action_entity_get_hit, entity_dies, ActionInfos}, npc_planning_systems::npc_planning
+    components::CurrentEntityTurnQueue, event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_move, action_entity_try_attack, action_entity_try_move, create_action_infos, entity_dies, on_click_action, walk_combat_animation, ActionInfos}, events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, RefreshActionCostEvent, Turn}, npc_planning_systems::npc_planning
 };
 
 use super::{pieces::components::{Health, Stats}, player::{Player, Cursor}, ui::ReloadUiEvent};
@@ -94,7 +92,7 @@ impl Plugin for CombatPlugin {
 
             // Check de la situation PA-wise.
             .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
-            // DEACTIVATE 0.13, TO CHECK    // .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>()).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
+            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
 
             // ANIME : //TODO : Changer d'endroit.
             .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Animation))
@@ -205,20 +203,22 @@ pub fn combat_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
     //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    player_query: Query<(Entity, Has<Player>)>,
+    //player_query: Query<(Entity, Has<Player>)>,   // no entity at the end? // TO DELETE?
+    player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_on_click: EventWriter<OnClickEvent>
 ){
+    //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
         let Ok(result) = player_query.get_single() else { return };
-        let entity = result.0;
+        let entity = result;    //result.0 autrefois
         ev_endturn.send(EntityEndTurnEvent {entity});
-        //println!("Player asked for End of round for {:?}.", entity);
+        println!("Player asked for End of round for {:?}.", entity);
     }
     if buttons.just_released(MouseButton::Left) {
         let Ok(result) = player_query.get_single() else { return };
-        let entity = result.0;
+        let entity = result;    //result.0 autrefois
         let destination = res_cursor.grid_position;
 
         println!("Click !");
@@ -249,7 +249,7 @@ pub fn combat_turn_entity_check(
             let (ap_entity, is_player) = entity_infos;
             //If no AP anymore, next entity turn.
             if ap_entity.current <= 0 {
-                //println!("This entity has no AP: let's turn to next entity event.");
+                println!("This entity has no AP: let's turn to next entity event.");
                 commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {
@@ -259,7 +259,7 @@ pub fn combat_turn_entity_check(
             //println!("This entity has AP but is not the player");
            }
         }
-       // println!("Turn Entity check: {:?} turn.", entity);
+       //println!("Turn Entity check: {:?} turn.", entity);
     }    
 }
 

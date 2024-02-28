@@ -280,14 +280,14 @@ pub fn create_action_infos(
         action_infos.entity = None;
 
         let Ok(player_infos) = query_character_turn.get_single() else { 
-            //println!("create action: No player infos");
+            println!("create action: No player infos");
             return };
         let (entity, action_points, position) = player_infos;
         action_infos.entity = Some(entity);
 
         let tile_position = cursor.grid_position;
         if !board.entity_tiles.contains_key(&tile_position) { 
-            //println!("Create action: out of map");
+            println!("Create action: out of map");
             return }
 
         let mut has_target = false;
@@ -295,7 +295,7 @@ pub fn create_action_infos(
             has_target = true;
             action_infos.target = Some(tile_position);
         }
-        //println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
+        println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
 
         let path_to_destination = find_path(
             position.v,
@@ -306,10 +306,10 @@ pub fn create_action_infos(
         ); 
 
         let Some(path) = path_to_destination else { 
-                //println!("Pas de Path");
+                println!("Pas de Path");
             return };
 
-        //println!("All return checks are done.");
+        println!("All return checks are done.");
         let mut ap_cost = path.len() as u32;
         if has_target {
             let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
@@ -321,6 +321,6 @@ pub fn create_action_infos(
             action_infos.path = Some(path);
         };
 
-        //println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
+        println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
     }
 }
