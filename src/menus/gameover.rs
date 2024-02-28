@@ -20,9 +20,46 @@ impl Plugin for GameOverPlugin {
     }
 }
 
-
-
 fn display_gameover_screen(
+    mut commands: Commands,
+    graph_assets: Res<GraphicsAssets>
+) {
+
+    commands
+            .spawn(NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::SpaceAround,
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+                ..default()
+            })
+            .with_children(|parent| {
+                parent.spawn(TextBundle::from_section(
+                    "YOU DIED.",
+                    TextStyle {
+                        font: graph_assets.font.clone(),
+                        font_size: 40.0,
+                        color: Color::rgb(1.0, 1.0, 1.0),
+                    },
+                ));
+                parent.spawn(TextBundle::from_section(
+                    "A ghoul has eaten you.",
+                    TextStyle {
+                        font: graph_assets.font.clone(),
+                        font_size: 20.0,
+                        color: Color::rgb(1.0, 1.0, 1.0),
+                    },
+                ));
+            });
+
+}
+
+
+fn display_gameover_screen_old(
     mut commands: Commands,
     ascii: Res<GraphicsAssets>,
 ){
