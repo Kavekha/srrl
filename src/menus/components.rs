@@ -10,11 +10,13 @@ pub struct NineSlice;
 
 /* 
 
+
 #[derive(Component)]
 pub struct MainMenuClickable {
     pub size: Vec2,
     pub id: MainMenuOptions
 }
+
 
 #[derive(Resource)]
 pub struct MainMenuSelection {
@@ -26,6 +28,12 @@ pub enum MainMenuOptions {
     StartGame,
     LoadGame,
     Quit
+}
+
+
+#[derive(Resource)]
+pub struct MainMenuSelection {
+    pub selected: MainMenuOptions
 }
 */
 

@@ -44,7 +44,7 @@ pub fn cursor_position(
         }
         res_cursor.screen_position = camera.world_to_viewport(camera_transform, res_cursor.world_position);
         //println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
-        let Ok(player_position) = query_player_pos.get_single() else { return };
+        let Ok(_player_position) = query_player_pos.get_single() else { return };
         //println!("Player Grid Position : {:?}", player_position.v);
         //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
     }
