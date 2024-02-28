@@ -205,20 +205,31 @@ pub fn combat_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
     //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    player_query: Query<(Entity, Has<Player>)>,
+    //player_query: Query<(Entity, Has<Player>)>,   // no entity at the end? // TO DELETE?
+    player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_on_click: EventWriter<OnClickEvent>
 ){
+    //println!("Checking if combat input...!");
+    if keys.just_pressed(KeyCode::KeyA) {
+        println!("Appuyé sur A : input OK");
+    }
+    if keys.just_pressed(KeyCode::KeyB) {
+        let Ok(_result) = player_query.get_single() else {
+            println!("Not OK, no entity?");
+            return
+        };
+    }
     if keys.just_pressed(KeyCode::KeyT) {
         let Ok(result) = player_query.get_single() else { return };
-        let entity = result.0;
+        let entity = result;    //result.0 autrefois
         ev_endturn.send(EntityEndTurnEvent {entity});
-        //println!("Player asked for End of round for {:?}.", entity);
+        println!("Player asked for End of round for {:?}.", entity);
     }
     if buttons.just_released(MouseButton::Left) {
         let Ok(result) = player_query.get_single() else { return };
-        let entity = result.0;
+        let entity = result;    //result.0 autrefois
         let destination = res_cursor.grid_position;
 
         println!("Click !");
@@ -249,7 +260,7 @@ pub fn combat_turn_entity_check(
             let (ap_entity, is_player) = entity_infos;
             //If no AP anymore, next entity turn.
             if ap_entity.current <= 0 {
-                //println!("This entity has no AP: let's turn to next entity event.");
+                println!("This entity has no AP: let's turn to next entity event.");
                 commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {
@@ -259,7 +270,7 @@ pub fn combat_turn_entity_check(
             //println!("This entity has AP but is not the player");
            }
         }
-       // println!("Turn Entity check: {:?} turn.", entity);
+       //println!("Turn Entity check: {:?} turn.", entity);
     }    
 }
 
