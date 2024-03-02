@@ -3,13 +3,11 @@ use bevy::prelude::*;
 pub mod mainmenu;
 pub mod gameover;
 pub mod victory;
-mod components;
-
-pub use components::{
-    //NineSlice, 
-    OnScreenMenu};
+pub mod components;
 
 use crate::game::despawn_screen;
+
+use self::components::OnScreenMenu;
 
 
 pub fn clean_menu(
