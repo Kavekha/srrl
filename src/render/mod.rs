@@ -4,7 +4,6 @@ pub mod tilemap_render;
 pub mod pieces_render;
 pub mod components;
 pub mod cursor_render;
-pub mod ascii;
 
 
 use self::{

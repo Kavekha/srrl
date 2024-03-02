@@ -8,7 +8,6 @@ mod audio_resources;
 pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
-use crate::render::ascii::NineSliceIndices;
 
 const LOGO_PATH: &str = "title/shadowrun_title_alone.png";
 const ASCII_PATH: &str = "ascii.png";
@@ -31,6 +30,7 @@ impl Plugin for AssetsPlugin {
             .init_resource::<GraphicsAssets>()
             .init_resource::<AudioAssets>()
             
+            /* 
             .insert_resource(NineSliceIndices{
                 center: 2 * 16,
                 upper_left_index: 13 * 16 + 10,
@@ -39,7 +39,7 @@ impl Plugin for AssetsPlugin {
                 lower_right_index: 13 * 16 + 9,
                 horizontal_index: 12 * 16 + 4,
                 vertical_index: 11 * 16 + 3,
-            })
+            })*/
 
             //.add_systems(OnEnter(AppState::AssetLoader), check_asset_loading)
             .add_systems(PreStartup, load_assets)

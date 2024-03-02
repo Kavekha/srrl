@@ -14,13 +14,20 @@ pub enum GameState {
     LoadGame,
 }  
 
-
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum AppState {
     #[default]
-    //AssetLoader,
     MainMenu,
     Game
+}
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum MainMenuState {
+    #[default]
+    Disabled,
+    MainMenu,
+    Settings,
+    QuitConfirm
 }
 
 
@@ -31,6 +38,7 @@ pub enum EngineState {
     //PlayerInput,
     //TurnUpdate
 }
+
 
 
 #[derive(SystemSet, Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
