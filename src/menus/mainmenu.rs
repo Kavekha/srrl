@@ -2,17 +2,11 @@ use bevy::{prelude::*, app::AppExit};
 
 use crate::{
     states::{AppState, GameState}, 
-    //globals::{CHAR_SIZE, HEIGHT}, 
-    //save_load_system::has_save_file, 
     asset_loaders::GraphicsAssets, 
-//render::ascii::{NineSliceIndices, spawn_nine_slice, spawn_ascii_text}
 };
 
 use super::{
     components::OnScreenMenu,
-    //components::{MainMenuOptions, OnScreenMenu, MainMenuSelection, MainMenuClickable}, 
-    //NineSlice, 
-    //menus_input::{menu_input_mouse, main_menu_input}, 
     clean_menu, 
 };
 
@@ -23,7 +17,6 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin{
     fn build(&self, app: &mut App) {
         app
-            //.add_systems(OnEnter(AppState::MainMenu), spawn_title)
             .add_systems(OnEnter(AppState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(AppState::MainMenu), menu_camera)    
             .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
@@ -54,30 +47,6 @@ fn load_saved_game(
     //load_game(app_state, game_state);
 }
 
-
-/* 
-pub fn main_menu_selecting(
-    menu_selection: MainMenuOptions,
-    app_state: &mut ResMut<NextState<AppState>>,
-    game_state: &mut ResMut<NextState<GameState>>,
-    app_exit_events: &mut EventWriter<AppExit>
-) {
-    match menu_selection {
-        MainMenuOptions::StartGame => {
-            println!("Go to game !");
-            start_new_game(app_state, game_state);
-        }
-        MainMenuOptions::LoadGame => {
-            println!("Load a saved game!");
-            load_saved_game(app_state, game_state);
-        }
-        MainMenuOptions::Quit => {
-            println!("Quit App");
-            app_exit_events.send(AppExit);
-        }
-    }
-}
-*/
 
 /// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
 pub fn menu_camera(
@@ -126,9 +95,6 @@ fn button_system(
 fn menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut app_exit_events: EventWriter<AppExit>,
-    //mut menu_state: ResMut<NextState<MenuState>>,
-    //app_state: &mut ResMut<NextState<AppState>>,
-    //game_state: &mut ResMut<NextState<GameState>>,
     mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
 ) {
