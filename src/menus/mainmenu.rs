@@ -1,15 +1,14 @@
 // window resizing : https://github.com/bevyengine/bevy/blob/main/examples/window/window_resizing.rs
 
 
-use bevy::{prelude::*, app::AppExit};
-
+use bevy::{prelude::*, app::AppExit};       //, window::WindowResized
 use crate::{
     states::{AppState, GameState, MainMenuState}, 
     asset_loaders::GraphicsAssets, 
 };
 
 use super::{
-    clean_menu, components::{MenuButtonAction, OnScreenMenu, SelectedOption, DisplayQuality} 
+    clean_menu, components::{DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings, SelectedOption} 
 };
 
 
@@ -22,6 +21,11 @@ impl Plugin for MainMenuPlugin{
             .init_state::<MainMenuState>()
 
             .insert_resource(DisplayQuality::Medium)
+            .insert_resource(ResolutionSettings{
+                low:Vec2::new(640.0, 360.0),
+                medium:Vec2::new(800.0, 600.0),
+                high:Vec2::new(1920.0, 1080.0)
+            })
 
             .add_systems(OnEnter(AppState::MainMenu), load_main_menu)
             .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
@@ -31,14 +35,31 @@ impl Plugin for MainMenuPlugin{
             
               
             .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))          
+            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
+            .add_systems(Update, resolution_menu_action.run_if(in_state(MainMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
+            
 
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
-            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)
+            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)   //on_resize_system, , toggle_resolution
             .add_systems(OnExit(AppState::MainMenu), quit_main_menu);
     }
 }
+
+
+
+/* 
+fn on_resize_system(
+    mut q: Query<&mut Text, With<ResolutionText>>,
+    mut resize_reader: EventReader<WindowResized>,
+) {
+    let mut text = q.single_mut();
+    for e in resize_reader.read() {
+        // When resolution is being changed
+        text.sections[0].value = format!("{:.1} x {:.1}", e.width, e.height);
+    }
+}*/
+
 
 
 fn load_main_menu(
@@ -106,6 +127,57 @@ fn button_system(
             (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
             (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
             (Interaction::None, None) => NORMAL_BUTTON.into(),
+        }
+    }
+}
+
+
+/// This system shows how to request the window to a new resolution
+/* 
+fn toggle_resolution(
+) {
+    
+
+    if keys.just_pressed(KeyCode::Digit1) {
+        let res = resolution.low;
+        window.resolution.set(res.x, res.y);
+    }
+    if keys.just_pressed(KeyCode::Digit2) {
+        let res = resolution.medium;
+        window.resolution.set(res.x, res.y);
+    }
+    if keys.just_pressed(KeyCode::Digit3) {
+        let res = resolution.high;
+        window.resolution.set(res.x, res.y);
+    }
+}*/
+
+
+fn resolution_menu_action(
+    interaction_query: Query<(&Interaction, &DisplayQuality), (Changed<Interaction>, With<Button>),>,
+    mut windows: Query<&mut Window>,
+    resolution: Res<ResolutionSettings>,
+){
+    let mut window = windows.single_mut();
+    for (interaction, menu_button_action) in &interaction_query {
+        if *interaction == Interaction::Pressed {
+            match menu_button_action {
+                DisplayQuality::Low => {
+                    println!("Resolution changed to Low");
+                    let res = resolution.low;
+                    window.resolution.set(res.x, res.y);
+                }
+                DisplayQuality::Medium => {
+                    println!("Resolution changed to Medium");
+                    let res = resolution.medium;
+                    window.resolution.set(res.x, res.y);
+                }
+                DisplayQuality::High => {
+                    println!("Resolution changed to High");
+                    let res = resolution.high;
+                    window.resolution.set(res.x, res.y);
+                }
+            }
         }
     }
 }
@@ -488,7 +560,7 @@ fn spawn_display_menu(
                                         background_color: NORMAL_BUTTON.into(),
                                         ..default()
                                     },
-                                    quality_setting,
+                                    quality_setting
                                 ));
                                 entity.with_children(|parent| {
                                     parent.spawn(TextBundle::from_section(
