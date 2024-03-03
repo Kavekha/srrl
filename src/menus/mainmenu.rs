@@ -302,7 +302,7 @@ fn spawn_main_menu(
                                 background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             },
-                            MenuButtonAction::SettingsDisplay,
+                            MenuButtonAction::Settings,
                         ))
                         .with_children(|parent| {
                             /* 
