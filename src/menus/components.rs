@@ -11,11 +11,21 @@ pub struct OnSettingsMenuScreen;
 pub enum MenuButtonAction {
     Play,
     Load,
+    Settings,
     SettingsDisplay,
     BackToSettings,
     BackToMainMenu,
     SettingsSound, 
-    Quit
+    QuitConfirm,
+    Quit,
+    Cancel
+}
+
+#[derive(Resource)]
+pub struct ResolutionSettings {
+    pub low: Vec2,
+    pub medium: Vec2,
+    pub high: Vec2,
 }
 
 #[derive(Component)]

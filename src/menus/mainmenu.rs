@@ -1,12 +1,15 @@
-use bevy::{prelude::*, app::AppExit};
+// window resizing : https://github.com/bevyengine/bevy/blob/main/examples/window/window_resizing.rs
+    // Not really a resize: resolution is changed, but low = less thing to see.
 
+
+use bevy::{prelude::*, app::AppExit};
 use crate::{
     states::{AppState, GameState, MainMenuState}, 
     asset_loaders::GraphicsAssets, 
 };
 
 use super::{
-    clean_menu, components::{MenuButtonAction, OnScreenMenu, SelectedOption, DisplayQuality} 
+    clean_menu, components::{DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings, SelectedOption} 
 };
 
 
@@ -19,20 +22,34 @@ impl Plugin for MainMenuPlugin{
             .init_state::<MainMenuState>()
 
             .insert_resource(DisplayQuality::Medium)
+            .insert_resource(ResolutionSettings{
+                low:Vec2::new(640.0, 360.0),
+                medium:Vec2::new(800.0, 600.0),
+                high:Vec2::new(1920.0, 1080.0)
+            })
 
             .add_systems(OnEnter(AppState::MainMenu), load_main_menu)
             .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
             .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), spawn_settings_menu)      
+            .add_systems(OnEnter(MainMenuState::DisplayMenu), spawn_display_menu)      
+            .add_systems(OnEnter(MainMenuState::QuitConfirm), spawn_quit_confirm_menu)
+            
               
             .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))          
+            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
+            .add_systems(Update, resolution_menu_action.run_if(in_state(MainMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
+            
 
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
+            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
+            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
             .add_systems(OnExit(AppState::MainMenu), quit_main_menu);
     }
 }
+
+
 
 
 fn load_main_menu(
@@ -104,6 +121,36 @@ fn button_system(
     }
 }
 
+
+fn resolution_menu_action(
+    interaction_query: Query<(&Interaction, &DisplayQuality), (Changed<Interaction>, With<Button>),>,
+    mut windows: Query<&mut Window>,
+    resolution: Res<ResolutionSettings>,
+){
+    let mut window = windows.single_mut();
+    for (interaction, menu_button_action) in &interaction_query {
+        if *interaction == Interaction::Pressed {
+            match menu_button_action {
+                DisplayQuality::Low => {
+                    println!("Resolution changed to Low");
+                    let res = resolution.low;
+                    window.resolution.set(res.x, res.y);
+                }
+                DisplayQuality::Medium => {
+                    println!("Resolution changed to Medium");
+                    let res = resolution.medium;
+                    window.resolution.set(res.x, res.y);
+                }
+                DisplayQuality::High => {
+                    println!("Resolution changed to High");
+                    let res = resolution.high;
+                    window.resolution.set(res.x, res.y);
+                }
+            }
+        }
+    }
+}
+
 fn menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -114,10 +161,20 @@ fn menu_action(
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match menu_button_action {
+                MenuButtonAction::QuitConfirm => {
+                    //app_exit_events.send(AppExit);
+                    println!("Do you want to quit?");
+                    menu_state.set(MainMenuState::QuitConfirm);
+                }
                 MenuButtonAction::Quit => {
                     //app_exit_events.send(AppExit);
                     println!("Quit App");
                     app_exit_events.send(AppExit);
+                }
+                MenuButtonAction::Cancel => {
+                    //app_exit_events.send(AppExit);
+                    println!("Don't want to quit.");
+                    menu_state.set(MainMenuState::MainMenu);
                 }
                 MenuButtonAction::Play => {
                     println!("Go to game !");
@@ -131,13 +188,21 @@ fn menu_action(
                     println!("Load a saved game!");
                     load_saved_game(&mut app_state, &mut game_state);
                 }
-                MenuButtonAction::SettingsDisplay => {
+                MenuButtonAction::Settings => {
                     println!("Settings!");
                     menu_state.set(MainMenuState::Settings);
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to main menu");
                     menu_state.set(MainMenuState::MainMenu)
+                }
+                MenuButtonAction::SettingsDisplay => {
+                    println!("Display Menu!");
+                    menu_state.set(MainMenuState::DisplayMenu);
+                }
+                MenuButtonAction::BackToSettings => {
+                    println!("Back to Settings!");
+                    menu_state.set(MainMenuState::Settings);
                 }
                 _ => {
                     println!("Something Else to deal with!");
@@ -168,6 +233,75 @@ fn setting_button<T: Resource + Component + PartialEq + Copy>(
     }
 }
 */
+
+fn spawn_quit_confirm_menu(
+    mut commands: Commands 
+){
+    println!("Menu de confirmation");
+    let button_style = Style {
+        width: Val::Px(100.0),
+        height: Val::Px(32.5),
+        margin: UiRect::all(Val::Px(10.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
+    let button_text_style = TextStyle {
+        font_size: 20.0,
+        color: TEXT_COLOR,
+        ..default()
+    };
+
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                ..default()
+            },
+            OnScreenMenu,   //OnSettingsMenuScreen,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    //background_color: Color::CRIMSON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    for (action, text) in [                        
+                        (MenuButtonAction::Cancel, "Cancel"),
+                        (MenuButtonAction::Quit, "Confirm"),
+                    ] {
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    style: button_style.clone(),
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
+                                },
+                                action,
+                            ))
+                            .with_children(|parent| {
+                                parent.spawn(TextBundle::from_section(
+                                    text,
+                                    button_text_style.clone(),
+                                ));
+                            });
+                    }
+                });
+        });
+}
 
 fn spawn_main_menu(
     mut commands: Commands, 
@@ -288,7 +422,7 @@ fn spawn_main_menu(
                                 background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             },
-                            MenuButtonAction::SettingsDisplay,
+                            MenuButtonAction::Settings,
                         ))
                         .with_children(|parent| {
                             /* 
@@ -312,7 +446,7 @@ fn spawn_main_menu(
                                 background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             },
-                            MenuButtonAction::Quit,
+                            MenuButtonAction::QuitConfirm,
                         ))
                         .with_children(|parent| {
                             /* 
@@ -402,15 +536,15 @@ fn spawn_display_menu(
     display_quality: Res<DisplayQuality>
 ) {
     let button_style = Style {
-        width: Val::Px(200.0),
-        height: Val::Px(65.0),
-        margin: UiRect::all(Val::Px(20.0)),
+        width: Val::Px(100.0),
+        height: Val::Px(32.5),
+        margin: UiRect::all(Val::Px(10.0)),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
     };
     let button_text_style = TextStyle {
-        font_size: 40.0,
+        font_size: 20.0,
         color: TEXT_COLOR,
         ..default()
     };
@@ -437,7 +571,7 @@ fn spawn_display_menu(
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::CRIMSON.into(),
+                    //background_color: Color::CRIMSON.into(),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -449,7 +583,7 @@ fn spawn_display_menu(
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
-                            background_color: Color::CRIMSON.into(),
+                            //background_color: Color::CRIMSON.into(),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -467,14 +601,14 @@ fn spawn_display_menu(
                                 let mut entity = parent.spawn((
                                     ButtonBundle {
                                         style: Style {
-                                            width: Val::Px(150.0),
-                                            height: Val::Px(65.0),
+                                            width: Val::Px(75.0),
+                                            height: Val::Px(32.5),
                                             ..button_style.clone()
                                         },
                                         background_color: NORMAL_BUTTON.into(),
                                         ..default()
                                     },
-                                    quality_setting,
+                                    quality_setting
                                 ));
                                 entity.with_children(|parent| {
                                     parent.spawn(TextBundle::from_section(
