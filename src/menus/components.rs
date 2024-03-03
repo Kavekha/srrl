@@ -11,6 +11,7 @@ pub struct OnSettingsMenuScreen;
 pub enum MenuButtonAction {
     Play,
     Load,
+    Settings,
     SettingsDisplay,
     BackToSettings,
     BackToMainMenu,

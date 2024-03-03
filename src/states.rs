@@ -27,6 +27,7 @@ pub enum MainMenuState {
     Disabled,
     MainMenu,
     Settings,
+    DisplayMenu,
     QuitConfirm
 }
 

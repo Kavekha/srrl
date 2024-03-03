@@ -1,3 +1,6 @@
+// window resizing : https://github.com/bevyengine/bevy/blob/main/examples/window/window_resizing.rs
+
+
 use bevy::{prelude::*, app::AppExit};
 
 use crate::{
@@ -24,12 +27,15 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
             .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), spawn_settings_menu)      
+            .add_systems(OnEnter(MainMenuState::DisplayMenu), spawn_display_menu)      
+            
               
             .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
             .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))          
 
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
+            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)
             .add_systems(OnExit(AppState::MainMenu), quit_main_menu);
     }
 }
@@ -131,13 +137,21 @@ fn menu_action(
                     println!("Load a saved game!");
                     load_saved_game(&mut app_state, &mut game_state);
                 }
-                MenuButtonAction::SettingsDisplay => {
+                MenuButtonAction::Settings => {
                     println!("Settings!");
                     menu_state.set(MainMenuState::Settings);
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to main menu");
                     menu_state.set(MainMenuState::MainMenu)
+                }
+                MenuButtonAction::SettingsDisplay => {
+                    println!("Display Menu!");
+                    menu_state.set(MainMenuState::DisplayMenu);
+                }
+                MenuButtonAction::BackToSettings => {
+                    println!("Back to Settings!");
+                    menu_state.set(MainMenuState::Settings);
                 }
                 _ => {
                     println!("Something Else to deal with!");
@@ -402,15 +416,15 @@ fn spawn_display_menu(
     display_quality: Res<DisplayQuality>
 ) {
     let button_style = Style {
-        width: Val::Px(200.0),
-        height: Val::Px(65.0),
-        margin: UiRect::all(Val::Px(20.0)),
+        width: Val::Px(100.0),
+        height: Val::Px(32.5),
+        margin: UiRect::all(Val::Px(10.0)),
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
     };
     let button_text_style = TextStyle {
-        font_size: 40.0,
+        font_size: 20.0,
         color: TEXT_COLOR,
         ..default()
     };
@@ -437,7 +451,7 @@ fn spawn_display_menu(
                         align_items: AlignItems::Center,
                         ..default()
                     },
-                    background_color: Color::CRIMSON.into(),
+                    //background_color: Color::CRIMSON.into(),
                     ..default()
                 })
                 .with_children(|parent| {
@@ -449,7 +463,7 @@ fn spawn_display_menu(
                                 align_items: AlignItems::Center,
                                 ..default()
                             },
-                            background_color: Color::CRIMSON.into(),
+                            //background_color: Color::CRIMSON.into(),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -467,8 +481,8 @@ fn spawn_display_menu(
                                 let mut entity = parent.spawn((
                                     ButtonBundle {
                                         style: Style {
-                                            width: Val::Px(150.0),
-                                            height: Val::Px(65.0),
+                                            width: Val::Px(75.0),
+                                            height: Val::Px(32.5),
                                             ..button_style.clone()
                                         },
                                         background_color: NORMAL_BUTTON.into(),
