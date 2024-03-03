@@ -1,4 +1,5 @@
 // window resizing : https://github.com/bevyengine/bevy/blob/main/examples/window/window_resizing.rs
+    // Not really a resize: resolution is changed, but low = less thing to see.
 
 
 use bevy::{prelude::*, app::AppExit};       //, window::WindowResized
@@ -41,24 +42,11 @@ impl Plugin for MainMenuPlugin{
 
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
-            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)   //on_resize_system, , toggle_resolution
+            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)   
             .add_systems(OnExit(AppState::MainMenu), quit_main_menu);
     }
 }
 
-
-
-/* 
-fn on_resize_system(
-    mut q: Query<&mut Text, With<ResolutionText>>,
-    mut resize_reader: EventReader<WindowResized>,
-) {
-    let mut text = q.single_mut();
-    for e in resize_reader.read() {
-        // When resolution is being changed
-        text.sections[0].value = format!("{:.1} x {:.1}", e.width, e.height);
-    }
-}*/
 
 
 
@@ -130,27 +118,6 @@ fn button_system(
         }
     }
 }
-
-
-/// This system shows how to request the window to a new resolution
-/* 
-fn toggle_resolution(
-) {
-    
-
-    if keys.just_pressed(KeyCode::Digit1) {
-        let res = resolution.low;
-        window.resolution.set(res.x, res.y);
-    }
-    if keys.just_pressed(KeyCode::Digit2) {
-        let res = resolution.medium;
-        window.resolution.set(res.x, res.y);
-    }
-    if keys.just_pressed(KeyCode::Digit3) {
-        let res = resolution.high;
-        window.resolution.set(res.x, res.y);
-    }
-}*/
 
 
 fn resolution_menu_action(
