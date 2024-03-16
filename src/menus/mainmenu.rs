@@ -105,7 +105,7 @@ const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 
 // This system handles changing all buttons color based on mouse interaction
-fn button_system(
+pub fn button_system(
     mut interaction_query: Query<
         (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
         (Changed<Interaction>, With<Button>),
@@ -122,7 +122,7 @@ fn button_system(
 }
 
 
-fn resolution_menu_action(
+pub fn resolution_menu_action(
     interaction_query: Query<(&Interaction, &DisplayQuality), (Changed<Interaction>, With<Button>),>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
@@ -151,7 +151,7 @@ fn resolution_menu_action(
     }
 }
 
-fn menu_action(
+pub fn menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut app_exit_events: EventWriter<AppExit>,
     mut app_state: ResMut<NextState<AppState>>,

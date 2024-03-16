@@ -23,7 +23,9 @@ use save_load_system::SaveLoadPlugin;
 use asset_loaders::AssetsPlugin;
 
 use states::{AppState, GameState, EngineState};
-use globals::{HEIGHT, RESOLUTION, CLEAR};   //, BASE_SCREEN_SCALE};
+use globals::{HEIGHT, RESOLUTION, CLEAR};
+
+use crate::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
 
 
 fn main() {
@@ -53,6 +55,7 @@ fn main() {
         .add_plugins(GamePlugin)
         .add_plugins(SaveLoadPlugin)
         .add_plugins(AssetsPlugin)
+        .add_plugins(InGameMenuPlugin)
 
         .init_state::<AppState>()
         .init_state::<GameState>()  
