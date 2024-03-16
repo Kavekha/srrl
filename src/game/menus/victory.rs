@@ -1,33 +1,32 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
 use crate::{
-    states::GameState,
-    //globals::CHAR_SIZE,
-    asset_loaders::GraphicsAssets, 
+    engine::states::GameState, 
+    //globals::CHAR_SIZE, 
+    engine::asset_loaders::GraphicsAssets, 
     //render::ascii::spawn_ascii_text
 };
 
 use super::{
-    //components::OnScreenMenu, 
-    clean_menu, mainmenu::menu_camera, OnScreenMenu};
+    components::OnScreenMenu, 
+    mainmenu::menu_camera, clean_menu};
 
 
 
-// TODO: Refacto Victory & GameOver en un seul: Recap Screen?
+pub struct VictoryPlugin;
 
-pub struct GameOverPlugin;
-
-impl Plugin for GameOverPlugin {
+impl Plugin for VictoryPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(GameState::GameOverScreen), display_gameover_screen)
-            .add_systems(OnEnter(GameState::GameOverScreen), menu_camera)
-            .add_systems(Update, gameover_menu_input.run_if(in_state(GameState::GameOverScreen)))
-            .add_systems(OnExit(GameState::GameOverScreen), clean_menu);    
+            .add_systems(OnEnter(GameState::VictoryScreen), display_victory_screen)
+            .add_systems(OnEnter(GameState::VictoryScreen), menu_camera)
+            .add_systems(Update, victory_menu_input.run_if(in_state(GameState::VictoryScreen)))
+            .add_systems(OnExit(GameState::VictoryScreen), clean_menu); 
     }
 }
 
-fn display_gameover_screen(
+
+fn display_victory_screen(
     mut commands: Commands,
     graph_assets: Res<GraphicsAssets>
 ) {
@@ -49,7 +48,7 @@ fn display_gameover_screen(
             ))
             .with_children(|parent| {
                 parent.spawn(TextBundle::from_section(
-                    "YOU DIED.",
+                    "Victory !",
                     TextStyle {
                         font: graph_assets.font.clone(),
                         font_size: 40.0,
@@ -57,7 +56,7 @@ fn display_gameover_screen(
                     },
                 ));
                 parent.spawn(TextBundle::from_section(
-                    "A ghoul has eaten you.",
+                    "You flee the place.",
                     TextStyle {
                         font: graph_assets.font.clone(),
                         font_size: 20.0,
@@ -69,8 +68,9 @@ fn display_gameover_screen(
 }
 
 
-fn gameover_menu_input(
-    keys: Res<ButtonInput <KeyCode>>,
+
+fn victory_menu_input(
+    keys: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,    
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {
@@ -87,18 +87,17 @@ fn gameover_menu_input(
 }
 
 
-
 /* 
-fn display_gameover_screen_old(
+fn display_victory_screen_old(
     mut commands: Commands,
     ascii: Res<GraphicsAssets>,
 ){
-    println!("Afficher YOU DIED"); //DEBUG
-    let gameover_message = "YOU DIED.";
-    let gameover_description= "A ghoul has eaten you.";
+    let victory_message = "VICTORY !";
+    let victory_description= "You flee the place.";
+    //let x: f32 = 0.0;
     let mut y: f32 = 0.0;
 
-    let text_to_display = vec![gameover_message, gameover_description];
+    let text_to_display = vec![victory_message, victory_description];
 
     for text in text_to_display{
         let x = - (text.len() as f32 / 2.0 * CHAR_SIZE);
@@ -112,7 +111,7 @@ fn display_gameover_screen_old(
         commands.entity(ascii_text)
         .insert(OnScreenMenu);
 
-        y -= 2.0 * CHAR_SIZE;    
+        y -= 2.0 * CHAR_SIZE;
     }
-
-}*/
+}
+*/

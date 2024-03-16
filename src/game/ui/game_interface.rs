@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     game::{pieces::components::{Health, Monster}, player::Player, combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, CHAR_SIZE, STANDARD_TILE_SIZE}, render::components::GameCursorRender, asset_loaders::GraphicsAssets
+    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, CHAR_SIZE, STANDARD_TILE_SIZE}, engine::render::components::GameCursorRender, engine::asset_loaders::GraphicsAssets
 };
 
 use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};

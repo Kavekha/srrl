@@ -2,37 +2,37 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
-//use self::manager::ManagerPlugin;
+use self::menus::{victory::VictoryPlugin, gameover::GameOverPlugin};
 use self::pieces::components::Npc;
-use self::player::{PlayerPlugin, Player};
+use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::TileBoardPlugin;
-use self::player::cursor::CursorPlugin;
+//use self::player::cursor::CursorPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 
-pub mod player;
+pub mod combat;
+//pub mod manager;
+pub mod menus;
 pub mod pieces;
+pub mod player;
 pub mod tileboard;
 pub mod rules;
 pub mod ui;
-pub mod combat;
-//pub mod manager;
+
+
 
 use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
 use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
 use crate::map_builders::components::MapGenHistory;
-use crate::render::components::{GameMapRender, GameCursorRender};
-use crate::save_load_system::ShouldSave;
+use crate::engine::render::components::{GameMapRender, GameCursorRender};
+use crate::engine::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::map::Map,
     map_builders::random_builder,
-    menus::{
-        victory::VictoryPlugin,
-        gameover::GameOverPlugin,
-    }, 
-    render::GraphicsPlugin, states::GameState
+    engine::render::GraphicsPlugin, 
+    engine::states::GameState
 };
 
 

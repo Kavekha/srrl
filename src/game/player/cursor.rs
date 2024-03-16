@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{vectors::Vector2Int, states::GameState, globals::STANDARD_TILE_SIZE, game::tileboard::components::BoardPosition};
+use crate::{vectors::Vector2Int, engine::states::GameState, globals::STANDARD_TILE_SIZE, game::tileboard::components::BoardPosition};
 
 use super::Player;
 

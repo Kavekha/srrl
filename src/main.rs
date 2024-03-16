@@ -4,26 +4,23 @@ use bevy::{
     prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
 
-
-mod audios;
-mod menus;
+mod engine;
 mod map_builders;   //mod
 mod game;           //mod
-mod save_load_system;
 mod globals;
-mod render;
-mod states;
 mod vectors;
-mod asset_loaders;
 
-use menus::mainmenu::MainMenuPlugin;
-use audios::GameAudioPlugin;
+
+use game::menus::mainmenu::MainMenuPlugin;
+use crate::game::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
 use game::GamePlugin;
-use save_load_system::SaveLoadPlugin;
-use asset_loaders::AssetsPlugin;
+use engine::audios::GameAudioPlugin;
+use engine::asset_loaders::AssetsPlugin;
+use engine::save_load_system::SaveLoadPlugin;
+use engine::states::{AppState, GameState, EngineState};
+use globals::{HEIGHT, RESOLUTION, CLEAR};
 
-use states::{AppState, GameState, EngineState};
-use globals::{HEIGHT, RESOLUTION, CLEAR};   //, BASE_SCREEN_SCALE};
+
 
 
 fn main() {
@@ -47,12 +44,14 @@ fn main() {
                     ImagePlugin::default_nearest()
                 )
         )
- 
+
+        // Engine 
         .add_plugins(MainMenuPlugin)
         .add_plugins(GameAudioPlugin)     
         .add_plugins(GamePlugin)
         .add_plugins(SaveLoadPlugin)
         .add_plugins(AssetsPlugin)
+        .add_plugins(InGameMenuPlugin)
 
         .init_state::<AppState>()
         .init_state::<GameState>()  

@@ -5,7 +5,7 @@ pub mod components;
 
 use self::system_map::spawn_map;
 
-use crate::states::GameState;
+use crate::engine::states::GameState;
 
 
 

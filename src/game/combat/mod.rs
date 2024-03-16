@@ -5,7 +5,7 @@ pub mod events;
 pub mod event_systems;  //TODO deplacer les elements publiques?
 mod npc_planning_systems;
 
-use crate::{states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, render::pieces_render::path_animator_update};
+use crate::{engine::states::{GameState, EngineState}, game::combat::{components::{ActionPoints, CombatInfos}, events::AnimateEvent}, engine::render::pieces_render::path_animator_update};
 
 use self::{
     components::CurrentEntityTurnQueue, event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_move, action_entity_try_attack, action_entity_try_move, create_action_infos, entity_dies, on_click_action, walk_combat_animation, ActionInfos}, events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, EntityMoveEvent, EntityTryMoveEvent, OnClickEvent, RefreshActionCostEvent, Turn}, npc_planning_systems::npc_planning
