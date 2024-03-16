@@ -1,3 +1,5 @@
+// TODO : Comment gèrer ça autrement?
+
 use bevy::prelude::*;
 
 mod components;

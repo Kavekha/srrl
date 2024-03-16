@@ -1,3 +1,9 @@
+// Ici on charge Engine.
+// Assets : Recupère les img & sons necessaires.
+// Audio : Gère les sons & musiques.
+// Graphismes: Gère le rendu graphique.
+// SaveLoad : Gère la sauvegarde.
+
 use bevy::prelude::*;
 
 use self::audios::GameAudioPlugin;
@@ -15,9 +21,10 @@ pub struct EnginePlugin;
 
 impl Plugin for EnginePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(AssetsPlugin)        
-        .add_plugins(GameAudioPlugin)        
-        .add_plugins(GraphicsPlugin)     
+        app
+            .add_plugins(AssetsPlugin)        
+            .add_plugins(GameAudioPlugin)        
+            .add_plugins(GraphicsPlugin)     
             .add_plugins(SaveLoadPlugin);
     }
 }

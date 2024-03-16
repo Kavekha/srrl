@@ -1,3 +1,8 @@
+// On charge ici les principaux modules:
+// Engine
+// Game
+
+
 //#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
@@ -5,8 +10,8 @@ use bevy::{
 };
 
 mod engine;
-mod map_builders;   //mod
-mod game;           //mod
+mod map_builders;
+mod game;           
 mod globals;
 mod vectors;
 
@@ -40,37 +45,16 @@ fn main() {
                 )
         )
 
-        // Engine 
         .add_plugins(EnginePlugin)
-
-        //.add_plugins(MainMenuPlugin)
         .add_plugins(GamePlugin)
-        //.add_plugins(InGameMenuPlugin)
-        
+
+        // TODO : Deplacer dans Engine / Reduire le nombre.
         .init_state::<AppState>()
         .init_state::<GameState>()  
         .init_state::<EngineState>()
 
-        .add_systems(Startup, spawn_camera)
+
         .run(); 
 }
 
 
-fn spawn_camera(mut commands: Commands) {
-    println!("Camera is spawned");
-    commands.spawn(Camera2dBundle::default()); //DEBUG
-
-    // Before 0.13. 
-    /*      
-    let camera_bundle = Camera2dBundle {
-        projection: OrthographicProjection{
-            far: 100.0,
-            near: -100.0,
-            scaling_mode: ScalingMode::WindowSize(500.0), //(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
-            ..default()
-        },
-        ..default()
-    };
-    commands.spawn(camera_bundle);   
-    */ 
-}
