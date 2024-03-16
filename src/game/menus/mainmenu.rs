@@ -303,7 +303,7 @@ fn spawn_quit_confirm_menu(
         });
 }
 
-fn spawn_main_menu(
+pub fn spawn_main_menu(
     mut commands: Commands, 
     //asset_server: Res<AssetServer>,
     graphics_assets: Res<GraphicsAssets>

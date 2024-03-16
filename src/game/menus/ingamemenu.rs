@@ -2,7 +2,7 @@ use bevy::{prelude::*, app::AppExit};
 
 use crate::states::AppState;
 
-use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action}};
+use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action, spawn_main_menu}};
 
 pub struct InGameMenuPlugin;
 
@@ -19,13 +19,12 @@ impl Plugin for InGameMenuPlugin{
             })
             
             //.add_systems(OnEnter(AppState::MainMenu), load_main_menu)
-            .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera)  
-            //.add_systems(OnEnter(InGameMenuState::MainMenu), spawn_main_menu)      
+            .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) 
+            .add_systems(Update, spawn_main_menu.run_if(in_state(InGameMenuState::MainMenu)))    
             //.add_systems(OnEnter(InGameMenuState::Settings), spawn_settings_menu)      
             //.add_systems(OnEnter(InGameMenuState::DisplayMenu), spawn_display_menu)      
-            //.add_systems(OnEnter(InGameMenuState::QuitConfirm), spawn_quit_confirm_menu)
-            
-            .add_systems(Update, call_for_ingame_menu_input.run_if(in_state(AppState::Game)))
+            //.add_systems(OnEnter(InGameMenuState::QuitConfirm), spawn_quit_confirm_menu)        
+
             .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
             .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
             .add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
@@ -47,16 +46,4 @@ pub enum InGameMenuState {
     Settings,
     DisplayMenu,
     QuitConfirm
-}
-
-
-pub fn call_for_ingame_menu_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut menu_state: ResMut<NextState<InGameMenuState>>
-){
-    if keys.just_pressed(KeyCode::KeyU) {
-        println!("Call for In Game Menu.");
-    }
-    println!("J'existe!");
-    //mainmenu_state.set(MainMenuState::MainMenu);
 }

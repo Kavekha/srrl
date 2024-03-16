@@ -4,9 +4,10 @@ use bevy::{
     prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
 
+mod engine;
 
 mod audios;
-mod menus;
+//mod menus;
 mod map_builders;   //mod
 mod game;           //mod
 mod save_load_system;
@@ -16,7 +17,7 @@ mod states;
 mod vectors;
 mod asset_loaders;
 
-use menus::mainmenu::MainMenuPlugin;
+use game::menus::mainmenu::MainMenuPlugin;
 use audios::GameAudioPlugin;
 use game::GamePlugin;
 use save_load_system::SaveLoadPlugin;
@@ -25,7 +26,7 @@ use asset_loaders::AssetsPlugin;
 use states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
-use crate::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
+use crate::game::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
 
 
 fn main() {
@@ -49,7 +50,8 @@ fn main() {
                     ImagePlugin::default_nearest()
                 )
         )
- 
+
+        // Engine 
         .add_plugins(MainMenuPlugin)
         .add_plugins(GameAudioPlugin)     
         .add_plugins(GamePlugin)
