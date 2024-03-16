@@ -50,13 +50,11 @@ fn main() {
 
         // Engine 
         .add_plugins(EnginePlugin)
-        .add_plugins(MainMenuPlugin)
-        //.add_plugins(GameAudioPlugin)     
-        .add_plugins(GamePlugin)
-        //.add_plugins(SaveLoadPlugin)
-        //.add_plugins(AssetsPlugin)
-        .add_plugins(InGameMenuPlugin)
 
+        //.add_plugins(MainMenuPlugin)
+        .add_plugins(GamePlugin)
+        //.add_plugins(InGameMenuPlugin)
+        
         .init_state::<AppState>()
         .init_state::<GameState>()  
         .init_state::<EngineState>()

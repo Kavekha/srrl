@@ -2,6 +2,8 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
+use self::menus::ingamemenu::InGameMenuPlugin;
+use self::menus::mainmenu::MainMenuPlugin;
 use self::menus::{victory::VictoryPlugin, gameover::GameOverPlugin};
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
@@ -44,14 +46,19 @@ impl Plugin for GamePlugin {
             .insert_resource(Map::new())
             .insert_resource(ShouldSave{to_save: false})
 
-            .add_plugins(PlayerPlugin)
+            // General
+            .add_plugins(PlayerPlugin)            
+            .add_plugins(CursorPlugin)
+            // Menus.            
             .add_plugins(VictoryPlugin)
-            .add_plugins(GameOverPlugin)
+            .add_plugins(GameOverPlugin)            
+            .add_plugins(UiPlugin)            
+            .add_plugins(MainMenuPlugin)
+            .add_plugins(InGameMenuPlugin)
+            // Logique
             .add_plugins(TileBoardPlugin)
-             .add_plugins(CursorPlugin)
-            .add_plugins(UiPlugin)
+            // Baston
             .add_plugins(CombatPlugin)
-            //.add_plugins(ManagerPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)
