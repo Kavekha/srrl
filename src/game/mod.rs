@@ -47,7 +47,6 @@ impl Plugin for GamePlugin {
             .add_plugins(PlayerPlugin)
             .add_plugins(VictoryPlugin)
             .add_plugins(GameOverPlugin)
-            .add_plugins(GraphicsPlugin)
             .add_plugins(TileBoardPlugin)
              .add_plugins(CursorPlugin)
             .add_plugins(UiPlugin)

@@ -9,11 +9,14 @@ mod map_builders;   //mod
 mod game;           //mod
 mod globals;
 mod vectors;
+mod Engine;
 
 
 use game::menus::mainmenu::MainMenuPlugin;
 use crate::game::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
 use game::GamePlugin;
+
+use engine::EnginePlugin;
 use engine::audios::GameAudioPlugin;
 use engine::asset_loaders::AssetsPlugin;
 use engine::save_load_system::SaveLoadPlugin;
@@ -46,11 +49,12 @@ fn main() {
         )
 
         // Engine 
+        .add_plugins(EnginePlugin)
         .add_plugins(MainMenuPlugin)
-        .add_plugins(GameAudioPlugin)     
+        //.add_plugins(GameAudioPlugin)     
         .add_plugins(GamePlugin)
-        .add_plugins(SaveLoadPlugin)
-        .add_plugins(AssetsPlugin)
+        //.add_plugins(SaveLoadPlugin)
+        //.add_plugins(AssetsPlugin)
         .add_plugins(InGameMenuPlugin)
 
         .init_state::<AppState>()
