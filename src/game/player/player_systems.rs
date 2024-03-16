@@ -1,9 +1,9 @@
 use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::{
+    engine::{save_load_system::ShouldSave, states::GameState},
     game::{
-        combat::events::RefreshActionCostEvent, tileboard::components::{BoardPosition, ExitMapTile}}, 
-        game::menus::ingamemenu::InGameMenuState, engine::save_load_system::ShouldSave, engine::states::GameState 
+        combat::events::RefreshActionCostEvent, menus::ingamemenu::InGameMenuState, tileboard::components::{BoardPosition, ExitMapTile}}, 
     };
 
 

@@ -55,6 +55,7 @@ impl Plugin for MainMenuPlugin{
 fn load_main_menu(
     mut mainmenu_state: ResMut<NextState<MainMenuState>>
 ){
+    println!("Main Menu !!!!");
     mainmenu_state.set(MainMenuState::MainMenu);
 }
 

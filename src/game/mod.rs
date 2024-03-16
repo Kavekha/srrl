@@ -2,24 +2,20 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
-use self::menus::ingamemenu::InGameMenuPlugin;
-use self::menus::mainmenu::MainMenuPlugin;
-use self::menus::{victory::VictoryPlugin, gameover::GameOverPlugin};
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::TileBoardPlugin;
-//use self::player::cursor::CursorPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
+use self::menus::MenuPlugin;
 
 pub mod combat;
-//pub mod manager;
-pub mod menus;
 pub mod pieces;
 pub mod player;
 pub mod tileboard;
 pub mod rules;
 pub mod ui;
+pub mod menus;
 
 
 
@@ -33,7 +29,6 @@ use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::map::Map,
     map_builders::random_builder,
-    engine::render::GraphicsPlugin, 
     engine::states::GameState
 };
 
@@ -49,12 +44,13 @@ impl Plugin for GamePlugin {
             // General
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)
+            .add_plugins(MenuPlugin)
             // Menus.            
-            .add_plugins(VictoryPlugin)
-            .add_plugins(GameOverPlugin)            
-            .add_plugins(UiPlugin)            
-            .add_plugins(MainMenuPlugin)
-            .add_plugins(InGameMenuPlugin)
+            //.add_plugins(VictoryPlugin)
+            //.add_plugins(GameOverPlugin)            
+            .add_plugins(UiPlugin)     
+            //.add_plugins(MainMenuPlugin)
+            //.add_plugins(InGameMenuPlugin)
             // Logique
             .add_plugins(TileBoardPlugin)
             // Baston

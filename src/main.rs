@@ -9,17 +9,9 @@ mod map_builders;   //mod
 mod game;           //mod
 mod globals;
 mod vectors;
-mod Engine;
 
-
-use game::menus::mainmenu::MainMenuPlugin;
-use crate::game::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
 use game::GamePlugin;
-
 use engine::EnginePlugin;
-use engine::audios::GameAudioPlugin;
-use engine::asset_loaders::AssetsPlugin;
-use engine::save_load_system::SaveLoadPlugin;
 use engine::states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
