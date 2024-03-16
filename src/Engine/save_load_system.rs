@@ -15,7 +15,7 @@ use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stat
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
-use crate::states::{GameState, AppState};
+use crate::engine::states::{GameState, AppState};
 use crate::map_builders::map::Map;
 
 

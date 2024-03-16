@@ -1,6 +1,6 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::states::AppState;
+use crate::engine::states::AppState;
 
 use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action, spawn_main_menu}};
 

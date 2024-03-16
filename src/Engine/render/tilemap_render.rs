@@ -7,7 +7,7 @@ use crate::{
         MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14, STANDARD_TILE_SIZE, ORDER_FLOOR, ORDER_WALL
     },
     map_builders::map::Map, game:: tileboard::components::BoardPosition, 
-    render::{get_world_position, components::GameMapRender, pieces_render::spawn_sprite_render}, vectors::Vector2Int, asset_loaders::GraphicsAssets
+    engine::render::{get_world_position, components::GameMapRender, pieces_render::spawn_sprite_render}, vectors::Vector2Int, engine::asset_loaders::GraphicsAssets
 };
 
 

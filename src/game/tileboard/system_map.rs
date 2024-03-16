@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{
     map_builders::map::Map, 
-    states::GameState, 
+    engine::states::GameState, 
     game::{tileboard::components::{Tile, GameMap, BoardPosition}, pieces::components::Occupier}, vectors::Vector2Int,
 };
 

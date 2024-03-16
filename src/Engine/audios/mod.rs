@@ -4,7 +4,7 @@ mod components;
 
 use crate::{
     AppState,
-    GameState, asset_loaders::AudioAssets,
+    GameState, engine::asset_loaders::AudioAssets,
 };
 
 use self::components::CurrentMusic;

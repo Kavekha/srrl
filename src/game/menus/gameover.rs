@@ -1,9 +1,9 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
 use crate::{
-    states::GameState,
+    engine::states::GameState,
     //globals::CHAR_SIZE,
-    asset_loaders::GraphicsAssets, 
+    engine::asset_loaders::GraphicsAssets, 
     //render::ascii::spawn_ascii_text
 };
 

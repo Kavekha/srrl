@@ -7,7 +7,7 @@ use crate::{
     game::{
         player::Player, pieces::{components::Piece, spawners::Kind}, 
         tileboard::components::{BoardPosition, ExitMapTile},
-    }, asset_loaders::GraphicsAssets, render::get_world_position
+    }, engine::asset_loaders::GraphicsAssets, engine::render::get_world_position
 };
 
 use super::components::PathAnimator;

@@ -14,7 +14,7 @@ use self::{
 
 use crate::{
     globals::STANDARD_TILE_SIZE, 
-    states::GameState, vectors::Vector2Int, game::combat::CombatSet,
+    engine::states::GameState, vectors::Vector2Int, game::combat::CombatSet,
 };
 
 pub struct GraphicsPlugin;

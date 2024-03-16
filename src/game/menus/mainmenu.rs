@@ -4,8 +4,8 @@
 
 use bevy::{prelude::*, app::AppExit};
 use crate::{
-    states::{AppState, GameState, MainMenuState}, 
-    asset_loaders::GraphicsAssets, 
+    engine::states::{AppState, GameState, MainMenuState}, 
+    engine::asset_loaders::GraphicsAssets, 
 };
 
 use super::{

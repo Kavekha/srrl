@@ -25,13 +25,14 @@ use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
 use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
 use crate::map_builders::components::MapGenHistory;
-use crate::render::components::{GameMapRender, GameCursorRender};
-use crate::save_load_system::ShouldSave;
+use crate::engine::render::components::{GameMapRender, GameCursorRender};
+use crate::engine::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::map::Map,
     map_builders::random_builder,
-    render::GraphicsPlugin, states::GameState
+    engine::render::GraphicsPlugin, 
+    engine::states::GameState
 };
 
 

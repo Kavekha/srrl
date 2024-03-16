@@ -5,28 +5,22 @@ use bevy::{
 };
 
 mod engine;
-
-mod audios;
-//mod menus;
 mod map_builders;   //mod
 mod game;           //mod
-mod save_load_system;
 mod globals;
-mod render;
-mod states;
 mod vectors;
-mod asset_loaders;
+
 
 use game::menus::mainmenu::MainMenuPlugin;
-use audios::GameAudioPlugin;
+use crate::game::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
 use game::GamePlugin;
-use save_load_system::SaveLoadPlugin;
-use asset_loaders::AssetsPlugin;
-
-use states::{AppState, GameState, EngineState};
+use engine::audios::GameAudioPlugin;
+use engine::asset_loaders::AssetsPlugin;
+use engine::save_load_system::SaveLoadPlugin;
+use engine::states::{AppState, GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
-use crate::game::menus::ingamemenu::InGameMenuPlugin;   //, BASE_SCREEN_SCALE};
+
 
 
 fn main() {
