@@ -17,7 +17,8 @@ mod vectors;
 
 use game::GamePlugin;
 use engine::EnginePlugin;
-use engine::states::{AppState, GameState, EngineState};
+//use engine::states::{AppState, GameState, EngineState};
+use engine::states::{GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
 
@@ -49,7 +50,7 @@ fn main() {
         .add_plugins(GamePlugin)
 
         // TODO : Deplacer dans Engine / Reduire le nombre.
-        .init_state::<AppState>()
+        //.init_state::<AppState>()
         .init_state::<GameState>()  
         .init_state::<EngineState>()
 

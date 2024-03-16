@@ -4,7 +4,8 @@
 
 use bevy::{prelude::*, app::AppExit};
 use crate::{
-    engine::states::{AppState, GameState, MainMenuState}, 
+    engine::states::{GameState, MainMenuState}, 
+    //engine::states::{AppState, GameState, MainMenuState}, 
     engine::asset_loaders::GraphicsAssets, 
 };
 
@@ -28,7 +29,8 @@ impl Plugin for MainMenuPlugin{
                 high:Vec2::new(1920.0, 1080.0)
             })
 
-            .add_systems(OnEnter(AppState::MainMenu), load_main_menu)
+            //.add_systems(OnEnter(AppState::MainMenu), load_main_menu)
+            .add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
             .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
             .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), spawn_settings_menu)      
@@ -36,8 +38,10 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnEnter(MainMenuState::QuitConfirm), spawn_quit_confirm_menu)
             
               
-            .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
+            .add_systems(Update, button_system.run_if(in_state(MainMenuState::MainMenu)))
+            .add_systems(Update, menu_action.run_if(in_state(MainMenuState::MainMenu)))   
+            //.add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
+            //.add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
             .add_systems(Update, resolution_menu_action.run_if(in_state(MainMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
             
 
@@ -45,7 +49,8 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
             .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
             .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
-            .add_systems(OnExit(AppState::MainMenu), quit_main_menu);
+            .add_systems(OnExit(MainMenuState::MainMenu), quit_main_menu);
+            //.add_systems(OnExit(AppState::MainMenu), quit_main_menu);
     }
 }
 
@@ -69,19 +74,19 @@ fn quit_main_menu(
 /// Lance une nouvelle partie depuis le menu. 
 // TODO : Deplacer dans Game Mod?
 fn start_new_game(
-    app_state: &mut ResMut<NextState<AppState>>,
+    //app_state: &mut ResMut<NextState<AppState>>,
     game_state: &mut ResMut<NextState<GameState>>,
 ) {
-    app_state.set(AppState::Game);
+    //app_state.set(AppState::Game);
     game_state.set(GameState::NewGame);
 
 }
 
 fn load_saved_game(
-    app_state: &mut ResMut<NextState<AppState>>,
+    //app_state: &mut ResMut<NextState<AppState>>,
     game_state: &mut ResMut<NextState<GameState>>,
 ){
-    app_state.set(AppState::Game);
+    //app_state.set(AppState::Game);
     game_state.set(GameState::LoadGame);
     //load_game(app_state, game_state);
 }
@@ -155,7 +160,7 @@ pub fn resolution_menu_action(
 pub fn menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut app_exit_events: EventWriter<AppExit>,
-    mut app_state: ResMut<NextState<AppState>>,
+    //mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut menu_state: ResMut<NextState<MainMenuState>>
 ) {
@@ -179,7 +184,7 @@ pub fn menu_action(
                 }
                 MenuButtonAction::Play => {
                     println!("Go to game !");
-                    start_new_game(&mut app_state, &mut game_state);
+                    //start_new_game(&mut app_state, &mut game_state);  // TODO : Necessaire pour pouvoir lancer le jeu.
                     //game_state.set(GameState::Game);
                     //menu_state.set(MenuState::Disabled);
                 }
@@ -187,7 +192,7 @@ pub fn menu_action(
                     //game_state.set(GameState::Game);
                     //menu_state.set(MenuState::Disabled);
                     println!("Load a saved game!");
-                    load_saved_game(&mut app_state, &mut game_state);
+                    //load_saved_game(&mut app_state, &mut game_state); 
                 }
                 MenuButtonAction::Settings => {
                     println!("Settings!");
