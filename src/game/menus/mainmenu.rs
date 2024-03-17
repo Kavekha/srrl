@@ -36,8 +36,11 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnEnter(MainMenuState::DisplayMenu), spawn_display_menu)      
             .add_systems(OnEnter(MainMenuState::QuitConfirm), spawn_quit_confirm_menu)
             
-              
+            // Obligé de mettre tous les Etats pour le moment. TODO : Avoir un Objet "Menu" comme le ShouldSave: si Menu, alors Interraction.
             .add_systems(Update, button_system.run_if(in_state(MainMenuState::MainMenu)))
+            .add_systems(Update, button_system.run_if(in_state(MainMenuState::Settings)))
+            .add_systems(Update, button_system.run_if(in_state(MainMenuState::QuitConfirm)))
+            .add_systems(Update, button_system.run_if(in_state(MainMenuState::DisplayMenu)))
 
             // Obligé de mettre tous les Etats pour le moment. TODO : Avoir un Objet "Menu" comme le ShouldSave: si Menu, alors Interraction.
             .add_systems(Update, menu_action.run_if(in_state(MainMenuState::MainMenu)))   
