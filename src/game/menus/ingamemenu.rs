@@ -27,22 +27,21 @@ impl Plugin for InGameMenuPlugin{
                 medium:Vec2::new(800.0, 600.0),
                 high:Vec2::new(1920.0, 1080.0)
             })
-            //.add_systems(Update, ig_call_menu_input.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))
-            //.add_systems(Update, ig_inside_menu_input.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))    // TODO : Peut quand meme etre appelé du Main Menu -_-
             .add_systems(Update, ig_inside_menu_input.run_if(in_state(InGameMenuState::MainMenu)))
 
             .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) 
-            .add_systems(OnEnter(InGameMenuState::MainMenu), spawn_ig_menu)
+            .add_systems(OnEnter(InGameMenuState::MainMenu), enter_ig_main_menu)
+            .add_systems(OnEnter(InGameMenuState::Settings), enter_ig_settings_menu)
   
 
             .add_systems(Update, button_system.run_if(in_state(InGameMenuState::MainMenu)))
-            .add_systems(Update, menu_action.run_if(in_state(InGameMenuState::MainMenu)))   
+            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::MainMenu)))   
             //.add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
             
 
             .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
-            //.add_systems(OnExit(InGameMenuState::Settings), clean_menu)
+            .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
             //.add_systems(OnExit(InGameMenuState::DisplayMenu), clean_menu)               
             //.add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu);
             //.add_systems(OnExit(AppState::MainMenu), quit_main_menu);
@@ -79,14 +78,66 @@ pub enum InGameMenuState {
     #[default]
     Disabled,
     MainMenu,
+    QuitConfirm,
+    Quit,
+    Cancel,
+    Resume,
+    BackToMainMenu,
+    Back,
     Settings,
-    DisplayMenu,
-    QuitConfirm
+    SettingDisplay,
+    SettingSound
 }
+
+pub fn ig_menu_action(
+    interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
+    mut app_exit_events: EventWriter<AppExit>,
+    //mut app_state: ResMut<NextState<AppState>>,
+    mut game_state: ResMut<NextState<GameState>>,
+    mut menu_state: ResMut<NextState<InGameMenuState>>,
+    mut main_menu_state: ResMut<NextState<MainMenuState>>
+) {
+    for (interaction, menu_button_action) in &interaction_query {
+        if *interaction == Interaction::Pressed {
+            match menu_button_action {
+                MenuButtonAction::QuitConfirm => {
+                    println!("Do you want to quit?");
+                    menu_state.set(InGameMenuState::QuitConfirm);
+                }
+                MenuButtonAction::Quit => {
+                    println!("Quit App");
+                    app_exit_events.send(AppExit);
+                }
+                MenuButtonAction::Cancel => {
+                    println!("Don't want to quit.");
+                    menu_state.set(InGameMenuState::MainMenu);
+                }
+                MenuButtonAction::BackToGame => {
+                    println!("Go to game !");
+                    menu_state.set(InGameMenuState::Disabled);                  
+                }
+                MenuButtonAction::BackToMainMenu => {
+                    println!("Back to main menu");
+                    main_menu_state.set(MainMenuState::MainMenu);
+                    menu_state.set(InGameMenuState::Disabled);   
+                    game_state.set(GameState::Disabled);
+                }
+                MenuButtonAction::Settings => {
+                    println!("Go to Settings");
+                    menu_state.set(InGameMenuState::Settings);   
+                }
+                _ => {
+                    println!("Something Else to deal with!");
+                }
+            }
+        }
+    }
+}
+
 
 pub struct MenuView{
     pub action: MenuButtonAction,
-    pub text: String
+    pub text: String,
 }
 impl MenuView {
     pub fn new(action: MenuButtonAction, text:String
@@ -96,22 +147,44 @@ impl MenuView {
     }
 }
 
+
 pub struct Menu{
     pub pages: Vec<MenuView>
 }
 impl Menu {
     pub fn new() -> Menu {
         let mut menu = Menu{pages:Vec::new()};
-        for (action, text) in [
-                        (MenuButtonAction::SettingsDisplay, "Display"),
-                        (MenuButtonAction::SettingsSound, "Sound"),
-                        (MenuButtonAction::BackToMainMenu, "Back"),
+        menu
+    }
+}
+
+pub fn enter_ig_main_menu(mut commands: Commands) {
+    println!("Entering IG Main menu.");
+    let mut menu = Menu::new();
+    for (action, text) in [
+                        (MenuButtonAction::BackToGame, "Resume"),
+                        (MenuButtonAction::Settings, "Settings"),
+                        (MenuButtonAction::BackToMainMenu, "Back to Main Menu"),
+                        (MenuButtonAction::QuitConfirm, "Quit"),
         ] {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);
-        }
-        menu
     }
+    spawn_ig_menu(&mut commands, menu)
+}
+
+pub fn enter_ig_settings_menu(mut commands: Commands) {
+    println!("Entering IG Setting Menu.");
+    let mut menu = Menu::new();
+    for (action, text) in [
+                        (MenuButtonAction::SettingsDisplay, "Display"),
+                        (MenuButtonAction::SettingsSound, "Sound"),
+                        (MenuButtonAction::Back, "Back"),
+        ] {
+            let page = MenuView::new(action, text.to_string());
+            menu.pages.push(page);
+    }
+    spawn_ig_menu(&mut commands, menu)
 }
 
 
@@ -122,9 +195,9 @@ const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
 const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 
-pub fn spawn_ig_menu(mut commands: Commands) {
-    println!("Menu de Settings");
-    let new_menu = Menu::new();
+pub fn spawn_ig_menu(mut commands: &mut Commands, new_menu: Menu) {
+    println!("In Game Menu");
+    //let new_menu = Menu::new();
 
     let button_style = Style {
         width: Val::Px(100.0),

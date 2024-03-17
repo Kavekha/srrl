@@ -18,7 +18,9 @@ pub enum MenuButtonAction {
     SettingsSound, 
     QuitConfirm,
     Quit,
-    Cancel
+    Cancel,
+    BackToGame,
+    Back
 }
 
 #[derive(Resource)]
