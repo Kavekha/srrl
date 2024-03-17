@@ -2,37 +2,35 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
-use self::menus::{victory::VictoryPlugin, gameover::GameOverPlugin};
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::TileBoardPlugin;
-//use self::player::cursor::CursorPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
+use self::menus::MenuPlugin;
 
 pub mod combat;
-//pub mod manager;
-pub mod menus;
 pub mod pieces;
 pub mod player;
 pub mod tileboard;
 pub mod rules;
 pub mod ui;
+pub mod menus;
+pub mod states;
 
 
 
 use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
 use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
+use crate::game::states::GameState;
 use crate::map_builders::components::MapGenHistory;
 use crate::engine::render::components::{GameMapRender, GameCursorRender};
 use crate::engine::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::map::Map,
-    map_builders::random_builder,
-    engine::render::GraphicsPlugin, 
-    engine::states::GameState
+    map_builders::random_builder
 };
 
 
@@ -44,15 +42,20 @@ impl Plugin for GamePlugin {
             .insert_resource(Map::new())
             .insert_resource(ShouldSave{to_save: false})
 
-            .add_plugins(PlayerPlugin)
-            .add_plugins(VictoryPlugin)
-            .add_plugins(GameOverPlugin)
-            .add_plugins(GraphicsPlugin)
+            // General
+            .add_plugins(PlayerPlugin)            
+            .add_plugins(CursorPlugin)
+            .add_plugins(MenuPlugin)
+            // Menus.            
+            //.add_plugins(VictoryPlugin)
+            //.add_plugins(GameOverPlugin)            
+            .add_plugins(UiPlugin)     
+            //.add_plugins(MainMenuPlugin)
+            //.add_plugins(InGameMenuPlugin)
+            // Logique
             .add_plugins(TileBoardPlugin)
-             .add_plugins(CursorPlugin)
-            .add_plugins(UiPlugin)
+            // Baston
             .add_plugins(CombatPlugin)
-            //.add_plugins(ManagerPlugin)
             
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)

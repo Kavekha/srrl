@@ -15,7 +15,8 @@ use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stat
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
-use crate::engine::states::{GameState, AppState};
+//use crate::engine::states::{GameState, AppState};
+use crate::game::states::GameState;
 use crate::map_builders::map::Map;
 
 
@@ -179,23 +180,25 @@ fn save_game(
     // Back to main menu
     // Simulate a "system" to get options we need to change the app_state & game_state at the end.
     let mut system_state: SystemState<(
-        ResMut<NextState<AppState>>,
+        //ResMut<NextState<AppState>>,
         ResMut<NextState<GameState>>,
         )> = SystemState::new(&mut world);
 
-    let (app_state, game_state) = system_state.get_mut(&mut world);
+    //let (app_state, game_state) = system_state.get_mut(&mut world);
+    let (game_state) = system_state.get_mut(&mut world);
     println!("Saved end.... Back to MainMenu.");
     
-    state_back_main_menu(app_state, game_state);
+    //state_back_main_menu(game_state);
+    //state_back_main_menu(app_state, game_state);
 
 }
 
 pub fn state_back_main_menu(
-    mut app_state: ResMut<NextState<AppState>>,
+    //mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
 ){
     game_state.set(GameState::Disabled);
-    app_state.set(AppState::MainMenu);
+    //app_state.set(AppState::MainMenu);
 }
 
 
@@ -263,20 +266,21 @@ pub fn load_game(
     // Back to main menu
     // Simulate a "system" to get options we need to change the app_state & game_state at the end.
     let mut system_state: SystemState<(
-        ResMut<NextState<AppState>>,
+        //ResMut<NextState<AppState>>,
         ResMut<NextState<GameState>>,
         )> = SystemState::new(&mut world);
 
-    let (app_state, game_state) = system_state.get_mut(&mut world);
+    let (game_state) = system_state.get_mut(&mut world);
+    //let (app_state, game_state) = system_state.get_mut(&mut world);
     
-    state_after_load_game(app_state, game_state);
-
+    //state_after_load_game(game_state);
+    //state_after_load_game(app_state, game_state);
 }
 
 pub fn state_after_load_game(
-    mut app_state: ResMut<NextState<AppState>>,
+    //mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
 ){
     game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
-    app_state.set(AppState::Game);
+    //app_state.set(AppState::Game);
 }

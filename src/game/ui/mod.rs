@@ -4,7 +4,7 @@ pub mod game_interface;
 mod components;
 
 
-use crate::engine::states::GameState;
+use crate::game::states::GameState;
 
 use self::{game_interface::{draw_interface, draw_enemy_health, display_action_points_on_cursor}, components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor}};
 

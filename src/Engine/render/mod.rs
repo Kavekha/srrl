@@ -1,3 +1,5 @@
+// Gère le Rendu.
+
 use bevy::prelude::*;
 
 pub mod tilemap_render;
@@ -14,7 +16,7 @@ use self::{
 
 use crate::{
     globals::STANDARD_TILE_SIZE, 
-    engine::states::GameState, vectors::Vector2Int, game::combat::CombatSet,
+    game::states::GameState, vectors::Vector2Int, game::combat::CombatSet,
 };
 
 pub struct GraphicsPlugin;
@@ -31,15 +33,41 @@ impl Plugin for GraphicsPlugin {
 
             //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
             .add_systems(Update, (path_animator_update).in_set(CombatSet::Animation))   //melee_animation
-            .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))         
+            .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))     
+
+            // La première camera.
+            .add_systems(Startup, spawn_camera)    
             ;
     }
 }
+
+
+fn spawn_camera(mut commands: Commands) {
+    println!("Camera is spawned");
+    commands.spawn(Camera2dBundle::default()); //DEBUG
+
+    // Before 0.13. 
+    /*      
+    let camera_bundle = Camera2dBundle {
+        projection: OrthographicProjection{
+            far: 100.0,
+            near: -100.0,
+            scaling_mode: ScalingMode::WindowSize(500.0), //(1.0 * BASE_SCREEN_SCALE),    //WindowSize(500.0),   // Pixels = world unit
+            ..default()
+        },
+        ..default()
+    };
+    commands.spawn(camera_bundle);   
+    */ 
+}
+
 
 /* 
 #[derive(Event)]
 pub struct GraphicsWaitEvent;
 */
+
+// TODO : Changer de place?
 
 pub fn get_world_position(
     v: &Vector2Int

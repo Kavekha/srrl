@@ -1,3 +1,5 @@
+// Gère les assets audios.
+
 use std::collections::HashMap;
 
 use bevy::prelude::*;

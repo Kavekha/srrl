@@ -1,9 +1,11 @@
+// TODO : Comment gèrer ça autrement?
+
 use bevy::prelude::*;
 
 mod components;
 
 use crate::{
-    AppState,
+    //AppState,
     GameState, engine::asset_loaders::AudioAssets,
 };
 
@@ -23,7 +25,7 @@ impl Plugin for GameAudioPlugin{
             //Victory
             .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
             //Main Menu
-            .add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)     
+            //.add_systems(OnEnter(AppState::MainMenu), setup_audio_mainmenu)     
             //Death
             .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
             ;

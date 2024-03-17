@@ -1,6 +1,6 @@
 use bevy::{prelude::*, app::AppExit};
 
-use crate::engine::states::AppState;
+//use crate::engine::states::AppState;
 
 use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action, spawn_main_menu}};
 
@@ -25,8 +25,8 @@ impl Plugin for InGameMenuPlugin{
             //.add_systems(OnEnter(InGameMenuState::DisplayMenu), spawn_display_menu)      
             //.add_systems(OnEnter(InGameMenuState::QuitConfirm), spawn_quit_confirm_menu)        
 
-            .add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            .add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
+            //.add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
+            //.add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
             .add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
             
 
