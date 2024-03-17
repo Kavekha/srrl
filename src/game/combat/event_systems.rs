@@ -8,7 +8,7 @@ use crate::{
     tileboard::components::BoardPosition,
      pieces::components::{Occupier, Stats, Health}, 
      combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, 
-     engine::render::{components::PathAnimator, get_world_position}, engine::states::GameState};
+     engine::render::{components::PathAnimator, get_world_position}, game::states::GameState};
 
 use super::{
     events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent},

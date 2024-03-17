@@ -16,20 +16,21 @@ pub mod tileboard;
 pub mod rules;
 pub mod ui;
 pub mod menus;
+pub mod states;
 
 
 
 use crate::game::pieces::components::Monster;
 use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
 use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
+use crate::game::states::GameState;
 use crate::map_builders::components::MapGenHistory;
 use crate::engine::render::components::{GameMapRender, GameCursorRender};
 use crate::engine::save_load_system::ShouldSave;
 use crate::{
     globals::SHOW_MAPGEN_VISUALIZER,
     map_builders::map::Map,
-    map_builders::random_builder,
-    engine::states::GameState
+    map_builders::random_builder
 };
 
 
