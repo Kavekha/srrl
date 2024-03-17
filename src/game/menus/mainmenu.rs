@@ -187,8 +187,8 @@ pub fn menu_action(
                 MenuButtonAction::Play => {
                     println!("Go to game !");
                     //start_new_game(&mut app_state, &mut game_state);  // TODO : Necessaire pour pouvoir lancer le jeu.
-                    //game_state.set(GameState::Game);
-                    //menu_state.set(MenuState::Disabled);
+                    menu_state.set(MainMenuState::Disabled);
+                    game_state.set(GameState::NewGame);                    
                 }
                 MenuButtonAction::Load => {
                     //game_state.set(GameState::Game);
