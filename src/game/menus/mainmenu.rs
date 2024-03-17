@@ -28,10 +28,9 @@ impl Plugin for MainMenuPlugin{
                 medium:Vec2::new(800.0, 600.0),
                 high:Vec2::new(1920.0, 1080.0)
             })
-
-            //.add_systems(OnEnter(AppState::MainMenu), load_main_menu)
             .add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
             .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
+
             .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), spawn_settings_menu)      
             .add_systems(OnEnter(MainMenuState::DisplayMenu), spawn_display_menu)      
@@ -39,9 +38,12 @@ impl Plugin for MainMenuPlugin{
             
               
             .add_systems(Update, button_system.run_if(in_state(MainMenuState::MainMenu)))
+
+            // Obligé de mettre tous les Etats pour le moment. TODO : Avoir un Objet "Menu" comme le ShouldSave: si Menu, alors Interraction.
             .add_systems(Update, menu_action.run_if(in_state(MainMenuState::MainMenu)))   
-            //.add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            //.add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
+            .add_systems(Update, menu_action.run_if(in_state(MainMenuState::Settings)))   
+            .add_systems(Update, menu_action.run_if(in_state(MainMenuState::QuitConfirm)))   
+            .add_systems(Update, menu_action.run_if(in_state(MainMenuState::DisplayMenu)))   
             .add_systems(Update, resolution_menu_action.run_if(in_state(MainMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
             
 
@@ -49,8 +51,8 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
             .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
             .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
-            .add_systems(OnExit(MainMenuState::MainMenu), quit_main_menu);
-            //.add_systems(OnExit(AppState::MainMenu), quit_main_menu);
+            //.add_systems(OnExit(MainMenuState::MainMenu), quit_main_menu) //Si actif, efface tout juste après l'affichage du nouveau menu -_-
+            ;
     }
 }
 
@@ -314,6 +316,7 @@ pub fn spawn_main_menu(
     //asset_server: Res<AssetServer>,
     graphics_assets: Res<GraphicsAssets>
 ) {
+    println!("Menu principal");
     // Common style for all buttons on the screen
     let button_style = Style {
         width: Val::Px(125.0),
@@ -471,6 +474,7 @@ pub fn spawn_main_menu(
 
 
 fn spawn_settings_menu(mut commands: Commands) {
+    println!("Menu de Settings");
     let button_style = Style {
         width: Val::Px(100.0),
         height: Val::Px(32.5),
@@ -541,6 +545,7 @@ fn spawn_display_menu(
     mut commands: Commands, 
     display_quality: Res<DisplayQuality>
 ) {
+    println!("Menu de display");
     let button_style = Style {
         width: Val::Px(100.0),
         height: Val::Px(32.5),

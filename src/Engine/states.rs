@@ -14,14 +14,6 @@ pub enum GameState {
     LoadGame,
 }  
 
-/* 
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum AppState {
-    #[default]
-    MainMenu,
-    Game
-}
-*/
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum MainMenuState {
