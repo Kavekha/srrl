@@ -24,11 +24,12 @@ pub fn player_input(
     mut should_save: ResMut<ShouldSave>,
     mut menu_state: ResMut<NextState<InGameMenuState>>
 ){
-    // MENU etc
+    // MENU etc Move to input menu
+    /*
     if keys.just_pressed(KeyCode::Escape) {
         println!("Call for In Game Menu.");
         menu_state.set(InGameMenuState::MainMenu);
-    }
+    } */
 
     /* QUIT GAME, BACK TO MAIN MENU, SAVE 
     if keys.just_pressed(KeyCode::Escape) {

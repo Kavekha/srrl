@@ -2,7 +2,17 @@ use bevy::{prelude::*, app::AppExit};
 
 //use crate::engine::states::AppState;
 
-use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action, spawn_main_menu}};
+use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action, spawn_main_menu, spawn_settings_menu}};
+
+use crate::{
+    game::states::{GameState, MainMenuState}, 
+    //engine::states::{AppState, GameState, MainMenuState}, 
+    engine::asset_loaders::GraphicsAssets, 
+};
+
+use super::{
+    components::{MenuButtonAction, OnScreenMenu, SelectedOption} 
+};
 
 pub struct InGameMenuPlugin;
 
@@ -17,26 +27,52 @@ impl Plugin for InGameMenuPlugin{
                 medium:Vec2::new(800.0, 600.0),
                 high:Vec2::new(1920.0, 1080.0)
             })
-            
-            //.add_systems(OnEnter(AppState::MainMenu), load_main_menu)
-            .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) 
-            .add_systems(Update, spawn_main_menu.run_if(in_state(InGameMenuState::MainMenu)))    
-            //.add_systems(OnEnter(InGameMenuState::Settings), spawn_settings_menu)      
-            //.add_systems(OnEnter(InGameMenuState::DisplayMenu), spawn_display_menu)      
-            //.add_systems(OnEnter(InGameMenuState::QuitConfirm), spawn_quit_confirm_menu)        
+            //.add_systems(Update, ig_call_menu_input.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))
+            //.add_systems(Update, ig_inside_menu_input.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, ig_inside_menu_input.run_if(in_state(InGameMenuState::MainMenu)))
 
-            //.add_systems(Update, button_system.run_if(in_state(AppState::MainMenu)))
-            //.add_systems(Update, menu_action.run_if(in_state(AppState::MainMenu)))   
-            .add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
+            .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) 
+            .add_systems(OnEnter(InGameMenuState::MainMenu), spawn_ig_menu)
+  
+
+            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::MainMenu)))
+            .add_systems(Update, menu_action.run_if(in_state(InGameMenuState::MainMenu)))   
+            //.add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
             
 
             .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
-            .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
-            .add_systems(OnExit(InGameMenuState::DisplayMenu), clean_menu)               
-            .add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu);
+            //.add_systems(OnExit(InGameMenuState::Settings), clean_menu)
+            //.add_systems(OnExit(InGameMenuState::DisplayMenu), clean_menu)               
+            //.add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu);
             //.add_systems(OnExit(AppState::MainMenu), quit_main_menu);
+            ;
     }
 }
+ 
+
+pub fn ig_call_menu_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut menu_state: ResMut<NextState<InGameMenuState>>
+){
+    // MENU etc
+    if keys.just_pressed(KeyCode::Escape) {
+        println!("Call for In Game Menu.");
+        menu_state.set(InGameMenuState::MainMenu);
+    }
+}
+
+pub fn ig_inside_menu_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut menu_state: ResMut<NextState<InGameMenuState>>
+){
+    // MENU etc
+    if keys.just_pressed(KeyCode::Escape) {
+        println!("Back to game.");
+        menu_state.set(InGameMenuState::Disabled);
+    }
+}
+
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum InGameMenuState {
@@ -46,4 +82,115 @@ pub enum InGameMenuState {
     Settings,
     DisplayMenu,
     QuitConfirm
+}
+
+pub struct MenuView{
+    pub action: MenuButtonAction,
+    pub text: String
+}
+impl MenuView {
+    pub fn new(action: MenuButtonAction, text:String
+    ) -> MenuView {
+        let menu = MenuView {action: action, text:text};
+        menu
+    }
+}
+
+pub struct Menu{
+    pub pages: Vec<MenuView>
+}
+impl Menu {
+    pub fn new() -> Menu {
+        let mut menu = Menu{pages:Vec::new()};
+        for (action, text) in [
+                        (MenuButtonAction::SettingsDisplay, "Display"),
+                        (MenuButtonAction::SettingsSound, "Sound"),
+                        (MenuButtonAction::BackToMainMenu, "Back"),
+        ] {
+            let page = MenuView::new(action, text.to_string());
+            menu.pages.push(page);
+        }
+        menu
+    }
+}
+
+
+const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
+const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
+const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+
+
+pub fn spawn_ig_menu(mut commands: Commands) {
+    println!("Menu de Settings");
+    let new_menu = Menu::new();
+
+    let button_style = Style {
+        width: Val::Px(100.0),
+        height: Val::Px(32.5),
+        margin: UiRect::all(Val::Px(10.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
+    let button_text_style = TextStyle {
+        font_size: 20.0,
+        color: TEXT_COLOR,
+        ..default()
+    };
+
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                ..default()
+            },
+            OnScreenMenu,   //OnSettingsMenuScreen,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    //background_color: Color::CRIMSON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    for page in new_menu.pages 
+                    /* 
+                    for (action, text) in [
+                                                (MenuButtonAction::SettingsDisplay, "Display"),
+                        (MenuButtonAction::SettingsSound, "Sound"),
+                        (MenuButtonAction::BackToMainMenu, "Back"),
+                    ] */
+                    {
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    style: button_style.clone(),
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
+                                },
+                                page.action,    //action,
+                            ))
+                            .with_children(|parent| {
+                                parent.spawn(TextBundle::from_section(
+                                    page.text,  //text,
+                                    button_text_style.clone(),
+                                ));
+                            });
+                    }
+                });
+        });
 }
