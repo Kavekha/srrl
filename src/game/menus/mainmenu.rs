@@ -12,7 +12,7 @@ use crate::{
 use super::{
     clean_menu, components::{DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings, SelectedOption} 
 };
-
+ 
 
 // PLUGIN
 pub struct MainMenuPlugin;
@@ -456,7 +456,7 @@ pub fn spawn_main_menu(
 }
 
 
-fn spawn_settings_menu(mut commands: Commands) {
+pub fn spawn_settings_menu(mut commands: Commands) {
     println!("Menu de Settings");
     let button_style = Style {
         width: Val::Px(100.0),

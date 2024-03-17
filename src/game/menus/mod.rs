@@ -28,5 +28,6 @@ pub fn clean_menu(
     mut commands: Commands,
     despawn_onscreenmenu: Query<Entity, With<OnScreenMenu>>,
 ) {
+    println!("Cleaning menu");
     despawn_screen(despawn_onscreenmenu, &mut commands);
 }
