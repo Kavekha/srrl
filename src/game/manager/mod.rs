@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::states::GameState;
 
 pub struct ManagerPlugin;
-
+ 
 impl Plugin for ManagerPlugin {
     fn build(&self, app: &mut App) {
         app
