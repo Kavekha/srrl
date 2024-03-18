@@ -2,13 +2,9 @@ use bevy::{prelude::*, app::AppExit};
 
 //use crate::engine::states::AppState;
 
-use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_camera}};
+use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, mainmenu::{button_system, menu_camera}};
 
-use crate::{
-    game::states::{GameState, MainMenuState}, 
-    //engine::states::{AppState, GameState, MainMenuState}, 
-    //engine::asset_loaders::GraphicsAssets, 
-};
+use crate::{game::{menus::menu_builder::{Menu, MenuView}, states::{GameState, MainMenuState}}, globals::{NORMAL_BUTTON, TEXT_COLOR}};
 
 use super::components::{MenuButtonAction, OnScreenMenu} 
 ;
@@ -107,22 +103,6 @@ pub fn ig_inside_menu_input(
 }
 
 
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum InGameMenuState {
-    #[default]
-    Disabled,
-    MainMenu,
-    QuitConfirm,
-    Quit,
-    Cancel,
-    Resume,
-    BackToMainMenu,
-    Back,
-    Settings,
-    SettingDisplay,
-    SettingSound
-}
-
 pub fn ig_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut app_exit_events: EventWriter<AppExit>,
@@ -201,29 +181,6 @@ pub fn ig_menu_action(
 }
 
 
-pub struct MenuView{
-    pub action: MenuButtonAction,
-    pub text: String,
-}
-impl MenuView {
-    pub fn new(action: MenuButtonAction, text:String
-    ) -> MenuView {
-        let menu = MenuView {action: action, text:text};
-        menu
-    }
-}
-
-
-pub struct Menu{
-    pub pages: Vec<MenuView>
-}
-impl Menu {
-    pub fn new() -> Menu {
-        let mut menu = Menu{pages:Vec::new()};
-        menu
-    }
-}
-
 pub fn enter_ig_main_menu(mut commands: Commands) {
     println!("Entering IG Main menu.");
     let mut menu = Menu::new();
@@ -268,11 +225,7 @@ pub fn enter_ig_display_menu(mut commands: Commands) {
     spawn_ig_menu(&mut commands, menu)
 }
 
-const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
+
 
 
 pub fn spawn_ig_menu(mut commands: &mut Commands, new_menu: Menu) {

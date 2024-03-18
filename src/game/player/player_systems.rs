@@ -3,7 +3,7 @@ use bevy::{prelude::*, input::mouse::MouseMotion};
 use crate::{
     engine::save_load_system::ShouldSave,
     game::{
-        states::GameState, combat::events::RefreshActionCostEvent, menus::ingamemenu::InGameMenuState, tileboard::components::{BoardPosition, ExitMapTile}}, 
+        states::GameState, combat::events::RefreshActionCostEvent, menus::components::InGameMenuState, tileboard::components::{BoardPosition, ExitMapTile}}, 
     };
 
 

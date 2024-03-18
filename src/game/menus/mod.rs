@@ -5,6 +5,7 @@ pub mod gameover;
 pub mod victory;
 pub mod components;
 pub mod ingamemenu;
+pub mod menu_builder;
 
 use crate::game::despawn_screen;
 

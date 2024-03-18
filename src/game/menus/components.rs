@@ -44,3 +44,21 @@ pub enum DisplayQuality {
     Medium,
     High,
 }
+
+
+
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum InGameMenuState {
+    #[default]
+    Disabled,
+    MainMenu,
+    QuitConfirm,
+    Quit,
+    Cancel,
+    Resume,
+    BackToMainMenu,
+    Back,
+    Settings,
+    SettingDisplay,
+    SettingSound
+}
