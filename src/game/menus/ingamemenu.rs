@@ -2,17 +2,16 @@ use bevy::{prelude::*, app::AppExit};
 
 //use crate::engine::states::AppState;
 
-use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_action, menu_camera, resolution_menu_action, spawn_main_menu, spawn_settings_menu}};
+use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_camera}};
 
 use crate::{
     game::states::{GameState, MainMenuState}, 
     //engine::states::{AppState, GameState, MainMenuState}, 
-    engine::asset_loaders::GraphicsAssets, 
+    //engine::asset_loaders::GraphicsAssets, 
 };
 
-use super::{
-    components::{MenuButtonAction, OnScreenMenu, SelectedOption} 
-};
+use super::components::{MenuButtonAction, OnScreenMenu} 
+;
 
 
 pub struct InGameMenuPlugin;
@@ -54,13 +53,13 @@ impl Plugin for InGameMenuPlugin{
             .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
             .add_systems(OnExit(InGameMenuState::SettingDisplay), clean_menu)               
-            .add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu);
-            //.add_systems(OnExit(AppState::MainMenu), quit_main_menu);
+            .add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu)
             ;
     }
 }
  
 // Do it in event. poc.
+/* 
 #[derive(Event)]
 pub enum MenuEvent {
     Close,
@@ -83,8 +82,7 @@ fn on_event_menu(
     }
     println!("Processing Menu Event....");
 }
-
-
+*/
 
 pub fn ig_call_menu_input(
     keys: Res<ButtonInput<KeyCode>>,

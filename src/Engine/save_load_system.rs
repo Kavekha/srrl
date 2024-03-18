@@ -185,7 +185,7 @@ fn save_game(
         )> = SystemState::new(&mut world);
 
     //let (app_state, game_state) = system_state.get_mut(&mut world);
-    let (game_state) = system_state.get_mut(&mut world);
+    let game_state = system_state.get_mut(&mut world);
     println!("Saved end.... Back to MainMenu.");
     
     //state_back_main_menu(game_state);
@@ -270,7 +270,7 @@ pub fn load_game(
         ResMut<NextState<GameState>>,
         )> = SystemState::new(&mut world);
 
-    let (game_state) = system_state.get_mut(&mut world);
+    let game_state = system_state.get_mut(&mut world);
     //let (app_state, game_state) = system_state.get_mut(&mut world);
     
     //state_after_load_game(game_state);
