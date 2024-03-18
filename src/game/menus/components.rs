@@ -20,7 +20,10 @@ pub enum MenuButtonAction {
     Quit,
     Cancel,
     BackToGame,
-    Back
+    Back,
+    DisplayLow,
+    DisplayMedium,
+    DisplayHigh
 }
 
 #[derive(Resource)]
