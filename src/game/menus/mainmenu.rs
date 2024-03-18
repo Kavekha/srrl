@@ -4,13 +4,11 @@
 
 use bevy::{prelude::*, app::AppExit};
 use crate::{
-    game::states::{GameState, MainMenuState}, 
-    //engine::states::{AppState, GameState, MainMenuState}, 
-    engine::asset_loaders::GraphicsAssets, 
+    engine::asset_loaders::GraphicsAssets, game::states::{GameState, MainMenuState}, globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR} 
 };
 
 use super::{
-    clean_menu, components::{DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings, SelectedOption} 
+    button_system, clean_menu, components::{DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings, SelectedOption}, menu_camera 
 };
  
 
@@ -59,6 +57,7 @@ impl Plugin for MainMenuPlugin{
 }
 
 
+
 fn load_main_menu(
     mut mainmenu_state: ResMut<NextState<MainMenuState>>
 ){
@@ -67,50 +66,6 @@ fn load_main_menu(
 }
 
 
-fn load_saved_game(
-    //app_state: &mut ResMut<NextState<AppState>>,
-    game_state: &mut ResMut<NextState<GameState>>,
-){
-    //app_state.set(AppState::Game);
-    game_state.set(GameState::LoadGame);
-    //load_game(app_state, game_state);
-}
-
-
-/// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
-pub fn menu_camera(
-    mut camera_query: Query<&mut Transform, With<Camera>>
-){
-    let mut camera_transform = camera_query.single_mut();
-    camera_transform.translation.x = 0.0;
-    camera_transform.translation.y = 0.0;
-}
-
-// Bevy example
-const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
-
-
-
-// This system handles changing all buttons color based on mouse interaction
-pub fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
-        (Changed<Interaction>, With<Button>),
-    >,
-) {
-    for (interaction, mut color, selected) in &mut interaction_query {
-        *color = match (*interaction, selected) {
-            (Interaction::Pressed, _) | (Interaction::None, Some(_)) => PRESSED_BUTTON.into(),
-            (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
-            (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
-            (Interaction::None, None) => NORMAL_BUTTON.into(),
-        }
-    }
-}
 
 
 pub fn resolution_menu_action(

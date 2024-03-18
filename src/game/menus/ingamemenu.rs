@@ -2,7 +2,7 @@ use bevy::{prelude::*, app::AppExit};
 
 //use crate::engine::states::AppState;
 
-use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, mainmenu::{button_system, menu_camera}};
+use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
 use crate::{game::{menus::menu_builder::{Menu, MenuView}, states::{GameState, MainMenuState}}, globals::{NORMAL_BUTTON, TEXT_COLOR}};
 

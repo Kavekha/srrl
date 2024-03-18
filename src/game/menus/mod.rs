@@ -7,9 +7,9 @@ pub mod components;
 pub mod ingamemenu;
 pub mod menu_builder;
 
-use crate::game::despawn_screen;
+use crate::{game::{despawn_screen, states::MainMenuState}, globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON}};
 
-use self::{components::OnScreenMenu, gameover::GameOverPlugin, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin, victory::VictoryPlugin};
+use self::{components::{OnScreenMenu, SelectedOption}, gameover::GameOverPlugin, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin, victory::VictoryPlugin};
 
 
 pub struct MenuPlugin;
@@ -31,4 +31,31 @@ pub fn clean_menu(
 ) {
     println!("Cleaning menu");
     despawn_screen(despawn_onscreenmenu, &mut commands);
+}
+
+/// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.
+pub fn menu_camera(
+    mut camera_query: Query<&mut Transform, With<Camera>>
+){
+    let mut camera_transform = camera_query.single_mut();
+    camera_transform.translation.x = 0.0;
+    camera_transform.translation.y = 0.0;
+}
+
+
+// This system handles changing all buttons color based on mouse interaction
+pub fn button_system(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
+        (Changed<Interaction>, With<Button>),
+    >,
+) {
+    for (interaction, mut color, selected) in &mut interaction_query {
+        *color = match (*interaction, selected) {
+            (Interaction::Pressed, _) | (Interaction::None, Some(_)) => PRESSED_BUTTON.into(),
+            (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
+            (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
+            (Interaction::None, None) => NORMAL_BUTTON.into(),
+        }
+    }
 }
