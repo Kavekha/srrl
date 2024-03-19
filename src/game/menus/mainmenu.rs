@@ -4,7 +4,7 @@
 
 use bevy::{prelude::*, app::AppExit};
 use crate::{
-    engine::asset_loaders::GraphicsAssets, game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, TEXT_COLOR} 
+    engine::asset_loaders::GraphicsAssets, game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION, TEXT_COLOR} 
 };
 
 use super::{
@@ -23,10 +23,11 @@ impl Plugin for MainMenuPlugin{
             .insert_resource(DisplayQuality::Medium)
             .insert_resource(ResolutionSettings{
                 low:Vec2::new(640.0, 360.0),
-                medium:Vec2::new(800.0, 600.0),
+                medium:Vec2::new(HEIGHT * RESOLUTION, HEIGHT),
+                //medium:Vec2::new(800.0, 600.0),
                 high:Vec2::new(1920.0, 1080.0)
             })
-            .add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
+            //.add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
             .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
 
             .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
@@ -34,20 +35,9 @@ impl Plugin for MainMenuPlugin{
             .add_systems(OnEnter(MainMenuState::DisplayMenu), enter_mm_display_menu)      
             .add_systems(OnEnter(MainMenuState::QuitConfirm), enter_mm_quit_confirm_menu)
             
-            // Obligé de mettre tous les Etats pour le moment. TODO : Avoir un Objet "Menu" comme le ShouldSave: si Menu, alors Interraction.
-            .add_systems(Update, button_system.run_if(in_state(MainMenuState::MainMenu)))
-            .add_systems(Update, button_system.run_if(in_state(MainMenuState::Settings)))
-            .add_systems(Update, button_system.run_if(in_state(MainMenuState::QuitConfirm)))
-            .add_systems(Update, button_system.run_if(in_state(MainMenuState::DisplayMenu)))
-
-            // Obligé de mettre tous les Etats pour le moment. TODO : Avoir un Objet "Menu" comme le ShouldSave: si Menu, alors Interraction.
-            .add_systems(Update, main_menu_action.run_if(in_state(MainMenuState::MainMenu)))   
-            .add_systems(Update, main_menu_action.run_if(in_state(MainMenuState::Settings)))   
-            .add_systems(Update, main_menu_action.run_if(in_state(MainMenuState::QuitConfirm)))   
-            .add_systems(Update, main_menu_action.run_if(in_state(MainMenuState::DisplayMenu)))   
-            //.add_systems(Update, resolution_menu_action.run_if(in_state(MainMenuState::DisplayMenu)))    //Only in display menu there. Not really cool but hey.   
+            .add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))
+            .add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )
             
-
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
             .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
@@ -66,43 +56,14 @@ fn load_main_menu(
 }
 
 
-
-
-pub fn resolution_menu_action(
-    interaction_query: Query<(&Interaction, &DisplayQuality), (Changed<Interaction>, With<Button>),>,
-    mut windows: Query<&mut Window>,
-    resolution: Res<ResolutionSettings>,
-){
-    let mut window = windows.single_mut();
-    for (interaction, menu_button_action) in &interaction_query {
-        if *interaction == Interaction::Pressed {
-            match menu_button_action {
-                DisplayQuality::Low => {
-                    println!("Resolution changed to Low");
-                    let res = resolution.low;
-                    window.resolution.set(res.x, res.y);
-                }
-                DisplayQuality::Medium => {
-                    println!("Resolution changed to Medium");
-                    let res = resolution.medium;
-                    window.resolution.set(res.x, res.y);
-                }
-                DisplayQuality::High => {
-                    println!("Resolution changed to High");
-                    let res = resolution.high;
-                    window.resolution.set(res.x, res.y);
-                }
-            }
-        }
-    }
-}
-
 pub fn main_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut app_exit_events: EventWriter<AppExit>,
     //mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MainMenuState>>
+    mut menu_state: ResMut<NextState<MainMenuState>>,
+    mut windows: Query<&mut Window>,
+    resolution: Res<ResolutionSettings>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -149,6 +110,24 @@ pub fn main_menu_action(
                 MenuButtonAction::BackToSettings => {
                     println!("Back to Settings!");
                     menu_state.set(MainMenuState::Settings);
+                }
+                MenuButtonAction::DisplayLow => {
+                    println!("Resolution changed to Low");
+                    let mut window = windows.single_mut();                
+                    let res = resolution.low;
+                    window.resolution.set(res.x, res.y);
+                }
+                MenuButtonAction::DisplayMedium => {
+                    println!("Resolution changed to Medium");
+                    let mut window = windows.single_mut();              
+                    let res = resolution.medium;
+                    window.resolution.set(res.x, res.y);
+                }
+                MenuButtonAction::DisplayHigh => {
+                    println!("Resolution changed to High");
+                    let mut window = windows.single_mut();                  
+                    let res = resolution.high;
+                    window.resolution.set(res.x, res.y);
                 }
                 _ => {
                     println!("Something Else to deal with!");
@@ -197,7 +176,7 @@ pub fn enter_mm_settings_menu(mut commands: Commands) {
     let mut menu = Menu::new();
     for (action, text) in [
             (MenuButtonAction::SettingsDisplay, "Display"),
-            (MenuButtonAction::SettingsSound, "Sound"),
+            //(MenuButtonAction::SettingsSound, "Sound"),
             (MenuButtonAction::BackToMainMenu, "Back"),
         ] {
             let page = MenuView::new(action, text.to_string());
@@ -213,6 +192,7 @@ pub fn enter_mm_display_menu(mut commands: Commands) {
         (MenuButtonAction::DisplayLow, "Low"),
         (MenuButtonAction::DisplayMedium, "Medium"),
         (MenuButtonAction::DisplayHigh, "High"),
+        (MenuButtonAction::BackToSettings, "Back"),
         ] {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);

@@ -37,15 +37,9 @@ impl Plugin for InGameMenuPlugin{
             .add_systems(OnEnter(InGameMenuState::SettingDisplay), enter_ig_display_menu) 
 
             //Todo with not in Disable?
-            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::MainMenu)))
-            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::MainMenu)))   
-            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::Settings)))
-            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::Settings)))   
-            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::SettingDisplay)))
-            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::SettingDisplay)))   
-            //.add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::SettingDisplay)))    //Only in display menu there. Not really cool but hey.   
+            .add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))
+            .add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )
             
-
             .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
             .add_systems(OnExit(InGameMenuState::SettingDisplay), clean_menu)               
