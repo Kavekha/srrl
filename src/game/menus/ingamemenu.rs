@@ -4,10 +4,9 @@ use bevy::{prelude::*, app::AppExit};
 
 use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
-use crate::{game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, globals::{NORMAL_BUTTON, TEXT_COLOR}};
+use crate::game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}};    //, globals::{NORMAL_BUTTON, TEXT_COLOR}};
 
-use super::components::{MenuButtonAction, OnScreenMenu} 
-;
+use super::components::MenuButtonAction;    //, OnScreenMenu} 
 
 
 pub struct InGameMenuPlugin;

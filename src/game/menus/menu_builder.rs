@@ -1,5 +1,5 @@
 
-use bevy::{prelude::*, app::AppExit};
+use bevy::prelude::*;   //, app::AppExit};
 
 use crate::{game::menus::components::OnScreenMenu, globals::{NORMAL_BUTTON, TEXT_COLOR}};
 
@@ -23,7 +23,7 @@ pub struct Menu{
 }
 impl Menu {
     pub fn new() -> Menu {
-        let mut menu = Menu{pages:Vec::new()};
+        let menu = Menu{pages:Vec::new()};
         menu
     }
 }
@@ -31,7 +31,7 @@ impl Menu {
 
 // Theme 1 : Classic Menu
 
-pub fn spawn_basic_menu(mut commands: &mut Commands, new_menu: Menu) {
+pub fn spawn_basic_menu(commands: &mut Commands, new_menu: Menu) {
     println!("In Game Menu");
     //let new_menu = Menu::new();
 

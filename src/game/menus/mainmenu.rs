@@ -4,11 +4,21 @@
 
 use bevy::{prelude::*, app::AppExit};
 use crate::{
-    engine::asset_loaders::GraphicsAssets, game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION, TEXT_COLOR} 
+    engine::asset_loaders::GraphicsAssets, 
+    game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, 
+    states::{GameState, MainMenuState}}, 
+    globals::{
+        HEIGHT, 
+        //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, PRESSED_BUTTON, 
+        NORMAL_BUTTON, RESOLUTION, TEXT_COLOR} 
 };
 
 use super::{
-    button_system, clean_menu, components::{DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings, SelectedOption}, menu_camera 
+    button_system, clean_menu, components::{
+        DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings
+        //, SelectedOption
+    },
+    menu_camera 
 };
  
 
@@ -47,14 +57,14 @@ impl Plugin for MainMenuPlugin{
 }
 
 
-
+/* 
 fn load_main_menu(
     mut mainmenu_state: ResMut<NextState<MainMenuState>>
 ){
     println!("Main Menu !!!!");
     mainmenu_state.set(MainMenuState::MainMenu);
 }
-
+*/
 
 pub fn main_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,

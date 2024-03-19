@@ -15,7 +15,7 @@ pub enum MenuButtonAction {
     SettingsDisplay,
     BackToSettings,
     BackToMainMenu,
-    SettingsSound, 
+    //SettingsSound, 
     QuitConfirm,
     Quit,
     Cancel,
@@ -40,9 +40,9 @@ pub struct SelectedOption;
 // One of the two settings that can be set through the menu. It will be a resource in the app
 #[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
 pub enum DisplayQuality {
-    Low,
+    //Low,
     Medium,
-    High,
+    //High,
 }
 
 
@@ -53,12 +53,7 @@ pub enum InGameMenuState {
     Disabled,
     MainMenu,
     QuitConfirm,
-    Quit,
-    Cancel,
-    Resume,
-    BackToMainMenu,
-    Back,
     Settings,
     SettingDisplay,
-    SettingSound
+    //SettingSound
 }
