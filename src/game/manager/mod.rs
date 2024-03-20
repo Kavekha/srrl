@@ -10,10 +10,10 @@ pub struct ManagerPlugin;
 impl Plugin for ManagerPlugin {
     fn build(&self, app: &mut App) {
         app
-        .init_resource::<GameInfos{
+        .insert_resource(GameInfos{
             starting_position:Vector2Int { x:0, y: 0 },
             spawn_list: Vec::new()
-        }>()   //Position Renommer 0.15.2
+        })   //Position Renommer 0.15.2
         .add_event::<MessageEvent>()   
         .add_systems(Update, handle_event.run_if(on_event::<MessageEvent>()));
     }
@@ -86,11 +86,15 @@ impl Message for CreatePlayerMessage {
 }
 
 
-pub struct StartGameMessage{
-    pub step: usize
-}
+pub struct StartGameMessage;
+
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
+        world.send_event(MessageEvent(Box::new(CreateMapMessage)));
+        world.send_event(MessageEvent(Box::new(CreatePlayerMessage)));
+        world.send_event(MessageEvent(Box::new(DisplayMapMessage)));
+
+        /* 
         println!("Self step is {}", self.step);
         let mut send_again = true;
         let mut step = self.step;
@@ -104,6 +108,7 @@ impl Message for StartGameMessage {
             step += 1;
             world.send_event(MessageEvent(Box::new(StartGameMessage {step: step})));
         }
+        */
     }
 }
 

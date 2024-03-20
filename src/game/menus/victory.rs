@@ -96,13 +96,13 @@ pub fn end_game_menu_input(
 ) {
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         //game_state.set(GameState::NewGame);
-        ev_message.send(MessageEvent(Box::new(StartGameMessage{step: 0})));      // NEW MESSAGE EVENT SYSTEM v0.15.2
+        ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
     }
     for event in mouse_button_input_events.read() {
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
         if event.button == MouseButton::Left {
             //game_state.set(GameState::NewGame);
-            ev_message.send(MessageEvent(Box::new(StartGameMessage{step:0})));      // NEW MESSAGE EVENT SYSTEM v0.15.2
+            ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
         }
         info!("{:?}", event);
     }
