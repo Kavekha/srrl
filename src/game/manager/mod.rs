@@ -10,10 +10,12 @@ pub struct ManagerPlugin;
 impl Plugin for ManagerPlugin {
     fn build(&self, app: &mut App) {
         app
-        .insert_resource(GameInfos{starting_position:Vector2Int { x:0, y: 0 }})   //Position Renommer 0.15.2
+        .init_resource::<GameInfos{
+            starting_position:Vector2Int { x:0, y: 0 },
+            spawn_list: Vec::new()
+        }>()   //Position Renommer 0.15.2
         .add_event::<MessageEvent>()   
         .add_systems(Update, handle_event.run_if(on_event::<MessageEvent>()));
-        ;
     }
 }
 
@@ -75,19 +77,33 @@ impl Message for CreatePlayerMessage {
                 .insert(Occupier);
 
             world.send_event(MessageEvent(Box::new(TextMessage{source:"CreatePlayerMessage".to_string(), text:"Player has been created".to_string()})));
+        } else {
+            world.send_event(MessageEvent(Box::new(TextMessage{source:"CreatePlayerMessage".to_string(), text:"Player was NOT created [No Game Infos]".to_string()})));
         };       
 
-        world.send_event(MessageEvent(Box::new(TextMessage{source:"CreatePlayerMessage".to_string(), text:"Player has been created".to_string()})));
+
     }
 }
 
 
-pub struct StartGameMessage;
+pub struct StartGameMessage{
+    pub step: usize
+}
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
-        world.send_event(MessageEvent(Box::new(CreateMapMessage)));
-        world.send_event(MessageEvent(Box::new(CreatePlayerMessage)));        
-        world.send_event(MessageEvent(Box::new(DisplayMapMessage)));
+        println!("Self step is {}", self.step);
+        let mut send_again = true;
+        let mut step = self.step;
+        match self.step {
+            0 => { world.send_event(MessageEvent(Box::new(CreateMapMessage)));},
+            1 => {world.send_event(MessageEvent(Box::new(CreatePlayerMessage)));},
+            2 => {world.send_event(MessageEvent(Box::new(DisplayMapMessage)));},
+            _ => {send_again = false;}
+        } 
+        if send_again {
+            step += 1;
+            world.send_event(MessageEvent(Box::new(StartGameMessage {step: step})));
+        }
     }
 }
 
@@ -103,7 +119,8 @@ impl Message for DisplayMapMessage {
 
 #[derive(Resource, Clone, Default, Debug)]  
 pub struct GameInfos{
-    pub starting_position: Vector2Int
+    pub starting_position: Vector2Int,
+    pub spawn_list: Vec<Vector2Int>
 }
 
 pub struct CreateMapMessage;
@@ -116,7 +133,13 @@ impl Message for CreateMapMessage {
 
         //get resource Game Infos
         let player_starting_position = builder.get_starting_position();  
-        world.insert_resource(GameInfos{starting_position: player_starting_position });
+
+        if let Some(game_infos) = world.get_resource::<GameInfos>(){
+            let mut new_game_infos = game_infos.clone();
+            new_game_infos.starting_position = player_starting_position;
+            world.insert_resource(new_game_infos.clone());
+            println!("Generating Map: Player starting position will be {:?}", player_starting_position);
+        };
         world.insert_resource(builder.build_data.map.clone());
 
         world.send_event(MessageEvent(Box::new(TextMessage{source:"CreateMapMessage".to_string(), text:"Map has been builded".to_string()})));
@@ -132,16 +155,8 @@ impl Message for CreateMapMessage {
         }
         */
 
-        /* 
-        let player = spawn_player(&mut commands);        
-        let player_starting_position = builder.get_starting_position();    
-        println!("Player: Starting position = {:?}", player_starting_position);
-        commands
-            .entity(player)
-            .insert(BoardPosition{ v:player_starting_position })
-        ;
-
         // Other entities. //TODO: Can't spawn different npc types: just one.
+        /*/
         let entities_pos = builder.spawn_entities();
         for entity_position in entities_pos {
             println!("NPC: Starting position = {:?}", entity_position);
