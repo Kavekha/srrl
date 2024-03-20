@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{game::{pieces::{components::Monster, spawners::{spawn_exit, spawn_npc, spawn_player}}, tileboard::components::BoardPosition}, map_builders::random_builder};
+use crate::{game::{pieces::{components::Monster, spawners::{spawn_exit, spawn_npc, spawn_player}}, tileboard::components::BoardPosition}, map_builders::{map::Map, random_builder, BuilderMap}, vectors::Vector2Int};
+
+use super::{pieces::{components::{Health, Melee, Occupier, Piece, Stats}, spawners::get_random_kind}, player::Player, states::GameState};
 
 
 pub struct ManagerPlugin;
@@ -8,6 +10,7 @@ pub struct ManagerPlugin;
 impl Plugin for ManagerPlugin {
     fn build(&self, app: &mut App) {
         app
+        .insert_resource(GameInfos{starting_position:Vector2Int { x:0, y: 0 }})   //Position Renommer 0.15.2
         .add_event::<MessageEvent>()   
         .add_systems(Update, handle_event.run_if(on_event::<MessageEvent>()));
         ;
@@ -32,22 +35,92 @@ pub trait Message: Send + Sync {
     fn execute(&self, world: &mut World);
 }
 
-pub struct TextMessage;
+pub struct TextMessage{
+    pub text: String,
+    pub source: String
+}
+
 impl Message for TextMessage {
-    fn execute(&self, world: &mut World) {
-        println!("Message sent.");
+    fn execute(&self, _world: &mut World) {
+        println!("{} : {}.", self.source, self.text);
     }
 }
+
+pub struct CreatePlayerMessage;
+impl Message for CreatePlayerMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(game_infos) = world.get_resource::<GameInfos>(){
+            let player_starting_position = game_infos.starting_position;
+            println!("Player: Starting position = {:?}", player_starting_position);
+            let kind = get_random_kind();
+            let piece = Piece{kind: kind};
+
+            let mut player = world.spawn_empty();
+            
+            player
+                .insert(piece)
+                .insert(Player)
+                .insert(Name::new("The Shadowrunner"))
+                //TODO : Shadowrun stats
+                .insert(Stats {
+                    power: 3,         
+                    attack: 6,
+                    dodge: 6,
+                    resilience: 3
+                })
+                //.insert(Actor::default(),)
+                .insert(Health { max: 10, current: 10 })
+                .insert(Melee { damage: 1 })
+                .insert(BoardPosition{ v:player_starting_position })
+                .insert(Occupier);
+
+            world.send_event(MessageEvent(Box::new(TextMessage{source:"CreatePlayerMessage".to_string(), text:"Player has been created".to_string()})));
+        };       
+
+        world.send_event(MessageEvent(Box::new(TextMessage{source:"CreatePlayerMessage".to_string(), text:"Player has been created".to_string()})));
+    }
+}
+
 
 pub struct StartGameMessage;
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
-        println!("Message StartGame : Building Map.");
+        world.send_event(MessageEvent(Box::new(CreateMapMessage)));
+        world.send_event(MessageEvent(Box::new(CreatePlayerMessage)));        
+        world.send_event(MessageEvent(Box::new(DisplayMapMessage)));
+    }
+}
+
+pub struct DisplayMapMessage;
+impl Message for DisplayMapMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
+            state.set(GameState::Prerun);
+        }
+    }
+}
+
+
+#[derive(Resource, Clone, Default, Debug)]  
+pub struct GameInfos{
+    pub starting_position: Vector2Int
+}
+
+pub struct CreateMapMessage;
+impl Message for CreateMapMessage {
+    fn execute(&self, world: &mut World) {
+        println!("CreateMapMessage: Building Map.");
         let mut builder = random_builder();
-        builder.build_map();
+        builder.build_map();        
+        builder.build_data.map.populate_blocked(); 
+
+        //get resource Game Infos
+        let player_starting_position = builder.get_starting_position();  
+        world.insert_resource(GameInfos{starting_position: player_starting_position });
         world.insert_resource(builder.build_data.map.clone());
 
-        world.send_event(MessageEvent(Box::new(TextMessage)));
+        world.send_event(MessageEvent(Box::new(TextMessage{source:"CreateMapMessage".to_string(), text:"Map has been builded".to_string()})));
+
     }
         /* TODO 
         if SHOW_MAPGEN_VISUALIZER {

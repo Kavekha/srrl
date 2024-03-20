@@ -52,7 +52,7 @@ impl Plugin for GamePlugin {
             .add_plugins(CombatPlugin)
             .add_plugins(ManagerPlugin)
 
-            .add_systems(OnEnter(GameState::NewGame),init_new_game)
+            //.add_systems(OnEnter(GameState::NewGame),init_new_game)   // v0.15.2
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)
             ;
     }
@@ -148,7 +148,8 @@ fn init_new_game(
     commands.insert_resource(builder.build_data.map.clone());
 
     if !SHOW_MAPGEN_VISUALIZER {
-        game_state.set(GameState::Prerun);  
+        //game_state.set(GameState::Prerun);  
+        println!("init_game: Should go to Prerun State. This is dealt with a Message now.")
     } else {
         game_state.set(GameState::MapGeneration);  
     }

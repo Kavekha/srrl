@@ -9,7 +9,7 @@ use crate::{
 
 use super::{
     //components::OnScreenMenu, 
-    clean_menu, menu_camera, OnScreenMenu};
+    clean_menu, menu_camera, victory::end_game_menu_input, OnScreenMenu};
 
 
 
@@ -22,7 +22,8 @@ impl Plugin for GameOverPlugin {
         app
             .add_systems(OnEnter(GameState::GameOverScreen), display_gameover_screen)
             .add_systems(OnEnter(GameState::GameOverScreen), menu_camera)
-            .add_systems(Update, gameover_menu_input.run_if(in_state(GameState::GameOverScreen)))
+            //.add_systems(Update, gameover_menu_input.run_if(in_state(GameState::GameOverScreen)))
+            .add_systems(Update, end_game_menu_input.run_if(in_state(GameState::GameOverScreen)))            
             .add_systems(OnExit(GameState::GameOverScreen), clean_menu);    
     }
 }
@@ -74,6 +75,8 @@ fn gameover_menu_input(
     mut game_state: ResMut<NextState<GameState>>,    
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {
+    // v0.15.2 remove this
+    /* 
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         game_state.set(GameState::NewGame);
     }
@@ -84,6 +87,7 @@ fn gameover_menu_input(
         }
         info!("{:?}", event);
     }
+    */
 }
 
 

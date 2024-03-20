@@ -1,9 +1,7 @@
 use bevy::{prelude::*, input::mouse::MouseButtonInput};
 
 use crate::{
-    game::states::GameState, 
-    //globals::CHAR_SIZE, 
-    engine::asset_loaders::GraphicsAssets, 
+    engine::asset_loaders::GraphicsAssets, game::{manager::{MessageEvent, StartGameMessage}, states::GameState} 
     //render::ascii::spawn_ascii_text
 };
 
@@ -20,7 +18,8 @@ impl Plugin for VictoryPlugin {
         app
             .add_systems(OnEnter(GameState::VictoryScreen), display_victory_screen)
             .add_systems(OnEnter(GameState::VictoryScreen), menu_camera)
-            .add_systems(Update, victory_menu_input.run_if(in_state(GameState::VictoryScreen)))
+            //.add_systems(Update, victory_menu_input.run_if(in_state(GameState::VictoryScreen)))
+            .add_systems(Update, end_game_menu_input.run_if(in_state(GameState::VictoryScreen)))            
             .add_systems(OnExit(GameState::VictoryScreen), clean_menu); 
     }
 }
@@ -74,6 +73,8 @@ fn victory_menu_input(
     mut game_state: ResMut<NextState<GameState>>,    
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
 ) {
+    // v0.15.2 remove this
+    /* 
     if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
         game_state.set(GameState::NewGame);
     }
@@ -81,6 +82,27 @@ fn victory_menu_input(
         //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
         if event.button == MouseButton::Left {
             game_state.set(GameState::NewGame);
+        }
+        info!("{:?}", event);
+    }
+    */
+}
+
+pub fn end_game_menu_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut game_state: ResMut<NextState<GameState>>,    
+    mut mouse_button_input_events: EventReader<MouseButtonInput>,
+    mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
+) {
+    if keys.any_just_pressed([KeyCode::Space, KeyCode::Enter]) {
+        //game_state.set(GameState::NewGame);
+        ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
+    }
+    for event in mouse_button_input_events.read() {
+        //sr_rl::menus::menus_input: MouseButtonInput { button: Left, state: Pressed }
+        if event.button == MouseButton::Left {
+            //game_state.set(GameState::NewGame);
+            ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
         }
         info!("{:?}", event);
     }

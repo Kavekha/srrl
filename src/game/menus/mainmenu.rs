@@ -95,11 +95,11 @@ pub fn main_menu_action(
                 }
                 MenuButtonAction::Play => {
                     println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(TextMessage)));           // NEW MESSAGE EVENT SYSTEM v0.15.2
+                    ev_message.send(MessageEvent(Box::new(TextMessage{source:"MainMenu::Play".to_string(), text:"Ask to go to game.".to_string()})));           // NEW MESSAGE EVENT SYSTEM v0.15.2
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
 
                     menu_state.set(MainMenuState::Disabled);
-                    game_state.set(GameState::NewGame);                    
+                    //game_state.set(GameState::NewGame);                    
                 }
                 MenuButtonAction::Load => {
                     println!("Load a saved game!");
