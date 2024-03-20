@@ -8,6 +8,7 @@ use self::tileboard::TileBoardPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 use self::menus::MenuPlugin;
+use self::manager::ManagerPlugin;
 
 pub mod combat;
 pub mod pieces;
@@ -17,6 +18,7 @@ pub mod rules;
 pub mod ui;
 pub mod menus;
 pub mod states;
+pub mod manager;
 
 
 
@@ -42,21 +44,14 @@ impl Plugin for GamePlugin {
             .insert_resource(Map::new())
             .insert_resource(ShouldSave{to_save: false})
 
-            // General
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)
             .add_plugins(MenuPlugin)
-            // Menus.            
-            //.add_plugins(VictoryPlugin)
-            //.add_plugins(GameOverPlugin)            
             .add_plugins(UiPlugin)     
-            //.add_plugins(MainMenuPlugin)
-            //.add_plugins(InGameMenuPlugin)
-            // Logique
             .add_plugins(TileBoardPlugin)
-            // Baston
             .add_plugins(CombatPlugin)
-            
+            .add_plugins(ManagerPlugin)
+
             .add_systems(OnEnter(GameState::NewGame),init_new_game)
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)
             ;

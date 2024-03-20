@@ -48,9 +48,7 @@ fn main() {
 
         .add_plugins(EnginePlugin)
         .add_plugins(GamePlugin)
-
-        // TODO : Deplacer dans Engine / Reduire le nombre.
-        //.init_state::<AppState>()
+        
         .init_state::<GameState>()  
         .init_state::<EngineState>()
 
