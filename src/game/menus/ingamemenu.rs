@@ -2,16 +2,11 @@ use bevy::{prelude::*, app::AppExit};
 
 //use crate::engine::states::AppState;
 
-use super::{clean_menu, components::{DisplayQuality, ResolutionSettings}, mainmenu::{button_system, menu_camera}};
+use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
-use crate::{
-    game::states::{GameState, MainMenuState}, 
-    //engine::states::{AppState, GameState, MainMenuState}, 
-    //engine::asset_loaders::GraphicsAssets, 
-};
+use crate::game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}};    //, globals::{NORMAL_BUTTON, TEXT_COLOR}};
 
-use super::components::{MenuButtonAction, OnScreenMenu} 
-;
+use super::components::MenuButtonAction;    //, OnScreenMenu} 
 
 
 pub struct InGameMenuPlugin;
@@ -41,15 +36,9 @@ impl Plugin for InGameMenuPlugin{
             .add_systems(OnEnter(InGameMenuState::SettingDisplay), enter_ig_display_menu) 
 
             //Todo with not in Disable?
-            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::MainMenu)))
-            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::MainMenu)))   
-            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::Settings)))
-            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::Settings)))   
-            .add_systems(Update, button_system.run_if(in_state(InGameMenuState::SettingDisplay)))
-            .add_systems(Update, ig_menu_action.run_if(in_state(InGameMenuState::SettingDisplay)))   
-            //.add_systems(Update, resolution_menu_action.run_if(in_state(InGameMenuState::SettingDisplay)))    //Only in display menu there. Not really cool but hey.   
+            .add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))
+            .add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )
             
-
             .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
             .add_systems(OnExit(InGameMenuState::SettingDisplay), clean_menu)               
@@ -106,22 +95,6 @@ pub fn ig_inside_menu_input(
     }
 }
 
-
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum InGameMenuState {
-    #[default]
-    Disabled,
-    MainMenu,
-    QuitConfirm,
-    Quit,
-    Cancel,
-    Resume,
-    BackToMainMenu,
-    Back,
-    Settings,
-    SettingDisplay,
-    SettingSound
-}
 
 pub fn ig_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
@@ -201,29 +174,6 @@ pub fn ig_menu_action(
 }
 
 
-pub struct MenuView{
-    pub action: MenuButtonAction,
-    pub text: String,
-}
-impl MenuView {
-    pub fn new(action: MenuButtonAction, text:String
-    ) -> MenuView {
-        let menu = MenuView {action: action, text:text};
-        menu
-    }
-}
-
-
-pub struct Menu{
-    pub pages: Vec<MenuView>
-}
-impl Menu {
-    pub fn new() -> Menu {
-        let mut menu = Menu{pages:Vec::new()};
-        menu
-    }
-}
-
 pub fn enter_ig_main_menu(mut commands: Commands) {
     println!("Entering IG Main menu.");
     let mut menu = Menu::new();
@@ -236,7 +186,7 @@ pub fn enter_ig_main_menu(mut commands: Commands) {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);
     }
-    spawn_ig_menu(&mut commands, menu)
+    spawn_basic_menu(&mut commands, menu)
 }
 
 pub fn enter_ig_settings_menu(mut commands: Commands) {
@@ -250,7 +200,7 @@ pub fn enter_ig_settings_menu(mut commands: Commands) {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);
     }
-    spawn_ig_menu(&mut commands, menu)
+    spawn_basic_menu(&mut commands, menu)
 }
 
 pub fn enter_ig_display_menu(mut commands: Commands) {
@@ -265,85 +215,5 @@ pub fn enter_ig_display_menu(mut commands: Commands) {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);
     }
-    spawn_ig_menu(&mut commands, menu)
-}
-
-const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
-
-
-pub fn spawn_ig_menu(mut commands: &mut Commands, new_menu: Menu) {
-    println!("In Game Menu");
-    //let new_menu = Menu::new();
-
-    let button_style = Style {
-        width: Val::Px(100.0),
-        height: Val::Px(32.5),
-        margin: UiRect::all(Val::Px(10.0)),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..default()
-    };
-
-    let button_text_style = TextStyle {
-        font_size: 20.0,
-        color: TEXT_COLOR,
-        ..default()
-    };
-
-    commands
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    ..default()
-                },
-                ..default()
-            },
-            OnScreenMenu,   //OnSettingsMenuScreen,
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    //background_color: Color::CRIMSON.into(),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    for page in new_menu.pages 
-                    /* 
-                    for (action, text) in [
-                                                (MenuButtonAction::SettingsDisplay, "Display"),
-                        (MenuButtonAction::SettingsSound, "Sound"),
-                        (MenuButtonAction::BackToMainMenu, "Back"),
-                    ] */
-                    {
-                        parent
-                            .spawn((
-                                ButtonBundle {
-                                    style: button_style.clone(),
-                                    background_color: NORMAL_BUTTON.into(),
-                                    ..default()
-                                },
-                                page.action,    //action,
-                            ))
-                            .with_children(|parent| {
-                                parent.spawn(TextBundle::from_section(
-                                    page.text,  //text,
-                                    button_text_style.clone(),
-                                ));
-                            });
-                    }
-                });
-        });
+    spawn_basic_menu(&mut commands, menu)
 }

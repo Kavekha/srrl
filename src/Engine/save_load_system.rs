@@ -34,6 +34,17 @@ impl Plugin for SaveLoadPlugin{
 }
 
 
+fn load_saved_game(
+    //app_state: &mut ResMut<NextState<AppState>>,
+    game_state: &mut ResMut<NextState<GameState>>,
+){
+    //app_state.set(AppState::Game);
+    game_state.set(GameState::LoadGame);
+    //load_game(app_state, game_state);
+}
+
+
+
 #[derive(Resource)]
 pub struct ShouldSave {
     pub to_save: bool
@@ -190,7 +201,6 @@ fn save_game(
     
     //state_back_main_menu(game_state);
     //state_back_main_menu(app_state, game_state);
-
 }
 
 pub fn state_back_main_menu(

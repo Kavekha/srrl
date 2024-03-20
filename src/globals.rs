@@ -6,6 +6,12 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 800.0;
 //pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 
+// Menu colors
+pub const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+pub const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
+pub const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+pub const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
+pub const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 

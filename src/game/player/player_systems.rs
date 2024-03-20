@@ -1,9 +1,7 @@
 use bevy::{prelude::*, input::mouse::MouseMotion};
 
-use crate::{
-    engine::save_load_system::ShouldSave,
-    game::{
-        states::GameState, combat::events::RefreshActionCostEvent, menus::ingamemenu::InGameMenuState, tileboard::components::{BoardPosition, ExitMapTile}}, 
+use crate::game::{
+        combat::events::RefreshActionCostEvent, menus::components::InGameMenuState, states::GameState, tileboard::components::{BoardPosition, ExitMapTile}
     };
 
 
@@ -19,9 +17,10 @@ pub fn player_mouse_input(
     }
 }
 
+
 pub fn player_input(
     keys: Res<ButtonInput<KeyCode>>,
-    mut should_save: ResMut<ShouldSave>,
+    //mut should_save: ResMut<ShouldSave>,
     mut menu_state: ResMut<NextState<InGameMenuState>>
 ){
     // MENU etc Move to input menu
@@ -40,7 +39,6 @@ pub fn player_input(
 }
 
 
-
 pub fn camera_follow(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>
@@ -51,6 +49,7 @@ pub fn camera_follow(
     camera_transform.translation.y = player_transform.translation.y;
 
 }
+
 
 pub fn exit_step_check(
     player_query: Query<&BoardPosition, With<Player>>,
