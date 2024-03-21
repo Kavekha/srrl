@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+
 use bevy::{app::AppExit, prelude::*};
+
+use crate::{game::{pieces::components::Occupier, tileboard::components::{BoardPosition, GameMap, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
 use super::{
     menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
@@ -57,6 +61,59 @@ impl Message for StartGameMessage {
     }
 }
 
+pub struct SpawnMapMessage;
+impl Message for SpawnMapMessage {
+    fn execute(&self, world: &mut World) {
+        // Créer les entités necessaires à son affichage, à partir d'une map déja générée.
+        println!("Spawning map?"); 
+        if let Some(map) = world.get_resource_mut::<Map>() {
+            println!("Yes we do.");
+            let mut new_map = map.clone();
+            spawning_map(world, &mut new_map); 
+            world.send_event(MessageEvent(Box::new(GameMapMessage)));       
+        } else {
+            println!("No we dont.");
+        }
+    }
+}
+
+fn spawning_map(world:&mut World, map:&mut Map){
+    println!("Let's spawn the map.");
+    let mut tiles = HashMap::new();
+            let mut tile_entities:Vec::<Entity> = Vec::new();
+
+            //We create logic entities from the map.tiles
+            let mut x = 0;
+            let mut y = 0;
+            for (_idx, tile_info) in map.tiles.iter().enumerate(){
+                let v = Vector2Int::new(x, y);
+                let mut tile = world.spawn_empty();
+                tile.insert(Tile {tiletype: *tile_info}).insert(BoardPosition{v});
+
+                if map.is_blocked(x, y) {
+                    tile.insert(Occupier); //TODO : Something else? Occupier is used by Pieces too.
+                }
+                tiles.insert(v, tile.id()); 
+                tile_entities.push(tile.id());
+                
+                x += 1;
+                if x > map.width as i32 - 1 {
+                    x = 0;
+                    y += 1;
+                }
+            }    
+            let mut game_map = world.spawn_empty();
+            game_map.insert(Name::new("Game Map")).insert(GameMap).push_children(&tile_entities);
+            map.entity_tiles = tiles; 
+    
+            println!("Map generated.");
+            world.insert_resource(map.clone());
+}
+
+
+
+
+
 pub struct ExitAppMessage;
 
 impl Message for ExitAppMessage {
@@ -66,6 +123,14 @@ impl Message for ExitAppMessage {
     }
 }
 
+pub struct GameMapMessage;
+impl Message for GameMapMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
+            state.set(GameState::GameMap);
+        }
+    }
+}
 
 pub struct DisplayMapMessage;
 impl Message for DisplayMapMessage {
