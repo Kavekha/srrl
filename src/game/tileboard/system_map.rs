@@ -13,9 +13,7 @@ pub struct GameInfos{
     pub starting_position: Vector2Int,
     pub spawn_list: Vec<Vector2Int>,
     pub exit_position: Vector2Int
-}
-
-    
+}    
 
 // Créer une Map via le Builder. Retourne les elements necessaires au placement des NPC & etc.
 

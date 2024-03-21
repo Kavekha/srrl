@@ -5,7 +5,7 @@
 use bevy::{prelude::*, app::AppExit};
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{manager::{MessageEvent, StartGameMessage, TextMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, 
+    game::{manager::{ExitAppMessage, MessageEvent, StartGameMessage, TextMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, 
     globals::{
         HEIGHT, 
         //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, PRESSED_BUTTON, 
@@ -78,7 +78,7 @@ pub fn main_menu_action(
                 MenuButtonAction::Quit => {
                     //app_exit_events.send(AppExit);
                     println!("Quit App");
-                    app_exit_events.send(AppExit);
+                    ev_message.send(MessageEvent(Box::new(ExitAppMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //app_exit_events.send(AppExit);
                 }
                 MenuButtonAction::Cancel => {
                     //app_exit_events.send(AppExit);
@@ -87,7 +87,6 @@ pub fn main_menu_action(
                 }
                 MenuButtonAction::Play => {
                     println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(TextMessage{source:"MainMenu::Play".to_string(), text:"Ask to go to game.".to_string()})));           // NEW MESSAGE EVENT SYSTEM v0.15.2
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
 
                     menu_state.set(MainMenuState::Disabled);

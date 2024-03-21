@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use bevy::{app::AppExit, prelude::*};
 
 use crate::vectors::Vector2Int;
 
-use super::{pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::create_map};
+use super::{menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::{GameState, MainMenuState}, tileboard::system_map::create_map};
 
 
 pub struct ManagerPlugin;
@@ -56,6 +56,15 @@ impl Message for StartGameMessage {
     }
 }
 
+pub struct ExitAppMessage;
+
+impl Message for ExitAppMessage {
+    fn execute(&self, world: &mut World) {
+        println!("ExitApp ");
+        world.send_event(AppExit);
+    }
+}
+
 
 pub struct DisplayMapMessage;
 impl Message for DisplayMapMessage {
@@ -67,3 +76,38 @@ impl Message for DisplayMapMessage {
 }
 
 
+pub struct QuitGameMessage;
+impl Message for QuitGameMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
+            state.set(GameState::Disabled);
+        }
+    }
+}
+
+pub struct ActiveMainMenuMessage;
+impl Message for ActiveMainMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
+            state.set(MainMenuState::MainMenu);
+        }
+    }
+}
+
+pub struct CloseInGameMenuMessage;
+impl Message for CloseInGameMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
+            state.set(InGameMenuState::Disabled);
+        }
+    }
+}
+
+pub struct CloseMainMenuMessage;
+impl Message for CloseMainMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
+            state.set(MainMenuState::Disabled);
+        }
+    }
+}

@@ -4,7 +4,7 @@ use bevy::{prelude::*, app::AppExit};
 
 use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
-use crate::game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}};    //, globals::{NORMAL_BUTTON, TEXT_COLOR}};
+use crate::game::{manager::{ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, QuitGameMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}};    //, globals::{NORMAL_BUTTON, TEXT_COLOR}};
 
 use super::components::MenuButtonAction;    //, OnScreenMenu} 
 
@@ -34,6 +34,7 @@ impl Plugin for InGameMenuPlugin{
             .add_systems(OnEnter(InGameMenuState::MainMenu), enter_ig_main_menu)
             .add_systems(OnEnter(InGameMenuState::Settings), enter_ig_settings_menu)
             .add_systems(OnEnter(InGameMenuState::SettingDisplay), enter_ig_display_menu) 
+            .add_systems(OnEnter(InGameMenuState::QuitConfirm), enter_ig_quit_confirm_menu)
 
             //Todo with not in Disable?
             .add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))
@@ -105,6 +106,7 @@ pub fn ig_menu_action(
     mut main_menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
+    mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -115,7 +117,7 @@ pub fn ig_menu_action(
                 }
                 MenuButtonAction::Quit => {
                     println!("Quit App");
-                    app_exit_events.send(AppExit);
+                    ev_message.send(MessageEvent(Box::new(ExitAppMessage))); 
                 }
                 MenuButtonAction::Cancel => {
                     println!("Don't want to quit.");
@@ -123,13 +125,13 @@ pub fn ig_menu_action(
                 }
                 MenuButtonAction::BackToGame => {
                     println!("Go to game !");
-                    menu_state.set(InGameMenuState::Disabled);                  
+                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));    //menu_state.set(InGameMenuState::Disabled);                  
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to main menu");
-                    main_menu_state.set(MainMenuState::MainMenu);
-                    menu_state.set(InGameMenuState::Disabled);   
-                    game_state.set(GameState::Disabled);
+                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));   // game_state.set(GameState::Disabled);
+                    ev_message.send(MessageEvent(Box::new(CloseInGameMenuMessage)));     //menu_state.set(InGameMenuState::Disabled);   
+                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage)));   //main_menu_state.set(MainMenuState::MainMenu);                 
                 }
                 MenuButtonAction::Settings => {
                     println!("Go to Settings");
@@ -211,6 +213,19 @@ pub fn enter_ig_display_menu(mut commands: Commands) {
                         (MenuButtonAction::DisplayMedium, "Medium"),
                         (MenuButtonAction::DisplayHigh, "High"),
                         (MenuButtonAction::BackToSettings, "Back"),
+        ] {
+            let page = MenuView::new(action, text.to_string());
+            menu.pages.push(page);
+    }
+    spawn_basic_menu(&mut commands, menu)
+}
+
+pub fn enter_ig_quit_confirm_menu(mut commands: Commands) {
+    println!("Entering IG Quit Confirm menu.");
+    let mut menu = Menu::new();
+    for (action, text) in [                            
+            (MenuButtonAction::Cancel, "Cancel"),
+            (MenuButtonAction::Quit, "Confirm"),
         ] {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);
