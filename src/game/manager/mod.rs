@@ -1,8 +1,13 @@
-use bevy::prelude::*;
+use std::collections::HashMap;
 
-use crate::{game::{pieces::{components::Monster, spawners::Kind}, tileboard::components::BoardPosition}, map_builders::random_builder, vectors::Vector2Int};
+use bevy::{app::AppExit, prelude::*};
 
-use super::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Stats, Walk}, spawners::get_random_kind}, player::Player, states::GameState, tileboard::components::ExitMapTile};
+use crate::{game::{pieces::components::Occupier, tileboard::{components::{BoardPosition, GameMap, Tile}, system_map::spawning_map}}, map_builders::map::Map, vectors::Vector2Int};
+
+use super::{
+    menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
+    states::{GameState, MainMenuState}, tileboard::system_map::create_map
+};
 
 
 pub struct ManagerPlugin;
@@ -52,96 +57,47 @@ impl Message for StartGameMessage {
         create_player(world, game_infos.starting_position);
         spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
-        world.send_event(MessageEvent(Box::new(DisplayMapMessage)));
+        world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
+        world.send_event(MessageEvent(Box::new(GameMapMessage)));        
     }
 }
 
-fn create_map(world: &mut World) -> GameInfos {
-    println!("CreateMapMessage: Building Map.");
-        let mut builder = random_builder();
-        builder.build_map();        
-        builder.build_data.map.populate_blocked(); 
-
-        let mut game_infos = GameInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new(), exit_position:Vector2Int{x:0, y:0}};
-        game_infos.starting_position = builder.get_starting_position();
-        game_infos.spawn_list = builder.spawn_entities();
-        game_infos.exit_position = builder.get_exit_position();
-        println!("Generating Map: Player starting position will be {:?}", game_infos.starting_position);
-
-        world.insert_resource(builder.build_data.map.clone());
-
-        world.send_event(MessageEvent(Box::new(TextMessage{source:"CreateMapMessage".to_string(), text:"Map has been builded".to_string()})));
-        return game_infos
-}
-
-fn create_player(world: &mut World, player_starting_position: Vector2Int){
-    //if let Some(game_infos) = world.get_resource::<GameInfos>(){
-        //let player_starting_position = game_infos.starting_position;
-        println!("Player: Starting position = {:?}", player_starting_position);
-        let kind = get_random_kind();
-        let piece = Piece{kind: kind};
-
-        let mut player = world.spawn_empty();
-        
-        player
-            .insert(piece)
-            .insert(Player)
-            .insert(Name::new("The Shadowrunner"))
-            //TODO : Shadowrun stats
-            .insert(Stats {
-                power: 3,         
-                attack: 6,
-                dodge: 6,
-                resilience: 3
-            })
-            //.insert(Actor::default(),)
-            .insert(Health { max: 10, current: 10 })
-            .insert(Melee { damage: 1 })
-            .insert(BoardPosition{ v:player_starting_position })
-            .insert(Occupier);
-    //}
-}
-
-fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
-    for entity_position in entities_pos {
-        println!("NPC: Starting position = {:?}", entity_position);
-        spawn_mob(world, entity_position);
+pub struct SpawnMapMessage;
+impl Message for SpawnMapMessage {
+    fn execute(&self, world: &mut World) {
+        // Créer les entités necessaires à son affichage, à partir d'une map déja générée.
+        println!("Spawning map?"); 
+        if let Some(map) = world.get_resource_mut::<Map>() {
+            println!("Yes we do.");
+            let mut new_map = map.clone();
+            spawning_map(world, &mut new_map); 
+            world.send_event(MessageEvent(Box::new(GameMapMessage)));       
+        } else {
+            println!("No we dont.");
+        }
     }
 }
 
-fn spawn_mob(world: &mut World, npc_spawning_position: Vector2Int
-) {
-        let mut npc = world.spawn_empty();
-        
-        npc
-        .insert(Name::new(format!("Ghoul")))
-        .insert(Piece{kind: Kind::Ghoul })
-        .insert(Stats {
-            power: 4,         
-            attack: 4,
-            dodge: 3,
-            resilience: 4
-        })
-        //.insert(Actor::default(),)
-        .insert(Npc)
-        .insert(Monster)
-        .insert(Walk)
-        .insert(Melee { damage: 2 })
-        .insert(Health { max: 10, current: 10 })
-        .insert(BoardPosition{ v:npc_spawning_position })
-        .insert(Occupier);
-    println!("Npc created");
+
+pub struct ExitAppMessage;
+
+impl Message for ExitAppMessage {
+    fn execute(&self, world: &mut World) {
+        println!("ExitApp ");
+        world.send_event(AppExit);
+    }
 }
 
-fn create_exit_map(world: &mut World, exit_position: Vector2Int){
-    let mut exit = world.spawn_empty();
-    exit 
-    .insert(Name::new(format!("Exit")))
-    .insert(ExitMapTile)
-    .insert(BoardPosition{ v:exit_position});
+pub struct GameMapMessage;
+impl Message for GameMapMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
+            state.set(GameState::GameMap);
+        }
+    }
 }
 
-
+/* 
 pub struct DisplayMapMessage;
 impl Message for DisplayMapMessage {
     fn execute(&self, world: &mut World) {
@@ -150,48 +106,48 @@ impl Message for DisplayMapMessage {
         }
     }
 }
+*/
 
-
-#[derive(Resource, Clone, Default, Debug)]  
-pub struct GameInfos{
-    pub starting_position: Vector2Int,
-    pub spawn_list: Vec<Vector2Int>,
-    pub exit_position: Vector2Int
+pub struct QuitGameMessage;
+impl Message for QuitGameMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
+            state.set(GameState::Disabled);
+        }
+    }
 }
 
-        /* TODO 
-        if SHOW_MAPGEN_VISUALIZER {
-            let mapgen_history = MapGenHistory{
-                history: builder.build_data.history.clone(),
-                index: 0,
-            };
-            commands.insert_resource(mapgen_history);
+pub struct ActiveMainMenuMessage;
+impl Message for ActiveMainMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
+            state.set(MainMenuState::MainMenu);
         }
-        */
-
-        // Other entities. //TODO: Can't spawn different npc types: just one.
-        /*/
-        let entities_pos = builder.spawn_entities();
-        for entity_position in entities_pos {
-            println!("NPC: Starting position = {:?}", entity_position);
-            let npc = spawn_npc(&mut commands);
-            //TODO : Le nom pour le moment est dans le spawner.
-            commands
-            .entity(npc)
-            .insert(BoardPosition{ v:entity_position})
-            .insert(Monster)
-            ;
+    }
+}
+pub struct ActiveInGameMenuMessage;
+impl Message for ActiveInGameMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
+            state.set(InGameMenuState::MainMenu);
         }
-        */
+    }
+}
 
-        /* 
-        // EXIT 
-        let exit_position = builder.get_exit_position();
-        let exit = spawn_exit(&mut commands);
-        commands.entity(exit).insert(BoardPosition{ v:exit_position});
-                
-        builder.build_data.map.populate_blocked(); 
+pub struct CloseInGameMenuMessage;
+impl Message for CloseInGameMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
+            state.set(InGameMenuState::Disabled);
+        }
+    }
+}
 
-        commands.insert_resource(builder.build_data.map.clone());
-*/
-     
+pub struct CloseMainMenuMessage;
+impl Message for CloseMainMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
+            state.set(MainMenuState::Disabled);
+        }
+    }
+}

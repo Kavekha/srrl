@@ -2,10 +2,13 @@
     // Not really a resize: resolution is changed, but low = less thing to see.
 
 
-use bevy::{prelude::*, app::AppExit};
+use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{manager::{MessageEvent, StartGameMessage, TextMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, 
+    game::{
+        manager::{ActiveMainMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, StartGameMessage}, 
+        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
+    }, 
     globals::{
         HEIGHT, 
         //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, PRESSED_BUTTON, 
@@ -56,20 +59,10 @@ impl Plugin for MainMenuPlugin{
 }
 
 
-/* 
-fn load_main_menu(
-    mut mainmenu_state: ResMut<NextState<MainMenuState>>
-){
-    println!("Main Menu !!!!");
-    mainmenu_state.set(MainMenuState::MainMenu);
-}
-*/
 
 pub fn main_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-    mut app_exit_events: EventWriter<AppExit>,
-    //mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+     mut game_state: ResMut<NextState<GameState>>,
     mut menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
@@ -86,25 +79,22 @@ pub fn main_menu_action(
                 MenuButtonAction::Quit => {
                     //app_exit_events.send(AppExit);
                     println!("Quit App");
-                    app_exit_events.send(AppExit);
+                    ev_message.send(MessageEvent(Box::new(ExitAppMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //app_exit_events.send(AppExit);
                 }
                 MenuButtonAction::Cancel => {
                     //app_exit_events.send(AppExit);
                     println!("Don't want to quit.");
-                    menu_state.set(MainMenuState::MainMenu);
+                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
                 }
                 MenuButtonAction::Play => {
-                    println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(TextMessage{source:"MainMenu::Play".to_string(), text:"Ask to go to game.".to_string()})));           // NEW MESSAGE EVENT SYSTEM v0.15.2
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
-
-                    menu_state.set(MainMenuState::Disabled);
-                    //game_state.set(GameState::NewGame);                    
+                    println!("Go to game !");                    
+                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));  //menu_state.set(MainMenuState::Disabled);
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //game_state.set(GameState::NewGame);                    
                 }
                 MenuButtonAction::Load => {
                     println!("Load a saved game!");
                     //load_saved_game(&mut app_state, &mut game_state); 
-                    menu_state.set(MainMenuState::Disabled);
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);
                     game_state.set(GameState::LoadGame);
                     //load_game(app_state, game_state);
                 }
@@ -114,7 +104,7 @@ pub fn main_menu_action(
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to main menu");
-                    menu_state.set(MainMenuState::MainMenu)
+                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu)
                 }
                 MenuButtonAction::SettingsDisplay => {
                     println!("Display Menu!");
@@ -213,115 +203,6 @@ pub fn enter_mm_display_menu(mut commands: Commands) {
     spawn_basic_menu(&mut commands, menu)
 }
 
-/* 
-fn spawn_display_menu(
-    mut commands: Commands, 
-    display_quality: Res<DisplayQuality>
-) {
-    println!("Menu de display");
-    let button_style = Style {
-        width: Val::Px(100.0),
-        height: Val::Px(32.5),
-        margin: UiRect::all(Val::Px(10.0)),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..default()
-    };
-    let button_text_style = TextStyle {
-        font_size: 20.0,
-        color: TEXT_COLOR,
-        ..default()
-    };
-
-    commands
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    ..default()
-                },
-                ..default()
-            },
-            OnScreenMenu,   //OnDisplaySettingsMenuScreen,
-        ))
-        .with_children(|parent| {
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Center,
-                        ..default()
-                    },
-                    //background_color: Color::CRIMSON.into(),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    // Create a new `NodeBundle`, this time not setting its `flex_direction`. It will
-                    // use the default value, `FlexDirection::Row`, from left to right.
-                    parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                align_items: AlignItems::Center,
-                                ..default()
-                            },
-                            //background_color: Color::CRIMSON.into(),
-                            ..default()
-                        })
-                        .with_children(|parent| {
-                            // Display a label for the current setting
-                            parent.spawn(TextBundle::from_section(
-                                "Display Quality",
-                                button_text_style.clone(),
-                            ));
-                            // Display a button for each possible value
-                            for quality_setting in [
-                                DisplayQuality::Low,
-                                DisplayQuality::Medium,
-                                DisplayQuality::High,
-                            ] {
-                                let mut entity = parent.spawn((
-                                    ButtonBundle {
-                                        style: Style {
-                                            width: Val::Px(75.0),
-                                            height: Val::Px(32.5),
-                                            ..button_style.clone()
-                                        },
-                                        background_color: NORMAL_BUTTON.into(),
-                                        ..default()
-                                    },
-                                    quality_setting
-                                ));
-                                entity.with_children(|parent| {
-                                    parent.spawn(TextBundle::from_section(
-                                        format!("{quality_setting:?}"),
-                                        button_text_style.clone(),
-                                    ));
-                                });
-                                if *display_quality == quality_setting {
-                                    entity.insert(SelectedOption);
-                                }
-                            }
-                        });
-                    // Display the back button to return to the settings screen
-                    parent
-                        .spawn((
-                            ButtonBundle {
-                                style: button_style,
-                                background_color: NORMAL_BUTTON.into(),
-                                ..default()
-                            },
-                            MenuButtonAction::BackToSettings,
-                        ))
-                        .with_children(|parent| {
-                            parent.spawn(TextBundle::from_section("Back", button_text_style));
-                        });
-                });
-        });
-}
-*/
 
 
 pub fn spawn_main_menu(

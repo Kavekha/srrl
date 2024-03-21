@@ -4,8 +4,6 @@ use bevy::prelude::*;
 pub enum GameState {
     #[default]
     Disabled,
-    Prerun,     // Partie logique de la map.. //  v0.15.2
-    MapGeneration,
     GameMap,    // La map et le perso qui s'y balade.
     GameOverScreen,
     VictoryScreen,
