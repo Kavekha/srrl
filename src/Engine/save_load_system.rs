@@ -291,6 +291,6 @@ pub fn state_after_load_game(
     //mut app_state: ResMut<NextState<AppState>>,
     mut game_state: ResMut<NextState<GameState>>,
 ){
-    game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
+    //game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
     //app_state.set(AppState::Game);
 }

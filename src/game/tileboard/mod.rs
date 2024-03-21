@@ -18,7 +18,7 @@ impl Plugin for TileBoardPlugin {
         app
             // Init.
             //.add_systems(OnEnter(GameState::Prerun), spawn_map) 
-            .add_systems(OnEnter(GameState::Prerun), request_map_spawning)
+            //.add_systems(OnEnter(GameState::Prerun), request_map_spawning)
             
             //SHOW_MAPGEN_VISUALIZER must be true.  //TODO : Broken lors de la division Logic VS Render.
             /* 

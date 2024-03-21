@@ -57,7 +57,8 @@ impl Message for StartGameMessage {
         create_player(world, game_infos.starting_position);
         spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
-        world.send_event(MessageEvent(Box::new(DisplayMapMessage)));
+        world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
+        world.send_event(MessageEvent(Box::new(GameMapMessage)));        
     }
 }
 
@@ -132,6 +133,7 @@ impl Message for GameMapMessage {
     }
 }
 
+/* 
 pub struct DisplayMapMessage;
 impl Message for DisplayMapMessage {
     fn execute(&self, world: &mut World) {
@@ -140,7 +142,7 @@ impl Message for DisplayMapMessage {
         }
     }
 }
-
+*/
 
 pub struct QuitGameMessage;
 impl Message for QuitGameMessage {
