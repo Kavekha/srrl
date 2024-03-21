@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{game::{pieces::{components::Monster, spawners::{spawn_exit, spawn_npc, spawn_player, Kind}}, tileboard::components::BoardPosition}, map_builders::{map::Map, random_builder, BuilderMap}, vectors::Vector2Int};
 
-use super::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Stats, Walk}, spawners::get_random_kind}, player::Player, states::GameState};
+use super::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Stats, Walk}, spawners::get_random_kind}, player::Player, states::GameState, tileboard::components::ExitMapTile};
 
 
 pub struct ManagerPlugin;
@@ -51,6 +51,7 @@ impl Message for StartGameMessage {
         let game_infos = create_map(world);
         create_player(world, game_infos.starting_position);
         spawn_npcs(world, game_infos.spawn_list);
+        create_exit_map(world, game_infos.exit_position);
         world.send_event(MessageEvent(Box::new(DisplayMapMessage)));
     }
 }
@@ -61,13 +62,12 @@ fn create_map(world: &mut World) -> GameInfos {
         builder.build_map();        
         builder.build_data.map.populate_blocked(); 
 
-        //get resource Game Infos
-        let player_starting_position = builder.get_starting_position();  
-        let mut game_infos = GameInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new()};
-        game_infos.starting_position = player_starting_position;
+        let mut game_infos = GameInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new(), exit_position:Vector2Int{x:0, y:0}};
+        game_infos.starting_position = builder.get_starting_position();
         game_infos.spawn_list = builder.spawn_entities();
-        println!("Generating Map: Player starting position will be {:?}", player_starting_position);
-        //};
+        game_infos.exit_position = builder.get_exit_position();
+        println!("Generating Map: Player starting position will be {:?}", game_infos.starting_position);
+
         world.insert_resource(builder.build_data.map.clone());
 
         world.send_event(MessageEvent(Box::new(TextMessage{source:"CreateMapMessage".to_string(), text:"Map has been builded".to_string()})));
@@ -133,6 +133,14 @@ fn spawn_mob(world: &mut World, npc_spawning_position: Vector2Int
     println!("Npc created");
 }
 
+fn create_exit_map(world: &mut World, exit_position: Vector2Int){
+    let mut exit = world.spawn_empty();
+    exit 
+    .insert(Name::new(format!("Exit")))
+    .insert(ExitMapTile)
+    .insert(BoardPosition{ v:exit_position});
+}
+
 
 pub struct DisplayMapMessage;
 impl Message for DisplayMapMessage {
@@ -147,7 +155,8 @@ impl Message for DisplayMapMessage {
 #[derive(Resource, Clone, Default, Debug)]  
 pub struct GameInfos{
     pub starting_position: Vector2Int,
-    pub spawn_list: Vec<Vector2Int>
+    pub spawn_list: Vec<Vector2Int>,
+    pub exit_position: Vector2Int
 }
 
         /* TODO 
