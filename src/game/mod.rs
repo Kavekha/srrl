@@ -8,6 +8,7 @@ use self::tileboard::TileBoardPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 use self::menus::MenuPlugin;
+use self::manager::ManagerPlugin;
 
 pub mod combat;
 pub mod pieces;
@@ -17,21 +18,14 @@ pub mod rules;
 pub mod ui;
 pub mod menus;
 pub mod states;
+pub mod manager;
 
 
-
-use crate::game::pieces::components::Monster;
-use crate::game::pieces::spawners::{spawn_player, spawn_npc, spawn_exit};
-use crate::game::tileboard::components::{BoardPosition, ExitMapTile};
+use crate::game::tileboard::components::ExitMapTile;
 use crate::game::states::GameState;
-use crate::map_builders::components::MapGenHistory;
 use crate::engine::render::components::{GameMapRender, GameCursorRender};
 use crate::engine::save_load_system::ShouldSave;
-use crate::{
-    globals::SHOW_MAPGEN_VISUALIZER,
-    map_builders::map::Map,
-    map_builders::random_builder
-};
+use crate::map_builders::map::Map;
 
 
 pub struct GamePlugin;
@@ -42,22 +36,14 @@ impl Plugin for GamePlugin {
             .insert_resource(Map::new())
             .insert_resource(ShouldSave{to_save: false})
 
-            // General
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)
             .add_plugins(MenuPlugin)
-            // Menus.            
-            //.add_plugins(VictoryPlugin)
-            //.add_plugins(GameOverPlugin)            
             .add_plugins(UiPlugin)     
-            //.add_plugins(MainMenuPlugin)
-            //.add_plugins(InGameMenuPlugin)
-            // Logique
             .add_plugins(TileBoardPlugin)
-            // Baston
             .add_plugins(CombatPlugin)
-            
-            .add_systems(OnEnter(GameState::NewGame),init_new_game)
+            .add_plugins(ManagerPlugin)
+
             .add_systems(OnExit(GameState::GameMap), clean_game_screen)
             ;
     }
@@ -97,66 +83,6 @@ pub fn clean_game_screen(
     despawn_screen(despawn_player, &mut commands);
     despawn_screen(despawn_gamecursor, &mut commands);
     despawn_screen(despawn_exit, &mut commands);
-}
-
-
-fn init_new_game(
-    mut commands: Commands, 
-    mut game_state: ResMut<NextState<GameState>>,
-) {
-    let mut builder = random_builder();
-    builder.build_map();
-
-    if SHOW_MAPGEN_VISUALIZER {
-        let mapgen_history = MapGenHistory{
-            history: builder.build_data.history.clone(),
-            index: 0,
-        };
-        commands.insert_resource(mapgen_history);
-    }
-
-    // init player  // TODO : ChainSystem ? But builder can't be made a resource cause of Dyn / Life time.
-    // Logic spawning only.
-    let player = spawn_player(&mut commands);
-
-    let player_starting_position = builder.get_starting_position();    
-    println!("Player: Starting position = {:?}", player_starting_position);
-    commands
-        .entity(player)
-        .insert(BoardPosition{ v:player_starting_position })
-    ;
-
-    // Other entities. //TODO: Can't spawn different npc types: just one.
-    let entities_pos = builder.spawn_entities();
-    for entity_position in entities_pos {
-
-        println!("NPC: Starting position = {:?}", entity_position);
-
-        let npc = spawn_npc(&mut commands);
-
-        //TODO : Le nom pour le moment est dans le spawner.
-        commands
-        .entity(npc)
-        .insert(BoardPosition{ v:entity_position})
-        .insert(Monster)
-        ;
-    }
-
-    // EXIT 
-    let exit_position = builder.get_exit_position();
-    let exit = spawn_exit(&mut commands);
-    commands.entity(exit).insert(BoardPosition{ v:exit_position});
-    
-    
-    builder.build_data.map.populate_blocked(); 
-
-    commands.insert_resource(builder.build_data.map.clone());
-
-    if !SHOW_MAPGEN_VISUALIZER {
-        game_state.set(GameState::Prerun);  
-    } else {
-        game_state.set(GameState::MapGeneration);  
-    }
 }
 
 

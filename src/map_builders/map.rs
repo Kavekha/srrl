@@ -57,6 +57,7 @@ impl Map {
 
     /// Default map.
     pub fn new() -> Map {
+        println!("Je fais un map::new()");
         Map{
             tiles: vec![TileType::Wall; MAPCOUNT],  
             width: MAPWIDTH as i32,

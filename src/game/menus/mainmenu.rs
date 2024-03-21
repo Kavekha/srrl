@@ -5,8 +5,7 @@
 use bevy::{prelude::*, app::AppExit};
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, 
-    states::{GameState, MainMenuState}}, 
+    game::{manager::{MessageEvent, StartGameMessage, TextMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, 
     globals::{
         HEIGHT, 
         //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, PRESSED_BUTTON, 
@@ -74,6 +73,7 @@ pub fn main_menu_action(
     mut menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
+    mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -95,8 +95,11 @@ pub fn main_menu_action(
                 }
                 MenuButtonAction::Play => {
                     println!("Go to game !");
+                    ev_message.send(MessageEvent(Box::new(TextMessage{source:"MainMenu::Play".to_string(), text:"Ask to go to game.".to_string()})));           // NEW MESSAGE EVENT SYSTEM v0.15.2
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
+
                     menu_state.set(MainMenuState::Disabled);
-                    game_state.set(GameState::NewGame);                    
+                    //game_state.set(GameState::NewGame);                    
                 }
                 MenuButtonAction::Load => {
                     println!("Load a saved game!");

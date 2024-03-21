@@ -1,7 +1,7 @@
 use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::game::{
-        combat::events::RefreshActionCostEvent, menus::components::InGameMenuState, states::GameState, tileboard::components::{BoardPosition, ExitMapTile}
+        combat::events::RefreshActionCostEvent, states::GameState, tileboard::components::{BoardPosition, ExitMapTile}
     };
 
 
@@ -15,27 +15,6 @@ pub fn player_mouse_input(
     for _event in mouse_move.read() {
         ev_refresh_action.send(RefreshActionCostEvent);
     }
-}
-
-
-pub fn player_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    //mut should_save: ResMut<ShouldSave>,
-    mut menu_state: ResMut<NextState<InGameMenuState>>
-){
-    // MENU etc Move to input menu
-    /*
-    if keys.just_pressed(KeyCode::Escape) {
-        println!("Call for In Game Menu.");
-        menu_state.set(InGameMenuState::MainMenu);
-    } */
-
-    /* QUIT GAME, BACK TO MAIN MENU, SAVE 
-    if keys.just_pressed(KeyCode::Escape) {
-        should_save.to_save = true;
-        return;
-    } 
-    */   
 }
 
 
