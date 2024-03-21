@@ -1,10 +1,13 @@
-use bevy::{prelude::*, app::AppExit};
+use bevy::prelude::*;
 
 //use crate::engine::states::AppState;
 
 use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
-use crate::game::{manager::{ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, QuitGameMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}};    //, globals::{NORMAL_BUTTON, TEXT_COLOR}};
+use crate::game::{
+    manager::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, QuitGameMessage},
+    menus::menu_builder::{spawn_basic_menu, Menu, MenuView}
+};   
 
 use super::components::MenuButtonAction;    //, OnScreenMenu} 
 
@@ -99,11 +102,7 @@ pub fn ig_inside_menu_input(
 
 pub fn ig_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-    mut app_exit_events: EventWriter<AppExit>,
-    //mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
     mut menu_state: ResMut<NextState<InGameMenuState>>,
-    mut main_menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
     mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
@@ -161,7 +160,7 @@ pub fn ig_menu_action(
                 }
                 MenuButtonAction::Back => {
                     println!("Go back to Menu");
-                    menu_state.set(InGameMenuState::MainMenu);   
+                    ev_message.send(MessageEvent(Box::new(ActiveInGameMenuMessage))); //menu_state.set(InGameMenuState::MainMenu);   
                 }
                 MenuButtonAction::BackToSettings => {
                     println!("Back to Settings");

@@ -2,10 +2,13 @@
     // Not really a resize: resolution is changed, but low = less thing to see.
 
 
-use bevy::{prelude::*, app::AppExit};
+use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{manager::{ExitAppMessage, MessageEvent, StartGameMessage, TextMessage}, menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}}, 
+    game::{
+        manager::{ActiveMainMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, StartGameMessage}, 
+        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
+    }, 
     globals::{
         HEIGHT, 
         //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, PRESSED_BUTTON, 
@@ -59,9 +62,7 @@ impl Plugin for MainMenuPlugin{
 
 pub fn main_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-    mut app_exit_events: EventWriter<AppExit>,
-    //mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+     mut game_state: ResMut<NextState<GameState>>,
     mut menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
@@ -83,19 +84,17 @@ pub fn main_menu_action(
                 MenuButtonAction::Cancel => {
                     //app_exit_events.send(AppExit);
                     println!("Don't want to quit.");
-                    menu_state.set(MainMenuState::MainMenu);
+                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
                 }
                 MenuButtonAction::Play => {
-                    println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2
-
-                    menu_state.set(MainMenuState::Disabled);
-                    //game_state.set(GameState::NewGame);                    
+                    println!("Go to game !");                    
+                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));  //menu_state.set(MainMenuState::Disabled);
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //game_state.set(GameState::NewGame);                    
                 }
                 MenuButtonAction::Load => {
                     println!("Load a saved game!");
                     //load_saved_game(&mut app_state, &mut game_state); 
-                    menu_state.set(MainMenuState::Disabled);
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);
                     game_state.set(GameState::LoadGame);
                     //load_game(app_state, game_state);
                 }
@@ -105,7 +104,7 @@ pub fn main_menu_action(
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to main menu");
-                    menu_state.set(MainMenuState::MainMenu)
+                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu)
                 }
                 MenuButtonAction::SettingsDisplay => {
                     println!("Display Menu!");

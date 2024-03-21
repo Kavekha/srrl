@@ -1,8 +1,9 @@
 use bevy::{app::AppExit, prelude::*};
 
-use crate::vectors::Vector2Int;
-
-use super::{menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::{GameState, MainMenuState}, tileboard::system_map::create_map};
+use super::{
+    menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
+    states::{GameState, MainMenuState}, tileboard::system_map::create_map
+};
 
 
 pub struct ManagerPlugin;
@@ -90,6 +91,14 @@ impl Message for ActiveMainMenuMessage {
     fn execute(&self, world: &mut World) {
         if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
             state.set(MainMenuState::MainMenu);
+        }
+    }
+}
+pub struct ActiveInGameMenuMessage;
+impl Message for ActiveInGameMenuMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
+            state.set(InGameMenuState::MainMenu);
         }
     }
 }
