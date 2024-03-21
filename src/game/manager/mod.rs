@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{pieces::{components::Monster, spawners::{spawn_exit, spawn_npc, spawn_player, Kind}}, tileboard::components::BoardPosition}, map_builders::{map::Map, random_builder, BuilderMap}, vectors::Vector2Int};
+use crate::{game::{pieces::{components::Monster, spawners::Kind}, tileboard::components::BoardPosition}, map_builders::random_builder, vectors::Vector2Int};
 
 use super::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Stats, Walk}, spawners::get_random_kind}, player::Player, states::GameState, tileboard::components::ExitMapTile};
 
