@@ -3,5 +3,5 @@
         ".\\Cargo.toml"
     ],
     "rust-analyzer.showUnlinkedFileNotification": false,
-    "cargo.automaticCheck": false
+    //"cargo.automaticCheck": false
 }

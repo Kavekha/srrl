@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 
 use crate::{
-    game::{manager::{MessageEvent, TextMessage}, pieces::components::Occupier, states::GameState, tileboard::components::{BoardPosition, GameMap, Tile}}, map_builders::{map::Map, random_builder}, vectors::Vector2Int
+    game::{pieces::components::Occupier, tileboard::components::{BoardPosition, GameMap, Tile}}, 
+    map_builders::{map::Map, random_builder}, vectors::Vector2Int
 };
 
 
@@ -31,7 +32,7 @@ pub fn create_map(world: &mut World) -> GameInfos {
 
         world.insert_resource(builder.build_data.map.clone());
 
-        world.send_event(MessageEvent(Box::new(TextMessage{source:"CreateMapMessage".to_string(), text:"Map has been builded".to_string()})));
+        println!("Map has been builded");
         return game_infos
 }
 

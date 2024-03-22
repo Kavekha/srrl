@@ -26,10 +26,10 @@ impl Plugin for GraphicsPlugin {
         app
             //.add_event::<GraphicsWaitEvent>()
     
-            .add_systems(OnEnter(GameState::GameMap), spawn_map_render)                  
-            .add_systems(OnEnter(GameState::GameMap), spawn_piece_renderer)
-            .add_systems(OnEnter(GameState::GameMap), spawn_game_cursor)     
-            .add_systems(OnEnter(GameState::GameMap), spawn_exit_render)    
+            .add_systems(OnEnter(GameState::Running), spawn_map_render)                  
+            .add_systems(OnEnter(GameState::Running), spawn_piece_renderer)
+            .add_systems(OnEnter(GameState::Running), spawn_game_cursor)     
+            .add_systems(OnEnter(GameState::Running), spawn_exit_render)    
 
             //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
             .add_systems(Update, (path_animator_update).in_set(CombatSet::Animation))   //melee_animation

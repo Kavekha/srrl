@@ -1,17 +1,17 @@
-// TODO : Comment gèrer ça autrement?
+/*
+-- Envoyer de la musique:
+fn test_music_event(mut ev_message: EventWriter<MessageEvent>) {ev_message.send(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()}))); } 
+*/
 
 use bevy::prelude::*;
 
-mod components;
+pub mod components;
 
-use crate::{
-    //AppState,
-    GameState, engine::asset_loaders::AudioAssets,
-};
+use crate::{GameState, engine::asset_loaders::AudioAssets};
 
 use self::components::CurrentMusic;
 
-
+ 
 pub struct GameAudioPlugin;
 
 impl Plugin for GameAudioPlugin{
@@ -19,38 +19,53 @@ impl Plugin for GameAudioPlugin{
         &self, app:&mut App
     ) {
         app
+            .add_event::<MusicEvent>()   
+            .add_systems(Update, handle_music_event.run_if(on_event::<MusicEvent>()))
+
             //TODO: Something else than a function & system by music...
-            //GameMap
-            .add_systems(OnEnter(GameState::GameMap), setup_audio_gamemap)
-            //Victory
             .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
-            //Main Menu
-            .add_systems(OnEnter(GameState::Disabled), setup_audio_mainmenu)     
-            //Death
             .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
             ;
         println!("INFO: Audioplugin loaded.");    
     }    
 }
 
-//TODO : Refacto audio to avoid duplicate.
-fn setup_audio_mainmenu(
-    mut commands: Commands,
-    //asset_server: Res<AssetServer>,
-    assets: Res<AudioAssets>,
-    query_music: Query<&AudioSink> 
-) {
-    println!("audio: setup audio mainmenu");
-    stop_music(query_music);
-    commands.spawn((
-        AudioBundle {
-            //source: asset_server.load("audios/Seattle-2050.ogg"),
-            source: assets.musics["main_menu"].clone(),
-            ..default()},
-        CurrentMusic,
-        ));
+#[derive(Event)]
+pub struct MusicEvent{
+    pub source: String
 }
 
+fn handle_music_event(
+    mut commands: Commands,
+    assets: Res<AudioAssets>,
+    query_music: Query<&AudioSink>,
+    mut ev_music: EventReader<MusicEvent>,
+) {
+    stop_music(query_music);
+    for event in ev_music.read() {
+        println!("audio: setup audio handle: source is {}", event.source);
+        commands.spawn((
+            AudioBundle {
+                //source: asset_server.load("audios/Seattle-2050.ogg"),
+                source: assets.musics[event.source.as_str()].clone(),
+                ..default()},
+            CurrentMusic,
+            ));
+    }
+}
+
+pub fn stop_music(
+    // `AudioSink` will be inserted by Bevy when the audio starts playing
+    query_music: Query<&AudioSink>,  //, With<CurrentMusic>>,
+) {
+    println!("Stop Music: Start");
+    for sink in query_music.iter() {
+        sink.stop();
+    };
+}
+
+
+//TODO : Remplacer par le systeme d'Event.
 fn setup_audio_death(
     mut commands: Commands,
     assets: Res<AudioAssets>,
@@ -64,6 +79,7 @@ fn setup_audio_death(
         ));
 }
 
+//TODO : Remplacer par le systeme d'Event.
 fn setup_audio_victory(
     mut commands: Commands,
     assets: Res<AudioAssets>,
@@ -77,27 +93,5 @@ fn setup_audio_victory(
         ));
 }
 
-fn setup_audio_gamemap(
-    mut commands: Commands,
-    assets: Res<AudioAssets>,
-    query_music: Query<&AudioSink> 
-) {
-    stop_music(query_music);
-    commands.spawn((
-        AudioBundle {
-            source: assets.musics["gamemap"].clone(),
-        ..default()},
-        CurrentMusic,
-    ));
-}
 
 
-fn stop_music(
-    // `AudioSink` will be inserted by Bevy when the audio starts playing
-    query_music: Query<&AudioSink>  //, With<CurrentMusic>>,
-) {
-    println!("Stop Music: Start");
-    for sink in query_music.iter() {
-        sink.stop();
-    };
-}

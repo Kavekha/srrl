@@ -17,16 +17,16 @@ impl Plugin for UiPlugin {
         app
             .add_event::<ReloadUiEvent>()
 
-            .add_systems(OnEnter(GameState::GameMap), display_interface)
+            .add_systems(OnEnter(GameState::Running), display_interface)
 
-            .add_systems(Update, draw_interface.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, draw_enemy_health.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, display_action_points_on_cursor.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick).after(create_action_infos))
+            .add_systems(Update, draw_interface.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            .add_systems(Update, draw_enemy_health.run_if(in_state(GameState::Running)))
+            .add_systems(Update, display_action_points_on_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(create_action_infos))
             
 
-            .add_systems(OnExit(GameState::GameMap), despawn_component::<InterfaceGame>)
-            .add_systems(OnExit(GameState::GameMap), despawn_component::<UiEnemyHp>)
-            .add_systems(OnExit(GameState::GameMap), despawn_component::<UiActionPointsOnCursor>)
+            .add_systems(OnEnter(GameState::Disabled), despawn_component::<InterfaceGame>)
+            .add_systems(OnEnter(GameState::Disabled), despawn_component::<UiEnemyHp>)
+            .add_systems(OnEnter(GameState::Disabled), despawn_component::<UiActionPointsOnCursor>)
             ;
     }
 }
