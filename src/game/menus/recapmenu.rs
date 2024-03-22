@@ -55,6 +55,7 @@ fn menu_event_reader(
                     MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
             ]
         );
+        println!("Je suis dans Menu Event Reader avec pour header: {}.", event.header);
         spawn_recap_menu(&mut commands, graph_assets, menu);
         break;      // Degueu, mais seul le premier m'interesse et c peu probable que j'en ai d'autres.
     }    
@@ -64,6 +65,7 @@ pub fn enter_recap_menu(
     mut commands: Commands,
     graph_assets: Res<GraphicsAssets>,
 ){
+    println!("Je ne suis plus sensé fonctionner");
     let menu = MenuV2::new(
         "recap_menu",
         vec![

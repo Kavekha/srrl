@@ -113,8 +113,6 @@ let button_text_style = TextStyle {
     ..default()
 };
 
-let menu = read_menu();
-
 commands
         .spawn((
             NodeBundle {

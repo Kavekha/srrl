@@ -56,7 +56,7 @@ impl Message for StartGameMessage {
         println!("==== START GAME ===");
         let game_infos = create_map(world);
         create_player(world, game_infos.starting_position);
-        spawn_npcs(world, game_infos.spawn_list);
+        //spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
         world.send_event(MessageEvent(Box::new(RunGameMessage)));      
@@ -127,12 +127,11 @@ enum RecapType{
     Forfeit
 }
 
-//TODO : Envoi Event pour le Menu Recap Victory ou Game Over.
-pub struct EndGameRecapMessage{
-    pub recap_type: RecapType
+struct EndGameRecapMessage{
+    recap_type: RecapType
 }
 impl Message for EndGameRecapMessage {
-    fn execute(&self, world: &mut World) {
+    fn execute(&self, world: &mut World) {        
         match self.recap_type {
             RecapType::GameOver => {
                 world.send_event(MenuEvent{
@@ -141,6 +140,16 @@ impl Message for EndGameRecapMessage {
                     description: "A ghoul has eaten you.".to_string(),
                     menu_type: MenuType::RECAP_MENU
                 });
+                println!("EndGameRecap is Game Over");
+            },
+            RecapType::Victory => {
+                world.send_event(MenuEvent{
+                    id: "victory".to_string(),
+                    header: "victory!".to_string(),
+                    description: "You flee the place.".to_string(),
+                    menu_type: MenuType::RECAP_MENU
+                });
+                println!("EndGameRecap is Victory");
             },
             _ => println!("Autres types de Recap non supportés.")
         };
