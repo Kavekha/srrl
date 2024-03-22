@@ -46,7 +46,7 @@ impl Plugin for GamePlugin {
             ;
     }
 }
-
+ 
 
 
 pub fn despawn_component<T: Component>(
@@ -75,6 +75,7 @@ pub fn clean_game_screen(
     despawn_exit: Query<Entity, With<ExitMapTile>>,
     
 ) {
+    println!("Cleaning Game Screen now.");
     despawn_screen(despawn_npc, &mut commands);
     despawn_screen(despawn_gamemap, &mut commands);
     despawn_screen(despawn_gamemap_render, &mut commands);    

@@ -17,7 +17,7 @@ impl Plugin for VictoryPlugin {
         app
             .add_systems(OnEnter(GameState::VictoryScreen), display_victory_screen)
             .add_systems(OnEnter(GameState::VictoryScreen), menu_camera)
-            .add_systems(Update, end_game_menu_input.run_if(in_state(GameState::VictoryScreen)))            
+            //.add_systems(Update, end_game_menu_input.run_if(in_state(GameState::VictoryScreen)))            
             .add_systems(OnExit(GameState::VictoryScreen), clean_menu); 
     }
 }
@@ -65,7 +65,7 @@ fn display_victory_screen(
 }
 
 
-pub fn end_game_menu_input(
+pub fn _end_game_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut mouse_button_input_events: EventReader<MouseButtonInput>,
     mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2

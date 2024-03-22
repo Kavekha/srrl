@@ -1,12 +1,11 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::states::GameState,
-    engine::asset_loaders::GraphicsAssets,
+    engine::asset_loaders::GraphicsAssets, game::{menus::{components::MenuButtonAction, menu_builder::{spawn_basic_menu, Menu, MenuView}}, states::MainMenuState}
 };
 
 use super::{
-    clean_menu, menu_camera, victory::end_game_menu_input, OnScreenMenu};
+    clean_menu, menu_camera, OnScreenMenu};
 
 
 // TODO: Refacto Victory & GameOver en un seul: Recap Screen?
@@ -16,14 +15,27 @@ pub struct GameOverPlugin;
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(GameState::GameOverScreen), display_gameover_screen)
-            .add_systems(OnEnter(GameState::GameOverScreen), menu_camera)
-            .add_systems(Update, end_game_menu_input.run_if(in_state(GameState::GameOverScreen)))            
-            .add_systems(OnExit(GameState::GameOverScreen), clean_menu);    
+            .add_systems(OnEnter(MainMenuState::RecapMenu), enter_go_menu)
+            .add_systems(OnEnter(MainMenuState::RecapMenu), menu_camera)         
+            .add_systems(OnExit(MainMenuState::RecapMenu), clean_menu);    
     }
 }
 
-fn display_gameover_screen(
+pub fn enter_go_menu(mut commands: Commands) {
+    println!("Entering GameOver menu.");
+    let mut menu = Menu::new();
+    for (action, text) in [                            
+            (MenuButtonAction::Play, "Retry"),
+            (MenuButtonAction::BackToMainMenu, "MainMenu"),
+        ] {
+            let page = MenuView::new(action, text.to_string());
+            menu.pages.push(page);
+    }
+    spawn_basic_menu(&mut commands, menu)
+}
+
+
+fn _display_gameover_screen(
     mut commands: Commands,
     graph_assets: Res<GraphicsAssets>
 ) {

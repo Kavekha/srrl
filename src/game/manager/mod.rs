@@ -7,8 +7,7 @@ use crate::{
 };
 
 use super::{
-    menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
-    states::{GameState, MainMenuState}, tileboard::system_map::create_map
+    clean_game_screen, menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::{GameState, MainMenuState}, tileboard::system_map::create_map
 };
 
 
@@ -54,12 +53,13 @@ pub struct StartGameMessage;
 
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
+        println!("==== START GAME ===");
         let game_infos = create_map(world);
         create_player(world, game_infos.starting_position);
         spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
-        world.send_event(MessageEvent(Box::new(GameMapMessage)));      
+        world.send_event(MessageEvent(Box::new(RunGameMessage)));      
         let music_name = "gamemap".to_string();
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
@@ -73,8 +73,7 @@ impl Message for SpawnMapMessage {
         if let Some(map) = world.get_resource_mut::<Map>() {
             println!("Yes we do.");
             let mut new_map = map.clone();
-            spawning_map(world, &mut new_map); 
-            world.send_event(MessageEvent(Box::new(GameMapMessage)));       
+            spawning_map(world, &mut new_map);     
         } else {
             println!("No we dont.");
         }
@@ -91,8 +90,8 @@ impl Message for ExitAppMessage {
     }
 }
 
-pub struct GameMapMessage;
-impl Message for GameMapMessage {
+pub struct RunGameMessage;
+impl Message for RunGameMessage {
     fn execute(&self, world: &mut World) {
         if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
             state.set(GameState::Running);
@@ -100,13 +99,58 @@ impl Message for GameMapMessage {
     }
 }
 
+pub struct GameOverMessage;
+impl Message for GameOverMessage {
+    fn execute(&self, world: &mut World) {
+        println!("Game Over Message!");
+        world.send_event(MessageEvent(Box::new(QuitGameMessage)));
+        world.send_event(MessageEvent(Box::new(EndGameRecapMessage)));
+    }
+}
+
+//TODO : Modifier pour afficher le Menu Game Over.
+pub struct EndGameRecapMessage;
+impl Message for EndGameRecapMessage {
+    fn execute(&self, world: &mut World) {
+        println!("End Game Recap?");
+        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
+            state.set(MainMenuState::RecapMenu);
+            println!("yes");
+        } else {
+            println!("no");
+        }
+    }
+}
 
 pub struct QuitGameMessage;
 impl Message for QuitGameMessage {
     fn execute(&self, world: &mut World) {
+        let mut can_quit = false;
         if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
             state.set(GameState::Disabled);
+            println!("GameState is now disabled");
+            can_quit = true;
         }
+        if can_quit {
+            world.send_event(MessageEvent(Box::new(ClearGameMessage)));
+        }
+    }
+}
+
+// Remove any existing element of the current game. (From clean_game_screen)
+pub struct ClearGameMessage;
+impl Message for ClearGameMessage {
+    fn execute(&self, world: &mut World) {
+        let clean_game = world.register_system(clean_game_screen);
+        let result = world.run_system(clean_game);
+        println!("Result is {:?}", result);
+
+        /*
+        let mut query_npc = world.query_filtered::<Entity, With<Npc>>();
+        for entity in query_npc.iter(&world){
+            world.commands.entity(entity).despawn_recursive();
+        };
+         */
     }
 }
 
