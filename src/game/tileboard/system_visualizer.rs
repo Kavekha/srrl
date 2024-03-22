@@ -17,7 +17,7 @@ fn display_map_generation(
     );
 
     if !SHOW_MAPGEN_VISUALIZER{
-        game_state.set(GameState::GameMap);
+        game_state.set(GameState::Running);
     }
     let map_generated = map_gen.history[map_gen.index].clone();
     println!("Current Snapshot from map history: {}", map_gen.index);
@@ -28,7 +28,7 @@ fn display_map_generation(
     // End of map generation history:
     if map_gen.index >= map_gen.history.len(){
         println!("Fin de l'affichage de la generation history");
-        game_state.set(GameState::GameMap);
+        game_state.set(GameState::Running);
     }
 }
 */

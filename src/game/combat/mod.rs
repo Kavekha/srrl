@@ -62,7 +62,7 @@ impl Plugin for CombatPlugin {
             
             
             // Init Combat.
-            .add_systems(OnEnter(GameState::GameMap), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
+            .add_systems(OnEnter(GameState::Running), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
            // Le tour commence.
            .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()).in_set(CombatSet::Logic))
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
@@ -72,35 +72,35 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
 
             // Generation des actions à faire.
-            .add_systems(Update, combat_input.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
-            .add_systems(Update, on_click_action.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic).after(combat_input))
+            .add_systems(Update, combat_input.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
+            .add_systems(Update, on_click_action.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(combat_input))
             
             // Plan NPC
-            //.add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
-            .add_systems(Update, npc_planning.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            //.add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
+            .add_systems(Update, npc_planning.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
             
             // Check des actions demandées.
-            .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
             
             // Gestion des actions demandées.
-            .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick))
-            .add_systems(Update, action_entity_move.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick).after(action_entity_try_move))
-            .add_systems(Update, action_entity_try_attack.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick).after(action_entity_try_move))
-            .add_systems(Update, action_entity_get_hit.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick).after(action_entity_try_attack))
-            .add_systems(Update, entity_dies.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Tick).after(action_entity_get_hit))
+            .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
+            .add_systems(Update, action_entity_move.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_move))
+            .add_systems(Update, action_entity_try_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_move))
+            .add_systems(Update, action_entity_get_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_attack))
+            .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_get_hit))
  
 
             // Check de la situation PA-wise.
-            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Logic))
+            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
             .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
 
             // ANIME : //TODO : Changer d'endroit.
-            .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Animation))
-            .add_systems(Update, path_animator_update.run_if(in_state(GameState::GameMap)).in_set(CombatSet::Animation))
+            .add_systems(Update, walk_combat_animation.run_if(in_state(GameState::Running)).in_set(CombatSet::Animation))
+            .add_systems(Update, path_animator_update.run_if(in_state(GameState::Running)).in_set(CombatSet::Animation))
             
 
             // TODO: Quitter le combat. PLACEHOLDER.
-            .add_systems(OnExit(GameState::GameMap), combat_end)
+            .add_systems(OnEnter(GameState::Disabled), combat_end)
                 
             ;
     }

@@ -21,9 +21,9 @@ impl Plugin for PlayerPlugin{
     fn build(&self, app: &mut App) {
         app          
             .add_event::<PlayerInputReadyEvent>()
-            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::GameMap)))            
-            .add_systems(Update, camera_follow.run_if(in_state(GameState::GameMap)))
-            .add_systems(Update, exit_step_check.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, player_mouse_input.run_if(in_state(GameState::Running)))            
+            .add_systems(Update, camera_follow.run_if(in_state(GameState::Running)))
+            .add_systems(Update, exit_step_check.run_if(in_state(GameState::Running)))
             ;
     }
 }

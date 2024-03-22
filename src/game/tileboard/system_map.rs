@@ -3,7 +3,8 @@ use std::collections::HashMap;
 use bevy::prelude::*;
 
 use crate::{
-    game::{manager::MessageEvent, pieces::components::Occupier, states::GameState, tileboard::components::{BoardPosition, GameMap, Tile}}, map_builders::{map::Map, random_builder}, vectors::Vector2Int
+    game::{pieces::components::Occupier, tileboard::components::{BoardPosition, GameMap, Tile}}, 
+    map_builders::{map::Map, random_builder}, vectors::Vector2Int
 };
 
 

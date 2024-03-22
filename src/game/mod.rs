@@ -4,7 +4,6 @@ use bevy::prelude::*;
 use self::combat::CombatPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
-use self::tileboard::TileBoardPlugin;
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 use self::menus::MenuPlugin;
@@ -40,11 +39,10 @@ impl Plugin for GamePlugin {
             .add_plugins(CursorPlugin)
             .add_plugins(MenuPlugin)
             .add_plugins(UiPlugin)     
-            .add_plugins(TileBoardPlugin)
             .add_plugins(CombatPlugin)
             .add_plugins(ManagerPlugin)
 
-            .add_systems(OnExit(GameState::GameMap), clean_game_screen)
+            .add_systems(OnEnter(GameState::Disabled), clean_game_screen)
             ;
     }
 }

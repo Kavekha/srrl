@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-
 use bevy::{app::AppExit, prelude::*};
 
 use crate::{
-    game::{pieces::components::Occupier, tileboard::{components::{BoardPosition, GameMap, Tile}, system_map::spawning_map}}, 
-    map_builders::map::Map, vectors::Vector2Int,
-    engine::{asset_loaders::AudioAssets, audios::{components::CurrentMusic, MusicEvent}}
+    game::tileboard::system_map::spawning_map, 
+    map_builders::map::Map, 
+    engine::audios::MusicEvent
 };
 
 use super::{
@@ -97,7 +95,7 @@ pub struct GameMapMessage;
 impl Message for GameMapMessage {
     fn execute(&self, world: &mut World) {
         if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
-            state.set(GameState::GameMap);
+            state.set(GameState::Running);
         }
     }
 }

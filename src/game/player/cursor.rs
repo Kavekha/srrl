@@ -11,7 +11,7 @@ impl Plugin for CursorPlugin{
     fn build(&self, app: &mut App) {
         app 
             .insert_resource(Cursor{grid_position:Vector2Int{x:0,y:0},world_position:Vec3::new(0.0, 0.0, 0.0), screen_position: None}) 
-            .add_systems(Update, cursor_position.run_if(in_state(GameState::GameMap)))
+            .add_systems(Update, cursor_position.run_if(in_state(GameState::Running)))
         ;
     }
 }

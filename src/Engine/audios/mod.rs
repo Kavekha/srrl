@@ -7,11 +7,7 @@ use bevy::prelude::*;
 
 pub mod components;
 
-use crate::{
-    //AppState,
-    GameState, engine::asset_loaders::AudioAssets,
-    game::manager::{MessageEvent, PlayMusicMessage}
-};
+use crate::{GameState, engine::asset_loaders::AudioAssets};
 
 use self::components::CurrentMusic;
 
@@ -25,16 +21,9 @@ impl Plugin for GameAudioPlugin{
         app
             .add_event::<MusicEvent>()   
             .add_systems(Update, handle_music_event.run_if(on_event::<MusicEvent>()))
-            //.add_systems(OnEnter(GameState::Disabled), test_music_event)
 
             //TODO: Something else than a function & system by music...
-            //GameMap
-            //.add_systems(OnEnter(GameState::GameMap), setup_audio_gamemap)
-            //Victory
             .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
-            //Main Menu
-            //.add_systems(OnEnter(GameState::Disabled), setup_audio_mainmenu)     
-            //Death
             .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
             ;
         println!("INFO: Audioplugin loaded.");    
@@ -45,14 +34,6 @@ impl Plugin for GameAudioPlugin{
 pub struct MusicEvent{
     pub source: String
 }
-
-fn test_music_event(
-    mut ev_message: EventWriter<MessageEvent> 
-){
-    println!("Envoi de la musique");    
-    ev_message.send(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()})));  
-}
-
 
 fn handle_music_event(
     mut commands: Commands,
@@ -73,9 +54,18 @@ fn handle_music_event(
     }
 }
 
+pub fn stop_music(
+    // `AudioSink` will be inserted by Bevy when the audio starts playing
+    query_music: Query<&AudioSink>,  //, With<CurrentMusic>>,
+) {
+    println!("Stop Music: Start");
+    for sink in query_music.iter() {
+        sink.stop();
+    };
+}
 
 
-
+//TODO : Remplacer par le systeme d'Event.
 fn setup_audio_death(
     mut commands: Commands,
     assets: Res<AudioAssets>,
@@ -89,6 +79,7 @@ fn setup_audio_death(
         ));
 }
 
+//TODO : Remplacer par le systeme d'Event.
 fn setup_audio_victory(
     mut commands: Commands,
     assets: Res<AudioAssets>,
@@ -102,27 +93,5 @@ fn setup_audio_victory(
         ));
 }
 
-fn setup_audio_gamemap(
-    mut commands: Commands,
-    assets: Res<AudioAssets>,
-    query_music: Query<&AudioSink> 
-) {
-    stop_music(query_music);
-    commands.spawn((
-        AudioBundle {
-            source: assets.musics["gamemap"].clone(),
-        ..default()},
-        CurrentMusic,
-    ));
-}
 
 
-pub fn stop_music(
-    // `AudioSink` will be inserted by Bevy when the audio starts playing
-    query_music: Query<&AudioSink>,  //, With<CurrentMusic>>,
-) {
-    println!("Stop Music: Start");
-    for sink in query_music.iter() {
-        sink.stop();
-    };
-}

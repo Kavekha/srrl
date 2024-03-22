@@ -4,7 +4,7 @@ use bevy::prelude::*;
 pub enum GameState {
     #[default]
     Disabled,
-    GameMap,    // La map et le perso qui s'y balade.
+    Running,
     GameOverScreen,
     VictoryScreen,
     SaveGame,
