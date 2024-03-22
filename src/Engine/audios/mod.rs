@@ -2,16 +2,17 @@
 
 use bevy::prelude::*;
 
-mod components;
+pub mod components;
 
 use crate::{
     //AppState,
     GameState, engine::asset_loaders::AudioAssets,
+    game::manager::{MessageEvent, PlayMusicMessage}
 };
 
 use self::components::CurrentMusic;
 
-
+ 
 pub struct GameAudioPlugin;
 
 impl Plugin for GameAudioPlugin{
@@ -38,8 +39,11 @@ fn setup_audio_mainmenu(
     mut commands: Commands,
     //asset_server: Res<AssetServer>,
     assets: Res<AudioAssets>,
-    query_music: Query<&AudioSink> 
+    query_music: Query<&AudioSink>,
+    mut ev_message: EventWriter<MessageEvent>
 ) {
+    ev_message.send(MessageEvent(Box::new(PlayMusicMessage)));     
+    /* 
     println!("audio: setup audio mainmenu");
     stop_music(query_music);
     commands.spawn((
@@ -49,6 +53,7 @@ fn setup_audio_mainmenu(
             ..default()},
         CurrentMusic,
         ));
+        */
 }
 
 fn setup_audio_death(
@@ -92,9 +97,9 @@ fn setup_audio_gamemap(
 }
 
 
-fn stop_music(
+pub fn stop_music(
     // `AudioSink` will be inserted by Bevy when the audio starts playing
-    query_music: Query<&AudioSink>  //, With<CurrentMusic>>,
+    query_music: Query<&AudioSink>,  //, With<CurrentMusic>>,
 ) {
     println!("Stop Music: Start");
     for sink in query_music.iter() {

@@ -2,7 +2,11 @@ use std::collections::HashMap;
 
 use bevy::{app::AppExit, prelude::*};
 
-use crate::{game::{pieces::components::Occupier, tileboard::{components::{BoardPosition, GameMap, Tile}, system_map::spawning_map}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{
+    game::{pieces::components::Occupier, tileboard::{components::{BoardPosition, GameMap, Tile}, system_map::spawning_map}}, 
+    map_builders::map::Map, vectors::Vector2Int,
+    engine::{asset_loaders::AudioAssets, audios::{components::CurrentMusic}}
+};
 
 use super::{
     menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
@@ -75,6 +79,13 @@ impl Message for SpawnMapMessage {
         } else {
             println!("No we dont.");
         }
+    }
+}
+
+pub struct PlayMusicMessage;
+impl Message for PlayMusicMessage {
+    fn execute(&self, world: &mut World) {
+        println!("JE VEUX FAIRE DE LA MUSIQUE :-(");    
     }
 }
 
