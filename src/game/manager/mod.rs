@@ -5,7 +5,7 @@ use bevy::{app::AppExit, prelude::*};
 use crate::{
     game::{pieces::components::Occupier, tileboard::{components::{BoardPosition, GameMap, Tile}, system_map::spawning_map}}, 
     map_builders::map::Map, vectors::Vector2Int,
-    engine::{asset_loaders::AudioAssets, audios::{components::CurrentMusic}}
+    engine::{asset_loaders::AudioAssets, audios::{components::CurrentMusic, MusicEvent}}
 };
 
 use super::{
@@ -42,16 +42,15 @@ pub trait Message: Send + Sync {
     fn execute(&self, world: &mut World);
 }
 
-pub struct TextMessage{
-    pub text: String,
+pub struct PlayMusicMessage{
     pub source: String
 }
-
-impl Message for TextMessage {
-    fn execute(&self, _world: &mut World) {
-        println!("{} : {}.", self.source, self.text);
+impl Message for PlayMusicMessage {
+    fn execute(&self, world: &mut World) {
+        world.send_event(MusicEvent{source:self.source.clone()});
     }
 }
+
 
 pub struct StartGameMessage;
 
@@ -62,7 +61,9 @@ impl Message for StartGameMessage {
         spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
-        world.send_event(MessageEvent(Box::new(GameMapMessage)));        
+        world.send_event(MessageEvent(Box::new(GameMapMessage)));      
+        let music_name = "gamemap".to_string();
+        world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
 }
 
@@ -79,13 +80,6 @@ impl Message for SpawnMapMessage {
         } else {
             println!("No we dont.");
         }
-    }
-}
-
-pub struct PlayMusicMessage;
-impl Message for PlayMusicMessage {
-    fn execute(&self, world: &mut World) {
-        println!("JE VEUX FAIRE DE LA MUSIQUE :-(");    
     }
 }
 
@@ -108,16 +102,6 @@ impl Message for GameMapMessage {
     }
 }
 
-/* 
-pub struct DisplayMapMessage;
-impl Message for DisplayMapMessage {
-    fn execute(&self, world: &mut World) {
-        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
-            state.set(GameState::Prerun);
-        }
-    }
-}
-*/
 
 pub struct QuitGameMessage;
 impl Message for QuitGameMessage {

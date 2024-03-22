@@ -1,4 +1,7 @@
-// TODO : Comment gèrer ça autrement?
+/*
+-- Envoyer de la musique:
+fn test_music_event(mut ev_message: EventWriter<MessageEvent>) {ev_message.send(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()}))); } 
+*/
 
 use bevy::prelude::*;
 
@@ -20,13 +23,17 @@ impl Plugin for GameAudioPlugin{
         &self, app:&mut App
     ) {
         app
+            .add_event::<MusicEvent>()   
+            .add_systems(Update, handle_music_event.run_if(on_event::<MusicEvent>()))
+            //.add_systems(OnEnter(GameState::Disabled), test_music_event)
+
             //TODO: Something else than a function & system by music...
             //GameMap
-            .add_systems(OnEnter(GameState::GameMap), setup_audio_gamemap)
+            //.add_systems(OnEnter(GameState::GameMap), setup_audio_gamemap)
             //Victory
             .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
             //Main Menu
-            .add_systems(OnEnter(GameState::Disabled), setup_audio_mainmenu)     
+            //.add_systems(OnEnter(GameState::Disabled), setup_audio_mainmenu)     
             //Death
             .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
             ;
@@ -34,27 +41,40 @@ impl Plugin for GameAudioPlugin{
     }    
 }
 
-//TODO : Refacto audio to avoid duplicate.
-fn setup_audio_mainmenu(
+#[derive(Event)]
+pub struct MusicEvent{
+    pub source: String
+}
+
+fn test_music_event(
+    mut ev_message: EventWriter<MessageEvent> 
+){
+    println!("Envoi de la musique");    
+    ev_message.send(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()})));  
+}
+
+
+fn handle_music_event(
     mut commands: Commands,
-    //asset_server: Res<AssetServer>,
     assets: Res<AudioAssets>,
     query_music: Query<&AudioSink>,
-    mut ev_message: EventWriter<MessageEvent>
+    mut ev_music: EventReader<MusicEvent>,
 ) {
-    ev_message.send(MessageEvent(Box::new(PlayMusicMessage)));     
-    /* 
-    println!("audio: setup audio mainmenu");
     stop_music(query_music);
-    commands.spawn((
-        AudioBundle {
-            //source: asset_server.load("audios/Seattle-2050.ogg"),
-            source: assets.musics["main_menu"].clone(),
-            ..default()},
-        CurrentMusic,
-        ));
-        */
+    for event in ev_music.read() {
+        println!("audio: setup audio handle: source is {}", event.source);
+        commands.spawn((
+            AudioBundle {
+                //source: asset_server.load("audios/Seattle-2050.ogg"),
+                source: assets.musics[event.source.as_str()].clone(),
+                ..default()},
+            CurrentMusic,
+            ));
+    }
 }
+
+
+
 
 fn setup_audio_death(
     mut commands: Commands,
