@@ -3,12 +3,17 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{
-    game::{player::{Player, Cursor}, ui::ReloadUiEvent, 
-    rules::{consume_actionpoints, roll_dices_against}, 
-    tileboard::components::BoardPosition,
-     pieces::components::{Occupier, Stats, Health}, 
-     combat::{AP_COST_MOVE, AP_COST_MELEE}}, map_builders::map::Map, vectors::{find_path, Vector2Int}, 
-     engine::render::{components::PathAnimator, get_world_position}, game::states::GameState};
+    engine::render::{components::PathAnimator, get_world_position}, 
+    game::{
+        combat::{AP_COST_MELEE, AP_COST_MOVE},
+        manager::{GameOverMessage, MessageEvent}, 
+        pieces::components::{Health, Occupier, Stats}, 
+        player::{Cursor, Player}, 
+        rules::{consume_actionpoints, roll_dices_against}, 
+        tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
+        map_builders::map::Map, 
+        vectors::{find_path, Vector2Int}
+    };
 
 use super::{
     events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent},
@@ -181,7 +186,7 @@ pub fn entity_dies(
     mut ev_die: EventReader<EntityDeathEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     player_q: Query<&Player>,
-    mut game_state: ResMut<NextState<GameState>>,
+    mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
 ){
     for event in ev_die.read() {
         //TODO: Remove components, transform texture to Corpse.
@@ -190,7 +195,8 @@ pub fn entity_dies(
         //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
         if let Ok(_is_player) = player_q.get(event.entity) {  
-            game_state.set(GameState::GameOverScreen);            
+            //game_state.set(GameState::GameOverScreen);               // Revision 0.15.2
+            ev_message.send(MessageEvent(Box::new(GameOverMessage)));
         }
         commands.entity(event.entity).despawn();
         ev_refresh_action.send(RefreshActionCostEvent);

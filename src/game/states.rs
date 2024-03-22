@@ -5,8 +5,6 @@ pub enum GameState {
     #[default]
     Disabled,
     Running,
-    GameOverScreen,
-    VictoryScreen,
     SaveGame,
     LoadGame,
 }  
@@ -19,7 +17,8 @@ pub enum MainMenuState {
     Settings,
     DisplayMenu,
     QuitConfirm,
-    Disabled
+    Disabled,
+    RecapMenu
 }
 
 
