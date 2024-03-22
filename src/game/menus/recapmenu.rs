@@ -5,7 +5,7 @@ use crate::{
 };
 
 use super::{
-    clean_menu, menu_builder::{read_menu, Description, MenuItem}, menu_camera, OnScreenMenu};
+    clean_menu, menu_builder::{read_menu, spawn_recap_menu, Description, MenuItem, MenuV2}, menu_camera, OnScreenMenu};
 
 
 // TODO: Refacto Victory & GameOver en un seul: Recap Screen?
@@ -15,8 +15,9 @@ pub struct RecapMenuPlugin;
 impl Plugin for RecapMenuPlugin {
     fn build(&self, app: &mut App){
         app
-            .add_systems(OnEnter(MainMenuState::RecapMenu), display_gameover_screen) //TEST  
+            //.add_systems(OnEnter(MainMenuState::RecapMenu), display_gameover_screen) //TEST  
             //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_go_menu)
+            .add_systems(OnEnter(MainMenuState::RecapMenu), enter_recap_menu)
             .add_systems(OnEnter(MainMenuState::RecapMenu), menu_camera)         
             .add_systems(OnExit(MainMenuState::RecapMenu), clean_menu); 
 
@@ -24,6 +25,24 @@ impl Plugin for RecapMenuPlugin {
         
     }
 }
+
+
+pub fn enter_recap_menu(    
+    mut commands: Commands,
+    graph_assets: Res<GraphicsAssets>,
+){
+    let menu = MenuV2::new(
+        "recap_menu",
+        vec![
+                MenuItem::header("You died."),
+                MenuItem::description("A ghoul has eaten you."),
+                MenuItem::action(MenuButtonAction::Play, "Retry"),
+                MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
+        ]
+    );
+    spawn_recap_menu(&mut commands, graph_assets, menu)
+}
+
 
 pub fn enter_go_menu(mut commands: Commands) {
     println!("Entering GameOver menu.");
@@ -125,7 +144,7 @@ fn display_gameover_screen(
                                 header.text,   //"YOU DIED.",
                                 TextStyle {
                                     font: graph_assets.font.clone(),
-                                    font_size: 40.0,
+                                    font_size: 30.0,
                                     color: Color::rgb(1.0, 1.0, 1.0),
                                 },
                             ));
@@ -135,7 +154,7 @@ fn display_gameover_screen(
                                 description.text,   //"YOU DIED.",
                                 TextStyle {
                                         font: graph_assets.font.clone(),
-                                        font_size: 20.0,
+                                        font_size: 15.0,
                                         color: Color::rgb(1.0, 1.0, 1.0),
                                     },
                                 ));
