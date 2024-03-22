@@ -7,7 +7,7 @@ use crate::{
 };
 
 use super::{
-    clean_game_screen, menus::components::InGameMenuState, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::{GameState, MainMenuState}, tileboard::system_map::create_map
+    clean_game_screen, menus::{components::InGameMenuState, recapmenu::{MenuEvent, MenuType}}, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::{GameState, MainMenuState}, tileboard::system_map::create_map
 };
 
 
@@ -104,7 +104,7 @@ impl Message for GameOverMessage {
     fn execute(&self, world: &mut World) {
         println!("Game Over Message!");
         world.send_event(MessageEvent(Box::new(QuitGameMessage)));
-        world.send_event(MessageEvent(Box::new(EndGameRecapMessage)));
+        world.send_event(MessageEvent(Box::new(EndGameRecapMessage{recap_type:RecapType::GameOver})));
         let music_name = "gameover".to_string();
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
@@ -115,16 +115,41 @@ impl Message for VictoryMessage {
     fn execute(&self, world: &mut World) {
         println!("Victory Message!");
         world.send_event(MessageEvent(Box::new(QuitGameMessage)));
-        world.send_event(MessageEvent(Box::new(EndGameRecapMessage)));
+        world.send_event(MessageEvent(Box::new(EndGameRecapMessage{recap_type:RecapType::Victory})));
         let music_name = "victory".to_string();
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
 }
 
+enum RecapType{
+    GameOver,
+    Victory,
+    Forfeit
+}
 
-//TODO : Modifier pour afficher le Menu Game Over OU Victory
-pub struct EndGameRecapMessage;
+//TODO : Envoi Event pour le Menu Recap Victory ou Game Over.
+pub struct EndGameRecapMessage{
+    pub recap_type: RecapType
+}
 impl Message for EndGameRecapMessage {
+    fn execute(&self, world: &mut World) {
+        match self.recap_type {
+            RecapType::GameOver => {
+                world.send_event(MenuEvent{
+                    id: "game_over".to_string(),
+                    header: "You died.".to_string(),
+                    description: "A ghoul has eaten you.".to_string(),
+                    menu_type: MenuType::RECAP_MENU
+                });
+            },
+            _ => println!("Autres types de Recap non supportés.")
+        };
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+    }
+}
+
+pub struct OpenMenuMessage;
+impl Message for OpenMenuMessage {
     fn execute(&self, world: &mut World) {
         println!("End Game Recap?");
         if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
@@ -135,6 +160,21 @@ impl Message for EndGameRecapMessage {
         }
     }
 }
+
+//v0 du EndGameRecap
+pub struct GameOverRecapMessage;
+impl Message for GameOverRecapMessage {
+    fn execute(&self, world: &mut World) {
+        println!("End Game Recap?");
+        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
+            state.set(MainMenuState::RecapMenu);
+            println!("yes");
+        } else {
+            println!("no");
+        }
+    }
+}
+
 
 pub struct QuitGameMessage;
 impl Message for QuitGameMessage {

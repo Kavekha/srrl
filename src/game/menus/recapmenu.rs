@@ -15,9 +15,11 @@ pub struct RecapMenuPlugin;
 impl Plugin for RecapMenuPlugin {
     fn build(&self, app: &mut App){
         app
+            .add_event::<MenuEvent>()
             //.add_systems(OnEnter(MainMenuState::RecapMenu), display_gameover_screen) //TEST  
             //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_go_menu)
-            .add_systems(OnEnter(MainMenuState::RecapMenu), enter_recap_menu)
+            //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_recap_menu)
+            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()))
             .add_systems(OnEnter(MainMenuState::RecapMenu), menu_camera)         
             .add_systems(OnExit(MainMenuState::RecapMenu), clean_menu); 
 
@@ -26,6 +28,37 @@ impl Plugin for RecapMenuPlugin {
     }
 }
 
+#[derive(Event)]
+pub struct MenuEvent{
+    pub id: String,
+    pub header: String,
+    pub description: String,
+    pub menu_type: MenuType
+}
+
+pub enum MenuType {
+    RECAP_MENU
+}
+
+fn menu_event_reader(
+    mut commands: Commands,
+    mut ev_menu: EventReader<MenuEvent>,
+    graph_assets: Res<GraphicsAssets>,
+) {
+    for event in ev_menu.read() {
+        let menu = MenuV2::new(
+            &event.id,
+            vec![
+                    MenuItem::header(&event.header),
+                    MenuItem::description(&event.description),
+                    MenuItem::action(MenuButtonAction::Play, "Retry"),
+                    MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
+            ]
+        );
+        spawn_recap_menu(&mut commands, graph_assets, menu);
+        break;      // Degueu, mais seul le premier m'interesse et c peu probable que j'en ai d'autres.
+    }    
+}
 
 pub fn enter_recap_menu(    
     mut commands: Commands,
