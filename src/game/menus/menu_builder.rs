@@ -30,7 +30,7 @@ impl Menu {
 }
 
 //MenuBuilder v2
-pub struct Action {action: MenuButtonAction, text:String}
+pub struct Action {pub action: MenuButtonAction, pub text:String}
 pub struct Header {pub text: String}
 pub struct Description {pub text: String}
 
