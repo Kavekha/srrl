@@ -5,6 +5,7 @@ use crate::{game::menus::components::OnScreenMenu, globals::{NORMAL_BUTTON, TEXT
 
 use super::components::MenuButtonAction;
 
+
 pub struct MenuView{
     pub action: MenuButtonAction,
     pub text: String,
@@ -26,6 +27,65 @@ impl Menu {
         let menu = Menu{pages:Vec::new()};
         menu
     }
+}
+
+//MenuBuilder v2
+pub struct Action {action: MenuButtonAction, text:String}
+pub struct Header {pub text: String}
+pub struct Description {pub text: String}
+
+/*
+pub enum MenuItem{
+    Action{action: MenuButtonAction, text:String},
+    Header{text:String},
+    Description{text:String}
+} */
+pub enum MenuItem{
+    Action(Action),
+    Header(Header),
+    Description(Description)
+}
+
+impl MenuItem{
+    fn action(action:MenuButtonAction, text:&str
+    ) -> MenuItem {
+        MenuItem::Action(Action{action: action, text:text.to_string()})
+    }
+    fn header(text:&str
+    ) -> MenuItem {
+        MenuItem::Header(Header{text:text.to_string()})
+    }
+    fn description(text:&str
+    ) -> MenuItem {
+        MenuItem::Description(Description{text:text.to_string()})
+    }
+}
+
+pub struct MenuV2{
+    pub id: String,
+    pub entries: Vec<MenuItem>
+}
+impl MenuV2{
+    pub fn new(id: &str, entries: Vec<MenuItem>) -> MenuV2 {
+        let menu = MenuV2{
+            id: id.to_string(),
+            entries: entries
+        };
+        menu
+    } 
+}
+
+pub fn read_menu() -> MenuV2{
+    let new_menu = MenuV2::new(
+        "recap_menu",
+        vec![
+                MenuItem::header("Nouveau menu"),
+                MenuItem::description("Ceci est le texte du menu"),
+                MenuItem::action(MenuButtonAction::Play, "Retry"),
+                MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
+        ]
+    );
+    new_menu
 }
 
 

@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 pub mod mainmenu;
-pub mod gameover;
-pub mod victory;
+pub mod recapmenu;
+//pub mod victory;
 pub mod components;
 pub mod ingamemenu;
 pub mod menu_builder;
@@ -11,7 +11,7 @@ use crate::{
     game::despawn_screen, //states::MainMenuState}, 
     globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON}};
 
-use self::{components::{OnScreenMenu, SelectedOption}, gameover::GameOverPlugin, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin, victory::VictoryPlugin};
+use self::{components::{OnScreenMenu, SelectedOption}, recapmenu::RecapMenuPlugin, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin};   //, victory::VictoryPlugin};
 
 
 pub struct MenuPlugin;
@@ -20,8 +20,7 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_plugins(MainMenuPlugin)
-            .add_plugins(VictoryPlugin)
-            .add_plugins(GameOverPlugin)
+            .add_plugins(RecapMenuPlugin)
             .add_plugins(InGameMenuPlugin);
     }
 }

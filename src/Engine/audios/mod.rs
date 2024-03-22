@@ -7,7 +7,7 @@ use bevy::prelude::*;
 
 pub mod components;
 
-use crate::{GameState, engine::asset_loaders::AudioAssets};
+use crate::engine::asset_loaders::AudioAssets;
 
 use self::components::CurrentMusic;
 
@@ -21,10 +21,6 @@ impl Plugin for GameAudioPlugin{
         app
             .add_event::<MusicEvent>()   
             .add_systems(Update, handle_music_event.run_if(on_event::<MusicEvent>()))
-
-            //TODO: Something else than a function & system by music...
-            .add_systems(OnEnter(GameState::VictoryScreen), setup_audio_victory)
-            .add_systems(OnEnter(GameState::GameOverScreen), setup_audio_death)
             ;
         println!("INFO: Audioplugin loaded.");    
     }    
@@ -63,35 +59,3 @@ pub fn stop_music(
         sink.stop();
     };
 }
-
-
-//TODO : Remplacer par le systeme d'Event.
-fn setup_audio_death(
-    mut commands: Commands,
-    assets: Res<AudioAssets>,
-    query_music: Query<&AudioSink> 
-) {
-    stop_music(query_music);
-    commands.spawn((AudioBundle {
-        source: assets.musics["gameover"].clone(),
-        ..default()},
-        CurrentMusic,
-        ));
-}
-
-//TODO : Remplacer par le systeme d'Event.
-fn setup_audio_victory(
-    mut commands: Commands,
-    assets: Res<AudioAssets>,
-    query_music: Query<&AudioSink> 
-) {
-    stop_music(query_music);
-    commands.spawn((AudioBundle {
-        source: assets.musics["victory"].clone(),
-        ..default()},
-        CurrentMusic,
-        ));
-}
-
-
-

@@ -105,10 +105,24 @@ impl Message for GameOverMessage {
         println!("Game Over Message!");
         world.send_event(MessageEvent(Box::new(QuitGameMessage)));
         world.send_event(MessageEvent(Box::new(EndGameRecapMessage)));
+        let music_name = "gameover".to_string();
+        world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
 }
 
-//TODO : Modifier pour afficher le Menu Game Over.
+pub struct VictoryMessage;
+impl Message for VictoryMessage {
+    fn execute(&self, world: &mut World) {
+        println!("Victory Message!");
+        world.send_event(MessageEvent(Box::new(QuitGameMessage)));
+        world.send_event(MessageEvent(Box::new(EndGameRecapMessage)));
+        let music_name = "victory".to_string();
+        world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
+    }
+}
+
+
+//TODO : Modifier pour afficher le Menu Game Over OU Victory
 pub struct EndGameRecapMessage;
 impl Message for EndGameRecapMessage {
     fn execute(&self, world: &mut World) {

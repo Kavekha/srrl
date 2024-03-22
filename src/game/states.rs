@@ -5,8 +5,6 @@ pub enum GameState {
     #[default]
     Disabled,
     Running,
-    GameOverScreen, //TO REMOVE in 0.15.2
-    VictoryScreen,
     SaveGame,
     LoadGame,
 }  
