@@ -70,7 +70,6 @@ impl Message for RunGameMessage {
 
 enum RecapType{
     GameOver,
-    Victory,
-    Forfeit,
+    Victory
 }
 

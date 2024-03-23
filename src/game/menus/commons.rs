@@ -15,7 +15,7 @@
 use bevy::prelude::*;
 
 use crate::game::{
-    manager::{game_messages::{MainMenuOpenMessage, QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent}, 
+    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, MainMenuOpenMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage}, ExitAppMessage, MessageEvent}, 
     states::{GameState, MainMenuState, MenuState}};
 
 use super::{button_system, components::{MenuButtonAction, DisplayQuality, InGameMenuState, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
@@ -65,6 +65,32 @@ pub fn common_menu_action(
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match menu_button_action {
+                MenuButtonAction::Play => {
+                    println!("Go to game !");                    
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));              
+                }
+                //TODO : Reactive LOAD.
+                MenuButtonAction::Load => {
+                    println!("Load a saved game!");
+                    //load_saved_game(&mut app_state, &mut game_state); 
+                    //load_game(app_state, game_state);
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);             
+                }
+                MenuButtonAction::Settings => {
+                    println!("Settings!");
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsMessage)));                     
+                }
+                MenuButtonAction::BackToMainMenu => {
+                    println!("Back to Main Menu.");
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage))); 
+                }
+
+
+
                 //MainMenu is cop / pasta there
                 MenuButtonAction::QuitConfirm => {
                     //app_exit_events.send(AppExit);
@@ -80,22 +106,6 @@ pub fn common_menu_action(
                     //app_exit_events.send(AppExit);
                     println!("Don't want to quit.");
                     ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
-                }
-                MenuButtonAction::Play => {
-                    println!("Go to game !");                    
-                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));  //menu_state.set(MainMenuState::Disabled);
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //game_state.set(GameState::NewGame);               
-                }
-                MenuButtonAction::Load => {
-                    println!("Load a saved game!");
-                    //load_saved_game(&mut app_state, &mut game_state); 
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);
-                    game_state.set(GameState::LoadGame);
-                    //load_game(app_state, game_state);
-                }
-                MenuButtonAction::Settings => {
-                    println!("Settings!");
-                    menu_state.set(MainMenuState::Settings);
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to main menu");
@@ -144,12 +154,6 @@ pub fn common_menu_action(
                     println!("Go to game !");
                     ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));    //menu_state.set(InGameMenuState::Disabled);             
                 }
-                MenuButtonAction::BackToMainMenu => {
-                    println!("Back to main menu");
-                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));   // game_state.set(GameState::Disabled);
-                    ev_message.send(MessageEvent(Box::new(CloseInGameMenuMessage)));     //menu_state.set(InGameMenuState::Disabled);   
-                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage)));   //main_menu_state.set(MainMenuState::MainMenu);              
-                }
                 MenuButtonAction::Settings => {
                     println!("Go to Settings");
                     ig_menu_state.set(InGameMenuState::Settings); 
@@ -175,10 +179,6 @@ pub fn common_menu_action(
                 MenuButtonAction::SettingsDisplay => {
                     println!("Go to Settings Display");
                     ig_menu_state.set(InGameMenuState::SettingDisplay); 
-                }
-                MenuButtonAction::Back => {
-                    println!("Go back to Menu");
-                    ev_message.send(MessageEvent(Box::new(ActiveInGameMenuMessage))); //menu_state.set(InGameMenuState::MainMenu);  
                 }
                 MenuButtonAction::BackToSettings => {
                     println!("Back to Settings");

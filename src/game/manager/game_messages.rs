@@ -129,18 +129,4 @@ impl Message for ClearGameMessage {
 }
 
 
-// Open MainMenu
 
-pub struct MainMenuOpenMessage;
-impl Message for MainMenuOpenMessage {
-    fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu", Vec::new());
-        menu.add(MenuItem::header("Main Menu."));
-        menu.add(MenuItem::description("v0.15.2 - R0.4"));
-        menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
-
-        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
-        println!("MainMenu generated and send for opening.");
-    }
-}

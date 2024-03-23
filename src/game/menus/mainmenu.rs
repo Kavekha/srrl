@@ -7,7 +7,7 @@ use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
         manager::{game_messages::StartGameMessage, menu_messages::{ActiveMainMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent}, 
-        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState, MenuState}
+        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
     }, 
     globals::{
         HEIGHT, 
@@ -16,7 +16,7 @@ use crate::{
 };
 
 use super::{
-    button_system, clean_menu, components::{
+    clean_menu, components::{
         DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings
         //, SelectedOption
     },

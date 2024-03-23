@@ -2,11 +2,11 @@ use bevy::prelude::*;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{menus::{components::MenuButtonAction, menu_builder::{spawn_basic_menu, spawn_recap_menu, Menu, MenuView}}, states::MainMenuState}
+    game::{menus::{components::MenuButtonAction, menu_builder::{spawn_recap_menu, Menu, MenuView}}, states::MainMenuState}
 };
 
 use super::{
-    clean_menu, menu_builder::{MenuItem, MenuV2}, menu_camera, OnScreenMenu};
+    menu_builder::{MenuItem, MenuV2}, menu_camera, OnScreenMenu};
 
 
 // TODO: Refacto Victory & GameOver en un seul: Recap Screen?
@@ -38,7 +38,8 @@ pub struct MenuEvent{
 
 pub enum MenuType {
     RECAPMENU,
-    MAINMENU
+    MAINMENU,
+    SETINGS
 }
 
 fn menu_event_reader(
