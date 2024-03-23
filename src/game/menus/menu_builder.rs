@@ -78,19 +78,6 @@ impl MenuV2{
     } 
 }
 
-pub fn read_menu() -> MenuV2{
-    let new_menu = MenuV2::new(
-        "recap_menu",
-        vec![
-                MenuItem::header("You died."),
-                MenuItem::description("A ghoul has eaten you."),
-                MenuItem::action(MenuButtonAction::Play, "Retry"),
-                MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
-        ]
-    );
-    new_menu
-}
-
 
 // Them 2 : Recap Menu
 pub fn spawn_recap_menu(

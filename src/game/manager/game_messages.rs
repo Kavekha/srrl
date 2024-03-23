@@ -1,4 +1,4 @@
-use bevy::{app::prelude::*, ecs::{schedule::NextState, world::World}};
+use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{game::{clean_game_screen, manager::{MessageEvent, PlayMusicMessage, RecapType, RunGameMessage}, menus::recapmenu::{MenuEvent, MenuType}, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
@@ -76,7 +76,7 @@ impl Message for EndGameRecapMessage {
                     id: "game_over".to_string(),
                     header: "You died.".to_string(),
                     description: "A ghoul has eaten you.".to_string(),
-                    menu_type: MenuType::RECAP_MENU
+                    menu_type: MenuType::RECAPMENU
                 });
                 println!("EndGameRecap is Game Over");
             },
@@ -85,7 +85,7 @@ impl Message for EndGameRecapMessage {
                     id: "victory".to_string(),
                     header: "victory!".to_string(),
                     description: "You flee the place.".to_string(),
-                    menu_type: MenuType::RECAP_MENU
+                    menu_type: MenuType::RECAPMENU
                 });
                 println!("EndGameRecap is Victory");
             },
