@@ -12,18 +12,21 @@ pub enum MenuButtonAction {
     Play,
     Load,
     Settings,
-    SettingsDisplay,
+    MainMenuSettings,
     BackToMainMenu,
-    BackToSettings, 
-    //SettingsSound, 
+    MainMenuSettingsDisplay,
+    MainMenuBackToSettings,
+    DisplayLow,
+    DisplayMedium,
+    DisplayHigh,
+    //OLD version 
     QuitConfirm,
     Quit,
     Cancel,
     BackToGame,
     Back,
-    DisplayLow,
-    DisplayMedium,
-    DisplayHigh
+    SettingsDisplay,
+    BackToSettings, 
 }
 
 #[derive(Resource)]

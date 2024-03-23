@@ -39,7 +39,9 @@ pub struct MenuEvent{
 pub enum MenuType {
     RECAPMENU,
     MAINMENU,
-    SETINGS
+    SETTINGS,
+    DISPLAY,
+    QUIT
 }
 
 fn menu_event_reader(

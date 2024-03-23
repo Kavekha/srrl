@@ -46,7 +46,7 @@ impl Message for MainMenuOpenMessage {
         menu.add(MenuItem::description("v0.15.2 - R0.4"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
-        menu.add(MenuItem::action(MenuButtonAction::Settings, "Settings"));
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
 
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
@@ -61,16 +61,16 @@ impl Message for MainMenuSettingsMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = MenuV2::new("main_menu_settings", Vec::new());
         menu.add(MenuItem::header("Settings"));
-        menu.add(MenuItem::action(MenuButtonAction::SettingsDisplay, "Display"));
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Back"));
 
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETINGS});
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETTINGS});
         println!("Settings generated and send for opening.");
     }
 }
 
-// Open MainMenuSettings
+// Open MainMenuSettingsDisplay
 pub struct MainMenuSettingsDisplayMessage;
 impl Message for MainMenuSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
@@ -79,14 +79,27 @@ impl Message for MainMenuSettingsDisplayMessage {
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayHigh, "High"));
-        menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Back"));
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuBackToSettings, "Back"));
 
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETINGS});
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::DISPLAY});
         println!("SettingsDisplay generated and send for opening.");
     }
 }
 
+pub struct MainMenuQuitMessage;
+impl Message for MainMenuQuitMessage {
+    fn execute(&self, world: &mut World) {
+        let mut menu = MenuV2::new("main_menu_quit", Vec::new());
+        menu.add(MenuItem::header("Display"));
+        menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Cancel"));
+        menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
+
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::QUIT});
+        println!("Quit generated and send for opening.");
+    }
+}
 
 
 

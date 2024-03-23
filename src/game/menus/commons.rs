@@ -78,8 +78,8 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);             
                 }
-                MenuButtonAction::Settings => {
-                    println!("Settings!");
+                MenuButtonAction::MainMenuSettings => {
+                    println!("Main Menu Settings!");
                     ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
                     ev_message.send(MessageEvent(Box::new(MainMenuSettingsMessage)));                     
                 }
@@ -88,36 +88,10 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
                     ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage))); 
                 }
-
-
-
-                //MainMenu is cop / pasta there
-                MenuButtonAction::QuitConfirm => {
-                    //app_exit_events.send(AppExit);
-                    println!("Do you want to quit?");
-                    menu_state.set(MainMenuState::QuitConfirm);                  
-                }
-                MenuButtonAction::Quit => {
-                    //app_exit_events.send(AppExit);
-                    println!("Quit App");
-                    ev_message.send(MessageEvent(Box::new(ExitAppMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //app_exit_events.send(AppExit);
-                }
-                MenuButtonAction::Cancel => {
-                    //app_exit_events.send(AppExit);
-                    println!("Don't want to quit.");
-                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
-                }
-                MenuButtonAction::BackToMainMenu => {
-                    println!("Back to main menu");
-                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu)
-                }
-                MenuButtonAction::SettingsDisplay => {
-                    println!("Display Menu!");
-                    menu_state.set(MainMenuState::DisplayMenu);
-                }
-                MenuButtonAction::BackToSettings => {
-                    println!("Back to Settings!");
-                    menu_state.set(MainMenuState::Settings);
+                MenuButtonAction::MainMenuSettingsDisplay => {
+                    println!("Main Menu Display Menu!");
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsDisplayMessage))); 
                 }
                 MenuButtonAction::DisplayLow => {
                     println!("Resolution changed to Low");
@@ -137,12 +111,40 @@ pub fn common_menu_action(
                     let res = resolution.high;
                     window.resolution.set(res.x, res.y);
                 }
+                MenuButtonAction::MainMenuBackToSettings => {
+                    println!("Main Menu Display Menu!");
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsDisplayMessage))); 
+                }
+                MenuButtonAction::Quit => {
+                    //app_exit_events.send(AppExit);
+                    println!("Do you want to quit?");
+                }
+                
+
+                //MainMenu is cop / pasta there
+                MenuButtonAction::QuitConfirm => {
+                    //app_exit_events.send(AppExit);
+                    println!("Do you want to quit?");
+                    menu_state.set(MainMenuState::QuitConfirm);                  
+                }
+                MenuButtonAction::Cancel => {
+                    //app_exit_events.send(AppExit);
+                    println!("Don't want to quit.");
+                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
+                }
+
+                MenuButtonAction::BackToSettings => {
+                    println!("Back to Settings!");
+                    menu_state.set(MainMenuState::Settings);
+                }
+
                 // Ig Menu is cop / paste there
                 MenuButtonAction::QuitConfirm => {
                     println!("Do you want to quit?");
                     ig_menu_state.set(InGameMenuState::QuitConfirm);
                 }
-                MenuButtonAction::Quit => {
+                MenuButtonAction::QuitConfirm => {
                     println!("Quit App");
                     ev_message.send(MessageEvent(Box::new(ExitAppMessage))); 
                 }
