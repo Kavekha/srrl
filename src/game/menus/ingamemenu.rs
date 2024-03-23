@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
 use crate::game::{
-    manager::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, QuitGameMessage},
+    manager::{game_messages::QuitGameMessage, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent},
     menus::menu_builder::{spawn_basic_menu, Menu, MenuView}
 };   
 

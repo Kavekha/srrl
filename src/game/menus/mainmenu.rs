@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
-        manager::{ActiveMainMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, StartGameMessage}, 
+        manager::{game_messages::StartGameMessage, menu_messages::{ActiveMainMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent}, 
         menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
     }, 
     globals::{
