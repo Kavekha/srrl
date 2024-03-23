@@ -40,24 +40,24 @@ impl Plugin for MainMenuPlugin{
                 high:Vec2::new(1920.0, 1080.0)
             })
             //.add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
-            .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
+            //.add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  //0.15.2 In Commons
 
             .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), enter_mm_settings_menu)      
             .add_systems(OnEnter(MainMenuState::DisplayMenu), enter_mm_display_menu)      
             .add_systems(OnEnter(MainMenuState::QuitConfirm), enter_mm_quit_confirm_menu)
             
-            .add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))
-            .add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )
-
-            //v2
-            .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
-            .add_systems(Update, main_menu_action.run_if(not(in_state(MenuState::Disabled)))  )
+            //.add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))    // 0.15.2 : Dans Commons maintenant, avec Open. 
+            //.add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )   // 0.15.2 : Dans Commons maintenant, sera en commun avec IG etc.
             
+            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
+
+            .add_systems(OnEnter(MainMenuState::Disabled), clean_menu)
+            /* 0.15.2 for all states of main menu.
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
             .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
-            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
+            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)  */ 
             ;
     }
 }

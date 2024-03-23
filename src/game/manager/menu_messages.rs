@@ -1,6 +1,6 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::game::{menus::components::InGameMenuState, states::{MainMenuState, MenuState}};
+use crate::game::{menus::{clean_menu, components::InGameMenuState}, states::{MainMenuState, MenuState}};
 
 use super::Message;
 
@@ -52,5 +52,15 @@ impl Message for ActiveInGameMenuMessage {
         if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
             state.set(InGameMenuState::MainMenu);
         }
+    }
+}
+
+// 0.15.2 tjrs dans les systems pour le moment.
+pub struct ClearMenuMessage;
+impl Message for ClearMenuMessage {
+    fn execute(&self, world: &mut World) {
+        let clean_menu = world.register_system(clean_menu);
+        let result = world.run_system(clean_menu);
+        println!("Clean menu result: {:?}", result);
     }
 }

@@ -5,6 +5,7 @@ pub enum GameState {
     #[default]
     Disabled,
     Running,
+    Unavailable,    // En etat de pause du à un Menu ou autre.
     SaveGame,
     LoadGame,
 }  

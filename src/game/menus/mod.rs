@@ -6,12 +6,13 @@ pub mod recapmenu;
 pub mod components;
 pub mod ingamemenu;
 pub mod menu_builder;
+pub mod commons;
 
 use crate::{
     game::despawn_screen, //states::MainMenuState}, 
     globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON}};
 
-use self::{components::{OnScreenMenu, SelectedOption}, recapmenu::RecapMenuPlugin, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin};   //, victory::VictoryPlugin};
+use self::{commons::CommonsMenuPlugin, components::{OnScreenMenu, SelectedOption}, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin, recapmenu::RecapMenuPlugin};   //, victory::VictoryPlugin};
 
 
 pub struct MenuPlugin;
@@ -21,6 +22,7 @@ impl Plugin for MenuPlugin {
         app
             .add_plugins(MainMenuPlugin)
             .add_plugins(RecapMenuPlugin)
+            .add_plugins(CommonsMenuPlugin)
             .add_plugins(InGameMenuPlugin);
     }
 }

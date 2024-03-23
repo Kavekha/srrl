@@ -30,27 +30,25 @@ impl Plugin for InGameMenuPlugin{
             //.add_systems(Update, menu_tick.run_if(in_state(InGameMenuState::MainMenu)))     // Do it in event. poc.
             //.add_systems(Update, on_event_menu.run_if(on_event::<MenuEvent>()))             // Do it in event. poc.
 
-            .add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))    // TODO : Peut quand meme etre appelé du Main Menu -_-
-            .add_systems(Update, ig_inside_menu_input.run_if(in_state(InGameMenuState::MainMenu)))  //TODO : Not Disabled
+            //.add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))    // TODO : Peut quand meme etre appelé du Main Menu -_-
+            //.add_systems(Update, ig_inside_menu_input.run_if(in_state(InGameMenuState::MainMenu)))  //TODO : Not Disabled
 
-            .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) 
+            //.add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) //0.15.2 in Commons
             .add_systems(OnEnter(InGameMenuState::MainMenu), enter_ig_main_menu)
             .add_systems(OnEnter(InGameMenuState::Settings), enter_ig_settings_menu)
             .add_systems(OnEnter(InGameMenuState::SettingDisplay), enter_ig_display_menu) 
             .add_systems(OnEnter(InGameMenuState::QuitConfirm), enter_ig_quit_confirm_menu)
 
             //Todo with not in Disable?
-            .add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))
-            .add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )
+            //.add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))      // 0.15.2 in Commons
+            //.add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )// 0.15.2 in Commons
             
-            .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
-            .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
-            .add_systems(OnExit(InGameMenuState::SettingDisplay), clean_menu)               
-            .add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu)
+            //ALl in one.
+            .add_systems(OnEnter(InGameMenuState::Disabled), clean_menu)
             ;
     }
-}
- 
+}  
+  
 // Do it in event. poc.
 /* 
 #[derive(Event)]
@@ -98,6 +96,7 @@ pub fn ig_inside_menu_input(
         menu_state.set(InGameMenuState::Disabled);
     }
 }
+
 
 
 pub fn ig_menu_action(

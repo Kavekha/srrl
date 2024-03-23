@@ -118,12 +118,5 @@ impl Message for ClearGameMessage {
         let clean_game = world.register_system(clean_game_screen);
         let result = world.run_system(clean_game);
         println!("Result is {:?}", result);
-
-        /*
-        let mut query_npc = world.query_filtered::<Entity, With<Npc>>();
-        for entity in query_npc.iter(&world){
-            world.commands.entity(entity).despawn_recursive();
-        };
-         */
     }
 }
