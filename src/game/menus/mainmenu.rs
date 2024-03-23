@@ -42,7 +42,7 @@ impl Plugin for MainMenuPlugin{
             //.add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
             //.add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  //0.15.2 In Commons
 
-            .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
+            //.add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), enter_mm_settings_menu)      
             .add_systems(OnEnter(MainMenuState::DisplayMenu), enter_mm_display_menu)      
             .add_systems(OnEnter(MainMenuState::QuitConfirm), enter_mm_quit_confirm_menu)
@@ -145,26 +145,7 @@ pub fn main_menu_action(
 }
 
 
-// This system updates the settings when a new value for a setting is selected, and marks
-// the button as the one currently selected
-/* 
-fn setting_button<T: Resource + Component + PartialEq + Copy>(
-    interaction_query: Query<(&Interaction, &T, Entity), (Changed<Interaction>, With<Button>)>,
-    mut selected_query: Query<(Entity, &mut BackgroundColor), With<SelectedOption>>,
-    mut commands: Commands,
-    mut setting: ResMut<T>,
-) {
-    for (interaction, button_setting, entity) in &interaction_query {
-        if *interaction == Interaction::Pressed && *setting != *button_setting {
-            let (previous_button, mut previous_color) = selected_query.single_mut();
-            *previous_color = NORMAL_BUTTON.into();
-            commands.entity(previous_button).remove::<SelectedOption>();
-            commands.entity(entity).insert(SelectedOption);
-            *setting = *button_setting;
-        }
-    }
-}
-*/
+
 pub fn enter_mm_quit_confirm_menu(mut commands: Commands) {
     println!("Entering MM Quit Confirm menu.");
     let mut menu = Menu::new();

@@ -28,6 +28,7 @@ fn handle_event(
         res.drain().collect::<Vec<_>>()
     } else { return };
     for ev in events {
+        println!("Manager: Je traite un evenement.");
        ev.0.execute(world);
     }
 }
@@ -70,6 +71,6 @@ impl Message for RunGameMessage {
 enum RecapType{
     GameOver,
     Victory,
-    Forfeit
+    Forfeit,
 }
 

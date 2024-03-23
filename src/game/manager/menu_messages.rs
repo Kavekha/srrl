@@ -9,7 +9,7 @@ use super::Message;
 pub struct OpenMenuMessage;
 impl Message for OpenMenuMessage {
     fn execute(&self, world: &mut World) {
-        println!("End Game Recap?");
+        println!("OpenMenuMessage");
         if let Some(mut state) = world.get_resource_mut::<NextState<MenuState>>() {
             state.set(MenuState::Open);
             println!("yes");
@@ -64,3 +64,6 @@ impl Message for ClearMenuMessage {
         println!("Clean menu result: {:?}", result);
     }
 }
+
+
+

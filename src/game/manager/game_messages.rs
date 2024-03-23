@@ -120,3 +120,20 @@ impl Message for ClearGameMessage {
         println!("Result is {:?}", result);
     }
 }
+
+
+// Open MainMenu
+
+pub struct MainMenuOpenMessage;
+impl Message for MainMenuOpenMessage {
+    fn execute(&self, world: &mut World) {       
+        world.send_event(MenuEvent{
+            id: "MainMenu".to_string(),
+                header: "Main Menu.".to_string(),
+                description: "The Place to Make some choice".to_string(),
+                menu_type: MenuType::MAINMENU
+        });
+        println!("MainMenu Open");
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+    }
+}

@@ -14,6 +14,7 @@ pub enum GameState {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum MainMenuState {
     #[default]
+    None,
     MainMenu,
     Settings,
     DisplayMenu,
@@ -25,6 +26,7 @@ pub enum MainMenuState {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum MenuState {
     #[default]
+    Splashscreen,
     Disabled,
     Open
 }

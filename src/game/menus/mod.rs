@@ -40,6 +40,7 @@ pub fn clean_menu(
 pub fn menu_camera(
     mut camera_query: Query<&mut Transform, With<Camera>>
 ){
+    println!("menu camera: ON");
     let mut camera_transform = camera_query.single_mut();
     camera_transform.translation.x = 0.0;
     camera_transform.translation.y = 0.0;
