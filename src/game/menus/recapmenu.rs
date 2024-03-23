@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{menus::{components::MenuButtonAction, menu_builder::{spawn_basic_menu, spawn_recap_menu, Menu, MenuView}}, states::MainMenuState}, globals::{NORMAL_BUTTON, TEXT_COLOR}
+    game::{menus::{components::MenuButtonAction, menu_builder::{spawn_basic_menu, spawn_recap_menu, Menu, MenuView}}, states::MainMenuState}
 };
 
 use super::{
@@ -20,9 +20,9 @@ impl Plugin for RecapMenuPlugin {
             //.add_systems(OnEnter(MainMenuState::RecapMenu), display_gameover_screen) //TEST  
             //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_go_menu)
             //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_recap_menu)
-            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()))
-            .add_systems(OnEnter(MainMenuState::RecapMenu), menu_camera)         
-            .add_systems(OnExit(MainMenuState::RecapMenu), clean_menu); 
+            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()));
+            //.add_systems(OnEnter(MainMenuState::RecapMenu), menu_camera)         
+            //.add_systems(OnExit(MainMenuState::RecapMenu), clean_menu); 
 
    
         

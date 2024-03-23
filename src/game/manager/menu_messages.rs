@@ -1,16 +1,17 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::game::{menus::components::InGameMenuState, states::MainMenuState};
+use crate::game::{menus::components::InGameMenuState, states::{MainMenuState, MenuState}};
 
 use super::Message;
 
 
+// v2 : was recap.
 pub struct OpenMenuMessage;
 impl Message for OpenMenuMessage {
     fn execute(&self, world: &mut World) {
         println!("End Game Recap?");
-        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
-            state.set(MainMenuState::RecapMenu);
+        if let Some(mut state) = world.get_resource_mut::<NextState<MenuState>>() {
+            state.set(MenuState::Open);
             println!("yes");
         } else {
             println!("no");

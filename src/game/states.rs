@@ -18,9 +18,15 @@ pub enum MainMenuState {
     DisplayMenu,
     QuitConfirm,
     Disabled,
-    RecapMenu
+    //RecapMenu
 }
 
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum MenuState {
+    #[default]
+    Disabled,
+    Open
+}
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum EngineState {

@@ -7,7 +7,7 @@ use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
         manager::{game_messages::StartGameMessage, menu_messages::{ActiveMainMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent}, 
-        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
+        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState, MenuState}
     }, 
     globals::{
         HEIGHT, 
@@ -49,6 +49,10 @@ impl Plugin for MainMenuPlugin{
             
             .add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))
             .add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )
+
+            //v2
+            .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
+            .add_systems(Update, main_menu_action.run_if(not(in_state(MenuState::Disabled)))  )
             
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)

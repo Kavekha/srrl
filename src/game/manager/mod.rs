@@ -73,24 +73,3 @@ enum RecapType{
     Forfeit
 }
 
-
-
-//v0 du EndGameRecap
-// TO DELETE, deprecated.
-pub struct GameOverRecapMessage;
-impl Message for GameOverRecapMessage {
-    fn execute(&self, world: &mut World) {
-        println!("End Game Recap?");
-        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
-            state.set(MainMenuState::RecapMenu);
-            println!("yes");
-        } else {
-            println!("no");
-        }
-    }
-}
-
-
-
-
-
