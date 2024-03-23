@@ -29,12 +29,11 @@ impl Plugin for RecapMenuPlugin {
     }
 }
 
+// TODO : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
 #[derive(Event)]
 pub struct MenuEvent{
-    pub id: String,
-    pub header: String,
-    pub description: String,
-    pub menu_type: MenuType
+    pub menu: MenuV2,
+    pub menu_type: MenuType     //Type pour savoir quel menu on créé? Au cas où pôur le moment.
 }
 
 pub enum MenuType {
@@ -48,16 +47,8 @@ fn menu_event_reader(
     graph_assets: Res<GraphicsAssets>,
 ) {
     for event in ev_menu.read() {
-        let menu = MenuV2::new(
-            &event.id,
-            vec![
-                    MenuItem::header(&event.header),
-                    MenuItem::description(&event.description),
-                    MenuItem::action(MenuButtonAction::Play, "Retry"),
-                    MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
-            ]
-        );
-        println!("Je suis dans Menu Event Reader avec pour header: {}.", event.header);
+        //println!("Je suis dans Menu Event Reader avec pour type: {:?}.", event.menu_type);
+        let menu = &event.menu;
         spawn_recap_menu(&mut commands, graph_assets, menu);
         break;      // Degueu, mais seul le premier m'interesse et c peu probable que j'en ai d'autres.
     }    
@@ -77,7 +68,7 @@ pub fn enter_recap_menu(
                 MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
         ]
     );
-    spawn_recap_menu(&mut commands, graph_assets, menu)
+    spawn_recap_menu(&mut commands, graph_assets, &menu)
 }
 
 
@@ -91,7 +82,7 @@ pub fn enter_go_menu(mut commands: Commands) {
             let page = MenuView::new(action, text.to_string());
             menu.pages.push(page);
     }
-    spawn_basic_menu(&mut commands, menu)
+    //spawn_basic_menu(&mut commands, &menu)
 }
 
 

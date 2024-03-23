@@ -7,7 +7,7 @@ pub struct OnScreenMenu;
 pub struct OnSettingsMenuScreen;
 
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub enum MenuButtonAction {
     Play,
     Load,

@@ -1,6 +1,9 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::{game::{clean_game_screen, manager::{MessageEvent, PlayMusicMessage, RecapType, RunGameMessage}, menus::recapmenu::{MenuEvent, MenuType}, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
+use crate::{
+    game::{clean_game_screen, manager::{MessageEvent, PlayMusicMessage, RecapType, RunGameMessage}, 
+    menus::{components::MenuButtonAction, menu_builder::{MenuV2, MenuItem}, recapmenu::{MenuEvent, MenuType}}, 
+    pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
 use super::{menu_messages::OpenMenuMessage, Message};
 
@@ -72,22 +75,26 @@ impl Message for EndGameRecapMessage {
     fn execute(&self, world: &mut World) {        
         match self.recap_type {
             RecapType::GameOver => {
-                world.send_event(MenuEvent{
-                    id: "game_over".to_string(),
-                    header: "You died.".to_string(),
-                    description: "A ghoul has eaten you.".to_string(),
-                    menu_type: MenuType::RECAPMENU
-                });
-                println!("EndGameRecap is Game Over");
+                let mut menu = MenuV2::new("game_over", Vec::new());
+
+                menu.add(MenuItem::header("You died."));
+                menu.add(MenuItem::description("A ghoul has eaten you."));
+                menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
+        
+                world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+                world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
+                println!("Recap GameOver generated and send for opening.");
             },
             RecapType::Victory => {
-                world.send_event(MenuEvent{
-                    id: "victory".to_string(),
-                    header: "victory!".to_string(),
-                    description: "You flee the place.".to_string(),
-                    menu_type: MenuType::RECAPMENU
-                });
-                println!("EndGameRecap is Victory");
+                let mut menu = MenuV2::new("victory", Vec::new());
+
+                menu.add(MenuItem::header("victory!"));
+                menu.add(MenuItem::description("You flee the place."));
+                menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
+        
+                world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+                world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
+                println!("Recap Victory generated and send for opening.");
             },
             _ => println!("Autres types de Recap non supportés.")
         };
@@ -126,14 +133,14 @@ impl Message for ClearGameMessage {
 
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
-    fn execute(&self, world: &mut World) {       
-        world.send_event(MenuEvent{
-            id: "MainMenu".to_string(),
-                header: "Main Menu.".to_string(),
-                description: "The Place to Make some choice".to_string(),
-                menu_type: MenuType::MAINMENU
-        });
-        println!("MainMenu Open");
+    fn execute(&self, world: &mut World) {
+        let mut menu = MenuV2::new("main_menu", Vec::new());
+        menu.add(MenuItem::header("Main Menu."));
+        menu.add(MenuItem::description("v0.15.2 - R0.4"));
+        menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
+
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
+        println!("MainMenu generated and send for opening.");
     }
 }

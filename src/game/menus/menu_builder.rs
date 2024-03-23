@@ -76,6 +76,9 @@ impl MenuV2{
         };
         menu
     } 
+    pub fn add(&mut self, menu_item: MenuItem){
+        self.entries.push(menu_item);
+    }
 }
 
 
@@ -83,7 +86,7 @@ impl MenuV2{
 pub fn spawn_recap_menu(
 commands: &mut Commands,
 graph_assets: Res<GraphicsAssets>,
-menu: MenuV2
+menu: &MenuV2
 ) {
 let button_style = Style {
     width: Val::Px(100.0),
@@ -116,11 +119,11 @@ commands
             OnScreenMenu
         ))
         .with_children(|parent| {
-            for item in menu.entries {
+            for item in &menu.entries {
                 match item {
                     MenuItem::Header(header) => {
                         parent.spawn(TextBundle::from_section(
-                            header.text,   //"YOU DIED.",
+                            header.text.clone(),   //"YOU DIED.",
                             TextStyle {
                                 font: graph_assets.font.clone(),
                                 font_size: 30.0,
@@ -130,7 +133,7 @@ commands
                     },
                     MenuItem::Description(description) => {
                         parent.spawn(TextBundle::from_section(
-                            description.text,   //"YOU DIED.",
+                            description.text.clone(),   //"YOU DIED.",
                             TextStyle {
                                     font: graph_assets.font.clone(),
                                     font_size: 15.0,
@@ -146,11 +149,11 @@ commands
                                     background_color: NORMAL_BUTTON.into(),
                                     ..default()
                                 },
-                                action.action,    //action,
+                                action.action.clone(),    //action,
                             ))
                             .with_children(|parent| {
                                 parent.spawn(TextBundle::from_section(
-                                    action.text,  //text,
+                                    action.text.clone(),  //text,
                                     button_text_style.clone(),
                                 ));
                             });
