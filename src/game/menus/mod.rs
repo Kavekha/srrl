@@ -11,7 +11,7 @@ use crate::{
 
 use self::{
     commons::CommonsMenuPlugin, components::{OnScreenMenu, SelectedOption}, 
-    menu_builder::MenuV2
+    menu_builder::Menu
 };
 
 
@@ -32,7 +32,7 @@ impl Plugin for MenuPlugin {
 // TODO : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
 #[derive(Event)]
 pub struct MenuEvent{
-    pub menu: MenuV2,
+    pub menu: Menu,
     pub menu_type: MenuType     //Type pour savoir quel menu on créé? Au cas où pôur le moment.
 }
 

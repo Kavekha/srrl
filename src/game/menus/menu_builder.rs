@@ -1,5 +1,5 @@
 
-use bevy::prelude::*;   //, app::AppExit};
+use bevy::prelude::*;
 
 use crate::{
     game::menus::components::OnScreenMenu, globals::{NORMAL_BUTTON, TEXT_COLOR},
@@ -8,29 +8,6 @@ use crate::{
 
 use super::components::MenuButtonAction;
 
-
-pub struct MenuView{
-    pub action: MenuButtonAction,
-    pub text: String,
-}
-impl MenuView {
-    pub fn new(action: MenuButtonAction, text:String
-    ) -> MenuView {
-        let menu = MenuView {action: action, text:text};
-        menu
-    }
-}
-
-
-pub struct Menu{
-    pub pages: Vec<MenuView>
-}
-impl Menu {
-    pub fn new() -> Menu {
-        let menu = Menu{pages:Vec::new()};
-        menu
-    }
-}
 
 //MenuBuilder v2
 pub struct Action {pub action: MenuButtonAction, pub text:String}
@@ -64,13 +41,13 @@ impl MenuItem{
     }
 }
 
-pub struct MenuV2{
+pub struct Menu{
     pub id: String,
     pub entries: Vec<MenuItem>
 }
-impl MenuV2{
-    pub fn new(id: &str, entries: Vec<MenuItem>) -> MenuV2 {
-        let menu = MenuV2{
+impl Menu{
+    pub fn new(id: &str, entries: Vec<MenuItem>) -> Menu {
+        let menu = Menu{
             id: id.to_string(),
             entries: entries
         };
@@ -86,7 +63,7 @@ impl MenuV2{
 pub fn spawn_recap_menu(
 commands: &mut Commands,
 graph_assets: Res<GraphicsAssets>,
-menu: &MenuV2
+menu: &Menu
 ) {
     println!("Spawning recap menu.");
 let button_style = Style {
@@ -172,10 +149,12 @@ commands
 
 // Theme 1 : Classic Menu
 
-pub fn spawn_basic_menu(commands: &mut Commands, new_menu: Menu) {
+//Not compatible with MenuV2
+pub fn _spawn_basic_menu(commands: &mut Commands, new_menu: Menu) {
     println!("In Game Menu");
     //let new_menu = Menu::new();
 
+    /* 
     let button_style = Style {
         width: Val::Px(100.0),
         height: Val::Px(32.5),
@@ -243,4 +222,5 @@ pub fn spawn_basic_menu(commands: &mut Commands, new_menu: Menu) {
                     }
                 });
         });
+        */
 }

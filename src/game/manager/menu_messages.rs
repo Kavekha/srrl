@@ -2,7 +2,7 @@ use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::game::{
     manager::MessageEvent, 
-    menus::{clean_menu, components::MenuButtonAction, menu_builder::{MenuItem, MenuV2}, MenuEvent, MenuType},
+    menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
     states::MenuState
 };
 
@@ -45,7 +45,7 @@ impl Message for ClearMenuMessage {
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu", Vec::new());
+        let mut menu = Menu::new("main_menu", Vec::new());
         menu.add(MenuItem::header("ShadowRun"));
         menu.add(MenuItem::description("v0.15.2 - R0.4"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
@@ -63,7 +63,7 @@ impl Message for MainMenuOpenMessage {
 pub struct MainMenuSettingsMessage;
 impl Message for MainMenuSettingsMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu_settings", Vec::new());
+        let mut menu = Menu::new("main_menu_settings", Vec::new());
         menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Back"));
@@ -78,7 +78,7 @@ impl Message for MainMenuSettingsMessage {
 pub struct MainMenuSettingsDisplayMessage;
 impl Message for MainMenuSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu_settings_display", Vec::new());
+        let mut menu = Menu::new("main_menu_settings_display", Vec::new());
         menu.add(MenuItem::description("Choose your resolution"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
@@ -94,7 +94,7 @@ impl Message for MainMenuSettingsDisplayMessage {
 pub struct MainMenuQuitMessage;
 impl Message for MainMenuQuitMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu_quit", Vec::new());
+        let mut menu = Menu::new("main_menu_quit", Vec::new());
         menu.add(MenuItem::description("Do you want to quit?"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Cancel"));
         menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
@@ -108,7 +108,7 @@ impl Message for MainMenuQuitMessage {
 pub struct OpenInGameMenuOpenMessage;
 impl Message for OpenInGameMenuOpenMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("ig_menu", Vec::new());
+        let mut menu = Menu::new("ig_menu", Vec::new());
         menu.add(MenuItem::action(MenuButtonAction::Close, "Resume"));
         menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Settings"));
@@ -124,7 +124,7 @@ impl Message for OpenInGameMenuOpenMessage {
 pub struct InGameMenuSettingsOpenMessage;
 impl Message for InGameMenuSettingsOpenMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("ig_menu_settings", Vec::new());
+        let mut menu = Menu::new("ig_menu_settings", Vec::new());
         menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::BackToInGameMenu, "Back"));
@@ -138,7 +138,7 @@ impl Message for InGameMenuSettingsOpenMessage {
 pub struct InGameMenuQuitMessage;
 impl Message for InGameMenuQuitMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu_quit", Vec::new());
+        let mut menu = Menu::new("main_menu_quit", Vec::new());
         menu.add(MenuItem::description("Do you want to quit?"));
         menu.add(MenuItem::action(MenuButtonAction::BackToInGameMenu, "Cancel"));
         menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
@@ -152,7 +152,7 @@ impl Message for InGameMenuQuitMessage {
 pub struct InGameSettingsDisplayMessage;
 impl Message for InGameSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = MenuV2::new("main_menu_settings_display", Vec::new());
+        let mut menu = Menu::new("main_menu_settings_display", Vec::new());
         menu.add(MenuItem::description("Choose your resolution"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
