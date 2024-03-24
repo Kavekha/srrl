@@ -1,11 +1,12 @@
-use bevy::ecs::{schedule::NextState, world::World};
+use bevy::ecs::world::World;
 
 use crate::{
-    game::{clean_game_screen, manager::{change_state_messages::ChangeGameStateRunningMessage, MessageEvent, PlayMusicMessage, RecapType}, 
-    menus::{components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType}, 
-    pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
+    game::{clean_game_screen, manager::{
+        change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
+    }, 
+    pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
-use super::{menu_messages::OpenMenuMessage, Message};
+use super::Message;
 
 
 // Generate the Logic Map and all NPC / items.
@@ -19,7 +20,7 @@ impl Message for StartGameMessage {
         spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
-        world.send_event(MessageEvent(Box::new(ChangeGameStateRunningMessage)));      
+        world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
         let music_name = "gamemap".to_string();
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
@@ -67,59 +68,8 @@ impl Message for VictoryMessage {
     }
 }
 
-// Create a Menu, using MenuBuilder v2.
-struct EndGameRecapMessage{
-    recap_type: RecapType
-}
-impl Message for EndGameRecapMessage {
-    fn execute(&self, world: &mut World) {        
-        match self.recap_type {
-            RecapType::GameOver => {
-                let mut menu = Menu::new("game_over", Vec::new());
-
-                menu.add(MenuItem::header("You died."));
-                menu.add(MenuItem::description("A ghoul has eaten you."));
-                menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
-                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
-                
-        
-                world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-                world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
-                println!("Recap GameOver generated and send for opening.");
-            },
-            RecapType::Victory => {
-                let mut menu = Menu::new("victory", Vec::new());
-
-                menu.add(MenuItem::header("victory!"));
-                menu.add(MenuItem::description("You flee the place."));
-                menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
-                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
-        
-                world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-                world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
-                println!("Recap Victory generated and send for opening.");
-            },
-            //_ => println!("Autres types de Recap non supportés.")
-        };
-        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-    }
-}
 
 
-pub struct QuitGameMessage;
-impl Message for QuitGameMessage {
-    fn execute(&self, world: &mut World) {
-        let mut can_quit = false;
-        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
-            state.set(GameState::Disabled);
-            println!("GameState is now disabled");
-            can_quit = true;
-        }
-        if can_quit {
-            world.send_event(MessageEvent(Box::new(ClearGameMessage)));
-        }
-    }
-}
 
 // Remove any existing element of the current game. (From clean_game_screen)
 pub struct ClearGameMessage;

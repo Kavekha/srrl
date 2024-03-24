@@ -7,7 +7,6 @@ pub mod change_state_messages;
 
 use crate::engine::audios::MusicEvent;
 
-use super::states::GameState;
 
 
 pub struct ManagerPlugin;
@@ -58,9 +57,4 @@ impl Message for ExitAppMessage {
 }
 
 
-
-enum RecapType{
-    GameOver,
-    Victory
-}
 

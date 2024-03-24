@@ -1,22 +1,9 @@
-use bevy::ecs::archetype::{Archetype, ArchetypeId};
-use bevy::ecs::system::SystemState;
-use serde::{Deserialize, Serialize};
-
-use bevy::{prelude::*, tasks::IoTaskPool};
-use std::fs;
+use bevy::{ecs::world::World, tasks::IoTaskPool};
 use std::{fs::File, io::Write};
 
-use crate::game::pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Stats, Walk};
-use crate::game::player::Player;
-use crate::game::states::GameState;
-use crate::game::tileboard::components::BoardPosition;
-use crate::globals::SCENE_FILE_PATH;
-use crate::map_builders::map::Map;
-use crate::engine::save_load_system::SaveState;
+use crate::{globals::SCENE_FILE_PATH, engine::save_load_system::SaveState};
 
-use super::change_state_messages::{ChangeGameStateProcessingMessage, ChangeGameStateRunningMessage};
-use super::{Message, MessageEvent};
-
+use super::{change_state_messages::{ChangeGameStateProcessingMessage, ChangeGameStateRunningMessage}, Message, MessageEvent};
 
 
 

@@ -20,9 +20,7 @@ use bevy::prelude::*;
 
 use crate::{
     game::{
-        manager::{game_messages::{QuitGameMessage, StartGameMessage}, 
-        menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, 
-        ExitAppMessage, MessageEvent}, 
+        manager::{change_state_messages::QuitGameMessage, game_messages::StartGameMessage, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::SaveGameRequestMessage, ExitAppMessage, MessageEvent}, 
     states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}};
 
 use super::{button_system, components::{MenuButtonAction, ResolutionSettings}, menu_camera};
@@ -114,9 +112,10 @@ pub fn common_menu_action(
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to Main Menu.");
+                    ev_message.send(MessageEvent(Box::new(SaveGameRequestMessage)));        // Saving could be in InGameMenuQuit...
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
-                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));
-                    ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage))); 
+                    ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage)));                     
+                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));  
                 }
                 MenuButtonAction::MainMenuSettingsDisplay => {
                     println!("Main Menu Display Menu!");
@@ -166,8 +165,8 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage)));                  
                 }
                 MenuButtonAction::InGameMenuQuit => {
-                    println!("Back to IG Menu");
-                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    println!("Want to quit?");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));                   
                     ev_message.send(MessageEvent(Box::new(InGameMenuQuitMessage)));                  
                 }
                 MenuButtonAction::InGameMenuDisplay => {
