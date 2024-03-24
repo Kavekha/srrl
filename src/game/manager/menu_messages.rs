@@ -1,10 +1,10 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::game::{
+use crate::{game::{
     manager::MessageEvent, 
     menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
     states::MenuState
-};
+}, globals::{RELEASE, VERSION}};
 
 use super::Message;
 
@@ -41,9 +41,10 @@ impl Message for ClearMenuMessage {
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
+        //let description = "{} - {}", VERSION, RELEASE)
         let mut menu = Menu::new("main_menu", Vec::new());
         menu.add(MenuItem::header("ShadowRun"));
-        menu.add(MenuItem::description("v0.15.2 - R0.4"));
+        menu.add(MenuItem::description( &format!("{VERSION}, {RELEASE}")));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));

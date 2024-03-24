@@ -23,7 +23,8 @@ impl Plugin for EnginePlugin {
         app
             .add_plugins(AssetsPlugin)        
             .add_plugins(GameAudioPlugin)        
-            .add_plugins(GraphicsPlugin)     
-            .add_plugins(SaveLoadPlugin);
+            .add_plugins(GraphicsPlugin)   
+            //.add_plugins(SaveLoadPlugin);
+            ;
     }
 }

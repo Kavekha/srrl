@@ -6,6 +6,7 @@ pub enum GameState {
     Disabled,
     Running,
     Unavailable,    // En etat de pause du à un Menu ou autre.
+    Processing,     // Sauvegarde ou load en cours.
     SaveGame,
     LoadGame,
 }  

@@ -2,6 +2,8 @@ use bevy::{app::AppExit, prelude::*};
 
 pub mod menu_messages;
 pub mod game_messages;
+pub mod save_messages;
+pub mod change_state_messages;
 
 use crate::engine::audios::MusicEvent;
 
@@ -55,14 +57,7 @@ impl Message for ExitAppMessage {
     }
 }
 
-pub struct RunGameMessage;
-impl Message for RunGameMessage {
-    fn execute(&self, world: &mut World) {
-        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
-            state.set(GameState::Running);
-        }
-    }
-}
+
 
 enum RecapType{
     GameOver,

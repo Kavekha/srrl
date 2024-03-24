@@ -23,7 +23,6 @@ pub mod manager;
 use crate::game::tileboard::components::ExitMapTile;
 use crate::game::states::GameState;
 use crate::engine::render::components::{GameMapRender, GameCursorRender};
-use crate::engine::save_load_system::ShouldSave;
 use crate::map_builders::map::Map;
 
 
@@ -33,7 +32,6 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(Map::new())
-            .insert_resource(ShouldSave{to_save: false})
 
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)

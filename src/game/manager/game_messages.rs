@@ -1,7 +1,7 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{
-    game::{clean_game_screen, manager::{MessageEvent, PlayMusicMessage, RecapType, RunGameMessage}, 
+    game::{clean_game_screen, manager::{change_state_messages::ChangeGameStateRunningMessage, MessageEvent, PlayMusicMessage, RecapType}, 
     menus::{components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType}, 
     pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
@@ -19,7 +19,7 @@ impl Message for StartGameMessage {
         spawn_npcs(world, game_infos.spawn_list);
         create_exit_map(world, game_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
-        world.send_event(MessageEvent(Box::new(RunGameMessage)));      
+        world.send_event(MessageEvent(Box::new(ChangeGameStateRunningMessage)));      
         let music_name = "gamemap".to_string();
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
@@ -130,3 +130,4 @@ impl Message for ClearGameMessage {
         println!("Result is {:?}", result);
     }
 }
+

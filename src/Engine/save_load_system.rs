@@ -1,5 +1,8 @@
 //https://gist.github.com/chamons/37e8c6f8753e63eaef08bef36686c2e2
 
+// == DOCUMENTATION
+// Ces elements sont nécessaires à la sauvegarde, appelée dans save_messages qui est complementaire de ce code.
+
 use bevy::ecs::archetype::{Archetype, ArchetypeId};
 use bevy::ecs::system::SystemState;
 use serde::{Deserialize, Serialize};
@@ -18,58 +21,16 @@ use crate::globals::SCENE_FILE_PATH;
 use crate::game::states::GameState;
 use crate::map_builders::map::Map;
 
-
-// Add a new entry in SaveEntity for saving specific components.
-// Add the new component in Snapshot function for has_component_to_save and SaveEntity::new()
-// Add this new component in the load function too.
-impl Plugin for SaveLoadPlugin{
-    fn build(&self, app: &mut App) {
-        app         
-            //.add_systems(OnEnter(GameState::SaveGame), save_game)
-            .add_systems(Update, save_game.run_if(should_save))
-            .add_systems(OnEnter(GameState::LoadGame), load_game)           
-            ;         
-    }
-}
-
-
-fn load_saved_game(
-    //app_state: &mut ResMut<NextState<AppState>>,
-    game_state: &mut ResMut<NextState<GameState>>,
-){
-    //app_state.set(AppState::Game);
-    game_state.set(GameState::LoadGame);
-    //load_game(app_state, game_state);
-}
-
-
-
-#[derive(Resource)]
-pub struct ShouldSave {
-    pub to_save: bool
-}
-
-/* 
-pub fn has_save_file() -> bool {
-    Path::new(SCENE_FILE_PATH).exists()
-}
-*/
-
-pub fn should_save(
-    must_save: Res<ShouldSave>
-) -> bool {
-    must_save.to_save
-}
-
 #[derive(Debug, Serialize, Deserialize)]
-struct SaveState {
+pub struct SaveState {
     map: Map,
     entities: Vec<SaveEntity>,
 }
 
+
 // Bool if marker, Option if data.
 #[derive(Debug, Serialize, Deserialize)]
-struct SaveEntity {
+pub struct SaveEntity {
     entity: Entity,
     player: bool, 
     //skills: Option<Skills>,
@@ -153,6 +114,55 @@ impl SaveState {
 }
 
 
+
+
+
+/*  
+// Add a new entry in SaveEntity for saving specific components.
+// Add the new component in Snapshot function for has_component_to_save and SaveEntity::new()
+// Add this new component in the load function too.
+impl Plugin for SaveLoadPlugin{
+    fn build(&self, app: &mut App) {
+        app         
+            //.add_systems(OnEnter(GameState::SaveGame), save_game)
+            .add_systems(Update, save_game.run_if(should_save))
+            .add_systems(OnEnter(GameState::LoadGame), load_game)           
+            ;         
+    }
+}
+
+
+fn load_saved_game(
+    //app_state: &mut ResMut<NextState<AppState>>,
+    game_state: &mut ResMut<NextState<GameState>>,
+){
+    //app_state.set(AppState::Game);
+    game_state.set(GameState::LoadGame);
+    //load_game(app_state, game_state);
+}
+
+
+
+#[derive(Resource)]
+pub struct ShouldSave {
+    pub to_save: bool
+}
+
+/* 
+pub fn has_save_file() -> bool {
+    Path::new(SCENE_FILE_PATH).exists()
+}
+*/
+
+pub fn should_save(
+    must_save: Res<ShouldSave>
+) -> bool {
+    must_save.to_save
+}
+
+
+
+
 // System with World are exclusive and can only have world as argument.
 fn save_game(
     mut world: &mut World
@@ -187,6 +197,8 @@ fn save_game(
         .detach();
     println!("Saving... file written.");
 
+    /* 
+
     // Back to main menu
     // Simulate a "system" to get options we need to change the app_state & game_state at the end.
     let mut system_state: SystemState<(
@@ -200,6 +212,7 @@ fn save_game(
     
     //state_back_main_menu(game_state);
     //state_back_main_menu(app_state, game_state);
+    */
 }
 
 pub fn state_back_main_menu(
@@ -293,3 +306,4 @@ pub fn state_after_load_game(
     //game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
     //app_state.set(AppState::Game);
 }
+*/
