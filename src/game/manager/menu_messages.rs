@@ -60,7 +60,7 @@ pub struct MainMenuSettingsMessage;
 impl Message for MainMenuSettingsMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = MenuV2::new("main_menu_settings", Vec::new());
-        menu.add(MenuItem::header("Settings"));
+        menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Back"));
 
@@ -75,7 +75,7 @@ pub struct MainMenuSettingsDisplayMessage;
 impl Message for MainMenuSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = MenuV2::new("main_menu_settings_display", Vec::new());
-        menu.add(MenuItem::header("Display"));
+        menu.add(MenuItem::description("Choose your resolution"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayHigh, "High"));
@@ -91,7 +91,7 @@ pub struct MainMenuQuitMessage;
 impl Message for MainMenuQuitMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = MenuV2::new("main_menu_quit", Vec::new());
-        menu.add(MenuItem::header("Display"));
+        menu.add(MenuItem::description("Do you want to quit?"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Cancel"));
         menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
 
@@ -101,6 +101,35 @@ impl Message for MainMenuQuitMessage {
     }
 }
 
+pub struct OpenInGameMenuOpenMessage;
+impl Message for OpenInGameMenuOpenMessage {
+    fn execute(&self, world: &mut World) {
+        let mut menu = MenuV2::new("ig_menu", Vec::new());
+        menu.add(MenuItem::action(MenuButtonAction::Close, "Resume"));
+        menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
+        menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Settings"));
+        menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
+        menu.add(MenuItem::action(MenuButtonAction::InGameMenuQuit, "Quit"));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("InGame Menu generated and send for opening.");
+    }
+}
+
+pub struct InGameMenuSettingsOpenMessage;
+impl Message for InGameMenuSettingsOpenMessage {
+    fn execute(&self, world: &mut World) {
+        let mut menu = MenuV2::new("ig_menu_settings", Vec::new());
+        menu.add(MenuItem::description("Settings"));
+        menu.add(MenuItem::action(MenuButtonAction::InGameMenuDisplay, "Display"));
+        menu.add(MenuItem::action(MenuButtonAction::BackToInGameMenu, "Back"));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETTINGS});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("InGame Menu generated and send for opening.");
+    }
+}
 
 
 // ==== OLD, to review.

@@ -9,14 +9,17 @@
 // On commence en MenuState:Splashscreen, GameState:Disabled.
 // Transmets un MessageEvent pour Afficher le Main Menu. Cet Event passe MenuState en Open.
 // Le button_system contient tous les ordres de circulation dans les Menus, et est disponible dés que MenuState::Open.
+// La gestion du ClearMenu reste pas ouf, il faut bien penser à l'ajouter à chaque fois. La mettre dans le Open semble faire le Clear après l'envoi du Menu... -_-
 
-//== BUGS & AMELIORATIONS
-// Display ne semble pas s'afficher tout le temps?
+//== TODO 
+// Encore beaucoup de doublons entre IG & MainMenu, à cause de la circulation. Peut être enregistrer l'option "Previous" dans le Menu à chaque fois?
+// Desactiver les Controles "IG" / mettre GameState en Unavailable pendant le IG menu.
+
 
 use bevy::prelude::*;
 
 use crate::game::{
-    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, ClearMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage}, ExitAppMessage, MessageEvent}, 
+    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, ClearMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, InGameMenuSettingsOpenMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
     states::{GameState, MainMenuState, MenuState}};
 
 use super::{button_system, components::{MenuButtonAction, DisplayQuality, InGameMenuState, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
@@ -34,7 +37,7 @@ impl Plugin for CommonsMenuPlugin{
              //Rassemblement Main Menu / IG MEnu : All actions. A la fin, devrait plutot se faire dans le MenuBuilder, associé à l'action
             .add_systems(OnEnter(MenuState::Open), menu_camera)
             .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
-            .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled)))     )  // La gestion des actions IG Menu.
+            .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
                  
             //Specific IG Menu            
             .add_systems(Update, ig_call_menu_input.run_if(in_state(GameState::Running)))   // Appeler IG Menu si In Game.            
@@ -68,7 +71,7 @@ pub fn common_menu_action(
             match menu_button_action {
                 MenuButtonAction::Play => {
                     println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));          
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));   
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));              
                 }
                 //TODO : Reactive LOAD.
@@ -87,6 +90,7 @@ pub fn common_menu_action(
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to Main Menu.");
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));
                     ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage))); 
                 }
                 MenuButtonAction::MainMenuSettingsDisplay => {
@@ -112,11 +116,6 @@ pub fn common_menu_action(
                     let res = resolution.high;
                     window.resolution.set(res.x, res.y);
                 }
-                MenuButtonAction::MainMenuBackToSettings => {
-                    println!("Main Menu Display Menu!");
-                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
-                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsDisplayMessage))); 
-                }
                 MenuButtonAction::Quit => {
                     println!("Do you want to quit?");
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
@@ -127,7 +126,22 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ExitAppMessage)));                  
                 }
                 //Specific In Game Menu.
-
+                MenuButtonAction::Close => {
+                    println!("Close IG Menu");
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));                  
+                }
+                MenuButtonAction::InGameMenuSettings => {
+                    println!("IG Menu Setting");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(InGameMenuSettingsOpenMessage)));                  
+                }
+                MenuButtonAction::BackToInGameMenu => {
+                    println!("Back to IG Menu");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage)));                  
+                }
+                //InGameMenuQuit
+                
 
 //MainMenu is cop / pasta there
 

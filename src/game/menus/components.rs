@@ -15,12 +15,18 @@ pub enum MenuButtonAction {
     MainMenuSettings,
     BackToMainMenu,
     MainMenuSettingsDisplay,
-    MainMenuBackToSettings,
     DisplayLow,
     DisplayMedium,
     DisplayHigh,
     QuitConfirm,
     Quit,
+    Close,
+    InGameMenuSettings,
+    InGameMenuQuit,
+    BackToInGameMenu,
+    InGameMenuDisplay,
+    
+
     //OLD version 
     BackToGame,
     Back,

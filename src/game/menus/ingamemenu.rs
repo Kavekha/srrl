@@ -5,7 +5,12 @@ use bevy::prelude::*;
 use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
 use crate::game::{
-    manager::{game_messages::QuitGameMessage, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent},
+    manager::{
+        game_messages::QuitGameMessage, 
+        menu_messages::{
+            ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, OpenInGameMenuOpenMessage
+        }, 
+        ExitAppMessage, MessageEvent},
     menus::menu_builder::{spawn_basic_menu, Menu, MenuView}
 };   
 
@@ -49,51 +54,31 @@ impl Plugin for InGameMenuPlugin{
     }
 }  
   
-// Do it in event. poc.
-/* 
-#[derive(Event)]
-pub enum MenuEvent {
-    Close,
-}
-// Do it in event. poc.
-fn menu_tick(
-    mut ev_writer: EventWriter<MenuEvent>
-){
-    println!("Tick!");
-    ev_writer.send(MenuEvent::Close);
-}
-// Do it in event. poc.
-fn on_event_menu(
-    mut event_reader: EventReader<MenuEvent>
-){
-    for event in event_reader.read() {
-        match event {
-            MenuEvent::Close => println!("Closing Menu")
-        }
-    }
-    println!("Processing Menu Event....");
-}
-*/
-
+// GameState is Running, I can call Menu.
 pub fn ig_call_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
-    mut menu_state: ResMut<NextState<InGameMenuState>>
+    mut menu_state: ResMut<NextState<InGameMenuState>>,
+    mut ev_message: EventWriter<MessageEvent>  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Call for In Game Menu.");
-        menu_state.set(InGameMenuState::MainMenu);
+        //menu_state.set(InGameMenuState::MainMenu);
+        ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
     }
 }
 
+// GameState is Unavailable, I can close the menu.
 pub fn ig_inside_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
-    mut menu_state: ResMut<NextState<InGameMenuState>>
+    mut menu_state: ResMut<NextState<InGameMenuState>>,
+    mut ev_message: EventWriter<MessageEvent>  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Back to game.");
-        menu_state.set(InGameMenuState::Disabled);
+        //menu_state.set(InGameMenuState::Disabled);
+        ev_message.send(MessageEvent(Box::new(CloseMenuMessage))); 
     }
 }
 
