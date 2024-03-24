@@ -80,6 +80,8 @@ impl Message for EndGameRecapMessage {
                 menu.add(MenuItem::header("You died."));
                 menu.add(MenuItem::description("A ghoul has eaten you."));
                 menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
+                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
+                
         
                 world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
                 world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
@@ -91,6 +93,7 @@ impl Message for EndGameRecapMessage {
                 menu.add(MenuItem::header("victory!"));
                 menu.add(MenuItem::description("You flee the place."));
                 menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
+                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
         
                 world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
                 world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
