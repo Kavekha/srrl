@@ -116,11 +116,9 @@ impl Message for OpenInGameMenuOpenMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = Menu::new("ig_menu", Vec::new());
         menu.add(MenuItem::action(MenuButtonAction::Close, "Resume"));
-        menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuQuit, "Quit"));
-
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("InGame Menu generated and send for opening.");
