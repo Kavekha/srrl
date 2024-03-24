@@ -2,7 +2,7 @@ use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{
     game::{clean_game_screen, manager::{MessageEvent, PlayMusicMessage, RecapType, RunGameMessage}, 
-    menus::{components::MenuButtonAction, menu_builder::{MenuV2, MenuItem}, recapmenu::{MenuEvent, MenuType}}, 
+    menus::{components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType}, 
     pieces::spawners::{create_exit_map, create_player, spawn_npcs}, states::GameState, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
 use super::{menu_messages::OpenMenuMessage, Message};
@@ -75,7 +75,7 @@ impl Message for EndGameRecapMessage {
     fn execute(&self, world: &mut World) {        
         match self.recap_type {
             RecapType::GameOver => {
-                let mut menu = MenuV2::new("game_over", Vec::new());
+                let mut menu = Menu::new("game_over", Vec::new());
 
                 menu.add(MenuItem::header("You died."));
                 menu.add(MenuItem::description("A ghoul has eaten you."));
@@ -88,7 +88,7 @@ impl Message for EndGameRecapMessage {
                 println!("Recap GameOver generated and send for opening.");
             },
             RecapType::Victory => {
-                let mut menu = MenuV2::new("victory", Vec::new());
+                let mut menu = Menu::new("victory", Vec::new());
 
                 menu.add(MenuItem::header("victory!"));
                 menu.add(MenuItem::description("You flee the place."));
@@ -99,7 +99,7 @@ impl Message for EndGameRecapMessage {
                 world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
                 println!("Recap Victory generated and send for opening.");
             },
-            _ => println!("Autres types de Recap non supportés.")
+            //_ => println!("Autres types de Recap non supportés.")
         };
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
     }
@@ -130,6 +130,3 @@ impl Message for ClearGameMessage {
         println!("Result is {:?}", result);
     }
 }
-
-
-

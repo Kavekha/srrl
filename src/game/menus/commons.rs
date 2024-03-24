@@ -18,23 +18,32 @@
 
 use bevy::prelude::*;
 
-use crate::game::{
-    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, ClearMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
-    states::{GameState, MainMenuState, MenuState}};
+use crate::{
+    game::{
+        manager::{game_messages::{QuitGameMessage, StartGameMessage}, 
+        menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, 
+        ExitAppMessage, MessageEvent}, 
+    states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}};
 
-use super::{button_system, components::{MenuButtonAction, DisplayQuality, InGameMenuState, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
+use super::{button_system, components::{MenuButtonAction, ResolutionSettings}, menu_camera};
 
 pub struct CommonsMenuPlugin;
 
 impl Plugin for CommonsMenuPlugin{
     fn build(&self, app: &mut App) {
         app
+            .insert_resource(ResolutionSettings{
+                low:Vec2::new(640.0, 360.0),
+                medium:Vec2::new(HEIGHT * RESOLUTION, HEIGHT),
+                high:Vec2::new(1920.0, 1080.0)
+            })
+            
             .init_state::<MenuState>()
   
+            //On fait ça pour utiliser la commande d'envoi du MainMenu, car on ne peut se baser sur le MenuState::Open.
             .add_systems(OnEnter(MenuState::Splashscreen), splashscreen)    
             .add_systems(OnEnter(MenuState::Splashscreen), menu_camera)  
 
-             //Rassemblement Main Menu / IG MEnu : All actions. A la fin, devrait plutot se faire dans le MenuBuilder, associé à l'action
             .add_systems(OnEnter(MenuState::Open), menu_camera)
             .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
             .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
@@ -46,8 +55,6 @@ impl Plugin for CommonsMenuPlugin{
         }
 }
 
-
-
 fn splashscreen(
     mut ev_message: EventWriter<MessageEvent>
 ){
@@ -55,16 +62,36 @@ fn splashscreen(
     ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage)));
 }
 
+// GameState is Running, I can call Menu.
+pub fn ig_call_menu_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut ev_message: EventWriter<MessageEvent>  
+){
+    // MENU etc
+    if keys.just_pressed(KeyCode::Escape) {
+        println!("Call for In Game Menu.");
+        ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
+    }
+}
+
+// GameState is Unavailable, I can close the menu.
+pub fn ig_inside_menu_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut ev_message: EventWriter<MessageEvent>  
+){
+    // MENU etc
+    if keys.just_pressed(KeyCode::Escape) {
+        println!("Back to game.");
+        ev_message.send(MessageEvent(Box::new(CloseMenuMessage))); 
+    }
+}
 
 // Ne contient que MainMenu pour le moment.
 pub fn common_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-     mut game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
-    mut ev_message: EventWriter<MessageEvent>   ,
-    mut ig_menu_state: ResMut<NextState<InGameMenuState>>,
+    mut ev_message: EventWriter<MessageEvent>
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -77,8 +104,6 @@ pub fn common_menu_action(
                 //TODO : Reactive LOAD.
                 MenuButtonAction::Load => {
                     println!("Load a saved game!");
-                    //load_saved_game(&mut app_state, &mut game_state); 
-                    //load_game(app_state, game_state); 
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);             
                 }
@@ -150,66 +175,33 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(InGameSettingsDisplayMessage)));                  
                 }
-                
-
-                
-
-//MainMenu is cop / pasta there
-
-
-                MenuButtonAction::BackToSettings => {
-                    println!("Back to Settings!");
-                    menu_state.set(MainMenuState::Settings);
-                }
-
-                // Ig Menu is cop / paste there
-                MenuButtonAction::QuitConfirm => {
-                    println!("Do you want to quit?");
-                    ig_menu_state.set(InGameMenuState::QuitConfirm);
-                }
-                MenuButtonAction::QuitConfirm => {
-                    println!("Quit App");
-                    ev_message.send(MessageEvent(Box::new(ExitAppMessage))); 
-                }
-
-                MenuButtonAction::BackToGame => {
-                    println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));    //menu_state.set(InGameMenuState::Disabled);             
-                }
-                MenuButtonAction::Settings => {
-                    println!("Go to Settings");
-                    ig_menu_state.set(InGameMenuState::Settings); 
-                }
-                MenuButtonAction::DisplayLow => {
-                    println!("Change to Low");
-                    let mut window = windows.single_mut();
-                    let res = resolution.low;
-                    window.resolution.set(res.x, res.y); 
-                }
-                MenuButtonAction::DisplayHigh => {
-                    println!("Change to High");
-                    let mut window = windows.single_mut();                    
-                    let res = resolution.high;
-                    window.resolution.set(res.x, res.y);
-                }
-                MenuButtonAction::DisplayMedium => {
-                    println!("Change to Medium");     
-                    let mut window = windows.single_mut();                                   
-                    let res = resolution.medium;
-                    window.resolution.set(res.x, res.y);
-                }
-                MenuButtonAction::SettingsDisplay => {
-                    println!("Go to Settings Display");
-                    ig_menu_state.set(InGameMenuState::SettingDisplay); 
-                }
-                MenuButtonAction::BackToSettings => {
-                    println!("Back to Settings");
-                    ig_menu_state.set(InGameMenuState::Settings);   
-                }
-                _ => {
-                    println!("Something Else to deal with!");
-                }
             }
         }
     }
 }
+
+
+/* 
+   
+    //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
+    //println!("Mon Path est : {:?}", has_file);
+    if has_save_file() {
+        // Load game button.
+        let load_game_text = "Load game";
+        let load_game_width = (load_game_text.len()+ 2) as f32;  
+        box_center_y -= box_height * CHAR_SIZE;
+
+        spawn_menu_button(
+            &mut commands, 
+            &ascii, 
+            &nine_slice_indices, 
+            Vec3::new(box_center_x, box_center_y, 100.0),
+            load_game_text, 
+            MainMenuOptions::LoadGame,
+            Vec2::new(load_game_width, box_height)
+        ); 
+    } else {
+        println!("je n'ai pas de fichier de save")    }
+
+
+*/

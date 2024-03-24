@@ -11,7 +11,6 @@ pub struct OnSettingsMenuScreen;
 pub enum MenuButtonAction {
     Play,
     Load,
-    Settings,
     MainMenuSettings,
     BackToMainMenu,
     MainMenuSettingsDisplay,
@@ -25,13 +24,6 @@ pub enum MenuButtonAction {
     InGameMenuQuit,
     BackToInGameMenu,
     InGameMenuDisplay,
-
-
-    //OLD version 
-    BackToGame,
-    Back,
-    SettingsDisplay,
-    BackToSettings, 
 }
 
 #[derive(Resource)]
@@ -45,6 +37,7 @@ pub struct ResolutionSettings {
 pub struct SelectedOption;
 
 
+/* 
 // One of the two settings that can be set through the menu. It will be a resource in the app
 #[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
 pub enum DisplayQuality {
@@ -52,16 +45,4 @@ pub enum DisplayQuality {
     Medium,
     //High,
 }
-
-
-
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum InGameMenuState {
-    #[default]
-    Disabled,
-    MainMenu,
-    QuitConfirm,
-    Settings,
-    SettingDisplay,
-    //SettingSound
-}
+*/

@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 
-pub mod mainmenu;
-pub mod recapmenu;
-//pub mod victory;
 pub mod components;
-pub mod ingamemenu;
 pub mod menu_builder;
 pub mod commons;
 
 use crate::{
-    game::despawn_screen, //states::MainMenuState}, 
+    engine::asset_loaders::GraphicsAssets,
+    game::{despawn_screen, menus::menu_builder::spawn_recap_menu}, //states::MainMenuState}, 
     globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON}};
 
-use self::{commons::CommonsMenuPlugin, components::{OnScreenMenu, SelectedOption}, ingamemenu::InGameMenuPlugin, mainmenu::MainMenuPlugin, recapmenu::RecapMenuPlugin};   //, victory::VictoryPlugin};
+use self::{
+    commons::CommonsMenuPlugin, components::{OnScreenMenu, SelectedOption}, 
+    menu_builder::Menu
+};
 
 
 pub struct MenuPlugin;
@@ -20,11 +20,42 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_plugins(MainMenuPlugin)
-            .add_plugins(RecapMenuPlugin)
             .add_plugins(CommonsMenuPlugin)
-            .add_plugins(InGameMenuPlugin);
+            //Transfert vers le menu
+            .add_event::<MenuEvent>()
+            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()));        
     }
+}
+
+
+
+// TODO : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
+#[derive(Event)]
+pub struct MenuEvent{
+    pub menu: Menu,
+    pub menu_type: MenuType     //Type pour savoir quel menu on créé? Au cas où pôur le moment.
+}
+
+pub enum MenuType {
+    RECAPMENU,
+    MAINMENU,
+    SETTINGS,
+    DISPLAY,
+    QUIT
+}
+
+fn menu_event_reader(
+    mut commands: Commands,
+    mut ev_menu: EventReader<MenuEvent>,
+    graph_assets: Res<GraphicsAssets>,
+) {
+    for event in ev_menu.read() {
+        //println!("Je suis dans Menu Event Reader avec pour type: {:?}.", event.menu_type);
+        println!("Menu reçu et envoyé.");
+        let menu = &event.menu;
+        spawn_recap_menu(&mut commands, graph_assets, menu);
+        break;      // Degueu, mais seul le premier m'interesse et c peu probable que j'en ai d'autres.
+    }    
 }
 
 

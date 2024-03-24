@@ -5,7 +5,7 @@ pub mod game_messages;
 
 use crate::engine::audios::MusicEvent;
 
-use super::states::{GameState, MainMenuState};
+use super::states::GameState;
 
 
 pub struct ManagerPlugin;
@@ -46,8 +46,6 @@ impl Message for PlayMusicMessage {
     }
 }
 
-
-
 pub struct ExitAppMessage;
 
 impl Message for ExitAppMessage {
@@ -65,8 +63,6 @@ impl Message for RunGameMessage {
         }
     }
 }
-
-
 
 enum RecapType{
     GameOver,
