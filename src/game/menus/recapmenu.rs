@@ -1,12 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{
-    engine::asset_loaders::GraphicsAssets, 
-    game::{menus::{components::MenuButtonAction, menu_builder::{spawn_recap_menu, Menu, MenuView}}, states::MainMenuState}
-};
+use crate::{engine::asset_loaders::GraphicsAssets, game::menus::{components::MenuButtonAction, menu_builder::{spawn_recap_menu, Menu, MenuView}}};
 
 use super::{
-    menu_builder::{MenuItem, MenuV2}, menu_camera, OnScreenMenu};
+    menu_builder::{MenuItem, MenuV2}, OnScreenMenu};
 
 
 // TODO: Refacto Victory & GameOver en un seul: Recap Screen?
@@ -17,15 +14,7 @@ impl Plugin for RecapMenuPlugin {
     fn build(&self, app: &mut App){
         app
             .add_event::<MenuEvent>()
-            //.add_systems(OnEnter(MainMenuState::RecapMenu), display_gameover_screen) //TEST  
-            //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_go_menu)
-            //.add_systems(OnEnter(MainMenuState::RecapMenu), enter_recap_menu)
-            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()));
-            //.add_systems(OnEnter(MainMenuState::RecapMenu), menu_camera)         
-            //.add_systems(OnExit(MainMenuState::RecapMenu), clean_menu); 
-
-   
-        
+            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()));        
     }
 }
 

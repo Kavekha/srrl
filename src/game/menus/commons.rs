@@ -19,8 +19,8 @@
 use bevy::prelude::*;
 
 use crate::game::{
-    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, ClearMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
-    states::{GameState, MainMenuState, MenuState}};
+    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
+    states::{GameState, MenuState}};
 
 use super::{button_system, components::{MenuButtonAction, DisplayQuality, InGameMenuState, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
 
@@ -60,7 +60,6 @@ fn splashscreen(
 pub fn common_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
      mut game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MainMenuState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
     mut ev_message: EventWriter<MessageEvent>   ,
@@ -150,65 +149,11 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(InGameSettingsDisplayMessage)));                  
                 }
-                
-
-                
-
-//MainMenu is cop / pasta there
-
-
-                MenuButtonAction::BackToSettings => {
-                    println!("Back to Settings!");
-                    menu_state.set(MainMenuState::Settings);
-                }
-
-                // Ig Menu is cop / paste there
-                MenuButtonAction::QuitConfirm => {
-                    println!("Do you want to quit?");
-                    ig_menu_state.set(InGameMenuState::QuitConfirm);
-                }
-                MenuButtonAction::QuitConfirm => {
-                    println!("Quit App");
-                    ev_message.send(MessageEvent(Box::new(ExitAppMessage))); 
-                }
-
-                MenuButtonAction::BackToGame => {
-                    println!("Go to game !");
-                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));    //menu_state.set(InGameMenuState::Disabled);             
-                }
-                MenuButtonAction::Settings => {
-                    println!("Go to Settings");
-                    ig_menu_state.set(InGameMenuState::Settings); 
-                }
-                MenuButtonAction::DisplayLow => {
-                    println!("Change to Low");
-                    let mut window = windows.single_mut();
-                    let res = resolution.low;
-                    window.resolution.set(res.x, res.y); 
-                }
-                MenuButtonAction::DisplayHigh => {
-                    println!("Change to High");
-                    let mut window = windows.single_mut();                    
-                    let res = resolution.high;
-                    window.resolution.set(res.x, res.y);
-                }
-                MenuButtonAction::DisplayMedium => {
-                    println!("Change to Medium");     
-                    let mut window = windows.single_mut();                                   
-                    let res = resolution.medium;
-                    window.resolution.set(res.x, res.y);
-                }
-                MenuButtonAction::SettingsDisplay => {
-                    println!("Go to Settings Display");
-                    ig_menu_state.set(InGameMenuState::SettingDisplay); 
-                }
-                MenuButtonAction::BackToSettings => {
-                    println!("Back to Settings");
-                    ig_menu_state.set(InGameMenuState::Settings);   
-                }
-                _ => {
-                    println!("Something Else to deal with!");
-                }
+                MenuButtonAction::Settings => todo!(),
+                MenuButtonAction::BackToGame => todo!(),
+                MenuButtonAction::Back => todo!(),
+                MenuButtonAction::SettingsDisplay => todo!(),
+                MenuButtonAction::BackToSettings => todo!(),
             }
         }
     }

@@ -1,6 +1,8 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::game::{manager::MessageEvent, menus::{clean_menu, components::{InGameMenuState, MenuButtonAction}, menu_builder::{MenuItem, MenuV2}, recapmenu::{MenuEvent, MenuType}}, states::{MainMenuState, MenuState}};
+use crate::game::{
+    manager::MessageEvent, 
+    menus::{clean_menu, components::{InGameMenuState, MenuButtonAction}, menu_builder::{MenuItem, MenuV2}, recapmenu::{MenuEvent, MenuType}}, states::MenuState};
 
 use super::Message;
 
@@ -160,48 +162,6 @@ impl Message for InGameSettingsDisplayMessage {
         println!("SettingsDisplay generated and send for opening.");
     }
 }
-
-
-// ==== OLD, to review.
-
-pub struct CloseInGameMenuMessage;
-impl Message for CloseInGameMenuMessage {
-    fn execute(&self, world: &mut World) {
-        if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
-            state.set(InGameMenuState::Disabled);
-        }
-    }
-}
-
-pub struct CloseMainMenuMessage;
-impl Message for CloseMainMenuMessage {
-    fn execute(&self, world: &mut World) {
-        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
-            state.set(MainMenuState::Disabled);
-        }
-    }
-}
-
-
-
-pub struct ActiveMainMenuMessage;
-impl Message for ActiveMainMenuMessage {
-    fn execute(&self, world: &mut World) {
-        if let Some(mut state) = world.get_resource_mut::<NextState<MainMenuState>>() {
-            state.set(MainMenuState::MainMenu);
-        }
-    }
-}
-pub struct ActiveInGameMenuMessage;
-impl Message for ActiveInGameMenuMessage {
-    fn execute(&self, world: &mut World) {
-        if let Some(mut state) = world.get_resource_mut::<NextState<InGameMenuState>>() {
-            state.set(InGameMenuState::MainMenu);
-        }
-    }
-}
-
-
 
 
 

@@ -6,8 +6,8 @@ use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
-        manager::{game_messages::StartGameMessage, menu_messages::{ActiveMainMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent}, 
-        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
+        manager::{game_messages::StartGameMessage, ExitAppMessage, MessageEvent}, 
+        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::GameState
     }, 
     globals::{
         HEIGHT, 
@@ -30,8 +30,6 @@ pub struct MainMenuPlugin;
 impl Plugin for MainMenuPlugin{
     fn build(&self, app: &mut App) {
         app
-            .init_state::<MainMenuState>()
-
             .insert_resource(DisplayQuality::Medium)
             .insert_resource(ResolutionSettings{
                 low:Vec2::new(640.0, 360.0),
@@ -39,156 +37,9 @@ impl Plugin for MainMenuPlugin{
                 //medium:Vec2::new(800.0, 600.0),
                 high:Vec2::new(1920.0, 1080.0)
             })
-            //.add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
-            //.add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  //0.15.2 In Commons
-
-            //.add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
-            .add_systems(OnEnter(MainMenuState::Settings), enter_mm_settings_menu)      
-            .add_systems(OnEnter(MainMenuState::DisplayMenu), enter_mm_display_menu)      
-            .add_systems(OnEnter(MainMenuState::QuitConfirm), enter_mm_quit_confirm_menu)
-            
-            //.add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))    // 0.15.2 : Dans Commons maintenant, avec Open. 
-            //.add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )   // 0.15.2 : Dans Commons maintenant, sera en commun avec IG etc.
-            
-            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
-
-            .add_systems(OnEnter(MainMenuState::Disabled), clean_menu)
-            /* 0.15.2 for all states of main menu.
-            .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
-            .add_systems(OnExit(MainMenuState::Settings), clean_menu)
-            .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
-            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)  */ 
-            ;
+           ;
     }
 }
-
-
-
-pub fn main_menu_action(
-    interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-     mut game_state: ResMut<NextState<GameState>>,
-    mut menu_state: ResMut<NextState<MainMenuState>>,
-    mut windows: Query<&mut Window>,
-    resolution: Res<ResolutionSettings>,
-    mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
-) {
-    for (interaction, menu_button_action) in &interaction_query {
-        if *interaction == Interaction::Pressed {
-            match menu_button_action {
-                MenuButtonAction::QuitConfirm => {
-                    //app_exit_events.send(AppExit);
-                    println!("Do you want to quit?");
-                    menu_state.set(MainMenuState::QuitConfirm);
-                }
-                MenuButtonAction::Quit => {
-                    //app_exit_events.send(AppExit);
-                    println!("Quit App");
-                    ev_message.send(MessageEvent(Box::new(ExitAppMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //app_exit_events.send(AppExit);
-                }
-                /* 
-                MenuButtonAction::Cancel => {
-                    //app_exit_events.send(AppExit);
-                    println!("Don't want to quit.");
-                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
-                }*/
-                MenuButtonAction::Play => {
-                    println!("Go to game !");                    
-                    ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));  //menu_state.set(MainMenuState::Disabled);
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //game_state.set(GameState::NewGame);                    
-                }
-                MenuButtonAction::Load => {
-                    println!("Load a saved game!");
-                    //load_saved_game(&mut app_state, &mut game_state); 
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);
-                    game_state.set(GameState::LoadGame);
-                    //load_game(app_state, game_state);
-                }
-                MenuButtonAction::Settings => {
-                    println!("Settings!");
-                    menu_state.set(MainMenuState::Settings);
-                }
-                MenuButtonAction::BackToMainMenu => {
-                    println!("Back to main menu");
-                    ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu)
-                }
-                MenuButtonAction::SettingsDisplay => {
-                    println!("Display Menu!");
-                    menu_state.set(MainMenuState::DisplayMenu);
-                }
-                MenuButtonAction::BackToSettings => {
-                    println!("Back to Settings!");
-                    menu_state.set(MainMenuState::Settings);
-                }
-                MenuButtonAction::DisplayLow => {
-                    println!("Resolution changed to Low");
-                    let mut window = windows.single_mut();                
-                    let res = resolution.low;
-                    window.resolution.set(res.x, res.y);
-                }
-                MenuButtonAction::DisplayMedium => {
-                    println!("Resolution changed to Medium");
-                    let mut window = windows.single_mut();              
-                    let res = resolution.medium;
-                    window.resolution.set(res.x, res.y);
-                }
-                MenuButtonAction::DisplayHigh => {
-                    println!("Resolution changed to High");
-                    let mut window = windows.single_mut();                  
-                    let res = resolution.high;
-                    window.resolution.set(res.x, res.y);
-                }
-                _ => {
-                    println!("Something Else to deal with!");
-                }
-            }
-        }
-    }
-}
-
-
-
-pub fn enter_mm_quit_confirm_menu(mut commands: Commands) {
-    println!("Entering MM Quit Confirm menu.");
-    let mut menu = Menu::new();
-    for (action, text) in [                            
-            //(MenuButtonAction::Cancel, "Cancel"),
-            (MenuButtonAction::Quit, "Confirm"),
-        ] {
-            let page = MenuView::new(action, text.to_string());
-            menu.pages.push(page);
-    }
-    spawn_basic_menu(&mut commands, menu)
-}
-
-pub fn enter_mm_settings_menu(mut commands: Commands) {
-    println!("Entering MM Quit Confirm menu.");
-    let mut menu = Menu::new();
-    for (action, text) in [
-            (MenuButtonAction::SettingsDisplay, "Display"),
-            //(MenuButtonAction::SettingsSound, "Sound"),
-            (MenuButtonAction::BackToMainMenu, "Back"),
-        ] {
-            let page = MenuView::new(action, text.to_string());
-            menu.pages.push(page);
-    }
-    spawn_basic_menu(&mut commands, menu)
-}
-
-pub fn enter_mm_display_menu(mut commands: Commands) {
-    println!("Entering MM Quit Confirm menu.");
-    let mut menu = Menu::new();
-    for (action, text) in [
-        (MenuButtonAction::DisplayLow, "Low"),
-        (MenuButtonAction::DisplayMedium, "Medium"),
-        (MenuButtonAction::DisplayHigh, "High"),
-        (MenuButtonAction::BackToSettings, "Back"),
-        ] {
-            let page = MenuView::new(action, text.to_string());
-            menu.pages.push(page);
-    }
-    spawn_basic_menu(&mut commands, menu)
-}
-
 
 
 pub fn spawn_main_menu(
