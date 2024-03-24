@@ -2,7 +2,9 @@ use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::game::{
     manager::MessageEvent, 
-    menus::{clean_menu, components::MenuButtonAction, menu_builder::{MenuItem, MenuV2}, recapmenu::{MenuEvent, MenuType}}, states::MenuState};
+    menus::{clean_menu, components::MenuButtonAction, menu_builder::{MenuItem, MenuV2}, MenuEvent, MenuType},
+    states::MenuState
+};
 
 use super::Message;
 
