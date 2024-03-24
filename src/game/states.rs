@@ -5,6 +5,7 @@ pub enum GameState {
     #[default]
     Disabled,
     Running,
+    Unavailable,    // En etat de pause du à un Menu ou autre.
     SaveGame,
     LoadGame,
 }  
@@ -13,14 +14,22 @@ pub enum GameState {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum MainMenuState {
     #[default]
+    None,
     MainMenu,
     Settings,
     DisplayMenu,
     QuitConfirm,
     Disabled,
-    RecapMenu
+    //RecapMenu
 }
 
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
+pub enum MenuState {
+    #[default]
+    Splashscreen,
+    Disabled,
+    Open
+}
 
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum EngineState {

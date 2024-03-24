@@ -76,19 +76,9 @@ impl MenuV2{
         };
         menu
     } 
-}
-
-pub fn read_menu() -> MenuV2{
-    let new_menu = MenuV2::new(
-        "recap_menu",
-        vec![
-                MenuItem::header("You died."),
-                MenuItem::description("A ghoul has eaten you."),
-                MenuItem::action(MenuButtonAction::Play, "Retry"),
-                MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
-        ]
-    );
-    new_menu
+    pub fn add(&mut self, menu_item: MenuItem){
+        self.entries.push(menu_item);
+    }
 }
 
 
@@ -96,8 +86,9 @@ pub fn read_menu() -> MenuV2{
 pub fn spawn_recap_menu(
 commands: &mut Commands,
 graph_assets: Res<GraphicsAssets>,
-menu: MenuV2
+menu: &MenuV2
 ) {
+    println!("Spawning recap menu.");
 let button_style = Style {
     width: Val::Px(100.0),
     height: Val::Px(32.5),
@@ -112,8 +103,6 @@ let button_text_style = TextStyle {
     color: TEXT_COLOR,
     ..default()
 };
-
-let menu = read_menu();
 
 commands
         .spawn((
@@ -131,11 +120,11 @@ commands
             OnScreenMenu
         ))
         .with_children(|parent| {
-            for item in menu.entries {
+            for item in &menu.entries {
                 match item {
                     MenuItem::Header(header) => {
                         parent.spawn(TextBundle::from_section(
-                            header.text,   //"YOU DIED.",
+                            header.text.clone(),   //"YOU DIED.",
                             TextStyle {
                                 font: graph_assets.font.clone(),
                                 font_size: 30.0,
@@ -145,7 +134,7 @@ commands
                     },
                     MenuItem::Description(description) => {
                         parent.spawn(TextBundle::from_section(
-                            description.text,   //"YOU DIED.",
+                            description.text.clone(),   //"YOU DIED.",
                             TextStyle {
                                     font: graph_assets.font.clone(),
                                     font_size: 15.0,
@@ -161,11 +150,11 @@ commands
                                     background_color: NORMAL_BUTTON.into(),
                                     ..default()
                                 },
-                                action.action,    //action,
+                                action.action.clone(),    //action,
                             ))
                             .with_children(|parent| {
                                 parent.spawn(TextBundle::from_section(
-                                    action.text,  //text,
+                                    action.text.clone(),  //text,
                                     button_text_style.clone(),
                                 ));
                             });

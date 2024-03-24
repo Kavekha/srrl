@@ -6,7 +6,7 @@ use crate::{
     engine::render::{components::PathAnimator, get_world_position}, 
     game::{
         combat::{AP_COST_MELEE, AP_COST_MOVE},
-        manager::{GameOverMessage, MessageEvent}, 
+        manager::{game_messages::GameOverMessage, MessageEvent}, 
         pieces::components::{Health, Occupier, Stats}, 
         player::{Cursor, Player}, 
         rules::{consume_actionpoints, roll_dices_against}, 

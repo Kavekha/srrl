@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
-        manager::{ActiveMainMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, StartGameMessage}, 
+        manager::{game_messages::StartGameMessage, menu_messages::{ActiveMainMenuMessage, CloseMainMenuMessage}, ExitAppMessage, MessageEvent}, 
         menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::{GameState, MainMenuState}
     }, 
     globals::{
@@ -16,7 +16,7 @@ use crate::{
 };
 
 use super::{
-    button_system, clean_menu, components::{
+    clean_menu, components::{
         DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings
         //, SelectedOption
     },
@@ -40,20 +40,24 @@ impl Plugin for MainMenuPlugin{
                 high:Vec2::new(1920.0, 1080.0)
             })
             //.add_systems(OnEnter(MainMenuState::MainMenu), load_main_menu)
-            .add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  
+            //.add_systems(OnEnter(MainMenuState::MainMenu), menu_camera)  //0.15.2 In Commons
 
-            .add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
+            //.add_systems(OnEnter(MainMenuState::MainMenu), spawn_main_menu)      
             .add_systems(OnEnter(MainMenuState::Settings), enter_mm_settings_menu)      
             .add_systems(OnEnter(MainMenuState::DisplayMenu), enter_mm_display_menu)      
             .add_systems(OnEnter(MainMenuState::QuitConfirm), enter_mm_quit_confirm_menu)
             
-            .add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))
-            .add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )
+            //.add_systems(Update, button_system.run_if(not(in_state(MainMenuState::Disabled))))    // 0.15.2 : Dans Commons maintenant, avec Open. 
+            //.add_systems(Update, main_menu_action.run_if(not(in_state(MainMenuState::Disabled)))  )   // 0.15.2 : Dans Commons maintenant, sera en commun avec IG etc.
             
+            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
+
+            .add_systems(OnEnter(MainMenuState::Disabled), clean_menu)
+            /* 0.15.2 for all states of main menu.
             .add_systems(OnExit(MainMenuState::MainMenu), clean_menu)
             .add_systems(OnExit(MainMenuState::Settings), clean_menu)
             .add_systems(OnExit(MainMenuState::DisplayMenu), clean_menu)               
-            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)   
+            .add_systems(OnExit(MainMenuState::QuitConfirm), clean_menu)  */ 
             ;
     }
 }
@@ -81,11 +85,12 @@ pub fn main_menu_action(
                     println!("Quit App");
                     ev_message.send(MessageEvent(Box::new(ExitAppMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //app_exit_events.send(AppExit);
                 }
+                /* 
                 MenuButtonAction::Cancel => {
                     //app_exit_events.send(AppExit);
                     println!("Don't want to quit.");
                     ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
-                }
+                }*/
                 MenuButtonAction::Play => {
                     println!("Go to game !");                    
                     ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));  //menu_state.set(MainMenuState::Disabled);
@@ -141,31 +146,12 @@ pub fn main_menu_action(
 }
 
 
-// This system updates the settings when a new value for a setting is selected, and marks
-// the button as the one currently selected
-/* 
-fn setting_button<T: Resource + Component + PartialEq + Copy>(
-    interaction_query: Query<(&Interaction, &T, Entity), (Changed<Interaction>, With<Button>)>,
-    mut selected_query: Query<(Entity, &mut BackgroundColor), With<SelectedOption>>,
-    mut commands: Commands,
-    mut setting: ResMut<T>,
-) {
-    for (interaction, button_setting, entity) in &interaction_query {
-        if *interaction == Interaction::Pressed && *setting != *button_setting {
-            let (previous_button, mut previous_color) = selected_query.single_mut();
-            *previous_color = NORMAL_BUTTON.into();
-            commands.entity(previous_button).remove::<SelectedOption>();
-            commands.entity(entity).insert(SelectedOption);
-            *setting = *button_setting;
-        }
-    }
-}
-*/
+
 pub fn enter_mm_quit_confirm_menu(mut commands: Commands) {
     println!("Entering MM Quit Confirm menu.");
     let mut menu = Menu::new();
     for (action, text) in [                            
-            (MenuButtonAction::Cancel, "Cancel"),
+            //(MenuButtonAction::Cancel, "Cancel"),
             (MenuButtonAction::Quit, "Confirm"),
         ] {
             let page = MenuView::new(action, text.to_string());

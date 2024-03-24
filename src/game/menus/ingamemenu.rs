@@ -5,7 +5,12 @@ use bevy::prelude::*;
 use super::{clean_menu, components::{DisplayQuality, InGameMenuState, ResolutionSettings}, menu_camera, button_system};
 
 use crate::game::{
-    manager::{ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, ExitAppMessage, MessageEvent, QuitGameMessage},
+    manager::{
+        game_messages::QuitGameMessage, 
+        menu_messages::{
+            ActiveInGameMenuMessage, ActiveMainMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, OpenInGameMenuOpenMessage
+        }, 
+        ExitAppMessage, MessageEvent},
     menus::menu_builder::{spawn_basic_menu, Menu, MenuView}
 };   
 
@@ -30,74 +35,53 @@ impl Plugin for InGameMenuPlugin{
             //.add_systems(Update, menu_tick.run_if(in_state(InGameMenuState::MainMenu)))     // Do it in event. poc.
             //.add_systems(Update, on_event_menu.run_if(on_event::<MenuEvent>()))             // Do it in event. poc.
 
-            .add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))    // TODO : Peut quand meme etre appelé du Main Menu -_-
-            .add_systems(Update, ig_inside_menu_input.run_if(in_state(InGameMenuState::MainMenu)))  //TODO : Not Disabled
+            //.add_systems(Update, ig_call_menu_input.run_if(in_state(InGameMenuState::Disabled)))    // TODO : Peut quand meme etre appelé du Main Menu -_-
+            //.add_systems(Update, ig_inside_menu_input.run_if(in_state(InGameMenuState::MainMenu)))  //TODO : Not Disabled
 
-            .add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) 
+            //.add_systems(OnEnter(InGameMenuState::MainMenu), menu_camera) //0.15.2 in Commons
             .add_systems(OnEnter(InGameMenuState::MainMenu), enter_ig_main_menu)
             .add_systems(OnEnter(InGameMenuState::Settings), enter_ig_settings_menu)
             .add_systems(OnEnter(InGameMenuState::SettingDisplay), enter_ig_display_menu) 
             .add_systems(OnEnter(InGameMenuState::QuitConfirm), enter_ig_quit_confirm_menu)
 
             //Todo with not in Disable?
-            .add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))
-            .add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )
+            //.add_systems(Update, button_system.run_if(not(in_state(InGameMenuState::Disabled))))      // 0.15.2 in Commons
+            //.add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )// 0.15.2 in Commons
             
-            .add_systems(OnExit(InGameMenuState::MainMenu), clean_menu)
-            .add_systems(OnExit(InGameMenuState::Settings), clean_menu)
-            .add_systems(OnExit(InGameMenuState::SettingDisplay), clean_menu)               
-            .add_systems(OnExit(InGameMenuState::QuitConfirm), clean_menu)
+            //ALl in one.
+            //.add_systems(OnEnter(InGameMenuState::Disabled), clean_menu)
             ;
     }
-}
- 
-// Do it in event. poc.
-/* 
-#[derive(Event)]
-pub enum MenuEvent {
-    Close,
-}
-// Do it in event. poc.
-fn menu_tick(
-    mut ev_writer: EventWriter<MenuEvent>
-){
-    println!("Tick!");
-    ev_writer.send(MenuEvent::Close);
-}
-// Do it in event. poc.
-fn on_event_menu(
-    mut event_reader: EventReader<MenuEvent>
-){
-    for event in event_reader.read() {
-        match event {
-            MenuEvent::Close => println!("Closing Menu")
-        }
-    }
-    println!("Processing Menu Event....");
-}
-*/
-
+}  
+  
+// GameState is Running, I can call Menu.
 pub fn ig_call_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
-    mut menu_state: ResMut<NextState<InGameMenuState>>
+    mut menu_state: ResMut<NextState<InGameMenuState>>,
+    mut ev_message: EventWriter<MessageEvent>  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Call for In Game Menu.");
-        menu_state.set(InGameMenuState::MainMenu);
+        //menu_state.set(InGameMenuState::MainMenu);
+        ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
     }
 }
 
+// GameState is Unavailable, I can close the menu.
 pub fn ig_inside_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
-    mut menu_state: ResMut<NextState<InGameMenuState>>
+    mut menu_state: ResMut<NextState<InGameMenuState>>,
+    mut ev_message: EventWriter<MessageEvent>  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Back to game.");
-        menu_state.set(InGameMenuState::Disabled);
+        //menu_state.set(InGameMenuState::Disabled);
+        ev_message.send(MessageEvent(Box::new(CloseMenuMessage))); 
     }
 }
+
 
 
 pub fn ig_menu_action(
@@ -118,10 +102,11 @@ pub fn ig_menu_action(
                     println!("Quit App");
                     ev_message.send(MessageEvent(Box::new(ExitAppMessage))); 
                 }
+                /* 
                 MenuButtonAction::Cancel => {
                     println!("Don't want to quit.");
                     menu_state.set(InGameMenuState::MainMenu);
-                }
+                }*/
                 MenuButtonAction::BackToGame => {
                     println!("Go to game !");
                     ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));    //menu_state.set(InGameMenuState::Disabled);                  
@@ -223,7 +208,7 @@ pub fn enter_ig_quit_confirm_menu(mut commands: Commands) {
     println!("Entering IG Quit Confirm menu.");
     let mut menu = Menu::new();
     for (action, text) in [                            
-            (MenuButtonAction::Cancel, "Cancel"),
+            //(MenuButtonAction::Cancel, "Cancel"),
             (MenuButtonAction::Quit, "Confirm"),
         ] {
             let page = MenuView::new(action, text.to_string());

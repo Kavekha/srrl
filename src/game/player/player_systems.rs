@@ -1,7 +1,7 @@
 use bevy::{prelude::*, input::mouse::MouseMotion};
 
 use crate::game::{
-        combat::events::RefreshActionCostEvent, manager::{MessageEvent, VictoryMessage}, tileboard::components::{BoardPosition, ExitMapTile}
+        combat::events::RefreshActionCostEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}
     };
 
 

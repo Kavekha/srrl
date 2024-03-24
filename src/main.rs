@@ -21,6 +21,8 @@ use engine::EnginePlugin;
 use game::states::{GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
+use crate::game::states::MenuState;
+
 
 
 
@@ -51,6 +53,7 @@ fn main() {
         
         .init_state::<GameState>()  
         .init_state::<EngineState>()
+        .init_state::<MenuState>()
 
 
         .run(); 

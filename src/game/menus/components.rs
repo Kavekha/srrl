@@ -7,23 +7,31 @@ pub struct OnScreenMenu;
 pub struct OnSettingsMenuScreen;
 
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub enum MenuButtonAction {
     Play,
     Load,
     Settings,
-    SettingsDisplay,
-    BackToSettings,
+    MainMenuSettings,
     BackToMainMenu,
-    //SettingsSound, 
-    QuitConfirm,
-    Quit,
-    Cancel,
-    BackToGame,
-    Back,
+    MainMenuSettingsDisplay,
     DisplayLow,
     DisplayMedium,
-    DisplayHigh
+    DisplayHigh,
+    QuitConfirm,
+    Quit,
+    Close,
+    InGameMenuSettings,
+    InGameMenuQuit,
+    BackToInGameMenu,
+    InGameMenuDisplay,
+
+
+    //OLD version 
+    BackToGame,
+    Back,
+    SettingsDisplay,
+    BackToSettings, 
 }
 
 #[derive(Resource)]
