@@ -88,6 +88,7 @@ commands: &mut Commands,
 graph_assets: Res<GraphicsAssets>,
 menu: &MenuV2
 ) {
+    println!("Spawning recap menu.");
 let button_style = Style {
     width: Val::Px(100.0),
     height: Val::Px(32.5),

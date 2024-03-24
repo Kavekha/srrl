@@ -51,6 +51,7 @@ fn menu_event_reader(
 ) {
     for event in ev_menu.read() {
         //println!("Je suis dans Menu Event Reader avec pour type: {:?}.", event.menu_type);
+        println!("Menu reçu et envoyé.");
         let menu = &event.menu;
         spawn_recap_menu(&mut commands, graph_assets, menu);
         break;      // Degueu, mais seul le premier m'interesse et c peu probable que j'en ai d'autres.

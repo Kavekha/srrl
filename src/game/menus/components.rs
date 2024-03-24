@@ -19,10 +19,9 @@ pub enum MenuButtonAction {
     DisplayLow,
     DisplayMedium,
     DisplayHigh,
-    //OLD version 
     QuitConfirm,
     Quit,
-    Cancel,
+    //OLD version 
     BackToGame,
     Back,
     SettingsDisplay,

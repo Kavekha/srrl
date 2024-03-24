@@ -8,7 +8,7 @@ use super::Message;
 pub struct OpenMenuMessage;
 impl Message for OpenMenuMessage {
     fn execute(&self, world: &mut World) {
-        println!("OpenMenuMessage");
+        println!("OpenMenuMessage");    
         if let Some(mut state) = world.get_resource_mut::<NextState<MenuState>>() {
             state.set(MenuState::Open);
         }
@@ -36,7 +36,7 @@ impl Message for ClearMenuMessage {
 }
 
 
-// Open MainMenu
+// Open X Menu : Le MenuEvent doit être envoyé avant le OpenMenu car on fait un clean? ou alors les MenuEvent doivent être traité .after les MessagesEvents?
 
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
@@ -49,8 +49,8 @@ impl Message for MainMenuOpenMessage {
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
 
-        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("MainMenu generated and send for opening.");
     }
 }
@@ -64,8 +64,8 @@ impl Message for MainMenuSettingsMessage {
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Back"));
 
-        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETTINGS});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("Settings generated and send for opening.");
     }
 }
@@ -79,10 +79,10 @@ impl Message for MainMenuSettingsDisplayMessage {
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayHigh, "High"));
-        menu.add(MenuItem::action(MenuButtonAction::MainMenuBackToSettings, "Back"));
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Back"));
 
-        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::DISPLAY});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("SettingsDisplay generated and send for opening.");
     }
 }
@@ -95,13 +95,11 @@ impl Message for MainMenuQuitMessage {
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Cancel"));
         menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
 
-        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::QUIT});
+         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::QUIT});
+         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("Quit generated and send for opening.");
     }
 }
-
-
 
 
 

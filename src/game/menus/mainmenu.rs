@@ -85,11 +85,12 @@ pub fn main_menu_action(
                     println!("Quit App");
                     ev_message.send(MessageEvent(Box::new(ExitAppMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //app_exit_events.send(AppExit);
                 }
+                /* 
                 MenuButtonAction::Cancel => {
                     //app_exit_events.send(AppExit);
                     println!("Don't want to quit.");
                     ev_message.send(MessageEvent(Box::new(ActiveMainMenuMessage))); //menu_state.set(MainMenuState::MainMenu);
-                }
+                }*/
                 MenuButtonAction::Play => {
                     println!("Go to game !");                    
                     ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));  //menu_state.set(MainMenuState::Disabled);
@@ -150,7 +151,7 @@ pub fn enter_mm_quit_confirm_menu(mut commands: Commands) {
     println!("Entering MM Quit Confirm menu.");
     let mut menu = Menu::new();
     for (action, text) in [                            
-            (MenuButtonAction::Cancel, "Cancel"),
+            //(MenuButtonAction::Cancel, "Cancel"),
             (MenuButtonAction::Quit, "Confirm"),
         ] {
             let page = MenuView::new(action, text.to_string());

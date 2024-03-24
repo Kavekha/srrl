@@ -44,7 +44,7 @@ impl Plugin for InGameMenuPlugin{
             //.add_systems(Update, ig_menu_action.run_if(not(in_state(InGameMenuState::Disabled)))     )// 0.15.2 in Commons
             
             //ALl in one.
-            .add_systems(OnEnter(InGameMenuState::Disabled), clean_menu)
+            //.add_systems(OnEnter(InGameMenuState::Disabled), clean_menu)
             ;
     }
 }  
@@ -117,10 +117,11 @@ pub fn ig_menu_action(
                     println!("Quit App");
                     ev_message.send(MessageEvent(Box::new(ExitAppMessage))); 
                 }
+                /* 
                 MenuButtonAction::Cancel => {
                     println!("Don't want to quit.");
                     menu_state.set(InGameMenuState::MainMenu);
-                }
+                }*/
                 MenuButtonAction::BackToGame => {
                     println!("Go to game !");
                     ev_message.send(MessageEvent(Box::new(CloseMainMenuMessage)));    //menu_state.set(InGameMenuState::Disabled);                  
@@ -222,7 +223,7 @@ pub fn enter_ig_quit_confirm_menu(mut commands: Commands) {
     println!("Entering IG Quit Confirm menu.");
     let mut menu = Menu::new();
     for (action, text) in [                            
-            (MenuButtonAction::Cancel, "Cancel"),
+            //(MenuButtonAction::Cancel, "Cancel"),
             (MenuButtonAction::Quit, "Confirm"),
         ] {
             let page = MenuView::new(action, text.to_string());

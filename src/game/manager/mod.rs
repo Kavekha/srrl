@@ -14,14 +14,14 @@ impl Plugin for ManagerPlugin {
     fn build(&self, app: &mut App) {
         app
         .add_event::<MessageEvent>()   
-        .add_systems(Update, handle_event.run_if(on_event::<MessageEvent>()));
+        .add_systems(Update, handle_message_event.run_if(on_event::<MessageEvent>()));
     }
 }
 
 #[derive(Event)]
 pub struct MessageEvent(pub Box<dyn Message>);
 
-fn handle_event(
+pub fn handle_message_event(
     world: &mut World
 ) {
     let events = if let Some(mut res) = world.get_resource_mut::<Events<MessageEvent>>() {
