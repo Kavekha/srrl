@@ -1,10 +1,12 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::{game::{
-    manager::MessageEvent, 
-    menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
-    states::MenuState
-}, globals::{RELEASE, VERSION}};
+use crate::{
+    game::{
+        manager::MessageEvent, 
+        menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
+        states::MenuState}, 
+        globals::{RELEASE, VERSION},
+    engine::save_load_system::has_save_file};
 
 use super::Message;
 
@@ -53,7 +55,9 @@ impl Message for MainMenuOpenMessage {
         menu.add(MenuItem::header("ShadowRun"));
         menu.add(MenuItem::description( &format!("{VERSION}, {RELEASE}")));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
-        menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
+        if has_save_file() {
+            menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
+        }
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
 

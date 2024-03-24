@@ -6,11 +6,10 @@
 use bevy::ecs::archetype::{Archetype, ArchetypeId};
 use bevy::ecs::system::SystemState;
 use serde::{Deserialize, Serialize};
-
+use std::path::Path;
 use bevy::{prelude::*, tasks::IoTaskPool};
 use std::fs;
 use std::{fs::File, io::Write};
-//use std::path::Path;
 
 pub struct SaveLoadPlugin;
 
@@ -21,29 +20,34 @@ use crate::globals::SCENE_FILE_PATH;
 use crate::game::states::GameState;
 use crate::map_builders::map::Map;
 
+
+pub fn has_save_file() -> bool {
+    Path::new(SCENE_FILE_PATH).exists()
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveState {
-    map: Map,
-    entities: Vec<SaveEntity>,
+    pub map: Map,
+    pub entities: Vec<SaveEntity>,
 }
 
 
 // Bool if marker, Option if data.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SaveEntity {
-    entity: Entity,
-    player: bool, 
+    pub entity: Entity,
+    pub player: bool, 
     //skills: Option<Skills>,
-    stats: Option<Stats>,
-    npc: bool, 
-    monster: bool,
-    piece: Option<Piece>,
-    position: Option<BoardPosition>,
-    health: Option<Health>,
+    pub stats: Option<Stats>,
+    pub npc: bool, 
+    pub monster: bool,
+    pub piece: Option<Piece>,
+    pub position: Option<BoardPosition>,
+    pub health: Option<Health>,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
-    walk: bool,
-    melee: Option<Melee>,
-    occupier: bool,
+    pub walk: bool,
+    pub melee: Option<Melee>,
+    pub occupier: bool,
 }
 
 impl SaveState {
@@ -148,11 +152,7 @@ pub struct ShouldSave {
     pub to_save: bool
 }
 
-/* 
-pub fn has_save_file() -> bool {
-    Path::new(SCENE_FILE_PATH).exists()
-}
-*/
+
 
 pub fn should_save(
     must_save: Res<ShouldSave>

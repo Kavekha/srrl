@@ -19,9 +19,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{
-        manager::{change_state_messages::QuitGameMessage, game_messages::StartGameMessage, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::SaveGameRequestMessage, ExitAppMessage, MessageEvent}, 
-    states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}};
+    engine::save_load_system::has_save_file, game::{
+        manager::{change_state_messages::QuitGameMessage, game_messages::StartGameMessage, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
+        states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}
+    };
 
 use super::{button_system, components::{MenuButtonAction, ResolutionSettings}, menu_camera};
 
@@ -101,9 +102,15 @@ pub fn common_menu_action(
                 }
                 //TODO : Reactive LOAD.
                 MenuButtonAction::Load => {
+                    if has_save_file() {
                     println!("Load a saved game!");
+                                         
+                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));          // On efface si deja un jeu existant.
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);             
+                    ev_message.send(MessageEvent(Box::new(LoadGameRequestMessage)));        
+                    } else {
+                        println!("WARNING: No saved game.");
+                    }          
                 }
                 MenuButtonAction::MainMenuSettings => {
                     println!("Main Menu Settings!");
@@ -112,7 +119,7 @@ pub fn common_menu_action(
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to Main Menu.");
-                    ev_message.send(MessageEvent(Box::new(SaveGameRequestMessage)));        // Saving could be in InGameMenuQuit...
+                    ev_message.send(MessageEvent(Box::new(SaveGameRequestMessage)));
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage)));                     
                     ev_message.send(MessageEvent(Box::new(QuitGameMessage)));  
@@ -179,28 +186,3 @@ pub fn common_menu_action(
     }
 }
 
-
-/* 
-   
-    //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-    //println!("Mon Path est : {:?}", has_file);
-    if has_save_file() {
-        // Load game button.
-        let load_game_text = "Load game";
-        let load_game_width = (load_game_text.len()+ 2) as f32;  
-        box_center_y -= box_height * CHAR_SIZE;
-
-        spawn_menu_button(
-            &mut commands, 
-            &ascii, 
-            &nine_slice_indices, 
-            Vec3::new(box_center_x, box_center_y, 100.0),
-            load_game_text, 
-            MainMenuOptions::LoadGame,
-            Vec2::new(load_game_width, box_height)
-        ); 
-    } else {
-        println!("je n'ai pas de fichier de save")    }
-
-
-*/
