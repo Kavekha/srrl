@@ -22,7 +22,7 @@ use crate::game::{
     manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
     states::{GameState, MenuState}};
 
-use super::{button_system, components::{MenuButtonAction, DisplayQuality, InGameMenuState, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
+use super::{button_system, components::{MenuButtonAction, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
 
 pub struct CommonsMenuPlugin;
 
@@ -59,11 +59,11 @@ fn splashscreen(
 // Ne contient que MainMenu pour le moment.
 pub fn common_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-     mut game_state: ResMut<NextState<GameState>>,
+    //mut game_state: ResMut<NextState<GameState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
     mut ev_message: EventWriter<MessageEvent>   ,
-    mut ig_menu_state: ResMut<NextState<InGameMenuState>>,
+    //mut ig_menu_state: ResMut<NextState<InGameMenuState>>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -149,11 +149,6 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(InGameSettingsDisplayMessage)));                  
                 }
-                MenuButtonAction::Settings => todo!(),
-                MenuButtonAction::BackToGame => todo!(),
-                MenuButtonAction::Back => todo!(),
-                MenuButtonAction::SettingsDisplay => todo!(),
-                MenuButtonAction::BackToSettings => todo!(),
             }
         }
     }

@@ -11,7 +11,6 @@ pub struct OnSettingsMenuScreen;
 pub enum MenuButtonAction {
     Play,
     Load,
-    Settings,
     MainMenuSettings,
     BackToMainMenu,
     MainMenuSettingsDisplay,
@@ -25,13 +24,6 @@ pub enum MenuButtonAction {
     InGameMenuQuit,
     BackToInGameMenu,
     InGameMenuDisplay,
-
-
-    //OLD version 
-    BackToGame,
-    Back,
-    SettingsDisplay,
-    BackToSettings, 
 }
 
 #[derive(Resource)]
@@ -53,15 +45,3 @@ pub enum DisplayQuality {
     //High,
 }
 
-
-
-#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-pub enum InGameMenuState {
-    #[default]
-    Disabled,
-    MainMenu,
-    QuitConfirm,
-    Settings,
-    SettingDisplay,
-    //SettingSound
-}

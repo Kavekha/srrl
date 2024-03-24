@@ -99,7 +99,7 @@ impl Message for EndGameRecapMessage {
                 world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
                 println!("Recap Victory generated and send for opening.");
             },
-            _ => println!("Autres types de Recap non supportés.")
+            //_ => println!("Autres types de Recap non supportés.")
         };
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
     }

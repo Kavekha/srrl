@@ -5,23 +5,16 @@
 use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{
-        manager::{game_messages::StartGameMessage, ExitAppMessage, MessageEvent}, 
-        menus::menu_builder::{spawn_basic_menu, Menu, MenuView}, states::GameState
-    }, 
     globals::{
         HEIGHT, 
         //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, PRESSED_BUTTON, 
         NORMAL_BUTTON, RESOLUTION, TEXT_COLOR} 
 };
 
-use super::{
-    clean_menu, components::{
+use super::components::{
         DisplayQuality, MenuButtonAction, OnScreenMenu, ResolutionSettings
         //, SelectedOption
-    },
-    menu_camera 
-};
+    };
  
 
 // PLUGIN
@@ -41,7 +34,7 @@ impl Plugin for MainMenuPlugin{
     }
 }
 
-
+// DO NOT DELETE, un modele a réutiliser pour MenuV2.
 pub fn spawn_main_menu(
     mut commands: Commands, 
     //asset_server: Res<AssetServer>,
@@ -162,7 +155,7 @@ pub fn spawn_main_menu(
                                 background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             },
-                            MenuButtonAction::Settings,
+                            //MenuButtonAction::Settings,
                         ))
                         .with_children(|parent| {
                             /* 

@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::menus::{components::MenuButtonAction, menu_builder::{spawn_recap_menu, Menu, MenuView}}};
+use crate::{
+    engine::asset_loaders::GraphicsAssets, game::menus::menu_builder::spawn_recap_menu,
+    game::menus::components::OnScreenMenu
+};
 
-use super::{
-    menu_builder::{MenuItem, MenuV2}, OnScreenMenu};
+use super::menu_builder::MenuV2;
 
 
 // TODO: Refacto Victory & GameOver en un seul: Recap Screen?
@@ -47,37 +49,8 @@ fn menu_event_reader(
     }    
 }
 
-pub fn enter_recap_menu(    
-    mut commands: Commands,
-    graph_assets: Res<GraphicsAssets>,
-){
-    println!("Je ne suis plus sensé fonctionner");
-    let menu = MenuV2::new(
-        "recap_menu",
-        vec![
-                MenuItem::header("You died."),
-                MenuItem::description("A ghoul has eaten you."),
-                MenuItem::action(MenuButtonAction::Play, "Retry"),
-                MenuItem::action(MenuButtonAction::BackToMainMenu, "MainMenu")
-        ]
-    );
-    spawn_recap_menu(&mut commands, graph_assets, &menu)
-}
 
-
-pub fn enter_go_menu(mut commands: Commands) {
-    println!("Entering GameOver menu.");
-    let mut menu = Menu::new();
-    for (action, text) in [                            
-            (MenuButtonAction::Play, "Retry"),
-            (MenuButtonAction::BackToMainMenu, "MainMenu"),
-        ] {
-            let page = MenuView::new(action, text.to_string());
-            menu.pages.push(page);
-    }
-    //spawn_basic_menu(&mut commands, &menu)
-}
-
+// NE PAS DELETE : template utilisable pour Menu.
 
 fn _display_gameover_screen(
     mut commands: Commands,
