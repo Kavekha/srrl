@@ -19,7 +19,7 @@
 use bevy::prelude::*;
 
 use crate::game::{
-    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, ClearMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, InGameMenuSettingsOpenMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
+    manager::{game_messages::{QuitGameMessage, StartGameMessage}, menu_messages::{ActiveInGameMenuMessage, ActiveMainMenuMessage, ClearMenuMessage, CloseInGameMenuMessage, CloseMainMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, ExitAppMessage, MessageEvent}, 
     states::{GameState, MainMenuState, MenuState}};
 
 use super::{button_system, components::{MenuButtonAction, DisplayQuality, InGameMenuState, ResolutionSettings}, ingamemenu::{ig_call_menu_input, ig_inside_menu_input}, menu_camera};
@@ -140,7 +140,18 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage)));                  
                 }
-                //InGameMenuQuit
+                MenuButtonAction::InGameMenuQuit => {
+                    println!("Back to IG Menu");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(InGameMenuQuitMessage)));                  
+                }
+                MenuButtonAction::InGameMenuDisplay => {
+                    println!("Back to IG Menu");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(InGameSettingsDisplayMessage)));                  
+                }
+                
+
                 
 
 //MainMenu is cop / pasta there

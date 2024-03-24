@@ -25,7 +25,7 @@ pub enum MenuButtonAction {
     InGameMenuQuit,
     BackToInGameMenu,
     InGameMenuDisplay,
-    
+
 
     //OLD version 
     BackToGame,

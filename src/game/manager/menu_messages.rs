@@ -131,6 +131,36 @@ impl Message for InGameMenuSettingsOpenMessage {
     }
 }
 
+pub struct InGameMenuQuitMessage;
+impl Message for InGameMenuQuitMessage {
+    fn execute(&self, world: &mut World) {
+        let mut menu = MenuV2::new("main_menu_quit", Vec::new());
+        menu.add(MenuItem::description("Do you want to quit?"));
+        menu.add(MenuItem::action(MenuButtonAction::BackToInGameMenu, "Cancel"));
+        menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
+
+         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::QUIT});
+         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("Quit generated and send for opening.");
+    }
+}
+
+pub struct InGameSettingsDisplayMessage;
+impl Message for InGameSettingsDisplayMessage {
+    fn execute(&self, world: &mut World) {
+        let mut menu = MenuV2::new("main_menu_settings_display", Vec::new());
+        menu.add(MenuItem::description("Choose your resolution"));
+        menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
+        menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
+        menu.add(MenuItem::action(MenuButtonAction::DisplayHigh, "High"));
+        menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Back"));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::DISPLAY});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("SettingsDisplay generated and send for opening.");
+    }
+}
+
 
 // ==== OLD, to review.
 
