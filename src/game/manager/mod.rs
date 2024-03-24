@@ -46,8 +46,6 @@ impl Message for PlayMusicMessage {
     }
 }
 
-
-
 pub struct ExitAppMessage;
 
 impl Message for ExitAppMessage {
@@ -65,8 +63,6 @@ impl Message for RunGameMessage {
         }
     }
 }
-
-
 
 enum RecapType{
     GameOver,

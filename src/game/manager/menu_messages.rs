@@ -8,7 +8,6 @@ use crate::game::{
 
 use super::Message;
 
-
 pub struct OpenMenuMessage;
 impl Message for OpenMenuMessage {
     fn execute(&self, world: &mut World) {
@@ -38,10 +37,7 @@ impl Message for ClearMenuMessage {
         println!("Clean menu result: {:?}", result);
     }
 }
-
-
 // Open X Menu : Le MenuEvent doit être envoyé avant le OpenMenu car on fait un clean? ou alors les MenuEvent doivent être traité .after les MessagesEvents?
-
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
@@ -59,7 +55,6 @@ impl Message for MainMenuOpenMessage {
     }
 }
 
-// Open MainMenuSettings
 pub struct MainMenuSettingsMessage;
 impl Message for MainMenuSettingsMessage {
     fn execute(&self, world: &mut World) {
@@ -74,7 +69,6 @@ impl Message for MainMenuSettingsMessage {
     }
 }
 
-// Open MainMenuSettingsDisplay
 pub struct MainMenuSettingsDisplayMessage;
 impl Message for MainMenuSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
@@ -164,6 +158,3 @@ impl Message for InGameSettingsDisplayMessage {
         println!("SettingsDisplay generated and send for opening.");
     }
 }
-
-
-

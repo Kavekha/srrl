@@ -130,6 +130,3 @@ impl Message for ClearGameMessage {
         println!("Result is {:?}", result);
     }
 }
-
-
-

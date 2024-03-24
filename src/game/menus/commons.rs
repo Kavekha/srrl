@@ -65,13 +65,11 @@ fn splashscreen(
 // GameState is Running, I can call Menu.
 pub fn ig_call_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
-    //mut menu_state: ResMut<NextState<InGameMenuState>>,
     mut ev_message: EventWriter<MessageEvent>  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Call for In Game Menu.");
-        //menu_state.set(InGameMenuState::MainMenu);
         ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
     }
 }
@@ -79,13 +77,11 @@ pub fn ig_call_menu_input(
 // GameState is Unavailable, I can close the menu.
 pub fn ig_inside_menu_input(
     keys: Res<ButtonInput<KeyCode>>,
-    //mut menu_state: ResMut<NextState<InGameMenuState>>,
     mut ev_message: EventWriter<MessageEvent>  
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Back to game.");
-        //menu_state.set(InGameMenuState::Disabled);
         ev_message.send(MessageEvent(Box::new(CloseMenuMessage))); 
     }
 }
@@ -93,11 +89,9 @@ pub fn ig_inside_menu_input(
 // Ne contient que MainMenu pour le moment.
 pub fn common_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
-    //mut game_state: ResMut<NextState<GameState>>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
-    mut ev_message: EventWriter<MessageEvent>   ,
-    //mut ig_menu_state: ResMut<NextState<InGameMenuState>>,
+    mut ev_message: EventWriter<MessageEvent>
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -110,8 +104,6 @@ pub fn common_menu_action(
                 //TODO : Reactive LOAD.
                 MenuButtonAction::Load => {
                     println!("Load a saved game!");
-                    //load_saved_game(&mut app_state, &mut game_state); 
-                    //load_game(app_state, game_state); 
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);             
                 }
