@@ -17,7 +17,7 @@ impl Plugin for UiPlugin {
         app
             .add_event::<ReloadUiEvent>()
 
-            .add_systems(OnEnter(GameState::Running), display_interface)
+            .add_systems(OnEnter(GameState::Initialise), display_interface)
 
             .add_systems(Update, draw_interface.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_enemy_health.run_if(in_state(GameState::Running)))

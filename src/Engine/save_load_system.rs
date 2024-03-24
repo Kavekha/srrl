@@ -11,7 +11,7 @@ use bevy::{prelude::*, tasks::IoTaskPool};
 use std::fs;
 use std::{fs::File, io::Write};
 
-pub struct SaveLoadPlugin;
+//pub struct SaveLoadPlugin;
 
 use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stats, Npc, Monster};   //Actor
 use crate::game::player::Player;
@@ -77,6 +77,7 @@ impl SaveState {
         for archetype in all_archetypes {
              //println!("Archetype id is {:?}", archetype.id());
 
+            let mut has_player = false;    //DEBUG
             for archetype_entity in archetype.entities() {
 
                 let current_entity = &archetype_entity.id();
@@ -94,6 +95,11 @@ impl SaveState {
                 {
                     has_component_to_save = true
                 }
+                //DEBUG
+                
+                if world.get::<Player>(world.entity(*current_entity).id()).is_some() {
+                    has_player = true
+                }                 
 
                 if has_component_to_save {
                     entities.push(SaveEntity {
@@ -111,7 +117,12 @@ impl SaveState {
                     });
                     println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
                 }
-            }        
+            } 
+            if has_player {
+                println!("SAVING: Il y a un Player");
+            } else {
+                println!("SAVING: Pas de Player sauvegardé!");
+            }       
         }
         entities
     }

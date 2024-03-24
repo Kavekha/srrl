@@ -23,7 +23,7 @@ impl Message for ChangeGameStateInitialiseMessage {
         println!("Game State is now Initialise.");
         if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
             state.set(GameState::Initialise);
-        }
+        }        
     }
 }
 

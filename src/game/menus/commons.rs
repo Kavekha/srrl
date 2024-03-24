@@ -20,7 +20,7 @@ use bevy::prelude::*;
 
 use crate::{
     engine::save_load_system::has_save_file, game::{
-        manager::{change_state_messages::QuitGameMessage, game_messages::StartGameMessage, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
+        manager::{change_state_messages::QuitGameMessage, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
         states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}
     };
 
@@ -105,7 +105,7 @@ pub fn common_menu_action(
                     if has_save_file() {
                     println!("Load a saved game!");
                                          
-                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));          // On efface si deja un jeu existant.
+                    ev_message.send(MessageEvent(Box::new(ClearGameMessage)));          // On efface si deja un jeu existant.
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(LoadGameRequestMessage)));        
                     } else {

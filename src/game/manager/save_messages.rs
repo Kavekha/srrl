@@ -3,7 +3,7 @@ use std::{fs::{self, File}, io::Write};
 
 use crate::{engine::save_load_system::SaveState, game::{pieces::components::{Monster, Npc, Occupier, Walk}, player::Player}, globals::SCENE_FILE_PATH};
 
-use super::{change_state_messages::{ChangeGameStateInitialiseMessage, ChangeGameStateProcessingMessage, ChangeGameStateRunningMessage}, Message, MessageEvent};
+use super::{change_state_messages::{ChangeGameStateInitialiseMessage, ChangeGameStateInitialiseRequestMessage, ChangeGameStateProcessingMessage, ChangeGameStateRunningMessage}, game_messages::{SpawnMapMessage, StartCombatMessage}, Message, MessageEvent};
 
 
 
@@ -23,11 +23,13 @@ impl Message for LoadGameRequestMessage {
     fn execute(&self, world: &mut World) {
         world.send_event(MessageEvent(Box::new(ChangeGameStateProcessingMessage)));  
         world.send_event(MessageEvent(Box::new(LoadGameMessage))); 
-        world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseMessage))); 
+        world.send_event(MessageEvent(Box::new(SpawnMapMessage)));  // Needed to have tiles in entity_tiles.
+        world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage))); 
+        world.send_event(MessageEvent(Box::new(StartCombatMessage)));         
     }
 }
 
-// The ACTUAL loadin.
+// The ACTUAL loading.
 pub struct LoadGameMessage;
 impl Message for LoadGameMessage {
     fn execute(&self, world: &mut World) {
@@ -48,6 +50,7 @@ impl Message for LoadGameMessage {
 
             if entity.player {
                 e.insert(Player);
+                println!("LOADING: J'ai chargé un Player");
             }        
             if entity.npc {
                 e.insert(Npc);

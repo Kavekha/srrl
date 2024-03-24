@@ -1,13 +1,12 @@
 use bevy::ecs::world::World;
 
 use crate::{
-    game::{clean_game_screen, manager::{
+    game::{clean_game_screen, combat::combat_start, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, 
-    pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
+    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
 use super::Message;
-
+ 
 
 // Generate the Logic Map and all NPC / items.
 pub struct StartGameMessage;
@@ -22,6 +21,7 @@ impl Message for StartGameMessage {
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
         world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
         let music_name = "gamemap".to_string();
+        world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
 }
@@ -81,3 +81,11 @@ impl Message for ClearGameMessage {
     }
 }
 
+pub struct StartCombatMessage;
+impl Message for StartCombatMessage {
+    fn execute(&self, world: &mut World) {
+        let start_combat = world.register_system(combat_start);
+        let result = world.run_system(start_combat);
+ 
+    }
+}

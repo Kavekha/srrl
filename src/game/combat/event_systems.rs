@@ -293,7 +293,7 @@ pub fn create_action_infos(
 
         let tile_position = cursor.grid_position;
         if !board.entity_tiles.contains_key(&tile_position) { 
-            println!("Create action: out of map");
+            println!("Create action: out of map for {:?} with position: {:?}", entity, position);
             return }
 
         let mut has_target = false;
