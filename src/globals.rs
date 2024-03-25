@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.15.3";
+pub const VERSION: &str = "0.15.4";
 pub const RELEASE: &str = "R0.4";
 
 // WINDOWS

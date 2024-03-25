@@ -55,7 +55,6 @@ impl Message for GameOverMessage {
     }
 }
 
-
 pub struct VictoryMessage;
 impl Message for VictoryMessage {
     fn execute(&self, world: &mut World) {
@@ -66,9 +65,6 @@ impl Message for VictoryMessage {
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
     }
 }
-
-
-
 
 // Remove any existing element of the current game. (From clean_game_screen)
 pub struct ClearGameMessage;
@@ -84,6 +80,7 @@ impl Message for StartCombatMessage {
     fn execute(&self, world: &mut World) {
         let start_combat = world.register_system(combat_start);
         let _result = world.run_system(start_combat);
+        //world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"combat".to_string()})));  
     }
 }
 

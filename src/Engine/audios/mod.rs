@@ -4,12 +4,13 @@ fn test_music_event(mut ev_message: EventWriter<MessageEvent>) {ev_message.send(
 */
 
 use bevy::prelude::*;
+use bevy::audio::PlaybackMode;
 
 pub mod components;
 
 use crate::engine::asset_loaders::AudioAssets;
 
-use self::components::CurrentMusic;
+use self::components::{CurrentMusic, CurrentSound};
 
  
 pub struct GameAudioPlugin;
@@ -20,7 +21,9 @@ impl Plugin for GameAudioPlugin{
     ) {
         app
             .add_event::<MusicEvent>()   
+            .add_event::<SoundEvent>()   
             .add_systems(Update, handle_music_event.run_if(on_event::<MusicEvent>()))
+            .add_systems(Update, handle_sound_event.run_if(on_event::<SoundEvent>()))
             ;
         println!("INFO: Audioplugin loaded.");    
     }    
@@ -29,6 +32,35 @@ impl Plugin for GameAudioPlugin{
 #[derive(Event)]
 pub struct MusicEvent{
     pub source: String
+}
+
+#[derive(Event)]
+pub struct SoundEvent{
+    pub id: String
+}
+
+fn handle_sound_event(
+    mut commands: Commands,
+    assets: Res<AudioAssets>,
+    _query_music: Query<&AudioSink>,
+    mut ev_sound: EventReader<SoundEvent>,
+) {
+    // Not working with ogg, wav in music or sound... ? trop court?
+    for event in ev_sound.read() {
+        println!("audio: sound is {}", event.id);
+        let playback = PlaybackSettings{
+            mode: PlaybackMode::Despawn, 
+            ..default()
+        };
+        commands.spawn((
+            AudioBundle {
+                source: assets.sounds[event.id.as_str()].clone(),
+                settings: playback,
+                ..default()},
+            CurrentSound,
+            ));
+        }
+
 }
 
 fn handle_music_event(

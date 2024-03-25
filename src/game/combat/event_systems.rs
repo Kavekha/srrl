@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{
-    engine::render::{components::PathAnimator, get_world_position}, 
+    engine::render::{components::PathAnimator, get_world_position},
     game::{
         combat::{AP_COST_MELEE, AP_COST_MOVE},
         manager::{game_messages::GameOverMessage, MessageEvent}, 
@@ -158,7 +158,7 @@ pub fn action_entity_try_attack(
 pub fn action_entity_get_hit(
     mut ev_gethit: EventReader<EntityGetHitEvent>,
     mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,
-    mut ev_die: EventWriter<EntityDeathEvent>,
+    mut ev_die: EventWriter<EntityDeathEvent>
 
 ) {
     for event in ev_gethit.read() {

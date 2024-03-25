@@ -2,7 +2,7 @@ use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{
     engine::save_load_system::has_save_file, game::{
-        manager::MessageEvent, 
+        manager::{MessageEvent, PlayMusicMessage}, 
         menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
         states::MenuState}, globals::{RELEASE, VERSION}};
 
@@ -50,7 +50,7 @@ impl Message for MainMenuOpenMessage {
         //let description = "{} - {}", VERSION, RELEASE)
         let mut menu = Menu::new("main_menu", Vec::new());
         menu.add(MenuItem::header("ShadowRun"));
-        menu.add(MenuItem::description( &format!("{VERSION}, {RELEASE}")));
+        menu.add(MenuItem::description( &format!("{VERSION} - {RELEASE}")));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         if has_save_file() {
             menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
@@ -60,7 +60,8 @@ impl Message for MainMenuOpenMessage {
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
-        println!("MainMenu generated and send for opening.");
+        println!("MainMenu generated and send for opening.");        
+        world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()})));  
     }
 }
 
