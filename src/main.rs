@@ -17,7 +17,6 @@ mod vectors;
 
 use game::GamePlugin;
 use engine::EnginePlugin;
-//use engine::states::{AppState, GameState, EngineState};
 use game::states::{GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
