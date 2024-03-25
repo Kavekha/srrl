@@ -12,6 +12,7 @@ pub fn spawn_game_cursor(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ){
+    println!("Spawning Cursor");
     commands.spawn(GameCursorRender)
             .insert(SpriteBundle {
                 texture: asset_server.load(CURSOR),    

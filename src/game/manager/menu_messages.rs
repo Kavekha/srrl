@@ -1,12 +1,19 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
-use crate::game::{
-    manager::MessageEvent, 
-    menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
-    states::MenuState
-};
+use crate::{
+    engine::save_load_system::has_save_file, game::{
+        manager::MessageEvent, 
+        menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
+        states::MenuState}, globals::{RELEASE, VERSION}};
 
 use super::Message;
+
+
+pub enum RecapType{
+    GameOver,
+    Victory
+}
+
 
 pub struct OpenMenuMessage;
 impl Message for OpenMenuMessage {
@@ -14,7 +21,7 @@ impl Message for OpenMenuMessage {
         println!("OpenMenuMessage");    
         if let Some(mut state) = world.get_resource_mut::<NextState<MenuState>>() {
             state.set(MenuState::Open);
-        }
+        }        
     }
 }
 
@@ -33,19 +40,21 @@ pub struct ClearMenuMessage;
 impl Message for ClearMenuMessage {
     fn execute(&self, world: &mut World) {
         let clean_menu = world.register_system(clean_menu);
-        let result = world.run_system(clean_menu);
-        println!("Clean menu result: {:?}", result);
+        let _result = world.run_system(clean_menu);
     }
 }
 // Open X Menu : Le MenuEvent doit être envoyé avant le OpenMenu car on fait un clean? ou alors les MenuEvent doivent être traité .after les MessagesEvents?
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
+        //let description = "{} - {}", VERSION, RELEASE)
         let mut menu = Menu::new("main_menu", Vec::new());
         menu.add(MenuItem::header("ShadowRun"));
-        menu.add(MenuItem::description("v0.15.2 - R0.4"));
+        menu.add(MenuItem::description( &format!("{VERSION}, {RELEASE}")));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
-        menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
+        if has_save_file() {
+            menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
+        }
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
 
@@ -104,11 +113,9 @@ impl Message for OpenInGameMenuOpenMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = Menu::new("ig_menu", Vec::new());
         menu.add(MenuItem::action(MenuButtonAction::Close, "Resume"));
-        menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuQuit, "Quit"));
-
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("InGame Menu generated and send for opening.");
@@ -156,5 +163,44 @@ impl Message for InGameSettingsDisplayMessage {
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::DISPLAY});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
         println!("SettingsDisplay generated and send for opening.");
+    }
+}
+
+
+
+pub struct EndGameRecapMessage{
+    pub recap_type: RecapType
+}
+impl Message for EndGameRecapMessage {
+    fn execute(&self, world: &mut World) {        
+        match self.recap_type {
+            RecapType::GameOver => {
+                let mut menu = Menu::new("game_over", Vec::new());
+
+                menu.add(MenuItem::header("You died."));
+                menu.add(MenuItem::description("A ghoul has eaten you."));
+                menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
+                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
+                
+        
+                world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+                world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
+                println!("Recap GameOver generated and send for opening.");
+            },
+            RecapType::Victory => {
+                let mut menu = Menu::new("victory", Vec::new());
+
+                menu.add(MenuItem::header("victory!"));
+                menu.add(MenuItem::description("You flee the place."));
+                menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
+                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
+        
+                world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+                world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
+                println!("Recap Victory generated and send for opening.");
+            },
+            //_ => println!("Autres types de Recap non supportés.")
+        };
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
     }
 }

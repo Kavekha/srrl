@@ -62,7 +62,7 @@ impl Plugin for CombatPlugin {
             
             
             // Init Combat.
-            .add_systems(OnEnter(GameState::Running), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
+            //USE STARTCOMBATMESSAGE 0.15.4 : .add_systems(OnEnter(GameState::Initialise), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
            // Le tour commence.
            .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()).in_set(CombatSet::Logic))
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate

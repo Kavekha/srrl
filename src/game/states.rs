@@ -4,8 +4,10 @@ use bevy::prelude::*;
 pub enum GameState {
     #[default]
     Disabled,
+    Initialise,
     Running,
     Unavailable,    // En etat de pause du à un Menu ou autre.
+    Processing,     // Sauvegarde ou load en cours.
     SaveGame,
     LoadGame,
 }  

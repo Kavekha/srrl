@@ -7,7 +7,7 @@
 use bevy::prelude::*;
 
 use self::audios::GameAudioPlugin;
-use self::save_load_system::SaveLoadPlugin;
+//use self::save_load_system::SaveLoadPlugin;
 use self::asset_loaders::AssetsPlugin;
 use self::render::GraphicsPlugin;
 
@@ -23,7 +23,8 @@ impl Plugin for EnginePlugin {
         app
             .add_plugins(AssetsPlugin)        
             .add_plugins(GameAudioPlugin)        
-            .add_plugins(GraphicsPlugin)     
-            .add_plugins(SaveLoadPlugin);
+            .add_plugins(GraphicsPlugin)   
+            //.add_plugins(SaveLoadPlugin);
+            ;
     }
 }

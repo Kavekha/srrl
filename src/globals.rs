@@ -1,5 +1,9 @@
 use bevy::prelude::*;
 
+// Versions
+pub const VERSION: &str = "0.15.3";
+pub const RELEASE: &str = "R0.4";
+
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;

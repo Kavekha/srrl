@@ -89,12 +89,13 @@ pub fn spawn_piece_renderer(
     println!("Rendering Pieces begins..."); 
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
+        println!("PIECE RENDERING : {:?} is at position {:?}", entity, position); //DEBUG
         let translation= get_world_position(&position.v);   //TODO : get world position retourne un Vector2Int
         let texture = assets.textures[get_texture_from_kind(piece.kind)].clone();
         let mut order_z = ORDER_NPC;
 
         if let Some(_player) = player {
-            println!("player rendered.");
+            println!("player order layer: {:?}.", entity);
             order_z = ORDER_PLAYER;
         }
 

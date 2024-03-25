@@ -27,8 +27,6 @@ impl Plugin for MenuPlugin {
     }
 }
 
-
-
 // TODO : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
 #[derive(Event)]
 pub struct MenuEvent{

@@ -14,12 +14,7 @@ pub struct Action {pub action: MenuButtonAction, pub text:String}
 pub struct Header {pub text: String}
 pub struct Description {pub text: String}
 
-/*
-pub enum MenuItem{
-    Action{action: MenuButtonAction, text:String},
-    Header{text:String},
-    Description{text:String}
-} */
+
 pub enum MenuItem{
     Action(Action),
     Header(Header),

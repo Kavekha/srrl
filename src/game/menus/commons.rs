@@ -19,11 +19,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{
-        manager::{game_messages::{QuitGameMessage, StartGameMessage}, 
-        menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, 
-        ExitAppMessage, MessageEvent}, 
-    states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}};
+    engine::save_load_system::has_save_file, game::{
+        manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
+        states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}
+    };
 
 use super::{button_system, components::{MenuButtonAction, ResolutionSettings}, menu_camera};
 
@@ -44,7 +43,7 @@ impl Plugin for CommonsMenuPlugin{
             .add_systems(OnEnter(MenuState::Splashscreen), splashscreen)    
             .add_systems(OnEnter(MenuState::Splashscreen), menu_camera)  
 
-            .add_systems(OnEnter(MenuState::Open), menu_camera)
+            //.add_systems(OnEnter(MenuState::Open), menu_camera)
             .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
             .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
                  
@@ -69,8 +68,9 @@ pub fn ig_call_menu_input(
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
-        println!("Call for In Game Menu.");
+        println!("Call for In Game Menu.");        
         ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
+        ev_message.send(MessageEvent(Box::new(ChangeGameStateUnavailableMessage))); 
     }
 }
 
@@ -82,7 +82,8 @@ pub fn ig_inside_menu_input(
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Back to game.");
-        ev_message.send(MessageEvent(Box::new(CloseMenuMessage))); 
+        ev_message.send(MessageEvent(Box::new(ChangeGameStateRunningMessage))); 
+        ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));         
     }
 }
 
@@ -103,9 +104,15 @@ pub fn common_menu_action(
                 }
                 //TODO : Reactive LOAD.
                 MenuButtonAction::Load => {
+                    if has_save_file() {
                     println!("Load a saved game!");
+                                         
+                    ev_message.send(MessageEvent(Box::new(ClearGameMessage)));          // On efface si deja un jeu existant.
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));      // NEW MESSAGE EVENT SYSTEM v0.15.2 //menu_state.set(MainMenuState::Disabled);             
+                    ev_message.send(MessageEvent(Box::new(LoadGameRequestMessage)));        
+                    } else {
+                        println!("WARNING: No saved game.");
+                    }          
                 }
                 MenuButtonAction::MainMenuSettings => {
                     println!("Main Menu Settings!");
@@ -114,9 +121,10 @@ pub fn common_menu_action(
                 }
                 MenuButtonAction::BackToMainMenu => {
                     println!("Back to Main Menu.");
+                    ev_message.send(MessageEvent(Box::new(SaveGameRequestMessage)));
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
-                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));
-                    ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage))); 
+                    ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage)));                     
+                    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));  
                 }
                 MenuButtonAction::MainMenuSettingsDisplay => {
                     println!("Main Menu Display Menu!");
@@ -153,7 +161,9 @@ pub fn common_menu_action(
                 //Specific In Game Menu.
                 MenuButtonAction::Close => {
                     println!("Close IG Menu");
-                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));                  
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(ChangeGameStateRunningMessage)));  
+                                    
                 }
                 MenuButtonAction::InGameMenuSettings => {
                     println!("IG Menu Setting");
@@ -166,8 +176,8 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage)));                  
                 }
                 MenuButtonAction::InGameMenuQuit => {
-                    println!("Back to IG Menu");
-                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    println!("Want to quit?");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));                   
                     ev_message.send(MessageEvent(Box::new(InGameMenuQuitMessage)));                  
                 }
                 MenuButtonAction::InGameMenuDisplay => {
@@ -180,28 +190,3 @@ pub fn common_menu_action(
     }
 }
 
-
-/* 
-   
-    //let has_file = Path::new("assets/scenes/load_scene_example.scn.ron").exists();
-    //println!("Mon Path est : {:?}", has_file);
-    if has_save_file() {
-        // Load game button.
-        let load_game_text = "Load game";
-        let load_game_width = (load_game_text.len()+ 2) as f32;  
-        box_center_y -= box_height * CHAR_SIZE;
-
-        spawn_menu_button(
-            &mut commands, 
-            &ascii, 
-            &nine_slice_indices, 
-            Vec3::new(box_center_x, box_center_y, 100.0),
-            load_game_text, 
-            MainMenuOptions::LoadGame,
-            Vec2::new(load_game_width, box_height)
-        ); 
-    } else {
-        println!("je n'ai pas de fichier de save")    }
-
-
-*/
