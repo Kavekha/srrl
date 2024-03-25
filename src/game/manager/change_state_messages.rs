@@ -16,6 +16,16 @@ impl Message for ChangeGameStateInitialiseRequestMessage {
     }
 }
 
+// This State is for when you are in IG Menu or thing like that.
+pub struct ChangeGameStateUnavailableMessage;
+impl Message for ChangeGameStateUnavailableMessage {
+    fn execute(&self, world: &mut World) {
+        println!("Initialising game, for Running State.");
+        if let Some(mut state) = world.get_resource_mut::<NextState<GameState>>() {
+            state.set(GameState::Unavailable);
+        }
+    }
+}
 
 pub struct ChangeGameStateInitialiseMessage;
 impl Message for ChangeGameStateInitialiseMessage {

@@ -20,7 +20,7 @@ use bevy::prelude::*;
 
 use crate::{
     engine::save_load_system::has_save_file, game::{
-        manager::{change_state_messages::QuitGameMessage, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
+        manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
         states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}
     };
 
@@ -43,7 +43,7 @@ impl Plugin for CommonsMenuPlugin{
             .add_systems(OnEnter(MenuState::Splashscreen), splashscreen)    
             .add_systems(OnEnter(MenuState::Splashscreen), menu_camera)  
 
-            .add_systems(OnEnter(MenuState::Open), menu_camera)
+            //.add_systems(OnEnter(MenuState::Open), menu_camera)
             .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
             .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
                  
@@ -68,8 +68,9 @@ pub fn ig_call_menu_input(
 ){
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
-        println!("Call for In Game Menu.");
+        println!("Call for In Game Menu.");        
         ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
+        ev_message.send(MessageEvent(Box::new(ChangeGameStateUnavailableMessage))); 
     }
 }
 
@@ -81,7 +82,8 @@ pub fn ig_inside_menu_input(
     // MENU etc
     if keys.just_pressed(KeyCode::Escape) {
         println!("Back to game.");
-        ev_message.send(MessageEvent(Box::new(CloseMenuMessage))); 
+        ev_message.send(MessageEvent(Box::new(ChangeGameStateRunningMessage))); 
+        ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));         
     }
 }
 
@@ -159,7 +161,9 @@ pub fn common_menu_action(
                 //Specific In Game Menu.
                 MenuButtonAction::Close => {
                     println!("Close IG Menu");
-                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));                  
+                    ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));  
+                    ev_message.send(MessageEvent(Box::new(ChangeGameStateRunningMessage)));  
+                                    
                 }
                 MenuButtonAction::InGameMenuSettings => {
                     println!("IG Menu Setting");

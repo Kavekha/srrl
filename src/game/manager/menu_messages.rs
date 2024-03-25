@@ -1,12 +1,10 @@
 use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{
-    game::{
-        manager::MessageEvent, 
+    engine::save_load_system::has_save_file, game::{
+        manager::{change_state_messages::ChangeGameStateUnavailableMessage, MessageEvent}, 
         menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
-        states::MenuState}, 
-        globals::{RELEASE, VERSION},
-    engine::save_load_system::has_save_file};
+        states::MenuState}, globals::{RELEASE, VERSION}};
 
 use super::Message;
 
@@ -23,7 +21,7 @@ impl Message for OpenMenuMessage {
         println!("OpenMenuMessage");    
         if let Some(mut state) = world.get_resource_mut::<NextState<MenuState>>() {
             state.set(MenuState::Open);
-        }
+        }        
     }
 }
 

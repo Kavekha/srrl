@@ -4,12 +4,9 @@
 // Ces elements sont nécessaires à la sauvegarde, appelée dans save_messages qui est complementaire de ce code.
 
 use bevy::ecs::archetype::{Archetype, ArchetypeId};
-use bevy::ecs::system::SystemState;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use bevy::{prelude::*, tasks::IoTaskPool};
-use std::fs;
-use std::{fs::File, io::Write};
+use bevy::prelude::*;
 
 //pub struct SaveLoadPlugin;
 
@@ -17,7 +14,6 @@ use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stat
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
-use crate::game::states::GameState;
 use crate::map_builders::map::Map;
 
 
