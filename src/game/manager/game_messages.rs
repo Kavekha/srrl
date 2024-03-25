@@ -3,11 +3,14 @@ use bevy::ecs::world::World;
 use crate::{
     game::{clean_game_screen, combat::combat_start, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
+    }, 
+    pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
+    ui::ReloadUiEvent,
+    tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
 
 use super::Message;
  
-
+ 
 // Generate the Logic Map and all NPC / items.
 pub struct StartGameMessage;
 
@@ -36,7 +39,6 @@ impl Message for SpawnMapMessage {
             let mut new_map = map.clone();
             spawning_map(world, &mut new_map); 
         }   
-
     }
 }
 
@@ -82,5 +84,12 @@ impl Message for StartCombatMessage {
     fn execute(&self, world: &mut World) {
         let start_combat = world.register_system(combat_start);
         let _result = world.run_system(start_combat);
+    }
+}
+
+pub struct ReloadUiMessage;
+impl Message for ReloadUiMessage {
+    fn execute(&self, world: &mut World) {
+        world.send_event(ReloadUiEvent);
     }
 }
