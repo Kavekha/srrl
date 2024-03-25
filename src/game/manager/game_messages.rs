@@ -32,14 +32,11 @@ pub struct SpawnMapMessage;
 impl Message for SpawnMapMessage {
     fn execute(&self, world: &mut World) {
         // Créer les entités necessaires à son affichage, à partir d'une map déja générée.
-        println!("Spawning map?"); 
         if let Some(map) = world.get_resource_mut::<Map>() {
-            println!("Yes we do.");
             let mut new_map = map.clone();
-            spawning_map(world, &mut new_map);     
-        } else {
-            println!("No we dont.");
-        }
+            spawning_map(world, &mut new_map); 
+        }   
+
     }
 }
 
@@ -76,8 +73,7 @@ pub struct ClearGameMessage;
 impl Message for ClearGameMessage {
     fn execute(&self, world: &mut World) {
         let clean_game = world.register_system(clean_game_screen);
-        let result = world.run_system(clean_game);
-        println!("Result is {:?}", result);
+        let _result = world.run_system(clean_game);
     }
 }
 
@@ -85,7 +81,6 @@ pub struct StartCombatMessage;
 impl Message for StartCombatMessage {
     fn execute(&self, world: &mut World) {
         let start_combat = world.register_system(combat_start);
-        let result = world.run_system(start_combat);
- 
+        let _result = world.run_system(start_combat);
     }
 }

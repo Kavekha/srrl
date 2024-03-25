@@ -2,7 +2,7 @@ use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{
     engine::save_load_system::has_save_file, game::{
-        manager::{change_state_messages::ChangeGameStateUnavailableMessage, MessageEvent}, 
+        manager::MessageEvent, 
         menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
         states::MenuState}, globals::{RELEASE, VERSION}};
 
@@ -40,8 +40,7 @@ pub struct ClearMenuMessage;
 impl Message for ClearMenuMessage {
     fn execute(&self, world: &mut World) {
         let clean_menu = world.register_system(clean_menu);
-        let result = world.run_system(clean_menu);
-        println!("Clean menu result: {:?}", result);
+        let _result = world.run_system(clean_menu);
     }
 }
 // Open X Menu : Le MenuEvent doit être envoyé avant le OpenMenu car on fait un clean? ou alors les MenuEvent doivent être traité .after les MessagesEvents?
