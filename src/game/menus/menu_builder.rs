@@ -18,6 +18,8 @@ pub struct Header {pub text: String}
 pub struct Description {pub text: String}
 #[derive(Clone)]
 pub struct Image {pub image: String}
+#[derive(Clone)]
+pub struct Footer {pub text: String}
 
 
 #[derive(Clone)]
@@ -25,7 +27,8 @@ pub enum MenuItem{
     Action(Action),
     Header(Header),
     Description(Description),
-    Image(Image)
+    Image(Image),
+    Footer(Footer)
 }
 
 impl MenuItem{
@@ -45,6 +48,10 @@ impl MenuItem{
     ) -> MenuItem {
         MenuItem::Image(Image{image: image.to_string()})
     }
+    pub fn footer(text: &str
+    ) -> MenuItem {
+        MenuItem::Footer(Footer{text: text.to_string()})
+    } 
 }
 
 pub struct Menu{
@@ -74,6 +81,7 @@ pub fn spawn_recap_menu(
     let mut headers:Vec<Header>= Vec::new();
     let mut descriptions:Vec<Description> = Vec::new();
     let mut actions:Vec<Action> = Vec::new();
+    let mut footers:Vec<Footer> = Vec::new();
 
     for item in menu.entries.iter() {
         match item {
@@ -81,6 +89,7 @@ pub fn spawn_recap_menu(
             MenuItem::Description(description) => descriptions.push(description.clone()),
             MenuItem::Action(action) => actions.push(action.clone()),
             MenuItem::Image(image) => images.push(image.clone()),
+            MenuItem::Footer(footer) => footers.push(footer.clone()),
             _ => println!("This MenuItem is not supported.")
         };
     }
@@ -199,6 +208,31 @@ pub fn spawn_recap_menu(
             }).id();
             commands.entity(menu_border).push_children(&[action_button]);
         };
+
+        // Footers.
+        // Si y a des options, on mets un cadre.
+        if footers.len() > 0 {
+            let menu_down = commands.spawn(NodeBundle {
+                // Cadre du menu en lui-même.
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::FlexEnd,
+                    align_self: AlignSelf::Center,
+                    ..default()
+                },
+                //background_color: Color::CRIMSON.into(),
+                ..default()
+            }).id();
+            commands.entity(screen_menu).push_children(&[menu_down]);
+
+            for footer in footers.iter() {
+                let menu_footer = commands.spawn(TextBundle::from_section(
+                    footer.text.clone(),  //text,
+                    button_text_style.clone(),
+                )).id();
+                commands.entity(menu_down).push_children(&[menu_footer]);
+            };
+        }
     }      
 }
 
