@@ -48,7 +48,7 @@ fn handle_sound_event(
     config: Res<AudioConfig>
 ) {
     let to_play = config.sound_active;
-    if to_play = false { return };
+    if to_play == false { return };
     // Not working with ogg, wav in music or sound... ? trop court?
     for event in ev_sound.read() {
         println!("audio: sound is {}", event.id);
@@ -77,7 +77,7 @@ fn handle_music_event(
 ) {
     stop_music(query_music);
     let to_play = config.music_active;
-    if to_play = false { return };
+    if to_play == false { return };
     for event in ev_music.read() {
         println!("audio: setup audio handle: source is {}", event.source);
         let playback = PlaybackSettings{
