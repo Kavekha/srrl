@@ -6,7 +6,7 @@
 //#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{
-    prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
+    audio::Volume, prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
 
 mod engine;
@@ -17,7 +17,6 @@ mod vectors;
 
 use game::GamePlugin;
 use engine::EnginePlugin;
-//use engine::states::{AppState, GameState, EngineState};
 use game::states::{GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
@@ -31,6 +30,10 @@ fn main() {
 
     App::new()
         .insert_resource(ClearColor(CLEAR))
+        .insert_resource(AudioConfig {
+            sound_active:false, sound_volume:Volume::new(5.0),
+            music_active:false, music_volume:Volume::new(5.0)
+        })
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
@@ -59,4 +62,10 @@ fn main() {
         .run(); 
 }
 
-
+#[derive(Resource)]
+pub struct AudioConfig {
+    pub sound_active: bool,
+    pub sound_volume: Volume,
+    pub music_active: bool,
+    pub music_volume: Volume
+}

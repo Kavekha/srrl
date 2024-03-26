@@ -9,6 +9,7 @@ use bevy::audio::PlaybackMode;
 pub mod components;
 
 use crate::engine::asset_loaders::AudioAssets;
+use crate::AudioConfig;
 
 use self::components::{CurrentMusic, CurrentSound};
 
@@ -44,12 +45,16 @@ fn handle_sound_event(
     assets: Res<AudioAssets>,
     _query_music: Query<&AudioSink>,
     mut ev_sound: EventReader<SoundEvent>,
+    config: Res<AudioConfig>
 ) {
+    let to_play = config.sound_active;
+    if to_play == false { return };
     // Not working with ogg, wav in music or sound... ? trop court?
     for event in ev_sound.read() {
         println!("audio: sound is {}", event.id);
         let playback = PlaybackSettings{
-            mode: PlaybackMode::Despawn, 
+            mode: PlaybackMode::Despawn,
+            volume: config.sound_volume,
             ..default()
         };
         commands.spawn((
@@ -68,14 +73,23 @@ fn handle_music_event(
     assets: Res<AudioAssets>,
     query_music: Query<&AudioSink>,
     mut ev_music: EventReader<MusicEvent>,
+    config: Res<AudioConfig>
 ) {
     stop_music(query_music);
+    let to_play = config.music_active;
+    if to_play == false { return };
     for event in ev_music.read() {
         println!("audio: setup audio handle: source is {}", event.source);
+        let playback = PlaybackSettings{
+            mode: PlaybackMode::Loop,
+            volume: config.music_volume, //Volume::new(10.0),
+            ..default()
+        };
         commands.spawn((
             AudioBundle {
                 //source: asset_server.load("audios/Seattle-2050.ogg"),
                 source: assets.musics[event.source.as_str()].clone(),
+                settings: playback,
                 ..default()},
             CurrentMusic,
             ));

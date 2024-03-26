@@ -3,7 +3,10 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{
-    engine::render::{components::PathAnimator, get_world_position},
+    engine::{
+        render::{components::PathAnimator, get_world_position},
+        audios::SoundEvent
+    },
     game::{
         combat::{AP_COST_MELEE, AP_COST_MOVE},
         manager::{game_messages::GameOverMessage, MessageEvent}, 
@@ -105,6 +108,7 @@ pub fn action_entity_try_attack(
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
+    mut ev_sound: EventWriter<SoundEvent>
 ){
     for event in ev_try_attack.read() {
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
@@ -137,6 +141,8 @@ pub fn action_entity_try_attack(
             if dice_roll.success > 0 {
                 println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
                 ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg });
+                // SOUND
+                ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
             } else {
                 println!("Miss target.");
             }
