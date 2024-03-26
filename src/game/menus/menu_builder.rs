@@ -16,13 +16,16 @@ pub struct Action {pub action: MenuButtonAction, pub text:String}
 pub struct Header {pub text: String}
 #[derive(Clone)]
 pub struct Description {pub text: String}
+#[derive(Clone)]
+pub struct Image {pub image: String}
 
 
 #[derive(Clone)]
 pub enum MenuItem{
     Action(Action),
     Header(Header),
-    Description(Description)
+    Description(Description),
+    Image(Image)
 }
 
 impl MenuItem{
@@ -37,6 +40,10 @@ impl MenuItem{
     pub fn description(text:&str
     ) -> MenuItem {
         MenuItem::Description(Description{text:text.to_string()})
+    }
+    pub fn image(image:&str
+    ) -> MenuItem {
+        MenuItem::Image(Image{image: image.to_string()})
     }
 }
 
@@ -61,9 +68,9 @@ impl Menu{
 pub fn spawn_recap_menu(
     commands: &mut Commands,
     graph_assets: Res<GraphicsAssets>,
-    menu: &Menu
+    menu: &Menu,
 ) {
-    //let mut images:Vec<MenuItem> = Vec::new();
+    let mut images:Vec<Image> = Vec::new();
     let mut headers:Vec<Header>= Vec::new();
     let mut descriptions:Vec<Description> = Vec::new();
     let mut actions:Vec<Action> = Vec::new();
@@ -73,6 +80,7 @@ pub fn spawn_recap_menu(
             MenuItem::Header(header) => headers.push(header.clone()),
             MenuItem::Description(description) => descriptions.push(description.clone()),
             MenuItem::Action(action) => actions.push(action.clone()),
+            MenuItem::Image(image) => images.push(image.clone()),
             _ => println!("This MenuItem is not supported.")
         };
     }
@@ -120,6 +128,16 @@ pub fn spawn_recap_menu(
         )).id();
     
     // Illustration.
+    for image in images.iter() {
+        let image = image.clone();
+        let logo = commands.spawn(ImageBundle {
+                            image: graph_assets.logo.clone().into(),
+                            ..default()
+        }).id();
+        commands.entity(screen_menu).push_children(&[logo]);
+        println!("Image devrait être chargée.");
+    }
+    
 
     // Header
     for header in headers.iter() {
@@ -263,7 +281,7 @@ commands
                                 ));
                             });
                         }                    
-                    //_ => println!("MenuItem non géré")
+                    _ => println!("MenuItem non géré")
                 };
             }
 

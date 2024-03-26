@@ -49,8 +49,9 @@ impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
         //let description = "{} - {}", VERSION, RELEASE)
         let mut menu = Menu::new("main_menu", Vec::new());
-        menu.add(MenuItem::header("ShadowRun"));
-        menu.add(MenuItem::description( &format!("{VERSION} - {RELEASE}")));
+        //menu.add(MenuItem::header("ShadowRun"));
+        //menu.add(MenuItem::description( &format!("{VERSION} - {RELEASE}")));
+        menu.add(MenuItem::image("une_image"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         if has_save_file() {
             menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
