@@ -145,6 +145,8 @@ pub fn action_entity_try_attack(
                 ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
             } else {
                 println!("Miss target.");
+                // SOUND
+                ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
             }
 
             // Animation.
@@ -164,7 +166,8 @@ pub fn action_entity_try_attack(
 pub fn action_entity_get_hit(
     mut ev_gethit: EventReader<EntityGetHitEvent>,
     mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,
-    mut ev_die: EventWriter<EntityDeathEvent>
+    mut ev_die: EventWriter<EntityDeathEvent>,    
+    mut ev_sound: EventWriter<SoundEvent>
 
 ) {
     for event in ev_gethit.read() {
@@ -182,6 +185,8 @@ pub fn action_entity_get_hit(
         defender_health.current = defender_health.current.saturating_sub(dmg);
         println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
         if defender_health.current == 0 {
+            // SOUND
+            ev_sound.send(SoundEvent{id:"death_scream".to_string()});
             ev_die.send(EntityDeathEvent { entity: event.entity });
         }
     }
