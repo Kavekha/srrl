@@ -1,5 +1,5 @@
 
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 
 use crate::{
     game::menus::components::OnScreenMenu, globals::{NORMAL_BUTTON, TEXT_COLOR},
@@ -20,6 +20,8 @@ pub struct Description {pub text: String}
 pub struct Image {pub name: String}
 #[derive(Clone)]
 pub struct Footer {pub text: String}
+#[derive(Clone)]
+pub struct Slider {pub button_1_value:f32, pub button_2_value:f32, pub original_value:Volume, pub text:String}
 
 
 #[derive(Clone)]
@@ -28,7 +30,8 @@ pub enum MenuItem{
     Header(Header),
     Description(Description),
     Image(Image),
-    Footer(Footer)
+    Footer(Footer),
+    Slider(Slider)
 }
 
 impl MenuItem{
@@ -52,6 +55,10 @@ impl MenuItem{
     ) -> MenuItem {
         MenuItem::Footer(Footer{text: text.to_string()})
     } 
+    pub fn slider(button_1_value:f32, button_2_value:f32, original_value:Volume, text:&str
+    ) -> MenuItem {
+        MenuItem::Slider(Slider{button_1_value: button_1_value, button_2_value:button_2_value, original_value:original_value, text:text.to_string()})
+    }
 }
 
 pub struct Menu{
@@ -82,6 +89,7 @@ pub fn spawn_recap_menu(
     let mut descriptions:Vec<Description> = Vec::new();
     let mut actions:Vec<Action> = Vec::new();
     let mut footers:Vec<Footer> = Vec::new();
+    let mut sliders:Vec<Slider> = Vec::new();
 
     for item in menu.entries.iter() {
         match item {
@@ -90,6 +98,7 @@ pub fn spawn_recap_menu(
             MenuItem::Action(action) => actions.push(action.clone()),
             MenuItem::Image(image) => images.push(image.clone()),
             MenuItem::Footer(footer) => footers.push(footer.clone()),
+            MenuItem::Slider(slider) => sliders.push(slider.clone()),
             //_ => println!("This MenuItem is not supported.")
         };
     }
@@ -176,7 +185,7 @@ pub fn spawn_recap_menu(
     }
 
     // Si y a des options, on mets un cadre.
-    if actions.len() > 0 {
+    if (actions.len() > 0 || sliders.len() > 0) {
         let menu_border = commands.spawn(NodeBundle {
             // Cadre du menu en lui-même.
             style: Style {
@@ -190,6 +199,65 @@ pub fn spawn_recap_menu(
         }).id();
 
         commands.entity(screen_menu).push_children(&[menu_border]);
+
+        // Sliders 
+        for slider in sliders.iter() {
+            // This is the "button"
+            let slider_border = commands.spawn(NodeBundle {
+                // Cadre pour l'ensemble de bouton du bidule.
+                style: Style {
+                    flex_direction: FlexDirection::Row,
+                    align_items: AlignItems::Center,
+                    align_self: AlignSelf::Center,
+                    ..default()
+                },
+                //background_color: Color::CRIMSON.into(),
+                ..default()
+            }).id();
+            commands.entity(menu_border).push_children(&[slider_border]);
+
+                // This button Reduce the value
+                let slider_button_decrease = commands.spawn((
+                    ButtonBundle {
+                        style: button_style.clone(),
+                        background_color: NORMAL_BUTTON.into(),
+                        ..default()
+                    },
+                    //slider,    //Reduce value?   // Une image a la place?
+                ))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        "<", //action.text.clone(),  //text,
+                        button_text_style.clone(),
+                    ));
+                }).id();
+                commands.entity(slider_border).push_children(&[slider_button_decrease]);
+
+                // Display the value.
+                let slider_button_value = commands.spawn(
+                    TextBundle::from_section(
+                        format!("{} ({:?})", slider.text, slider.original_value), //action.text.clone(),  //text,
+                        button_text_style.clone(),
+                    )).id();
+                commands.entity(slider_border).push_children(&[slider_button_value]);
+
+                // Increase value
+                let slider_button_increase = commands.spawn((
+                    ButtonBundle {
+                        style: button_style.clone(),
+                        background_color: NORMAL_BUTTON.into(),
+                        ..default()
+                    },
+                    //slider,    //Reduce value?   // Une image a la place?
+                ))
+                .with_children(|parent| {
+                    parent.spawn(TextBundle::from_section(
+                        ">", //action.text.clone(),  //text,
+                        button_text_style.clone(),
+                    ));
+                }).id();
+                commands.entity(slider_border).push_children(&[slider_button_increase]);
+        }
 
         // Options.
         for action in actions.iter() {
@@ -208,10 +276,9 @@ pub fn spawn_recap_menu(
                 ));
             }).id();
             commands.entity(menu_border).push_children(&[action_button]);
-        };
+        };       
 
         // Footers.
-        // Si y a des options, on mets un cadre.
         if footers.len() > 0 {
             let menu_down = commands.spawn(NodeBundle {
                 // Cadre du menu en lui-même.

@@ -16,11 +16,11 @@
 // Desactiver les Controles "IG" / mettre GameState en Unavailable pendant le IG menu.
 
 
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 
 use crate::{
     engine::save_load_system::has_save_file, game::{
-        manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
+        manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ChangeSoundVolumeMessage, ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
         states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}
     };
 
@@ -130,6 +130,19 @@ pub fn common_menu_action(
                     println!("Main Menu Display Menu!");
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(MainMenuSettingsDisplayMessage))); 
+                }
+                MenuButtonAction::MainMenuSettingsAudio => {
+                    println!("Main Menu Audio  Menu!");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage))); 
+                }
+                MenuButtonAction::SettingsAudioChange{modify_volume_by, mut original_volume} => {
+                    println!("Change volume");
+                    //let new_volume = Volume::new(original_volume.get() + modify_volume_by);
+                    //original_volume = new_volume.clone();
+                    ev_message.send(MessageEvent(Box::new(ChangeSoundVolumeMessage { modify_value:modify_volume_by.clone()}))); 
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage))); 
                 }
                 MenuButtonAction::DisplayLow => {
                     println!("Resolution changed to Low");

@@ -1,9 +1,10 @@
-use bevy::ecs::{schedule::NextState, world::World};
+use bevy::{audio::Volume, ecs::{schedule::NextState, world::World}};
 
 use crate::{
-    engine::save_load_system::has_save_file, game::{
+    engine::{save_load_system::has_save_file, audios::AudioConfig},
+    game::{
         manager::{MessageEvent, PlayMusicMessage}, 
-        menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
+        menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem, Slider}, MenuEvent, MenuType},
         states::MenuState}, globals::{RELEASE, VERSION}};
 
 use super::Message;
@@ -71,6 +72,7 @@ impl Message for MainMenuSettingsMessage {
         let mut menu = Menu::new("main_menu_settings", Vec::new());
         menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsDisplay, "Display"));
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsAudio, "Audio"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Back"));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETTINGS});
@@ -78,6 +80,8 @@ impl Message for MainMenuSettingsMessage {
         println!("Settings generated and send for opening.");
     }
 }
+
+// Original MainMenuSettings Display
 
 pub struct MainMenuSettingsDisplayMessage;
 impl Message for MainMenuSettingsDisplayMessage {
@@ -94,6 +98,33 @@ impl Message for MainMenuSettingsDisplayMessage {
         println!("SettingsDisplay generated and send for opening.");
     }
 }
+
+// WIP : Music
+pub struct MainMenuSettingsAudioMessage;
+impl Message for MainMenuSettingsAudioMessage {
+    fn execute(&self, world: &mut World) {
+        let mut audio_resource = world.resource_mut::<AudioConfig>();
+        let mut menu = Menu::new("main_menu_settings_audio", Vec::new());
+        menu.add(MenuItem::description("Choose your music volume"));
+        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.music_volume, "Music volume"));
+        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.sound_volume, "Sound volume"));
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Back"));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::AUDIO});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("SettingsAudio generated and send for opening.");
+    }
+}
+
+pub struct ChangeSoundVolumeMessage {pub modify_value:f32}
+impl Message for ChangeSoundVolumeMessage {
+    fn execute(&self, world: &mut World) {
+        let mut audio_resource = world.resource_mut::<AudioConfig>();
+        println!("Change Sound Volume");
+        audio_resource.sound_volume = Volume::new(audio_resource.sound_volume.get() + self.modify_value);
+    }
+}
+
 
 pub struct MainMenuQuitMessage;
 impl Message for MainMenuQuitMessage {
@@ -166,8 +197,6 @@ impl Message for InGameSettingsDisplayMessage {
         println!("SettingsDisplay generated and send for opening.");
     }
 }
-
-
 
 pub struct EndGameRecapMessage{
     pub recap_type: RecapType

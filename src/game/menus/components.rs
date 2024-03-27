@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 
 #[derive(Component)]
 pub struct OnScreenMenu;
@@ -14,6 +14,8 @@ pub enum MenuButtonAction {
     MainMenuSettings,
     BackToMainMenu,
     MainMenuSettingsDisplay,
+    MainMenuSettingsAudio,
+    SettingsAudioChange{modify_volume_by:f32, original_volume: Volume},
     DisplayLow,
     DisplayMedium,
     DisplayHigh,

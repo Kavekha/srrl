@@ -3,13 +3,12 @@
 fn test_music_event(mut ev_message: EventWriter<MessageEvent>) {ev_message.send(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()}))); } 
 */
 
-use bevy::prelude::*;
+use bevy::{audio::Volume, prelude::*};
 use bevy::audio::PlaybackMode;
 
 pub mod components;
 
 use crate::engine::asset_loaders::AudioAssets;
-use crate::AudioConfig;
 
 use self::components::{CurrentMusic, CurrentSound};
 
@@ -21,13 +20,38 @@ impl Plugin for GameAudioPlugin{
         &self, app:&mut App
     ) {
         app
+            .insert_resource(AudioConfig {
+                sound_active:true, sound_volume:Volume::new(3.0),
+                music_active:true, music_volume:Volume::new(3.0)
+            })
+            .insert_resource(AudioConfigMusic {active:true, volume:Volume::new(3.0)})
+
             .add_event::<MusicEvent>()   
             .add_event::<SoundEvent>()   
+
             .add_systems(Update, handle_music_event.run_if(on_event::<MusicEvent>()))
             .add_systems(Update, handle_sound_event.run_if(on_event::<SoundEvent>()))
             ;
         println!("INFO: Audioplugin loaded.");    
     }    
+}
+
+#[derive(Resource)]
+pub struct AudioConfig {
+    pub sound_active: bool,
+    pub sound_volume: Volume,
+    pub music_active: bool,
+    pub music_volume: Volume
+}
+#[derive(Resource)]
+pub struct AudioConfigMusic {
+    pub active: bool,
+    pub volume: Volume
+}
+#[derive(Resource)]
+pub struct AudioConfigSound {
+    pub active: bool,
+    pub volume: Volume
 }
 
 #[derive(Event)]
