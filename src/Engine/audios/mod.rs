@@ -24,7 +24,6 @@ impl Plugin for GameAudioPlugin{
                 sound_active:true, sound_volume:Volume::new(3.0),
                 music_active:true, music_volume:Volume::new(3.0)
             })
-            .insert_resource(AudioConfigMusic {active:true, volume:Volume::new(3.0)})
 
             .add_event::<MusicEvent>()   
             .add_event::<SoundEvent>()   
@@ -43,15 +42,10 @@ pub struct AudioConfig {
     pub music_active: bool,
     pub music_volume: Volume
 }
-#[derive(Resource)]
-pub struct AudioConfigMusic {
-    pub active: bool,
-    pub volume: Volume
-}
-#[derive(Resource)]
-pub struct AudioConfigSound {
-    pub active: bool,
-    pub volume: Volume
+#[derive(Resource, Clone)]
+pub enum AudioType{
+    Music,
+    Sound
 }
 
 #[derive(Event)]

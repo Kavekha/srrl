@@ -4,6 +4,7 @@ pub mod menu_messages;
 pub mod game_messages;
 pub mod save_messages;
 pub mod change_state_messages;
+pub mod audio_messages;
 
 use crate::engine::audios::MusicEvent;
 

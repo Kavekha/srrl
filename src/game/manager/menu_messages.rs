@@ -1,11 +1,11 @@
-use bevy::{audio::Volume, ecs::{schedule::NextState, world::World}};
+use bevy::ecs::{schedule::NextState, world::World};
 
 use crate::{
-    engine::{save_load_system::has_save_file, audios::AudioConfig},
+    engine::{audios::{AudioConfig, AudioType}, save_load_system::has_save_file},
     game::{
         manager::{MessageEvent, PlayMusicMessage}, 
-        menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem, Slider}, MenuEvent, MenuType},
-        states::MenuState}, globals::{RELEASE, VERSION}};
+        menus::{clean_menu, components::MenuButtonAction, menu_builder::{Menu, MenuItem}, MenuEvent, MenuType},
+        states::MenuState}, globals::{ RELEASE, VERSION}};
 
 use super::Message;
 
@@ -103,11 +103,11 @@ impl Message for MainMenuSettingsDisplayMessage {
 pub struct MainMenuSettingsAudioMessage;
 impl Message for MainMenuSettingsAudioMessage {
     fn execute(&self, world: &mut World) {
-        let mut audio_resource = world.resource_mut::<AudioConfig>();
+        let audio_resource = world.resource_mut::<AudioConfig>();
         let mut menu = Menu::new("main_menu_settings_audio", Vec::new());
         menu.add(MenuItem::description("Choose your music volume"));
-        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.music_volume, "Music volume"));
-        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.sound_volume, "Sound volume"));
+        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.music_volume, "Music volume", AudioType::Music));
+        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.sound_volume, "Sound volume", AudioType::Sound));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Back"));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::AUDIO});
@@ -116,12 +116,19 @@ impl Message for MainMenuSettingsAudioMessage {
     }
 }
 
-pub struct ChangeSoundVolumeMessage {pub modify_value:f32}
-impl Message for ChangeSoundVolumeMessage {
+pub struct InGameSettingsAudioMessage;
+impl Message for InGameSettingsAudioMessage {
     fn execute(&self, world: &mut World) {
-        let mut audio_resource = world.resource_mut::<AudioConfig>();
-        println!("Change Sound Volume");
-        audio_resource.sound_volume = Volume::new(audio_resource.sound_volume.get() + self.modify_value);
+        let audio_resource = world.resource_mut::<AudioConfig>();
+        let mut menu = Menu::new("main_menu_settings_audio", Vec::new());
+        menu.add(MenuItem::description("Choose your music volume"));
+        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.music_volume, "Music volume", AudioType::Music));
+        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.sound_volume, "Sound volume", AudioType::Sound));
+        menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Back"));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::AUDIO});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("SettingsAudio generated and send for opening.");
     }
 }
 
@@ -160,6 +167,7 @@ impl Message for InGameMenuSettingsOpenMessage {
         let mut menu = Menu::new("ig_menu_settings", Vec::new());
         menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuDisplay, "Display"));
+        menu.add(MenuItem::action(MenuButtonAction::InGameMenuAudio, "Audio"));
         menu.add(MenuItem::action(MenuButtonAction::BackToInGameMenu, "Back"));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::SETTINGS});

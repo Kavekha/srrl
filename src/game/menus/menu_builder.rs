@@ -2,8 +2,11 @@
 use bevy::{audio::Volume, prelude::*};
 
 use crate::{
-    game::menus::components::OnScreenMenu, globals::{NORMAL_BUTTON, TEXT_COLOR},
-    engine::asset_loaders::GraphicsAssets
+    game::menus::{
+        menu_builder::MenuButtonAction::SettingsAudioChange,
+        components::OnScreenMenu},
+    globals::{NORMAL_BUTTON, TEXT_COLOR},
+    engine::{asset_loaders::GraphicsAssets, audios::AudioType},
 };
 
 use super::components::MenuButtonAction;
@@ -21,7 +24,7 @@ pub struct Image {pub name: String}
 #[derive(Clone)]
 pub struct Footer {pub text: String}
 #[derive(Clone)]
-pub struct Slider {pub button_1_value:f32, pub button_2_value:f32, pub original_value:Volume, pub text:String}
+pub struct Slider {pub button_1_value:f32, pub button_2_value:f32, pub original_value:Volume, pub text:String, pub audio_type:AudioType}
 
 
 #[derive(Clone)]
@@ -55,9 +58,9 @@ impl MenuItem{
     ) -> MenuItem {
         MenuItem::Footer(Footer{text: text.to_string()})
     } 
-    pub fn slider(button_1_value:f32, button_2_value:f32, original_value:Volume, text:&str
+    pub fn slider(button_1_value:f32, button_2_value:f32, original_value:Volume, text:&str, audio_type:AudioType    // TODO : Supporter autre chose pour le type. Transmettre la resource?
     ) -> MenuItem {
-        MenuItem::Slider(Slider{button_1_value: button_1_value, button_2_value:button_2_value, original_value:original_value, text:text.to_string()})
+        MenuItem::Slider(Slider{button_1_value: button_1_value, button_2_value:button_2_value, original_value:original_value, text:text.to_string(), audio_type:audio_type})
     }
 }
 
@@ -185,7 +188,7 @@ pub fn spawn_recap_menu(
     }
 
     // Si y a des options, on mets un cadre.
-    if (actions.len() > 0 || sliders.len() > 0) {
+    if actions.len() > 0 || sliders.len() > 0 {
         let menu_border = commands.spawn(NodeBundle {
             // Cadre du menu en lui-même.
             style: Style {
@@ -223,7 +226,7 @@ pub fn spawn_recap_menu(
                         background_color: NORMAL_BUTTON.into(),
                         ..default()
                     },
-                    //slider,    //Reduce value?   // Une image a la place?
+                    SettingsAudioChange {modify_volume_by: -0.1, audio_type: slider.audio_type.clone()} //slider,    //Reduce value?   // Une image a la place?
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(
@@ -236,7 +239,7 @@ pub fn spawn_recap_menu(
                 // Display the value.
                 let slider_button_value = commands.spawn(
                     TextBundle::from_section(
-                        format!("{} ({:?})", slider.text, slider.original_value), //action.text.clone(),  //text,
+                        format!("{} ({:.1})", slider.text, slider.original_value.get()), //action.text.clone(),  //text,
                         button_text_style.clone(),
                     )).id();
                 commands.entity(slider_border).push_children(&[slider_button_value]);
@@ -248,7 +251,7 @@ pub fn spawn_recap_menu(
                         background_color: NORMAL_BUTTON.into(),
                         ..default()
                     },
-                    //slider,    //Reduce value?   // Une image a la place?
+                    SettingsAudioChange {modify_volume_by: 0.1, audio_type: slider.audio_type.clone()}   //Reduce value?   // Une image a la place?
                 ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_section(

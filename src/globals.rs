@@ -4,6 +4,9 @@ use bevy::prelude::*;
 pub const VERSION: &str = "0.16.0";
 pub const RELEASE: &str = "R0.4";
 
+// Min - Max VOLUME
+pub const MIN_VOLUME: f32 = 0.0;
+pub const MAX_VOLUME: f32 = 5.0;
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;

@@ -16,11 +16,14 @@
 // Desactiver les Controles "IG" / mettre GameState en Unavailable pendant le IG menu.
 
 
-use bevy::{audio::Volume, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
-    engine::save_load_system::has_save_file, game::{
-        manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ChangeSoundVolumeMessage, ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, 
+    engine::{audios::AudioType, save_load_system::has_save_file},
+    game::{
+        manager::{
+            audio_messages::{ChangeMusicVolumeMessage, ChangeSoundVolumeMessage}, change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsAudioMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent
+        },
         states::{GameState, MenuState}}, globals::{HEIGHT, RESOLUTION}
     };
 
@@ -136,11 +139,12 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage))); 
                 }
-                MenuButtonAction::SettingsAudioChange{modify_volume_by, mut original_volume} => {
-                    println!("Change volume");
-                    //let new_volume = Volume::new(original_volume.get() + modify_volume_by);
-                    //original_volume = new_volume.clone();
-                    ev_message.send(MessageEvent(Box::new(ChangeSoundVolumeMessage { modify_value:modify_volume_by.clone()}))); 
+                MenuButtonAction::SettingsAudioChange{modify_volume_by, audio_type} => {    //}, mut original_volume} => {
+                    println!("Change volume for sound or music");
+                    match audio_type {
+                        AudioType::Sound => ev_message.send(MessageEvent(Box::new(ChangeSoundVolumeMessage { modify_value:modify_volume_by.clone()}))),
+                        AudioType::Music => ev_message.send(MessageEvent(Box::new(ChangeMusicVolumeMessage { modify_value:modify_volume_by.clone()})))
+                    };                     
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage))); 
                 }
@@ -197,6 +201,11 @@ pub fn common_menu_action(
                     println!("Back to IG Menu");
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(InGameSettingsDisplayMessage)));                  
+                }
+                MenuButtonAction::InGameMenuAudio => {
+                    println!("Main Menu Audio  Menu!");
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    ev_message.send(MessageEvent(Box::new(InGameSettingsAudioMessage))); 
                 }
             }
         }
