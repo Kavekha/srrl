@@ -146,7 +146,7 @@ pub fn common_menu_action(
                         AudioType::Music => ev_message.send(MessageEvent(Box::new(ChangeMusicVolumeMessage { modify_value:modify_volume_by.clone()})))
                     };                     
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
-                    ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage))); 
+                    //ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage)));       // No Refresh, mais on est pas reconduit au Main Menu si on change le volume ig.
                 }
                 MenuButtonAction::DisplayLow => {
                     println!("Resolution changed to Low");
