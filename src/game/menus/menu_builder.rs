@@ -17,7 +17,7 @@ pub struct Header {pub text: String}
 #[derive(Clone)]
 pub struct Description {pub text: String}
 #[derive(Clone)]
-pub struct Image {pub image: String}
+pub struct Image {pub name: String}
 #[derive(Clone)]
 pub struct Footer {pub text: String}
 
@@ -44,9 +44,9 @@ impl MenuItem{
     ) -> MenuItem {
         MenuItem::Description(Description{text:text.to_string()})
     }
-    pub fn image(image:&str
+    pub fn image(name:&str
     ) -> MenuItem {
-        MenuItem::Image(Image{image: image.to_string()})
+        MenuItem::Image(Image{name: name.to_string()})
     }
     pub fn footer(text: &str
     ) -> MenuItem {
@@ -138,9 +138,10 @@ pub fn spawn_recap_menu(
     
     // Illustration.
     for image in images.iter() {
-        let image = image.clone();
+        println!("Image name is {}", image.name);   //DEBUG
+        let image = graph_assets.images[image.name.as_str()].clone().into(); // graph_assets.images[image.name.as_str()].clone().into().expect("something bad happened");
         let logo = commands.spawn(ImageBundle {
-                            image: graph_assets.logo.clone().into(),
+                            image: image,   //image: graph_assets.logo.clone().into(),
                             ..default()
         }).id();
         commands.entity(screen_menu).push_children(&[logo]);

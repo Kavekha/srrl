@@ -11,7 +11,8 @@ pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
 
-const LOGO_PATH: &str = "title/shadowrun_title_alone.png";
+const LOGO_PATH: &str = "title/shadowrun_title_alone.png";  //DEPRECATED
+const IMAGES: [&str; 1] = ["shadowrun_title_alone"];
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
 const TEXTURES: [&str; 2] = ["human", "ghoul"];
 const SEWERS_TILES_TEXTURES: [&str; 17] = [
@@ -39,11 +40,19 @@ fn load_assets(
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     asset_server: Res<AssetServer>
 ) {
-    // logo title
+    // logo title : DEPRECATED 0.16 for Images
     let logo = asset_server.load(LOGO_PATH);
 
+    // Images
+    let mut images = HashMap::new();
+    for image_name in IMAGES {
+        let handle:Handle<Image> = asset_server.load(format!("images/{}.png", image_name));
+        println!("Debug: image handle is : {:?} for {}", handle.clone(), image_name);
+        images.insert(image_name, handle);
+    }
+
     // Ascii 
-    //let texture = asset_server.load(ASCII_PATH);
+    //let texture = asset_server.load(ASCII_PATH);  // DEPRECATED.
     let atlas = TextureAtlasLayout::from_grid(
         Vec2::splat(9.0),
         16,
@@ -94,6 +103,7 @@ fn load_assets(
         GraphicsAssets { 
             logo: logo,
             logo_layout: atlas_handle,
+            images: images,
             font: font_handle,
             textures: textures,
             map_textures: sewer_textures,
@@ -108,6 +118,6 @@ fn load_assets(
         }
     );
 
-    println!("INFO: Assets loaded");
+    println!("INFO: Assets loaded");    
 }
 
