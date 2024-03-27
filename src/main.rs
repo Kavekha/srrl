@@ -31,8 +31,8 @@ fn main() {
     App::new()
         .insert_resource(ClearColor(CLEAR))
         .insert_resource(AudioConfig {
-            sound_active:false, sound_volume:Volume::new(5.0),
-            music_active:false, music_volume:Volume::new(5.0)
+            sound_active:true, sound_volume:Volume::new(4.0),
+            music_active:true, music_volume:Volume::new(4.0)
         })
         .add_plugins(
             DefaultPlugins

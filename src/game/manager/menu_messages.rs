@@ -49,14 +49,14 @@ impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
         //let description = "{} - {}", VERSION, RELEASE)
         let mut menu = Menu::new("main_menu", Vec::new());
-        menu.add(MenuItem::header("ShadowRun"));
-        menu.add(MenuItem::description( &format!("{VERSION} - {RELEASE}")));
+        menu.add(MenuItem::image("shadowrun_title_alone"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         if has_save_file() {
             menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
         }
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
+        menu.add(MenuItem::footer( &format!("{VERSION} - {RELEASE}")));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
