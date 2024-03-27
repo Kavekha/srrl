@@ -1,4 +1,5 @@
-use bevy::prelude::*;
+use bevy:: prelude::*;
+use crate::engine::audios::AudioType;
 
 #[derive(Component)]
 pub struct OnScreenMenu;
@@ -14,6 +15,8 @@ pub enum MenuButtonAction {
     MainMenuSettings,
     BackToMainMenu,
     MainMenuSettingsDisplay,
+    MainMenuSettingsAudio,
+    SettingsAudioChange{modify_volume_by:f32, audio_type:AudioType}, //, original_volume: Volume},
     DisplayLow,
     DisplayMedium,
     DisplayHigh,
@@ -24,6 +27,7 @@ pub enum MenuButtonAction {
     InGameMenuQuit,
     BackToInGameMenu,
     InGameMenuDisplay,
+    InGameMenuAudio,
 }
 
 #[derive(Resource)]

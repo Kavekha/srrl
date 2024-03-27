@@ -39,7 +39,8 @@ pub enum MenuType {
     MAINMENU,
     SETTINGS,
     DISPLAY,
-    QUIT
+    QUIT,
+    AUDIO
 }
 
 fn menu_event_reader(
