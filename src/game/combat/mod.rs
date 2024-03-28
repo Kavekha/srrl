@@ -184,7 +184,6 @@ pub fn combat_turn_next_entity(
     mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
     action_points_q: Query<&ActionPoints>,
-    //is_player_q: Query<Option<&Player>>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,
     mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,    

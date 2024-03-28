@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::{pieces::components::{Health, Monster}, player::Player, combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}},
-    globals::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, CHAR_SIZE, STANDARD_TILE_SIZE}, engine::render::components::GameCursorRender, engine::asset_loaders::GraphicsAssets
+    engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender}, game::{combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}, gamelog::{Gamelog, LogEvent}, pieces::components::{Health, Monster}, player::Player}, globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, STANDARD_TILE_SIZE}
 };
 
 use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
@@ -40,6 +39,7 @@ pub fn clear_action_points_cursor_ui(
     }
 }
 
+
 pub fn display_action_points_on_cursor(
     mut commands: Commands,
     //asset_server: Res<AssetServer>,
@@ -51,6 +51,7 @@ pub fn display_action_points_on_cursor(
     action_infos: Res<ActionInfos>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut ev_refresh_ap: EventReader<RefreshActionCostEvent>,
+
 ){
     let mut should_update = false;
     for _event in cursor_moved_events.read() {
@@ -145,7 +146,41 @@ pub fn display_action_points_on_cursor(
 }
 
 
+pub fn display_log_ui(
+    mut commands: Commands,
+    game_log: Res<Gamelog>,
+    assets: Res<GraphicsAssets>,
+){
+    // Interface container.
+    let container = commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::FlexStart,
+            align_items: AlignItems::FlexStart,
+            bottom: Val::Px(0.),
+            ..default()},
+        ..default()
+    }).id();
 
+    let log_line = commands.spawn(
+        TextBundle::from_section(
+            format!("Ceci est un message de log. \n retour à la ligne fonctionnel?"),
+            TextStyle { 
+                //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                font: assets.font.clone(),  
+                font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                color: Color::YELLOW,
+            },
+        )
+        .with_style(Style {
+            margin: UiRect::all(Val::Px(8.)),            
+            ..default()
+        }),
+    ).id();
+    commands.entity(container).push_children(&[log_line]);
+}
 
 pub fn draw_interface(
     mut commands: Commands,

@@ -27,6 +27,7 @@ pub fn action_entity_end_turn(
     mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
     mut ev_interface: EventWriter<ReloadUiEvent>,  
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut ev_log: EventWriter<LogEvent>
 ) {
     //println!("action entity forfeit turn");
     for event in ev_endturn.read() {
@@ -40,6 +41,7 @@ pub fn action_entity_end_turn(
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
             ev_refresh_action.send(RefreshActionCostEvent);
+            ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
         }
     }
 }
