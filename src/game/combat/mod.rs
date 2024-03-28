@@ -1,3 +1,39 @@
+/*
+== DOCUMENTATION ==
+
+Le combat est déclenché via StartCombatMessage du Manager.
+On donne des ActionPoints à toute Entité avec Health & Stats, ca devient des combattants.
+Le Combat est suivi grace à CombatInfos.
+=> CombatTurnStart.
+
+Le CombatTurnStart redonne des AP à tout le monde.
+NOTE: Mise à jour UI devrait pouvoir se faire autrement.
+On mets tous les NPC dans la Queue puis le Player. Le dernier ajouté est le premier à jouer. 
+=> CombatTurnNextEntityEvent
+
+CombatTurnNextEntityEvent fait jouer le premier Entité de la Queue.
+Regarde si elle est vivante ou a des PA. Si plus aucun, retire l'Entité de la Queue.
+Si elle en a, lui donne le component "Turn" pour qu'on sache qu'elle peut jouer.
+Si plus d'Entité, le Tour est fini. 
+=> combat_turn_end.
+
+combat_turn_entity_check regarde si y a toujours des PA pour que l'Entité joue. Sinon passe son tour.
+
+combat_turn_end s'assure que la queue est vide.
+Relance ensuite le CombatTurnStart après incrementation du CombatInfos.
+NOTE: C'est ici que l'on verifierait si tous les enemis sont morts / autres critères de fin de combat.
+=> CombatTurnStart
+
+combat_input regarde les inputs du joueur.
+
+npc_planning prends des décisions pour les NPC. 
+NOTE: C'est sans doute ici qu'on gerera l'IA.
+
+On note aussi que l'animation est aussi ici pour les deplacements.
+
+
+*/
+
 use bevy::prelude::*;
 
 pub mod components;
@@ -34,7 +70,6 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
-        //SECONDE REFACTO
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
             .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None })
@@ -62,7 +97,7 @@ impl Plugin for CombatPlugin {
             
             
             // Init Combat.
-            //USE STARTCOMBATMESSAGE 0.15.4 : .add_systems(OnEnter(GameState::Initialise), combat_start)      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
+            //USE STARTCOMBATMESSAGE 0.15.4      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
            // Le tour commence.
            .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()).in_set(CombatSet::Logic))
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
