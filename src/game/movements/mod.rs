@@ -7,7 +7,9 @@ use crate::engine::animations::events::AnimateEvent;
 use crate::vectors::Vector2Int;
 
 use super::combat::rules::consume_actionpoints;
-use super::{combat::{components::ActionPoints, events::{EntityHitTryEvent, EntityMoveEvent, EntityTryMoveEvent, RefreshActionCostEvent, Turn}, CombatSet}, player::Player, states::GameState, tileboard::components::BoardPosition, ui::ReloadUiEvent};
+use super::{
+    combat::{components::ActionPoints, events::{EntityHitTryEvent, EntityMoveEvent, EntityTryMoveEvent, RefreshActionCostEvent, Turn}}, 
+    player::Player, tileboard::components::BoardPosition, ui::ReloadUiEvent};
 
 
 
@@ -20,8 +22,8 @@ impl Plugin for MovementPlugin {
             .add_event::<EntityTryMoveEvent>()         // Tente deplacement: check si target ou simple mouvement.
             .add_event::<EntityMoveEvent>()            // Se deplace.
             // Check des actions demandées.
-            .add_systems(Update, action_entity_try_move.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            .add_systems(Update, action_entity_move.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_move))
+            .add_systems(Update, action_entity_try_move)    //.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
+            .add_systems(Update, action_entity_move)    //.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_move))
                 
             ;
     }

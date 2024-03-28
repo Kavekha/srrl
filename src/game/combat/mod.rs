@@ -53,8 +53,9 @@ use bevy::prelude::*;
 pub mod components;
 pub mod events;
 pub mod event_systems;  //TODO deplacer les elements publiques?
-pub mod npc_planning_systems;
 pub mod rules;
+pub mod ia;
+
 
 use crate::game::{
         states::GameState, 
@@ -64,10 +65,10 @@ use crate::game::{
 use self::{
     components::CurrentEntityTurnQueue, 
     event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_try_attack, create_action_infos, entity_dies, ActionInfos},
-    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, OnClickEvent, RefreshActionCostEvent, Turn}, 
-    npc_planning_systems::npc_planning
+    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn},
+    ia::IaPlugin
 };
-use super::{movements::action_entity_try_move, pieces::components::{Health, Stats}, player::{Cursor, Player}, ui::ReloadUiEvent};
+use super::{movements::action_entity_try_move, pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
 
 
 pub struct CombatPlugin;
@@ -75,6 +76,7 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_plugins(IaPlugin)
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
             .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None })
@@ -85,7 +87,7 @@ impl Plugin for CombatPlugin {
             .add_event::<RefreshActionCostEvent>()              // Recalcule le cout d'une action / deplacement.
 
             .add_event::<EntityEndTurnEvent>()         // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC. 
-            .add_event::<OnClickEvent>()               // Joueur clique: Attaque ou mouvement?                
+            
 
             .add_event::<EntityHitTryEvent>()          // Entity tente d'attaquer.
             .add_event::<EntityGetHitEvent>()          // Entity subit des degats d'une source.
@@ -104,12 +106,7 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start).in_set(CombatSet::Logic))
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
-        
-            // Plan NPC // Dans une partie IA?
-            //.add_systems(Update, plan_action_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            .add_systems(Update, npc_planning.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            
-            
+          
             // Gestion des actions demandées. Resolution.   // Vraiment dans le combat? Certaines pourraient se faire hors baston.
             .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 
@@ -218,39 +215,6 @@ pub fn combat_turn_end(
     ev_newturn.send(CombatTurnStartEvent);
 }
 
-/// Les events du Joueur.
-pub fn combat_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
-    //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    //player_query: Query<(Entity, Has<Player>)>,   // no entity at the end? // TO DELETE?
-    player_query: Query<Entity, With<Player>>,
-    buttons: Res<ButtonInput<MouseButton>>,
-    res_cursor: Res<Cursor>,    //TODO : On click event?
-    mut ev_on_click: EventWriter<OnClickEvent>
-){
-    //println!("Checking if combat input...!");
-    if keys.just_pressed(KeyCode::KeyT) {
-        let Ok(result) = player_query.get_single() else { return };
-        let entity = result;    //result.0 autrefois
-        ev_endturn.send(EntityEndTurnEvent {entity});
-        println!("Player asked for End of round for {:?}.", entity);
-    }
-    if buttons.just_released(MouseButton::Left) {
-        let Ok(result) = player_query.get_single() else { return };
-        let entity = result;    //result.0 autrefois
-        let destination = res_cursor.grid_position;
-
-        println!("Click !");
-        ev_on_click.send(OnClickEvent { entity: entity, tile: destination });
-
-        /* 
-        println!("Clic to move!");
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, destination: destination});
-        */
-
-    }
-}
 
 /// Regarde si tous les PA ont été dépensé par le personnage dont c'est le tour.
 /// Si c'est le cas, passe au perso suivant.

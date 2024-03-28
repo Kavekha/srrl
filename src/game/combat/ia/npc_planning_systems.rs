@@ -2,9 +2,8 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{pieces::components::{Npc, Occupier}, tileboard::components::BoardPosition, player::Player, combat::AP_COST_MELEE}, vectors::{Vector2Int, find_path}, map_builders::map::Map};
+use crate::{game::{combat::{components::{ActionPoints, CombatInfos}, events::{EntityEndTurnEvent, EntityTryMoveEvent, Turn}, AP_COST_MELEE, AP_COST_MOVE}, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{components::{CombatInfos, ActionPoints}, events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent}, AP_COST_MOVE};
 
 
 /// NPC : Generate / Choice to forfeit their turn.

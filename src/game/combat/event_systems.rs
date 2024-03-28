@@ -16,7 +16,7 @@ use crate::{
 
 use super::{
     components::ActionPoints, events::{
-        EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, EntityTryMoveEvent, OnClickEvent, RefreshActionCostEvent, Turn
+        EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn
     }, rules::consume_actionpoints
 };
 
@@ -44,22 +44,6 @@ pub fn action_entity_end_turn(
     }
 }
 
-/// Player clicked on a tile.
-pub fn on_click_action(
-    mut ev_onclick: EventReader<OnClickEvent>,
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    action_infos: Res<ActionInfos>,
-){
-    for _event in ev_onclick.read() {
-        let path = action_infos.path.clone();
-        let Some(entity) = action_infos.entity else { continue };
-        let Some(path) = path else { continue };
-
-        println!("On clic action: OK. Send event.");
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
-
-    }
-}
 
 // TODO : Au choix: Try_attack devrait soit verifier que l'entité peut accomplir son attaque, soit tester la réussite de son attaque.
 pub fn action_entity_try_attack(
