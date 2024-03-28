@@ -6,7 +6,7 @@ use crate::{
     engine::{audios::AudioType, save_load_system::has_save_file},
     game::manager::{
             audio_messages::{ChangeMusicVolumeMessage, ChangeSoundVolumeMessage}, 
-            change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage, QuitGameMessage}, 
+            change_state_messages::{ChangeGameStateRunningMessage, QuitGameMessage}, 
             game_messages::{ClearGameMessage, StartGameMessage},
             menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsAudioMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, 
             save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, 
@@ -26,31 +26,7 @@ pub fn splashscreen(
     ev_message.send(MessageEvent(Box::new(MainMenuOpenMessage)));
 }
 
-// GameState is Running, I can call Menu.
-pub fn ig_call_menu_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut ev_message: EventWriter<MessageEvent>  
-){
-    // MENU etc
-    if keys.just_pressed(KeyCode::Escape) {
-        println!("Call for In Game Menu.");        
-        ev_message.send(MessageEvent(Box::new(OpenInGameMenuOpenMessage))); 
-        ev_message.send(MessageEvent(Box::new(ChangeGameStateUnavailableMessage))); 
-    }
-}
 
-// GameState is Unavailable, I can close the menu.
-pub fn ig_inside_menu_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut ev_message: EventWriter<MessageEvent>  
-){
-    // MENU etc
-    if keys.just_pressed(KeyCode::Escape) {
-        println!("Back to game.");
-        ev_message.send(MessageEvent(Box::new(ChangeGameStateRunningMessage))); 
-        ev_message.send(MessageEvent(Box::new(CloseMenuMessage)));         
-    }
-}
 
 // Ne contient que MainMenu pour le moment.
 pub fn common_menu_action(

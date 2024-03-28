@@ -22,9 +22,9 @@ use bevy::prelude::*;
 use crate::{game::despawn_screen, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION}, menu_builders::{spawn_menu, Menu}};
 use crate::engine::asset_loaders::GraphicsAssets;
 
-use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, ig_call_menu_input, ig_inside_menu_input, splashscreen}};
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}};
 
-use super::states::{GameState, MenuState};
+use super::states::MenuState;
  
 pub mod components;
 pub mod menu_systems;
@@ -57,8 +57,7 @@ impl Plugin for MenuPlugin {
         .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
              
         //Specific IG Menu            
-        .add_systems(Update, ig_call_menu_input.run_if(in_state(GameState::Running)))   // Appeler IG Menu si In Game.            
-        .add_systems(Update, ig_inside_menu_input.run_if(in_state(GameState::Unavailable)))     // TODO : Put the game In Unavailable quand Menu Open
+
         ;        
     }
 }

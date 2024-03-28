@@ -2,6 +2,7 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
+use self::movements::MovementPlugin;
 use self::pieces::components::Npc;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::components::GameMap;
@@ -14,12 +15,12 @@ pub mod combat;
 pub mod pieces;
 pub mod player;
 pub mod tileboard;
-pub mod rules;
 pub mod ui;
 pub mod menus;
 pub mod states;
 pub mod manager;
 pub mod gamelog;
+pub mod movements;
 
 
 use crate::game::tileboard::components::ExitMapTile;
@@ -42,6 +43,7 @@ impl Plugin for GamePlugin {
             .add_plugins(CombatPlugin)
             .add_plugins(ManagerPlugin)
             .add_plugins(GameLogsPlugin)
+            .add_plugins(MovementPlugin)
 
             .add_systems(OnEnter(GameState::Disabled), clean_game_screen)
             ;

@@ -17,7 +17,7 @@ mod menu_builders;
 
 use game::GamePlugin;
 use engine::EnginePlugin;
-use game::states::{GameState, EngineState};
+use game::states::GameState;    //{GameState, EngineState};
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
 use crate::game::states::MenuState;
@@ -51,7 +51,7 @@ fn main() {
         .add_plugins(GamePlugin)
         
         .init_state::<GameState>()  
-        .init_state::<EngineState>()
+        //.init_state::<EngineState>()
         .init_state::<MenuState>()
 
 

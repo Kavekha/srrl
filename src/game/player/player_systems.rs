@@ -1,21 +1,13 @@
-use bevy::{prelude::*, input::mouse::MouseMotion};
+use bevy::prelude::*;
 
 use crate::game::{
-        combat::events::RefreshActionCostEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}
+        manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}
     };
 
 
 use super::components::Player;
 
 
-pub fn player_mouse_input(
-    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    mut mouse_move: EventReader<MouseMotion>,
-){
-    for _event in mouse_move.read() {
-        ev_refresh_action.send(RefreshActionCostEvent);
-    }
-}
 
 
 pub fn camera_follow(

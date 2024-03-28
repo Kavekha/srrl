@@ -1,6 +1,13 @@
+// == DOCUMENTATION
+/*
+Ici seront gérées les règles "gameplay" diverses et variées.
+L'idée est aussi qu'il soit possible de les configurer.
+
+ */
+
 use rand::prelude::*;
 
-use super::combat::components::ActionPoints;
+use super::components::ActionPoints;
 
 
 pub struct DiceRollResult{
