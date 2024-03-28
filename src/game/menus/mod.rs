@@ -1,18 +1,34 @@
+// Part of the refacto: what is commons to all menus
+// TEMP
+
+//Resume (ig menu) not working
+//Music de combat reste quand retour au main menu depuis IG Menu.
+//Reverifier coherence des menus.
+
+//== DOCUMENTATION
+// On commence en MenuState:Splashscreen, GameState:Disabled.
+// Transmets un MessageEvent pour Afficher le Main Menu. Cet Event passe MenuState en Open.
+// Le button_system contient tous les ordres de circulation dans les Menus, et est disponible dés que MenuState::Open.
+// La gestion du ClearMenu reste pas ouf, il faut bien penser à l'ajouter à chaque fois. La mettre dans le Open semble faire le Clear après l'envoi du Menu... -_-
+
+//== TODO 
+// Encore beaucoup de doublons entre IG & MainMenu, à cause de la circulation. Peut être enregistrer l'option "Previous" dans le Menu à chaque fois?
+// Desactiver les Controles "IG" / mettre GameState en Unavailable pendant le IG menu.
+
+
+
 use bevy::prelude::*;
 
+use crate::{game::despawn_screen, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION}, menu_builders::{spawn_menu, Menu}};
+use crate::engine::asset_loaders::GraphicsAssets;
+
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}};
+
+use super::states::MenuState;
+ 
 pub mod components;
-pub mod menu_builder;
-pub mod commons;
+pub mod menu_systems;
 
-use crate::{
-    engine::asset_loaders::GraphicsAssets,
-    game::{despawn_screen, menus::menu_builder::spawn_recap_menu}, //states::MainMenuState}, 
-    globals::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON}};
-
-use self::{
-    commons::CommonsMenuPlugin, components::{OnScreenMenu, SelectedOption}, 
-    menu_builder::Menu
-};
 
 
 pub struct MenuPlugin;
@@ -20,12 +36,32 @@ pub struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_plugins(CommonsMenuPlugin)
-            //Transfert vers le menu
-            .add_event::<MenuEvent>()
-            .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()));        
+        .insert_resource(ResolutionSettings{
+            low:Vec2::new(640.0, 360.0),
+            medium:Vec2::new(HEIGHT * RESOLUTION, HEIGHT),
+            high:Vec2::new(1920.0, 1080.0)
+        })
+
+        .add_event::<MenuEvent>()
+        .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()))   
+
+
+        .init_state::<MenuState>()
+
+        //On fait ça pour utiliser la commande d'envoi du MainMenu, car on ne peut se baser sur le MenuState::Open.
+        .add_systems(OnEnter(MenuState::Splashscreen), splashscreen)    
+        .add_systems(OnEnter(MenuState::Splashscreen), menu_camera)  
+
+        //.add_systems(OnEnter(MenuState::Open), menu_camera)
+        .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
+        .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
+             
+        //Specific IG Menu            
+
+        ;        
     }
 }
+
 
 // TODO : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
 #[derive(Event)]
@@ -52,7 +88,7 @@ fn menu_event_reader(
         //println!("Je suis dans Menu Event Reader avec pour type: {:?}.", event.menu_type);
         println!("Menu reçu et envoyé.");
         let menu = &event.menu;
-        spawn_recap_menu(&mut commands, graph_assets, menu);
+        spawn_menu(&mut commands, graph_assets, menu);
         break;      // Degueu, mais seul le premier m'interesse et c peu probable que j'en ai d'autres.
     }    
 }

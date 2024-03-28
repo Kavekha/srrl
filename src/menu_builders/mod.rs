@@ -1,15 +1,33 @@
+//== DOCUMENTATION
+/*
+On permets de créer très basiquement un Menu avec plusieurs items.
+A partir de ces items, on peut generer un affichage basique.
+
+Beaucoup de choses sont encore en dur, notamment le Slider qui sert uniquement pour les volumes de music & audio (ne servirait pas pour de la lumiosité par exemple).
+Rien n'est personnalisable à ce stade: pas de font, pas d'image, etc.
+
+Commencer aussi à integrer une interface / logique API.
+
+
+crate   | app       | Contenu   
+----------------------------------------------------------------------------------------------
+0.3     | 0.16.0    | Ajout du Slider, uniquement pour de l'Audio. A améliorer.
+-----------------------------------------------------------------------------------------
+0.2     | 0.15.3    | Ajout Image, footer. Menu se construit avec ces elements.
+---------------------------------------------------------------------------------------
+0.1     | 0.15.2    | Les bases: boutons, headers, descriptions. Menu commun simple.
+-----------------------------------------------------------------------------------------
+*/
+
 
 use bevy::{audio::Volume, prelude::*};
 
-use crate::{
-    game::menus::{
-        menu_builder::MenuButtonAction::SettingsAudioChange,
-        components::OnScreenMenu},
-    globals::{NORMAL_BUTTON, TEXT_COLOR},
-    engine::{asset_loaders::GraphicsAssets, audios::AudioType},
-};
+use crate::game::menus::components::{MenuButtonAction, OnScreenMenu};
+use crate::engine::audios::AudioType;
+use crate::engine::asset_loaders::GraphicsAssets;
+use crate::globals::{NORMAL_BUTTON, TEXT_COLOR};
+use crate::menu_builders::MenuButtonAction::SettingsAudioChange;
 
-use super::components::MenuButtonAction;
 
 
 //MenuBuilder v2
@@ -81,8 +99,8 @@ impl Menu{
     }
 }
 
-// WORK IN PROGRESS
-pub fn spawn_recap_menu(
+
+pub fn spawn_menu(
     commands: &mut Commands,
     graph_assets: Res<GraphicsAssets>,
     menu: &Menu,

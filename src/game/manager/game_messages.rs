@@ -17,10 +17,10 @@ pub struct StartGameMessage;
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
         println!("==== START GAME ===");
-        let game_infos = create_map(world);
-        create_player(world, game_infos.starting_position);
-        spawn_npcs(world, game_infos.spawn_list);
-        create_exit_map(world, game_infos.exit_position);
+        let map_infos = create_map(world);
+        create_player(world, map_infos.starting_position);
+        spawn_npcs(world, map_infos.spawn_list);
+        create_exit_map(world, map_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
         world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
         let music_name = "gamemap".to_string();

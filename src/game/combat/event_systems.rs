@@ -2,19 +2,22 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
+use crate::engine::animations::events::AnimateEvent;
 use crate::{
-    engine::{
-        audios::SoundEvent, render::{components::PathAnimator, get_world_position}
-    },
+    engine::audios::SoundEvent,
     game::{
-        combat::{AP_COST_MELEE, AP_COST_MOVE}, gamelog::LogEvent, manager::{game_messages::GameOverMessage, MessageEvent}, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
+        combat::{rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE}, 
+        gamelog::LogEvent, manager::{game_messages::GameOverMessage, MessageEvent}, 
+        pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
+        tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
         map_builders::map::Map, 
         vectors::{find_path, Vector2Int}
     };
 
 use super::{
-    events::{EntityEndTurnEvent, Turn, EntityTryMoveEvent, EntityMoveEvent, AnimateEvent, OnClickEvent, EntityHitTryEvent, EntityGetHitEvent, EntityDeathEvent, RefreshActionCostEvent},
-    components::ActionPoints
+    components::ActionPoints, events::{
+        EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn
+    }, rules::consume_actionpoints
 };
 
 
@@ -24,6 +27,7 @@ pub fn action_entity_end_turn(
     mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
     mut ev_interface: EventWriter<ReloadUiEvent>,  
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut ev_log: EventWriter<LogEvent>
 ) {
     //println!("action entity forfeit turn");
     for event in ev_endturn.read() {
@@ -37,60 +41,13 @@ pub fn action_entity_end_turn(
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
             ev_refresh_action.send(RefreshActionCostEvent);
+            ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
         }
     }
 }
 
-/// Player clicked on a tile.
-pub fn on_click_action(
-    mut ev_onclick: EventReader<OnClickEvent>,
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    action_infos: Res<ActionInfos>,
-){
-    for _event in ev_onclick.read() {
-        let path = action_infos.path.clone();
-        let Some(entity) = action_infos.entity else { continue };
-        let Some(path) = path else { continue };
 
-        println!("On clic action: OK. Send event.");
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
-
-    }
-}
-
-
-/// Test de l'action Move.
-pub fn action_entity_try_move(
-    mut ev_try_move: EventReader<EntityTryMoveEvent>,
-    mut ev_move: EventWriter<EntityMoveEvent>,
-    mut ev_try_attack: EventWriter<EntityHitTryEvent>,
-    query_actions: Query<&ActionPoints>,
-    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-){
-    for event in ev_try_move.read() {
-        println!("Action entity try move event received.");
-
-        let Ok(action_points) = query_actions.get(event.entity) else { continue };
-        if action_points.current < AP_COST_MOVE { continue };
-
-        // Target check
-        let Some(destination) = event.path.get(0) else { continue };
-        if let Some(current_target) = event.target {
-            if current_target == * destination {
-                if action_points.current < AP_COST_MELEE { continue };
-                println!("J'attaque ma cible!!!");
-                ev_try_attack.send( EntityHitTryEvent {entity: event.entity, target: current_target});
-                continue
-            }
-        }  
-        ev_refresh_action.send(RefreshActionCostEvent);
-
-        let path = event.path.clone();
-        ev_move.send(EntityMoveEvent {entity: event.entity, path: path, target: event.target});
-    }
-}
-
-
+// TODO : Au choix: Try_attack devrait soit verifier que l'entité peut accomplir son attaque, soit tester la réussite de son attaque.
 pub fn action_entity_try_attack(
     mut ev_try_attack: EventReader<EntityHitTryEvent>,    
     mut ev_gethit: EventWriter<EntityGetHitEvent>,
@@ -106,6 +63,7 @@ pub fn action_entity_try_attack(
     mut ev_log: EventWriter<LogEvent>
 ){
     for event in ev_try_attack.read() {
+        // Verification. Devrait être ailleurs.
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
 
         // TODO : maybe refresh in consume? Maybe consume in some Event?
@@ -125,12 +83,14 @@ pub fn action_entity_try_attack(
         let Ok(attacker_stats) = stats_q.get(event.entity) else { 
             // DEBUG: println!("Pas de stats pour l'attaquant");
             continue };        
+        
         for (target_entity, target_position, target_stats) in target_entities.iter() {     
             // Can't hit yourself.
             if event.entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
                 continue; } 
 
+            // L'attaque est tenté contre toutes les personnes de la cellule.
             let dice_roll = roll_dices_against(attacker_stats.attack, target_stats.dodge);   
             let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
             if dice_roll.success > 0 {
@@ -212,62 +172,7 @@ pub fn entity_dies(
     }
 }
 
-/// Gestion de l'action Move.
-pub fn action_entity_move(
-    mut query_character_turn: Query<(Entity, &mut ActionPoints, &mut BoardPosition, Option<&Player>), With<Turn>>,
-    mut ev_move: EventReader<EntityMoveEvent>,
-    mut ev_interface: EventWriter<ReloadUiEvent>,
-    mut ev_animate: EventWriter<AnimateEvent>,
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>,    
-    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-){    
-    for event in ev_move.read() {
-        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { 
-            //println!("ActionMove: Je n'ai pas les infos Entité");   // TODO : Quand Action_entity_try_move pose le component MovePath, le Query action_entity_move ne le recupere pas pour le moment (asynchrone?)
-            continue };
-        let (entity, mut action_points,mut board_position, is_player) = entity_infos;  
 
-        let mut path = event.path.clone();
-        let destination = path.pop_front();
-        let Some(new_position) = destination.clone() else { break };
-        
-        board_position.v = new_position;
-        ev_try_move.send(EntityTryMoveEvent {entity: event.entity, path: path, target: event.target});
-
-        consume_actionpoints(&mut action_points, AP_COST_MOVE);
-        //action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
-        if is_player.is_some() {
-            ev_interface.send(ReloadUiEvent);
-        }
-
-        ev_refresh_action.send(RefreshActionCostEvent);
-
-        let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
-        path_animation.push_back(new_position);
-        ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
-    }
-
-}
-
-pub fn walk_combat_animation(    
-    mut commands: Commands,
-    mut ev_animate: EventReader<AnimateEvent>,
-) {
-    for ev in ev_animate.read() {
-        let mut path = ev.path.clone();
-
-        let mut path_animation: VecDeque<Vec3> = VecDeque::new();
-        while !ev.path.is_empty() {
-            let step = path.pop_front();
-            let Some(current_step) = step else { break };
-            let world_position = get_world_position(&current_step);        //TODO Est ce qu'un calcul de position Render doit etre là? Bof.
-            let target = Vec3::new(world_position.0, world_position.1, 2.0);
-            path_animation.push_back(target);
-        }
-        println!("PathAnimator created");
-        commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
-    }
-}
 
 #[derive(Resource)]
 pub struct ActionInfos {

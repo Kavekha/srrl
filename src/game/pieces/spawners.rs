@@ -34,8 +34,8 @@ pub fn get_random_kind(
 
 
 pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
-    //if let Some(game_infos) = world.get_resource::<GameInfos>(){
-        //let player_starting_position = game_infos.starting_position;
+    //if let Some(map_infos) = world.get_resource::<MapInfos>(){
+        //let player_starting_position = map_infos.starting_position;
         println!("Player: Starting position = {:?}", player_starting_position);
         let kind = get_random_kind();
         let piece = Piece{kind: kind};

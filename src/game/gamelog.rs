@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use super::ui::game_interface::display_log_ui;
+
 pub struct GameLogsPlugin;
 
 impl Plugin for GameLogsPlugin {
@@ -9,7 +11,7 @@ impl Plugin for GameLogsPlugin {
 
             .add_event::<LogEvent>()
             
-            .add_systems(Update, display_log.run_if(on_event::<LogEvent>()))
+            .add_systems(Update, display_log_ui.run_if(on_event::<LogEvent>()))
             ;
     }
 }
@@ -22,6 +24,7 @@ pub struct Gamelog {
 #[derive(Event)]
 pub struct LogEvent{pub entry: String}
 
+/* 
 fn display_log(
     mut ev_log: EventReader<LogEvent>,
     mut gamelog: ResMut<Gamelog>
@@ -30,4 +33,4 @@ fn display_log(
         gamelog.entries.push(event.entry.to_string());
         println!("{}", event.entry);
     }    
-}
+}*/
