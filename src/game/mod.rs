@@ -8,6 +8,7 @@ use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
 use self::menus::MenuPlugin;
 use self::manager::ManagerPlugin;
+use self::gamelog::GameLogsPlugin;
 
 pub mod combat;
 pub mod pieces;
@@ -18,6 +19,7 @@ pub mod ui;
 pub mod menus;
 pub mod states;
 pub mod manager;
+pub mod gamelog;
 
 
 use crate::game::tileboard::components::ExitMapTile;
@@ -39,6 +41,7 @@ impl Plugin for GamePlugin {
             .add_plugins(UiPlugin)     
             .add_plugins(CombatPlugin)
             .add_plugins(ManagerPlugin)
+            .add_plugins(GameLogsPlugin)
 
             .add_systems(OnEnter(GameState::Disabled), clean_game_screen)
             ;

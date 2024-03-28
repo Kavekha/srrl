@@ -4,16 +4,10 @@ use bevy::prelude::*;
 
 use crate::{
     engine::{
-        render::{components::PathAnimator, get_world_position},
-        audios::SoundEvent
+        audios::SoundEvent, render::{components::PathAnimator, get_world_position}
     },
     game::{
-        combat::{AP_COST_MELEE, AP_COST_MOVE},
-        manager::{game_messages::GameOverMessage, MessageEvent}, 
-        pieces::components::{Health, Occupier, Stats}, 
-        player::{Cursor, Player}, 
-        rules::{consume_actionpoints, roll_dices_against}, 
-        tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
+        combat::{AP_COST_MELEE, AP_COST_MOVE}, gamelog::LogEvent, manager::{game_messages::GameOverMessage, MessageEvent}, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, rules::{consume_actionpoints, roll_dices_against}, tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
         map_builders::map::Map, 
         vectors::{find_path, Vector2Int}
     };
@@ -108,7 +102,8 @@ pub fn action_entity_try_attack(
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
-    mut ev_sound: EventWriter<SoundEvent>
+    mut ev_sound: EventWriter<SoundEvent>,
+    mut ev_log: EventWriter<LogEvent>
 ){
     for event in ev_try_attack.read() {
         println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
@@ -143,10 +138,12 @@ pub fn action_entity_try_attack(
                 ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg });
                 // SOUND
                 ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
+                ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", event.entity, target_entity, dmg)});        // Log v0
             } else {
                 println!("Miss target.");
                 // SOUND
                 ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
+                ev_log.send(LogEvent {entry: format!("{:?} try to hit {:?} but misses.", event.entity, target_entity)});        // Log v0
             }
 
             // Animation.
@@ -167,7 +164,8 @@ pub fn action_entity_get_hit(
     mut ev_gethit: EventReader<EntityGetHitEvent>,
     mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,
     mut ev_die: EventWriter<EntityDeathEvent>,    
-    mut ev_sound: EventWriter<SoundEvent>
+    mut ev_sound: EventWriter<SoundEvent>,
+    mut ev_log: EventWriter<LogEvent>
 
 ) {
     for event in ev_gethit.read() {
@@ -188,6 +186,7 @@ pub fn action_entity_get_hit(
             // SOUND
             ev_sound.send(SoundEvent{id:"death_scream".to_string()});
             ev_die.send(EntityDeathEvent { entity: event.entity });
+            ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", event.entity, event.attacker)});   // Log v0
         }
     }
 }
