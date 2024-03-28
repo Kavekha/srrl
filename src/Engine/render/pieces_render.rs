@@ -56,7 +56,6 @@ pub fn path_animator_update(
 pub fn spawn_exit_render(
     mut commands: Commands,
     query: Query<(Entity, &BoardPosition), With<ExitMapTile>>,
-    //asset_server: Res<AssetServer>
     assets: Res<GraphicsAssets>
 ){
     println!("Rendering Exit begins...");
@@ -83,7 +82,6 @@ pub fn spawn_exit_render(
 pub fn spawn_piece_renderer(
     mut commands: Commands,
     query: Query<(Entity, &BoardPosition, &mut Piece, Option<&Player>)>,
-    //asset_server: Res<AssetServer>
     assets: Res<GraphicsAssets>,
 ) {
     println!("Rendering Pieces begins..."); 
