@@ -10,7 +10,7 @@ use crate::{
 
 // Communicate informations from Builder : reponse de create_map.
 #[derive(Resource, Clone, Default, Debug)]  
-pub struct GameInfos{
+pub struct MapInfos{
     pub starting_position: Vector2Int,
     pub spawn_list: Vec<Vector2Int>,
     pub exit_position: Vector2Int
@@ -18,22 +18,22 @@ pub struct GameInfos{
 
 // Créer une Map via le Builder. Retourne les elements necessaires au placement des NPC & etc.
 
-pub fn create_map(world: &mut World) -> GameInfos {
+pub fn create_map(world: &mut World) -> MapInfos {
     println!("CreateMapMessage: Building Map.");
         let mut builder = random_builder();
         builder.build_map();        
         builder.build_data.map.populate_blocked(); 
 
-        let mut game_infos = GameInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new(), exit_position:Vector2Int{x:0, y:0}};
-        game_infos.starting_position = builder.get_starting_position();
-        game_infos.spawn_list = builder.spawn_entities();
-        game_infos.exit_position = builder.get_exit_position();
-        println!("Generating Map: Player starting position will be {:?}", game_infos.starting_position);
+        let mut map_infos = MapInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new(), exit_position:Vector2Int{x:0, y:0}};
+        map_infos.starting_position = builder.get_starting_position();
+        map_infos.spawn_list = builder.spawn_entities();
+        map_infos.exit_position = builder.get_exit_position();
+        println!("Generating Map: Player starting position will be {:?}", map_infos.starting_position);
 
         world.insert_resource(builder.build_data.map.clone());
 
         println!("Map has been builded");
-        return game_infos
+        return map_infos
 }
 
 
