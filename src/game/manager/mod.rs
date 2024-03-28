@@ -30,7 +30,7 @@ pub fn handle_message_event(
         res.drain().collect::<Vec<_>>()
     } else { return };
     for ev in events {
-        println!("Manager: Je traite un evenement.");
+    // DEBUG: println!("Manager: Je traite un evenement.");
        ev.0.execute(world);
     }
 }

@@ -119,11 +119,11 @@ pub fn action_entity_try_attack(
         // Targets de la case:
         let target_entities = available_targets.iter().filter(|(_, position,_)| position.v == event.target).collect::<Vec<_>>(); 
         if target_entities.len() == 0 { 
-            println!("Pas de cible ici.");
+            // DEBUG: println!("Pas de cible ici.");
             continue }; 
 
         let Ok(attacker_stats) = stats_q.get(event.entity) else { 
-            println!("Pas de stats pour l'attaquant");
+            // DEBUG: println!("Pas de stats pour l'attaquant");
             continue };        
         for (target_entity, target_position, target_stats) in target_entities.iter() {     
             // Can't hit yourself.
@@ -134,13 +134,13 @@ pub fn action_entity_try_attack(
             let dice_roll = roll_dices_against(attacker_stats.attack, target_stats.dodge);   
             let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
             if dice_roll.success > 0 {
-                println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
+                // DEBUG: println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
                 ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg });
                 // SOUND
                 ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
                 ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", event.entity, target_entity, dmg)});        // Log v0
             } else {
-                println!("Miss target.");
+                // DEBUG: println!("Miss target.");
                 // SOUND
                 ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
                 ev_log.send(LogEvent {entry: format!("{:?} try to hit {:?} but misses.", event.entity, target_entity)});        // Log v0
@@ -205,7 +205,6 @@ pub fn entity_dies(
         //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
         if let Ok(_is_player) = player_q.get(event.entity) {  
-            //game_state.set(GameState::GameOverScreen);               // Revision 0.15.2
             ev_message.send(MessageEvent(Box::new(GameOverMessage)));
         }
         commands.entity(event.entity).despawn();
@@ -311,7 +310,7 @@ pub fn create_action_infos(
             has_target = true;
             action_infos.target = Some(tile_position);
         }
-        println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
+        //DEBUG: println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
 
         let path_to_destination = find_path(
             position.v,
@@ -322,10 +321,10 @@ pub fn create_action_infos(
         ); 
 
         let Some(path) = path_to_destination else { 
-                println!("Pas de Path");
+                //DEBUG: println!("Pas de Path");
             return };
 
-        println!("All return checks are done.");
+        //DEBUG: println!("All return checks are done.");
         let mut ap_cost = path.len() as u32;
         if has_target {
             let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
@@ -337,6 +336,6 @@ pub fn create_action_infos(
             action_infos.path = Some(path);
         };
 
-        println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
+        // DEBUG: println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
     }
 }
