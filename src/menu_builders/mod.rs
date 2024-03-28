@@ -1,15 +1,12 @@
 
 use bevy::{audio::Volume, prelude::*};
 
-use crate::{
-    game::menus::{
-        menu_builder::MenuButtonAction::SettingsAudioChange,
-        components::OnScreenMenu},
-    globals::{NORMAL_BUTTON, TEXT_COLOR},
-    engine::{asset_loaders::GraphicsAssets, audios::AudioType},
-};
+use crate::game::menus::components::{MenuButtonAction, OnScreenMenu};
+use crate::engine::audios::AudioType;
+use crate::engine::asset_loaders::GraphicsAssets;
+use crate::globals::{NORMAL_BUTTON, TEXT_COLOR};
+use crate::menu_builders::MenuButtonAction::SettingsAudioChange;
 
-use super::components::MenuButtonAction;
 
 
 //MenuBuilder v2
@@ -81,8 +78,8 @@ impl Menu{
     }
 }
 
-// WORK IN PROGRESS
-pub fn spawn_recap_menu(
+
+pub fn spawn_menu(
     commands: &mut Commands,
     graph_assets: Res<GraphicsAssets>,
     menu: &Menu,

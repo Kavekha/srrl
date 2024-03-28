@@ -13,6 +13,7 @@ mod map_builders;
 mod game;           
 mod globals;
 mod vectors;
+mod menu_builders;
 
 use game::GamePlugin;
 use engine::EnginePlugin;

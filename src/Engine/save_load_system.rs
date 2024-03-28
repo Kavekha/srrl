@@ -72,7 +72,7 @@ impl SaveState {
         for archetype in all_archetypes {
              //// DEBUG: println!("Archetype id is {:?}", archetype.id());
 
-            let mut has_player = false;    //DEBUG
+            //let mut has_player = false;    //DEBUG
             for archetype_entity in archetype.entities() {
 
                 let current_entity = &archetype_entity.id();
@@ -91,9 +91,11 @@ impl SaveState {
                     has_component_to_save = true
                 }
                 
+                //DEBUG
+                /* 
                 if world.get::<Player>(world.entity(*current_entity).id()).is_some() {
                     has_player = true
-                }                 
+                }  */               
 
                 if has_component_to_save {
                     entities.push(SaveEntity {
