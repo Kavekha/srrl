@@ -20,18 +20,16 @@ pub fn path_animator_update(
     //mut ev_wait: EventWriter<GraphicsWaitEvent>
 ) {
     for (entity, mut animator, mut transform) in query.iter_mut() {
-        println!("Anim: Entity is : {:?}", entity);
+        // DEBUG: println!("Anim: Entity is : {:?}", entity);
         if animator.path.len() == 0 {
             // this entity has completed it's animation
-            println!("PathAnimator: Anim completed.");
+            // DEBUG: println!("PathAnimator: Anim completed.");
             commands.entity(entity).remove::<PathAnimator>();
             continue;
         }
-        println!("Anim update");
+        //DEBUG: println!("Anim update");
         let target = *animator.path.get(0).unwrap();  
-        //let destination = (target - transform.translation).length();
         let destination = target - transform.translation;
-        //destination.y += get_iso_y_modifier_from_elevation(piece.size); // Affichage de l'image pour les sprites > Tile. 
 
         if destination.length() > POSITION_TOLERANCE {
             transform.translation = transform.translation.lerp(
@@ -87,7 +85,6 @@ pub fn spawn_piece_renderer(
     println!("Rendering Pieces begins..."); 
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
-        println!("PIECE RENDERING : {:?} is at position {:?}", entity, position); //DEBUG
         let translation= get_world_position(&position.v);   //TODO : get world position retourne un Vector2Int
         let texture = assets.textures[get_texture_from_kind(piece.kind)].clone();
         let mut order_z = ORDER_NPC;
@@ -132,12 +129,10 @@ pub fn get_texture_from_kind(
 
 pub fn spawn_sprite_render(
     commands: &mut Commands,
-    //asset_server: &AssetServer,
     texture: &Handle<Image>,
     x: f32,
     y: f32,
     z: f32,
-    //img: &str,
 ) -> Entity {
     let sprite = commands.spawn(SpriteBundle {
         texture: texture.clone(), 

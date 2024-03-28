@@ -10,8 +10,6 @@ mod audio_resources;
 pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
-
-//const LOGO_PATH: &str = "title/shadowrun_title_alone.png";  //DEPRECATED
 const IMAGES: [&str; 1] = ["shadowrun_title_alone"];
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
 const TEXTURES: [&str; 2] = ["human", "ghoul"];
@@ -37,12 +35,8 @@ impl Plugin for AssetsPlugin {
 
 fn load_assets(
     mut commands: Commands,
-    //mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     asset_server: Res<AssetServer>
 ) {
-    // logo title : DEPRECATED 0.16 for Images
-    //let logo = asset_server.load(LOGO_PATH);
-
     // Images
     let mut images = HashMap::new();
     for image_name in IMAGES {
@@ -50,18 +44,6 @@ fn load_assets(
         println!("Debug: image handle is : {:?} for {}", handle.clone(), image_name);
         images.insert(image_name, handle);
     }
-
-    // Ascii 
-    //let texture = asset_server.load(ASCII_PATH);  // DEPRECATED.
-    /* 
-    let atlas = TextureAtlasLayout::from_grid(
-        Vec2::splat(9.0),
-        16,
-        16,
-        Some(Vec2::splat(2.0)),
-        None);
-    let atlas_handle = texture_atlases.add(atlas);
-*/
 
     // Font
     let font_handle:Handle<Font> = asset_server.load(FONT_PATH);
@@ -103,8 +85,6 @@ fn load_assets(
 
     commands.insert_resource(
         GraphicsAssets { 
-            //logo: logo,
-            //logo_layout: atlas_handle,
             images: images,
             font: font_handle,
             textures: textures,
@@ -122,4 +102,3 @@ fn load_assets(
 
     println!("INFO: Assets loaded");    
 }
-

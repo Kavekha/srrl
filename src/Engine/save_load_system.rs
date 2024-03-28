@@ -33,7 +33,6 @@ pub struct SaveState {
 pub struct SaveEntity {
     pub entity: Entity,
     pub player: bool, 
-    //skills: Option<Skills>,
     pub stats: Option<Stats>,
     pub npc: bool, 
     pub monster: bool,
@@ -71,7 +70,7 @@ impl SaveState {
         let mut entities = Vec::with_capacity(all_archetypes.len());
 
         for archetype in all_archetypes {
-             //println!("Archetype id is {:?}", archetype.id());
+             //// DEBUG: println!("Archetype id is {:?}", archetype.id());
 
             let mut has_player = false;    //DEBUG
             for archetype_entity in archetype.entities() {
@@ -91,7 +90,6 @@ impl SaveState {
                 {
                     has_component_to_save = true
                 }
-                //DEBUG
                 
                 if world.get::<Player>(world.entity(*current_entity).id()).is_some() {
                     has_player = true
@@ -111,206 +109,10 @@ impl SaveState {
                         melee: world.get::<Melee>(*current_entity).cloned(),
                         occupier: world.get::<Occupier>(*current_entity).is_some(),
                     });
-                    println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
+                    // DEBUG: println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
                 }
-            } 
-            if has_player {
-                println!("SAVING: Il y a un Player");
-            } else {
-                println!("SAVING: Pas de Player sauvegardé!");
-            }       
+            }      
         }
         entities
     }
 }
-
-
-
-
-
-/*  
-// Add a new entry in SaveEntity for saving specific components.
-// Add the new component in Snapshot function for has_component_to_save and SaveEntity::new()
-// Add this new component in the load function too.
-impl Plugin for SaveLoadPlugin{
-    fn build(&self, app: &mut App) {
-        app         
-            //.add_systems(OnEnter(GameState::SaveGame), save_game)
-            .add_systems(Update, save_game.run_if(should_save))
-            .add_systems(OnEnter(GameState::LoadGame), load_game)           
-            ;         
-    }
-}
-
-
-fn load_saved_game(
-    //app_state: &mut ResMut<NextState<AppState>>,
-    game_state: &mut ResMut<NextState<GameState>>,
-){
-    //app_state.set(AppState::Game);
-    game_state.set(GameState::LoadGame);
-    //load_game(app_state, game_state);
-}
-
-
-
-#[derive(Resource)]
-pub struct ShouldSave {
-    pub to_save: bool
-}
-
-
-
-pub fn should_save(
-    must_save: Res<ShouldSave>
-) -> bool {
-    must_save.to_save
-}
-
-
-
-
-// System with World are exclusive and can only have world as argument.
-fn save_game(
-    mut world: &mut World
-    //commands: &mut Commands
-    //mut app_state: ResMut<NextState<AppState>>,
-    //mut game_state: ResMut<NextState<GameState>>,    
-){
-    if let Some(mut must_save) = world.get_resource_mut::<ShouldSave>(){
-        must_save = world.resource_mut::<ShouldSave>();
-        must_save.to_save = false;
-    }
-    println!("Save game!");
-
-    let state = SaveState::create(world);
-    println!("Saving... SaveState created.");
-    let saved_json = serde_json::to_string(&state).unwrap();
-    println!("Saving... json created.");
-
-    //println!("Save json is {:?}", state);
-
-
-    // Formule magique pour enregistrer dans un fichier.
-    IoTaskPool::get()
-        .spawn(async move {
-            // Write the scene RON data to file
-            File::create(SCENE_FILE_PATH)       //format!("assets/{NEW_SCENE_FILE_PATH}"))
-                //.and_then(|mut file| file.write(serialized_scene.as_bytes()))
-                //.and_then(|mut file| file.write(serde_json))
-                .and_then(|mut file| file.write(saved_json.as_bytes()))
-                .expect("Error while writing scene to file");
-        })
-        .detach();
-    println!("Saving... file written.");
-
-    /* 
-
-    // Back to main menu
-    // Simulate a "system" to get options we need to change the app_state & game_state at the end.
-    let mut system_state: SystemState<(
-        //ResMut<NextState<AppState>>,
-        ResMut<NextState<GameState>>,
-        )> = SystemState::new(&mut world);
-
-    //let (app_state, game_state) = system_state.get_mut(&mut world);
-    let game_state = system_state.get_mut(&mut world);
-    println!("Saved end.... Back to MainMenu.");
-    
-    //state_back_main_menu(game_state);
-    //state_back_main_menu(app_state, game_state);
-    */
-}
-
-pub fn state_back_main_menu(
-    //mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
-){
-    game_state.set(GameState::Disabled);
-    //app_state.set(AppState::MainMenu);
-}
-
- 
-pub fn load_game(
-    //mut app_state: ResMut<NextState<AppState>>,
-    //mut game_state: ResMut<NextState<GameState>>,
-    mut world: &mut World
-) {
-    println!("Load game!");
-
-    let data = fs::read_to_string(SCENE_FILE_PATH)
-    .expect("Unable to read file");
-
-    let _json: serde_json::Value = serde_json::from_str(&data)
-        .expect("JSON does not have correct format.");
-
-    let state: SaveState = serde_json::from_str(&data).unwrap();
-
-    world.insert_resource(state.map);
-
-    for entity in state.entities {
-        let mut e = world.spawn_empty();         
-
-        if entity.player {
-            e.insert(Player);
-        }        
-        if entity.npc {
-            e.insert(Npc);
-        }
-        if entity.monster {
-            e.insert(Monster);
-        }
-        if let Some(stats) = entity.stats {
-            e.insert(stats);
-        }
-        if let Some(piece) = entity.piece {
-            e.insert(piece);
-           // e.insert(Actor::default()); // Actor component can't be save, so we have to add it there if NPC or Player.
-        }
-        if let Some(position) = entity.position {
-            println!("Load: Position of {:?} is now : {:?}", entity, position);
-            e.insert(position);
-        }
-        if entity.walk {
-            e.insert(Walk);
-        }
-        if let Some(health) = entity.health {
-            e.insert(health);
-        }
-        if let Some(melee) = entity.melee {
-            e.insert(melee);
-        }
-        if entity.occupier {
-            e.insert(Occupier);
-        }
-    }
-
-    /* 
-    commands.spawn(DynamicSceneBundle {
-        scene: asset_server.load(SCENE_FILE_PATH),
-        ..default()
-    });
-    */
-
-    // Back to main menu
-    // Simulate a "system" to get options we need to change the app_state & game_state at the end.
-    let mut system_state: SystemState<(
-        //ResMut<NextState<AppState>>,
-        ResMut<NextState<GameState>>,
-        )> = SystemState::new(&mut world);
-
-    let game_state = system_state.get_mut(&mut world);
-    //let (app_state, game_state) = system_state.get_mut(&mut world);
-    
-    //state_after_load_game(game_state);
-    //state_after_load_game(app_state, game_state);
-}
-
-pub fn state_after_load_game(
-    //mut app_state: ResMut<NextState<AppState>>,
-    mut game_state: ResMut<NextState<GameState>>,
-){
-    //game_state.set(GameState::Prerun); //TODO : changer quand load utilisable
-    //app_state.set(AppState::Game);
-}
-*/

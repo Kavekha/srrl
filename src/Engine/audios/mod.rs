@@ -118,7 +118,7 @@ pub fn stop_music(
     // `AudioSink` will be inserted by Bevy when the audio starts playing
     query_music: Query<&AudioSink>,  //, With<CurrentMusic>>,
 ) {
-    println!("Stop Music: Start");
+    println!("Stop Music");
     for sink in query_music.iter() {
         sink.stop();
     };
