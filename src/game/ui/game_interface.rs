@@ -150,6 +150,7 @@ pub fn display_log_ui(
     mut commands: Commands,
     game_log: Res<Gamelog>,
     assets: Res<GraphicsAssets>,
+    mut ev_log: EventReader<LogEvent>,
 ){
     // Interface container.
     let container = commands.spawn(NodeBundle {
@@ -164,22 +165,26 @@ pub fn display_log_ui(
         ..default()
     }).id();
 
-    let log_line = commands.spawn(
-        TextBundle::from_section(
-            format!("Ceci est un message de log. \n retour à la ligne fonctionnel?"),
-            TextStyle { 
-                //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
-                font: assets.font.clone(),  
-                font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
-                color: Color::YELLOW,
-            },
-        )
-        .with_style(Style {
-            margin: UiRect::all(Val::Px(8.)),            
-            ..default()
-        }),
-    ).id();
-    commands.entity(container).push_children(&[log_line]);
+    let mut logs = "".to_string();
+    for log in ev_log.read() {
+        logs = format!("{}\n", log.entry);
+    }
+        let log_line = commands.spawn(
+            TextBundle::from_section(
+                logs.clone(),
+                TextStyle { 
+                    //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
+                    font: assets.font.clone(),  
+                    font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                    color: Color::YELLOW,
+                },
+            )
+            .with_style(Style {
+                margin: UiRect::all(Val::Px(8.)),            
+                ..default()
+            }),
+        ).id();
+        commands.entity(container).push_children(&[log_line]);
 }
 
 pub fn draw_interface(
