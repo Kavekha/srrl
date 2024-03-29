@@ -135,9 +135,6 @@ pub fn action_entity_get_hit(
     mut ev_gethit: EventReader<EntityGetHitEvent>,
     mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,
     mut ev_die: EventWriter<EntityDeathEvent>,    
-    mut ev_sound: EventWriter<SoundEvent>,
-    mut ev_log: EventWriter<LogEvent>
-
 ) {
     for event in ev_gethit.read() {
         println!("Entity {:?} has been hit by {:?} for {:?} dmg.", event.entity, event.attacker, event.dmg);
@@ -153,33 +150,38 @@ pub fn action_entity_get_hit(
         // Reducing health.
         defender_health.current = defender_health.current.saturating_sub(dmg);
         println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
-        if defender_health.current == 0 {
-            // SOUND
-            ev_sound.send(SoundEvent{id:"death_scream".to_string()});
-            ev_die.send(EntityDeathEvent { entity: event.entity });
-            ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", event.entity, event.attacker)});   // Log v0
+        if defender_health.current == 0 {            
+            ev_die.send(EntityDeathEvent { entity: event.entity, attacker: event.attacker });
         }
     }
 }
 
+//To treat at end of turn?
 pub fn entity_dies(
     mut commands: Commands,
     mut ev_die: EventReader<EntityDeathEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     player_q: Query<&Player>,
-    mut ev_message: EventWriter<MessageEvent>   //NEW MESSAGE EVENT SYSTEM v0.15.2
+    name_q: Query<&Name>,
+    mut ev_message: EventWriter<MessageEvent>,   //NEW MESSAGE EVENT SYSTEM v0.15.2
+    mut ev_sound: EventWriter<SoundEvent>,
+    mut ev_log: EventWriter<LogEvent>
 ){
     for event in ev_die.read() {
-        //TODO: Remove components, transform texture to Corpse.
-        //commands.entity(event.entity).remove::<Stats>();
-        //commands.entity(event.entity).remove::<Health>();
-        //commands.entity(event.entity).remove::<Piece>();
         println!("Entity {:?} is dead", event.entity);
+        // SOUND
+        ev_sound.send(SoundEvent{id:"death_scream".to_string()});
+
         if let Ok(_is_player) = player_q.get(event.entity) {  
             ev_message.send(MessageEvent(Box::new(GameOverMessage)));
         }
         commands.entity(event.entity).despawn();
         ev_refresh_action.send(RefreshActionCostEvent);
+
+        //Logs.. TODO : Ameliorer.
+        let Ok(entity_name) = name_q.get(event.entity) else { continue; };
+        let Ok(attacker_entity_name) = name_q.get(event.attacker) else { continue;};        
+        ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0
     }
 }
 

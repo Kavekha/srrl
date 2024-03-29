@@ -25,7 +25,7 @@ pub fn draw_log_ui(
 ){
     // Texte a afficher. Devrait etre dans une fonction séparée?
     let mut logs = "".to_string();
-    for log in game_log.entries.iter().rev().take(4) {
+    for log in game_log.entries.iter().rev().take(4).rev() {
         logs = format!("{}{}\n", logs, log.clone());
         println!("LOG:Added to Log: {}", log.clone());
     }
