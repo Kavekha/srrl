@@ -1,8 +1,13 @@
 use bevy::prelude::*;
 
 
+// Toute UI in Game utilise ce tag.
 #[derive(Component)]
-pub struct InterfaceGame;
+pub struct UiGameInterface;
+
+#[derive(Component)]
+pub struct UiCharacterInfos;
+
 
 #[derive(Component)]
 pub struct UiEnemyHp;
@@ -10,3 +15,6 @@ pub struct UiEnemyHp;
 
 #[derive(Component)]
 pub struct UiActionPointsOnCursor;
+
+#[derive(Component)]
+pub struct UiLog;

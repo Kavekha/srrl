@@ -52,8 +52,10 @@ pub fn action_entity_try_attack(
     mut ev_try_attack: EventReader<EntityHitTryEvent>,    
     mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut action_q: Query<&mut ActionPoints>,
+    name_q: Query<&Name>,
     position_q: Query<&BoardPosition>,
     player_q: Query<&Player>,
+    //available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
     available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
     stats_q: Query<&Stats>,
     mut ev_interface: EventWriter<ReloadUiEvent>,    
@@ -64,7 +66,7 @@ pub fn action_entity_try_attack(
 ){
     for event in ev_try_attack.read() {
         // Verification. Devrait être ailleurs.
-        println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
+        println!("Je suis {:?} et j'attaque à la position {:?}", event.entity, event.target);
 
         // TODO : maybe refresh in consume? Maybe consume in some Event?
         let Ok(mut action_points) = action_q.get_mut(event.entity) else { continue };
@@ -75,7 +77,7 @@ pub fn action_entity_try_attack(
         }
 
         // Targets de la case:
-        let target_entities = available_targets.iter().filter(|(_, position,_)| position.v == event.target).collect::<Vec<_>>(); 
+        let target_entities = available_targets.iter().filter(|(_, position, _)| position.v == event.target).collect::<Vec<_>>(); 
         if target_entities.len() == 0 { 
             // DEBUG: println!("Pas de cible ici.");
             continue }; 
@@ -88,24 +90,25 @@ pub fn action_entity_try_attack(
             // Can't hit yourself.
             if event.entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
-                continue; } 
+                continue; }; 
 
             // L'attaque est tenté contre toutes les personnes de la cellule.
             let dice_roll = roll_dices_against(attacker_stats.attack, target_stats.dodge);   
             let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
+            let mut success = false;
             if dice_roll.success > 0 {
+                success = true;
+            }
+            if success {
                 // DEBUG: println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
                 ev_gethit.send(EntityGetHitEvent { entity: * target_entity, attacker: event.entity, dmg: dmg });
-                // SOUND
+
                 ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
-                ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", event.entity, target_entity, dmg)});        // Log v0
             } else {
                 // DEBUG: println!("Miss target.");
-                // SOUND
                 ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
-                ev_log.send(LogEvent {entry: format!("{:?} try to hit {:?} but misses.", event.entity, target_entity)});        // Log v0
-            }
 
+            }
             // Animation.
             if let Ok(entity_position) = position_q.get(event.entity) {
                 let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
@@ -113,11 +116,19 @@ pub fn action_entity_try_attack(
                 path_animation.push_back(entity_position.v);
                 ev_animate.send(AnimateEvent { entity: event.entity, path: path_animation });
             }
-
+            //logs 
+            let Ok(entity_name) = name_q.get(event.entity) else { continue; };
+            let Ok(target_entity_name) = name_q.get(*target_entity) else { continue;};
+            if success {
+                ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", entity_name, target_entity_name, dmg)});        // Log v0
+            } else {
+                ev_log.send(LogEvent {entry: format!("{:?} try to hit {:?} but misses.", entity_name, target_entity_name)});        // Log v0
+            }
         }
         ev_refresh_action.send(RefreshActionCostEvent);
     }
 }
+
 
 
 pub fn action_entity_get_hit(

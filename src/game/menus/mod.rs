@@ -19,7 +19,7 @@
 
 use bevy::prelude::*;
 
-use crate::{game::despawn_screen, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION}, menu_builders::{spawn_menu, Menu}};
+use crate::{game::despawn_component, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION}, menu_builders::{spawn_menu, Menu}};
 use crate::engine::asset_loaders::GraphicsAssets;
 
 use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}};
@@ -99,7 +99,7 @@ pub fn clean_menu(
     despawn_onscreenmenu: Query<Entity, With<OnScreenMenu>>,
 ) {
     println!("Cleaning menu");
-    despawn_screen(despawn_onscreenmenu, &mut commands);
+    despawn_component(despawn_onscreenmenu, &mut commands);
 }
 
 /// Camera centré sur 0.0,0.0 pour ne pas avoir contenu des menus off screen.

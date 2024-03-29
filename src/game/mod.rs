@@ -51,16 +51,7 @@ impl Plugin for GamePlugin {
 }
  
 
-
 pub fn despawn_component<T: Component>(
-    to_despawn: Query<Entity, With<T>>, 
-    mut commands: Commands) {
-    for entity in &to_despawn {
-        commands.entity(entity).despawn_recursive();
-    }
-}
-
-pub fn despawn_screen<T: Component>(
     to_despawn: Query<Entity, With<T>>, 
     commands: &mut Commands) {
     for entity in &to_despawn {
@@ -79,12 +70,12 @@ pub fn clean_game_screen(
     
 ) {
     println!("Cleaning Game Screen now.");
-    despawn_screen(despawn_npc, &mut commands);
-    despawn_screen(despawn_gamemap, &mut commands);
-    despawn_screen(despawn_gamemap_render, &mut commands);    
-    despawn_screen(despawn_player, &mut commands);
-    despawn_screen(despawn_gamecursor, &mut commands);
-    despawn_screen(despawn_exit, &mut commands);
+    despawn_component(despawn_npc, &mut commands);
+    despawn_component(despawn_gamemap, &mut commands);
+    despawn_component(despawn_gamemap_render, &mut commands);    
+    despawn_component(despawn_player, &mut commands);
+    despawn_component(despawn_gamecursor, &mut commands);
+    despawn_component(despawn_exit, &mut commands);
 }
 
 
