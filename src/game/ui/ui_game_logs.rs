@@ -23,12 +23,15 @@ pub fn draw_log_ui(
     assets: Res<GraphicsAssets>,
     interface_query: Query<Entity, With<UiLog>>,
 ){
-    // Texte a afficher. Devrait etre dans une fonction séparée?
+    // Texte a afficher. Devrait etre dans une fonction séparée? 
+    /*/
     let mut logs = "".to_string();
     for log in game_log.entries.iter().rev().take(4).rev() {
         logs = format!("{}{}\n", logs, log.clone());
         println!("LOG:Added to Log: {}", log.clone());
-    }
+    }*/
+    let logs = game_log.get_last_entries_as_string(4);
+
     clear_ui_log(&mut commands, interface_query);
     // Interface container.
     let container = commands.spawn(NodeBundle {

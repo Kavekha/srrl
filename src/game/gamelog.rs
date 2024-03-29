@@ -21,6 +21,17 @@ impl Plugin for GameLogsPlugin {
 pub struct Gamelog {
     pub entries : Vec<String>
 }
+impl Gamelog {
+    pub fn get_last_entries_as_string(&self, number:usize
+    ) -> String {
+        let mut logs = "".to_string();
+        for log in self.entries.iter().rev().take(number).rev() {
+            logs = format!("{}{}\n", logs, log.clone());
+            println!("LOG:Added to Log: {}", log.clone());
+        }
+        logs
+    }
+}
 
 #[derive(Event)]
 pub struct LogEvent{pub entry: String}
