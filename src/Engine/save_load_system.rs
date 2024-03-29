@@ -101,11 +101,17 @@ impl SaveState {
 
                 if has_component_to_save {
                     // Add Name. 0.16.1
-                    let mut name:Option<String> = None;
+                    let mut named:Option<String> = None;
+                    let has_name = world.get::<Name>(*current_entity);
+                    match has_name {
+                        Some(_something) => named = Some(has_name.unwrap().as_str().to_string()),
+                        None => {}
+                    };
+                    /* 
                     if let has_name = world.get::<Name>(*current_entity) {                        
                         name = Some(has_name.unwrap().as_str().to_string());
                         println!("SAVE: J'ai un nom {:?}", name);
-                    }
+                    };*/
 
                     entities.push(SaveEntity {
                         entity: *current_entity,
@@ -119,7 +125,7 @@ impl SaveState {
                         health: world.get::<Health>(*current_entity).cloned(),
                         melee: world.get::<Melee>(*current_entity).cloned(),
                         occupier: world.get::<Occupier>(*current_entity).is_some(),
-                        name: name,  // Add Name. 0.16.1
+                        name: named,  // Add Name. 0.16.1
                     });
                     // DEBUG: println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
                 }
