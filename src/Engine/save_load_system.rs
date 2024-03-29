@@ -43,6 +43,7 @@ pub struct SaveEntity {
     pub walk: bool,
     pub melee: Option<Melee>,
     pub occupier: bool,
+    pub name: Option<String>
 }
 
 impl SaveState {
@@ -86,6 +87,7 @@ impl SaveState {
                 || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Health>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Melee>(world.entity(*current_entity).id()).is_some()
+                || world.get::<Name>(world.entity(*current_entity).id()).is_some()  // Add Name. 0.16.1
                 //|| world.get::<Occupier>(world.entity(*current_entity).id()).is_some()    //TODO: As for Boardposition, Tile like Wall use Occupier. This has to change!
                 {
                     has_component_to_save = true
@@ -98,6 +100,13 @@ impl SaveState {
                 }  */               
 
                 if has_component_to_save {
+                    // Add Name. 0.16.1
+                    let mut name:Option<String> = None;
+                    if let has_name = world.get::<Name>(*current_entity) {                        
+                        name = Some(has_name.unwrap().as_str().to_string());
+                        println!("SAVE: J'ai un nom {:?}", name);
+                    }
+
                     entities.push(SaveEntity {
                         entity: *current_entity,
                         player: world.get::<Player>(*current_entity).is_some(),
@@ -110,6 +119,7 @@ impl SaveState {
                         health: world.get::<Health>(*current_entity).cloned(),
                         melee: world.get::<Melee>(*current_entity).cloned(),
                         occupier: world.get::<Occupier>(*current_entity).is_some(),
+                        name: name,  // Add Name. 0.16.1
                     });
                     // DEBUG: println!("Position for entity {:?} is : {:?}", *current_entity, world.get::<BoardPosition>(*current_entity));
                 }

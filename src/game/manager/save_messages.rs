@@ -1,4 +1,4 @@
-use bevy::{ecs::world::World, tasks::IoTaskPool};
+use bevy::{core::Name, ecs::world::World, tasks::IoTaskPool};
 use std::{fs::{self, File}, io::Write};
 
 use crate::{engine::save_load_system::SaveState, game::{pieces::components::{Monster, Npc, Occupier, Walk}, player::Player}, globals::SCENE_FILE_PATH};
@@ -83,6 +83,10 @@ impl Message for LoadGameMessage {
             }
             if entity.occupier {
                 e.insert(Occupier);
+            }
+            // Name 0.16.1
+            if let Some(name) = entity.name {
+                e.insert(Name::new(name));
             }
         }
         println!("Loading complete.");
