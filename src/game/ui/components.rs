@@ -6,6 +6,10 @@ use bevy::prelude::*;
 pub struct UiGameInterface;
 
 #[derive(Component)]
+pub struct UiCharacterInfos;
+
+
+#[derive(Component)]
 pub struct UiEnemyHp;
 
 

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use super::ui::{game_interface::display_log_ui, ReloadUiEvent};
+use super::ui::{ui_game_logs::draw_log_ui, ReloadUiEvent};
 
 pub struct GameLogsPlugin;
 
@@ -10,10 +10,9 @@ impl Plugin for GameLogsPlugin {
             .insert_resource(Gamelog { entries: Vec::new()})
 
             .add_event::<LogEvent>()
-            
+
             .add_systems(Update, log_received.run_if(on_event::<LogEvent>()))
-            //.add_systems(Update, display_log_ui.run_if(on_event::<ReloadUiEvent>()))
-            .add_systems(Update, display_log_ui.run_if(on_event::<ReloadUiEvent>()))
+            .add_systems(Update, draw_log_ui.run_if(on_event::<ReloadUiEvent>()))
             ;
     }
 }
@@ -34,7 +33,6 @@ fn log_received(
     let mut event_nb = 0;
     for event in ev_log.read() {
         gamelog.entries.push(event.entry.to_string());
-        println!("LOG: {}", event.entry);
         event_nb += 1;
     }    
     if event_nb > 0 {

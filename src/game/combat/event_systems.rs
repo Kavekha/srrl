@@ -64,7 +64,7 @@ pub fn action_entity_try_attack(
 ){
     for event in ev_try_attack.read() {
         // Verification. Devrait être ailleurs.
-        println!("Je suis {:?} et j'attaque {:?}", event.entity, event.target);
+        println!("Je suis {:?} et j'attaque à la position {:?}", event.entity, event.target);
 
         // TODO : maybe refresh in consume? Maybe consume in some Event?
         let Ok(mut action_points) = action_q.get_mut(event.entity) else { continue };
