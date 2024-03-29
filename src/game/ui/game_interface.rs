@@ -1,48 +1,20 @@
 use bevy::prelude::*;
 
 use crate::{
-    engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender}, game::{combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}, gamelog::{Gamelog, LogEvent}, pieces::components::{Health, Monster}, player::Player}, globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, STANDARD_TILE_SIZE}
+    engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender}, game::{combat::{components::ActionPoints, event_systems::ActionInfos, events::RefreshActionCostEvent}, despawn_component, gamelog::Gamelog, pieces::components::{Health, Monster}, player::Player, ui::clear_ui_game_interface}, globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, STANDARD_TILE_SIZE}
 };
 
-use super::components::{InterfaceGame, UiEnemyHp, UiActionPointsOnCursor};
+use super::{clear_action_points_cursor_ui, clear_enemy_hp_ui, components::{ UiActionPointsOnCursor, UiEnemyHp, UiGameInterface, UiLog}};
 
 const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
 const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
-
 const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
 
-pub fn clear_interface(
-    commands: &mut Commands,
-    interface_query: Query<Entity, With<InterfaceGame>>,
-) {
-    for entity in interface_query.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
-}
-
-pub fn clear_enemy_hp_ui(
-    commands: &mut Commands,    
-    interface_query: Query<Entity, With<UiEnemyHp>>,
-) {
-    for entity in interface_query.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
-}
-
-pub fn clear_action_points_cursor_ui(
-    commands: &mut Commands,    
-    interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
-) {
-    for entity in interface_query.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
-}
 
 
 pub fn display_action_points_on_cursor(
     mut commands: Commands,
-    //asset_server: Res<AssetServer>,
     assets: Res<GraphicsAssets>,
     camera_q: Query<(&Camera, &GlobalTransform)>, 
     query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
@@ -139,7 +111,7 @@ pub fn display_action_points_on_cursor(
         ).id();
 
 
-        commands.entity(ap_container).insert(UiActionPointsOnCursor);
+        commands.entity(ap_container).insert(UiActionPointsOnCursor).insert(UiGameInterface);   // TODO : la presence du UiGameInterface efface le Cursor et ne rafraichi le nombre qu'au deplacement souris. 
         commands.entity(ap_container).add_child(cursor_action_display);
     }
 
@@ -150,8 +122,13 @@ pub fn display_log_ui(
     mut commands: Commands,
     game_log: Res<Gamelog>,
     assets: Res<GraphicsAssets>,
-    mut ev_log: EventReader<LogEvent>,
 ){
+    // Texte a afficher. Devrait etre dans une fonction séparée?
+    let mut logs = "".to_string();
+    for log in game_log.entries.iter() {
+        logs = format!("{}\n", log.clone());
+    }
+
     // Interface container.
     let container = commands.spawn(NodeBundle {
         style: Style {
@@ -163,17 +140,13 @@ pub fn display_log_ui(
             bottom: Val::Px(0.),
             ..default()},
         ..default()
-    }).id();
+    }).insert(UiGameInterface).insert(UiLog).id();
 
-    let mut logs = "".to_string();
-    for log in ev_log.read() {
-        logs = format!("{}\n", log.entry);
-    }
+
         let log_line = commands.spawn(
             TextBundle::from_section(
                 logs.clone(),
                 TextStyle { 
-                    //font: asset_server.load("fonts/PressStart2P-vaV7.ttf"),
                     font: assets.font.clone(),  
                     font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
                     color: Color::YELLOW,
@@ -189,14 +162,13 @@ pub fn display_log_ui(
 
 pub fn draw_interface(
     mut commands: Commands,
-    //asset_server: Res<AssetServer>,
     assets: Res<GraphicsAssets>,
-    interface_query: Query<Entity, With<InterfaceGame>>,
+    interface_query: Query<Entity, With<UiGameInterface>>,
     player_info_query: Query<(Entity, Option<&Name>, &Health), With<Player>>,       //player_info_query: Query<(Entity, &Name, &Health), With<Player>>  // Retrait du Name car au load Save on le perds.
     player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
 ) {
     println!("DEBUG: draw interface");
-    clear_interface(&mut commands, interface_query);
+    clear_ui_game_interface(interface_query, &mut commands);
 
     let mut player_name = "Unkwnown Runner";
     let mut player_health_max = INTERFACE_HP_CHUNK_MAX;
@@ -233,7 +205,7 @@ pub fn draw_interface(
             ..default()
         },
         ..default()
-    }).insert(InterfaceGame).id();  
+    }).insert(UiGameInterface).id();  
 
     let player_action_display = commands.spawn(
         TextBundle::from_section(
@@ -269,7 +241,7 @@ pub fn draw_interface(
         // not button/list item text, this is necessary
         // for accessibility to treat the text accordingly.
         Label,
-        //InterfaceGame,
+        //UiGameInterface,
     )).id();
 
     let chunk_container = commands.spawn(NodeBundle {
@@ -314,7 +286,6 @@ pub fn draw_interface(
                 ..default()
             });  
         }).id();
-        //commands.entity(chunk).insert(InterfaceGame);
         chunk_list.push(chunk);
     }
     
@@ -379,7 +350,7 @@ pub fn draw_enemy_health(
             //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
             ..default()
         }).id();  
-        commands.entity(chunk_container).insert(UiEnemyHp);
+        commands.entity(chunk_container).insert(UiEnemyHp).insert(UiGameInterface);
 
         let mut chunk_list:Vec<Entity> = Vec::new();
         for i in 1..=health.max {
@@ -415,7 +386,6 @@ pub fn draw_enemy_health(
                     ..default()
                 });  
             }).id();
-            //commands.entity(chunk).insert(InterfaceGame);
             chunk_list.push(chunk);
         }
         
@@ -423,8 +393,5 @@ pub fn draw_enemy_health(
         for chunk in chunk_list {
             commands.entity(chunk_container).add_child(chunk);
         }
-
-
     }
-
 }

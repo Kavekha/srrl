@@ -11,7 +11,7 @@ impl Plugin for GameLogsPlugin {
 
             .add_event::<LogEvent>()
             
-            //.add_systems(Update, log_received.run_if(on_event::<LogEvent>()))
+            .add_systems(Update, log_received.run_if(on_event::<LogEvent>()))
             //.add_systems(Update, display_log_ui.run_if(on_event::<ReloadUiEvent>()))
             .add_systems(Update, display_log_ui.run_if(on_event::<ReloadUiEvent>()))
             ;
@@ -34,7 +34,7 @@ fn log_received(
     let mut event_nb = 0;
     for event in ev_log.read() {
         gamelog.entries.push(event.entry.to_string());
-        println!("{}", event.entry);
+        println!("LOG: {}", event.entry);
         event_nb += 1;
     }    
     if event_nb > 0 {
