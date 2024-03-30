@@ -5,5 +5,3 @@
     "rust-analyzer.showUnlinkedFileNotification": true,
     "cargo.automaticCheck": true
 }
-
-

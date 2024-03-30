@@ -58,17 +58,16 @@ pub mod ia;
 
 
 use crate::game::{
-        states::GameState, 
-        combat::components::{ActionPoints, CombatInfos}, 
+        combat::components::{ActionPoints, CombatInfos}, manager::game_messages::GameOverMessage, states::GameState 
     };
 
 use self::{
-    components::CurrentEntityTurnQueue, 
+    components::{CurrentEntityTurnQueue, IsDead}, 
     event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_miss_attack, action_entity_try_attack, create_action_infos, entity_dies, ActionInfos},
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitMissEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn},
     ia::IaPlugin
 };
-use super::{movements::action_entity_try_move, pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
+use super::{manager::MessageEvent, movements::action_entity_try_move, pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
 
 
 pub struct CombatPlugin;
@@ -107,7 +106,8 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start).in_set(CombatSet::Logic))
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
-          
+            .add_systems(Update, combat_clean_death.after(combat_turn_end).in_set(CombatSet::Logic))
+
             // Gestion des actions demandées. Resolution.   // Vraiment dans le combat? Certaines pourraient se faire hors baston.
             .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 
@@ -127,6 +127,20 @@ impl Plugin for CombatPlugin {
     }
 }
 
+
+pub fn combat_clean_death(
+    mut commands: Commands,
+    player_q: Query<&Player>,
+    mut ev_message: EventWriter<MessageEvent>,   //NEW MESSAGE EVENT SYSTEM v0.15.2
+    dead_q: Query<(Entity, &IsDead)>
+){
+    for (entity, _death) in dead_q.iter() {
+        if let Ok(_is_player) = player_q.get(entity) {  
+            ev_message.send(MessageEvent(Box::new(GameOverMessage)));
+        }
+        commands.entity(entity).despawn();
+    }
+}
 
 
 /// Donne AP aux participants, créé le CombatInfos ressource, passe en StartTurn.

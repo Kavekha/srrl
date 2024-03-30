@@ -36,7 +36,6 @@ pub fn create_map(world: &mut World) -> MapInfos {
         return map_infos
 }
 
-
 // Créer les entités necessaires à son affichage, à partir d'une map déja générée.
 pub fn spawning_map(world:&mut World, map:&mut Map){
     println!("Let's spawn the map.");

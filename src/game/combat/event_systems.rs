@@ -3,11 +3,12 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::engine::animations::events::AnimateEvent;
+use crate::game::combat::components::IsDead;
 use crate::{
     engine::audios::SoundEvent,
     game::{
         combat::{rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE}, 
-        gamelog::LogEvent, manager::{game_messages::GameOverMessage, MessageEvent}, 
+        gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
         tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
         map_builders::map::Map, 
@@ -53,7 +54,6 @@ pub fn action_entity_try_attack(
     mut ev_try_attack: EventReader<EntityHitTryEvent>,    
     mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut action_q: Query<&mut ActionPoints>,
-    name_q: Query<&Name>,
     position_q: Query<&BoardPosition>,
     player_q: Query<&Player>,
     //available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
@@ -63,7 +63,6 @@ pub fn action_entity_try_attack(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
     mut ev_sound: EventWriter<SoundEvent>,
-    mut ev_log: EventWriter<LogEvent>,
     mut ev_try_miss: EventWriter<EntityHitMissEvent>
 ){
     for event in ev_try_attack.read() {
@@ -114,10 +113,6 @@ pub fn action_entity_try_attack(
                 ev_try_miss.send(EntityHitMissEvent{entity: event.entity, defender: *target_entity});
                 continue;
             }
-            //logs 
-            let Ok(entity_name) = name_q.get(event.entity) else { continue; };
-            let Ok(target_entity_name) = name_q.get(*target_entity) else { continue;};
-            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", entity_name, target_entity_name, dmg)});        // Log v0
         }
     }
 }
@@ -127,7 +122,6 @@ pub fn action_entity_miss_attack(
     name_q: Query<&Name>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_log: EventWriter<LogEvent>,
-
 ){
     for event in ev_try_miss.read() {
         ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
@@ -143,6 +137,8 @@ pub fn action_entity_get_hit(
     mut ev_gethit: EventReader<EntityGetHitEvent>,
     mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,
     mut ev_die: EventWriter<EntityDeathEvent>,    
+    mut ev_log: EventWriter<LogEvent>,
+    name_q: Query<&Name>,
 ) {
     for event in ev_gethit.read() {
         println!("Entity {:?} has been hit by {:?} for {:?} dmg.", event.entity, event.attacker, event.dmg);
@@ -161,6 +157,18 @@ pub fn action_entity_get_hit(
         if defender_health.current == 0 {            
             ev_die.send(EntityDeathEvent { entity: event.entity, attacker: event.attacker });
         }
+
+        //logs 
+        let Ok(entity_name) = name_q.get(event.entity) else { continue; };
+        let Ok(attacker_entity_name) = name_q.get(event.attacker) else { continue;};
+        if dice_roll.success == 0 {     // No dmg reduction.
+            ev_log.send(LogEvent {entry: format!("{} takes a full beatdown by {}, for {:?} damages!", entity_name, attacker_entity_name, dmg)});        // Log v0
+        }
+        else if dmg > 0 {
+            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", attacker_entity_name, entity_name, dmg)});        // Log v0
+        } else {
+            ev_log.send(LogEvent {entry: format!("{} takes a blow without effect from {}.",entity_name, attacker_entity_name)});        // Log v0
+        }
     }
 }
 
@@ -169,21 +177,17 @@ pub fn entity_dies(
     mut commands: Commands,
     mut ev_die: EventReader<EntityDeathEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    player_q: Query<&Player>,
     name_q: Query<&Name>,
-    mut ev_message: EventWriter<MessageEvent>,   //NEW MESSAGE EVENT SYSTEM v0.15.2
+
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_log: EventWriter<LogEvent>
 ){
     for event in ev_die.read() {
         println!("Entity {:?} is dead", event.entity);
+        commands.entity(event.entity).insert(IsDead);
         // SOUND
         ev_sound.send(SoundEvent{id:"death_scream".to_string()});
 
-        if let Ok(_is_player) = player_q.get(event.entity) {  
-            ev_message.send(MessageEvent(Box::new(GameOverMessage)));
-        }
-        commands.entity(event.entity).despawn();
         ev_refresh_action.send(RefreshActionCostEvent);
 
         //Logs.. TODO : Ameliorer.
