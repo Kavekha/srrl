@@ -51,6 +51,12 @@ pub struct EntityHitTryEvent {
 }
 
 #[derive(Event)]
+pub struct EntityHitMissEvent {
+    pub entity: Entity,
+    pub defender: Entity
+}
+
+#[derive(Event)]
 pub struct EntityGetHitEvent {
     pub entity: Entity,
     pub attacker: Entity,
