@@ -10,3 +10,13 @@ pub struct AnimateEvent {
     pub entity: Entity,
     pub path: VecDeque<Vector2Int>
 }
+ 
+#[derive(Event)]
+pub struct GraphicsWaitEvent;
+
+
+#[derive(Component)]
+pub struct PathAnimator {
+    pub path:VecDeque<Vec3>,
+    pub wait_anim: bool
+}

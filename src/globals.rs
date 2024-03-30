@@ -74,7 +74,7 @@ pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";
 
 // Movement
 pub const POSITION_TOLERANCE: f32 = 0.01;
-pub const BASE_SPEED: f32 = 6.0;
+pub const BASE_SPEED: f32 = 5.0;
 pub const SPEED_MULTIPLIER: f32 = 5.0;      // FAST debug / balance on speed movement.
 pub const CURSOR_SPEED: f32 = 20.0;
 

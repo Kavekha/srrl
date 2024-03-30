@@ -8,16 +8,17 @@ use crate::{
     engine::{
         render::{
             get_world_position,
-            components::{PathAnimator, GameCursorRender},
+            components::GameCursorRender,
         },
-        animations::events::AnimateEvent,
+        animations::events::{AnimateEvent,GraphicsWaitEvent, PathAnimator}
     },
     game::{
         combat::CombatSet,
         player::Cursor
     },
-    globals::{POSITION_TOLERANCE, BASE_SPEED, SPEED_MULTIPLIER, CURSOR_SPEED, CURSOR, ORDER_CURSOR},
+    globals::{POSITION_TOLERANCE, BASE_SPEED, SPEED_MULTIPLIER, CURSOR_SPEED, ORDER_CURSOR},
 };
+
 
 pub struct AnimationsPlugin;
 
@@ -25,6 +26,8 @@ impl Plugin for AnimationsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_event::<AnimateEvent>() 
+            .add_event::<GraphicsWaitEvent>() 
+
             .add_systems(Update, walk_animation)
             .add_systems(Update, path_animator_update.in_set(CombatSet::Animation))   // 3 fois le system => 3 fois plus vite. lol.
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))  
@@ -60,7 +63,7 @@ pub fn path_animator_update(
     mut commands: Commands,
     mut query: Query<(Entity, &mut PathAnimator, &mut Transform)>,
     time: Res<Time>,
-    //mut ev_wait: EventWriter<GraphicsWaitEvent>
+    mut ev_wait: EventWriter<GraphicsWaitEvent>
 ) {
     for (entity, mut animator, mut transform) in query.iter_mut() {
         // DEBUG: println!("Anim: Entity is : {:?}", entity);
@@ -84,12 +87,12 @@ pub fn path_animator_update(
             transform.translation = target;
             animator.path.pop_front();
         }
-        /* 
+        
         if animator.wait_anim {
             ev_wait.send(GraphicsWaitEvent);
             //println!("wait_anim: True");
         }
-        */
+        
     }
 }
 

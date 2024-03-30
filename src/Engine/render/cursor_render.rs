@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{
-    globals::{ POSITION_TOLERANCE, CURSOR_SPEED, SPEED_MULTIPLIER, CURSOR, ORDER_CURSOR},
-    game::player::Cursor
-};
+use crate::globals::{ CURSOR, ORDER_CURSOR};
 
-use super::{components::GameCursorRender, get_world_position};
+use super::components::GameCursorRender;
 
 
 pub fn spawn_game_cursor(

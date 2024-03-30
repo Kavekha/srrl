@@ -16,7 +16,7 @@ use self::{
 
 use crate::{
     globals::STANDARD_TILE_SIZE, 
-    game::states::GameState, vectors::Vector2Int, game::combat::CombatSet,
+    game::states::GameState, vectors::Vector2Int, 
 };
 
 pub struct GraphicsPlugin;
@@ -61,10 +61,7 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 
-/* 
-#[derive(Event)]
-pub struct GraphicsWaitEvent;
-*/
+
 
 // TODO : Changer de place?
 

@@ -2,16 +2,13 @@ use bevy::prelude::*;
 
 use crate::{
     globals::{
-        SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
+        SPRITE_GHOUL, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, MAP_EXIT},
     game::{
         player::Player, pieces::{components::Piece, spawners::Kind}, 
         tileboard::components::{BoardPosition, ExitMapTile},
     }, engine::asset_loaders::GraphicsAssets, engine::render::get_world_position
 };
-
-use super::components::PathAnimator;
-
 
 
 
