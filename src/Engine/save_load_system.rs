@@ -15,6 +15,7 @@ use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
 use crate::map_builders::map::Map;
+use crate::game::gamelog::Gamelog;
 
 
 pub fn has_save_file() -> bool {
@@ -25,6 +26,7 @@ pub fn has_save_file() -> bool {
 pub struct SaveState {
     pub map: Map,
     pub entities: Vec<SaveEntity>,
+    pub logs: Gamelog
 }
 
 
@@ -50,10 +52,12 @@ impl SaveState {
     pub fn create(world: &mut World) -> Self {
         println!("Saving... savestate start.");
         let map = world.get_resource::<Map>().unwrap().clone();
+        let logs = world.get_resource::<Gamelog>().unwrap().clone();
         println!("Saving... map unwraped.");
         SaveState {
-            map,
+            map: map,
             entities: SaveState::snapshot_entities(world),
+            logs: logs
         }
     }
 

@@ -64,8 +64,8 @@ use crate::game::{
 
 use self::{
     components::CurrentEntityTurnQueue, 
-    event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_try_attack, create_action_infos, entity_dies, ActionInfos},
-    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn},
+    event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_miss_attack, action_entity_try_attack, create_action_infos, entity_dies, ActionInfos},
+    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitMissEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn},
     ia::IaPlugin
 };
 use super::{movements::action_entity_try_move, pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
@@ -90,6 +90,7 @@ impl Plugin for CombatPlugin {
             
 
             .add_event::<EntityHitTryEvent>()          // Entity tente d'attaquer.
+            .add_event::<EntityHitMissEvent>()         // Entity échoue à toucher sa cible.
             .add_event::<EntityGetHitEvent>()          // Entity subit des degats d'une source.
             .add_event::<EntityDeathEvent>()           // L'entité vient de mourir: on transforme son corps et retire les composants.
 
@@ -112,6 +113,7 @@ impl Plugin for CombatPlugin {
 
             .add_systems(Update, action_entity_try_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_move))
             .add_systems(Update, action_entity_get_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_attack))
+            .add_systems(Update, action_entity_miss_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_attack))
             .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_get_hit))
  
             // Check de la situation PA-wise. Mise à jour.

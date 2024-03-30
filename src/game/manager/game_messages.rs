@@ -1,12 +1,9 @@
 use bevy::ecs::world::World;
 
 use crate::{
-    game::{clean_game_screen, combat::combat_start, manager::{
+    game::{clean_game_screen, combat::combat_start, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, 
-    pieces::spawners::{create_exit_map, create_player, spawn_npcs}, 
-    ui::ReloadUiEvent,
-    tileboard::system_map::{create_map, spawning_map}}, map_builders::map::Map};
+    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}, ui::ReloadUiEvent}, map_builders::map::Map};
 
 use super::Message;
  
@@ -26,9 +23,20 @@ impl Message for StartGameMessage {
         let music_name = "gamemap".to_string();
         world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
+        world.send_event(MessageEvent(Box::new(GamelogClearMessage)));  
+
+
     }
 }
 
+pub struct GamelogClearMessage;
+impl Message for GamelogClearMessage {
+    fn execute(&self, world: &mut World) {
+        if let Some(mut game_log) = world.get_resource_mut::<Gamelog>() {
+            game_log.clear();
+        }
+    }
+}
 
 // Create the Renderable & Interactive Map for Bevy.
 pub struct SpawnMapMessage;
