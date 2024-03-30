@@ -20,6 +20,8 @@ crate   | app       | Contenu
 */
 
 
+use bevy::a11y::accesskit::{NodeBuilder, Role};
+use bevy::a11y::AccessibilityNode;
 use bevy::{audio::Volume, prelude::*};
 
 use crate::game::menus::components::{MenuButtonAction, OnScreenMenu};
@@ -31,6 +33,13 @@ use crate::menu_builders::MenuButtonAction::SettingsAudioChange;
 
 
 //MenuBuilder v2
+
+#[derive(Component, Default)]
+pub struct ScrollingList {
+    pub position: f32,
+}
+
+
 #[derive(Clone)]
 pub struct Action {pub action: MenuButtonAction, pub text:String}
 #[derive(Clone)]
@@ -43,6 +52,8 @@ pub struct Image {pub name: String}
 pub struct Footer {pub text: String}
 #[derive(Clone)]
 pub struct Slider {pub button_1_value:f32, pub button_2_value:f32, pub original_value:Volume, pub text:String, pub audio_type:AudioType}
+#[derive(Clone)]
+pub struct ScrollingText {pub text: String}
 
 
 #[derive(Clone)]
@@ -52,7 +63,8 @@ pub enum MenuItem{
     Description(Description),
     Image(Image),
     Footer(Footer),
-    Slider(Slider)
+    Slider(Slider),
+    ScrollingText(ScrollingText),
 }
 
 impl MenuItem{
@@ -79,6 +91,10 @@ impl MenuItem{
     pub fn slider(button_1_value:f32, button_2_value:f32, original_value:Volume, text:&str, audio_type:AudioType    // TODO : Supporter autre chose pour le type. Transmettre la resource?
     ) -> MenuItem {
         MenuItem::Slider(Slider{button_1_value: button_1_value, button_2_value:button_2_value, original_value:original_value, text:text.to_string(), audio_type:audio_type})
+    }
+    pub fn scrolling_text(text: &str
+    ) -> MenuItem {
+        MenuItem::ScrollingText(ScrollingText{text: text.to_string()})
     }
 }
 
@@ -111,6 +127,7 @@ pub fn spawn_menu(
     let mut actions:Vec<Action> = Vec::new();
     let mut footers:Vec<Footer> = Vec::new();
     let mut sliders:Vec<Slider> = Vec::new();
+    let mut scrolling_texts:Vec<ScrollingText> = Vec::new();
 
     for item in menu.entries.iter() {
         match item {
@@ -120,6 +137,7 @@ pub fn spawn_menu(
             MenuItem::Image(image) => images.push(image.clone()),
             MenuItem::Footer(footer) => footers.push(footer.clone()),
             MenuItem::Slider(slider) => sliders.push(slider.clone()),
+            MenuItem::ScrollingText(scrolling_text) => scrolling_texts.push(scrolling_text.clone()),
             //_ => println!("This MenuItem is not supported.")
         };
     }
@@ -204,6 +222,55 @@ pub fn spawn_menu(
             )).id();
         commands.entity(screen_menu).push_children(&[menu_description]);
     }
+
+    if scrolling_texts.len() > 0 {
+        let menu_scrolling = commands.spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                align_self: AlignSelf::Stretch,
+                height: Val::Percent(50.),
+                overflow: Overflow::clip_y(),
+                ..default()
+            },
+            background_color: Color::rgb(0.10, 0.10, 0.10).into(),
+            ..default()
+        })
+            .with_children(|parent| {
+                // Moving panel
+                parent.spawn((
+                    NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        ..default()
+                    },
+                    ScrollingList::default(),
+                    AccessibilityNode(NodeBuilder::new(Role::List)),
+                ))
+                .with_children(|parent| {
+                    // By line.
+                    for scrolling_text in scrolling_texts.iter() {
+                        parent.spawn((
+                            TextBundle::from_section(
+                                format!("{}", scrolling_text.text),
+                                TextStyle {
+                                    font: graph_assets.font.clone(),
+                                    font_size: 12.0,
+                                    color: Color::rgb(1.0, 1.0, 1.0),
+                                    ..default()
+                                },
+                            ),
+                            Label,
+                            AccessibilityNode(NodeBuilder::new(Role::ListItem)),
+                        ));
+                    }
+                });
+        }).id();
+        commands.entity(screen_menu).push_children(&[menu_scrolling]);
+    };
+
 
     // Si y a des options, on mets un cadre.
     if actions.len() > 0 || sliders.len() > 0 {

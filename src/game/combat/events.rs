@@ -44,8 +44,6 @@ pub struct EntityTryMoveEvent {
 }
 
 
-
-
 #[derive(Event)]
 pub struct EntityHitTryEvent {
     pub entity: Entity,
@@ -61,7 +59,8 @@ pub struct EntityGetHitEvent {
 
 #[derive(Event)]
 pub struct EntityDeathEvent {
-    pub entity: Entity
+    pub entity: Entity,
+    pub attacker: Entity
 }
 
 #[derive(Event)]
