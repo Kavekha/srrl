@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::game::{
+use crate::{game::{
         gamelog::LogEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}
-    };
+    }, globals::{BASE_SPEED, SPEED_MULTIPLIER}};
 
 
 use super::components::Player;
@@ -12,13 +12,37 @@ use super::components::Player;
 //TODO : Pas a être là.
 pub fn camera_follow(
     player_query: Query<&Transform, With<Player>>,
-    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>
+    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
 ) {
     let Ok(player_transform) = player_query.get_single() else {return};
     let mut camera_transform = camera_query.single_mut();
     camera_transform.translation.x = player_transform.translation.x;
     camera_transform.translation.y = player_transform.translation.y;
 }
+
+
+pub fn camera_smooth_follow(
+    player_query: Query<&Transform, With<Player>>,
+    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
+    time: Res<Time>,
+) {
+    let Ok(player_transform) = player_query.get_single() else {return};
+    let mut camera_transform = camera_query.single_mut();
+
+    if player_transform.translation.x != camera_transform.translation.x {
+        camera_transform.translation.x = camera_transform.translation.x.lerp(
+            player_transform.translation.x, 
+            BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds())
+    }
+    if player_transform.translation.y != camera_transform.translation.y {
+        camera_transform.translation.y = camera_transform.translation.y.lerp(
+            player_transform.translation.y, 
+            BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds())
+    }
+}
+
+
+
 
 //TODO : Pas a etre là.
 //Le log est envoyé 3 fois car 3 check?
@@ -35,5 +59,5 @@ pub fn exit_step_check(
             ev_log.send(LogEvent {entry: format!("You exit the scene.")});             // Log v0
             ev_message.send(MessageEvent(Box::new(VictoryMessage)));            
         }
-    }
+    }    
 }
