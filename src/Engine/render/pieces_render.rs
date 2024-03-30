@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     globals::{
-        SPRITE_GHOUL, POSITION_TOLERANCE, SPEED_MULTIPLIER, BASE_SPEED, SPRITE_PLAYER_HUMAN, 
+        SPRITE_GHOUL, SPRITE_PLAYER_HUMAN, 
         SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, MAP_EXIT},
     game::{
         player::Player, pieces::{components::Piece, spawners::Kind}, 
@@ -10,45 +10,6 @@ use crate::{
     }, engine::asset_loaders::GraphicsAssets, engine::render::get_world_position
 };
 
-use super::components::PathAnimator;
-
-
-pub fn path_animator_update(
-    mut commands: Commands,
-    mut query: Query<(Entity, &mut PathAnimator, &mut Transform)>,
-    time: Res<Time>,
-    //mut ev_wait: EventWriter<GraphicsWaitEvent>
-) {
-    for (entity, mut animator, mut transform) in query.iter_mut() {
-        // DEBUG: println!("Anim: Entity is : {:?}", entity);
-        if animator.path.len() == 0 {
-            // this entity has completed it's animation
-            // DEBUG: println!("PathAnimator: Anim completed.");
-            commands.entity(entity).remove::<PathAnimator>();
-            continue;
-        }
-        //DEBUG: println!("Anim update");
-        let target = *animator.path.get(0).unwrap();  
-        let destination = target - transform.translation;
-
-        if destination.length() > POSITION_TOLERANCE {
-            transform.translation = transform.translation.lerp(
-                target,
-                BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
-            );
-        } else {
-            // the entity is at the desired path position
-            transform.translation = target;
-            animator.path.pop_front();
-        }
-        /* 
-        if animator.wait_anim {
-            ev_wait.send(GraphicsWaitEvent);
-            //println!("wait_anim: True");
-        }
-        */
-    }
-}
 
 
 pub fn spawn_exit_render(

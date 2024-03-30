@@ -2,13 +2,23 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::engine::render::pieces_render::path_animator_update;
-use crate::engine::render::components::PathAnimator;
-use crate::engine::render::get_world_position;
-
-use self::events::AnimateEvent;
-
 pub mod events;
+
+use crate::{
+    engine::{
+        render::{
+            get_world_position,
+            components::GameCursorRender,
+        },
+        animations::events::{AnimateEvent,GraphicsWaitEvent, PathAnimator}
+    },
+    game::{
+        combat::CombatSet,
+        player::Cursor
+    },
+    globals::{POSITION_TOLERANCE, BASE_SPEED, SPEED_MULTIPLIER, CURSOR_SPEED, ORDER_CURSOR},
+};
+
 
 pub struct AnimationsPlugin;
 
@@ -16,9 +26,12 @@ impl Plugin for AnimationsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_event::<AnimateEvent>() 
+            .add_event::<GraphicsWaitEvent>() 
 
             .add_systems(Update, walk_animation)
-            .add_systems(Update, path_animator_update)
+            .add_systems(Update, path_animator_update.in_set(CombatSet::Animation))   // 3 fois le system => 3 fois plus vite. lol.
+            .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))  
+            .add_systems(Update, update_game_cursor)     
             ;
     }
 }
@@ -41,5 +54,71 @@ pub fn walk_animation(
         }
         println!("PathAnimator created");
         commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
+    }
+}
+
+
+
+pub fn path_animator_update(
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut PathAnimator, &mut Transform)>,
+    time: Res<Time>,
+    mut ev_wait: EventWriter<GraphicsWaitEvent>
+) {
+    for (entity, mut animator, mut transform) in query.iter_mut() {
+        // DEBUG: println!("Anim: Entity is : {:?}", entity);
+        if animator.path.len() == 0 {
+            // this entity has completed it's animation
+            // DEBUG: println!("PathAnimator: Anim completed.");
+            commands.entity(entity).remove::<PathAnimator>();
+            continue;
+        }
+        //DEBUG: println!("Anim update");
+        let target = *animator.path.get(0).unwrap();  
+        let destination = target - transform.translation;
+
+        if destination.length() > POSITION_TOLERANCE {
+            transform.translation = transform.translation.lerp(
+                target,
+                BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
+            );
+        } else {
+            // the entity is at the desired path position
+            transform.translation = target;
+            animator.path.pop_front();
+        }
+        
+        if animator.wait_anim {
+            ev_wait.send(GraphicsWaitEvent);
+            //println!("wait_anim: True");
+        }
+        
+    }
+}
+
+pub fn update_game_cursor(
+    mut query_game_cursor: Query<(&GameCursorRender, &mut Transform)>,
+    cursor_position: Res<Cursor>,
+    time: Res<Time>
+){
+    for (_game_cursor, mut transform, ) in query_game_cursor.iter_mut(){
+        let grid_position = &cursor_position.grid_position;
+        let position = get_world_position(grid_position);
+
+
+        //let position = &cursor_position.world_position;
+
+        let target = Vec3::new(position.0, position.1, ORDER_CURSOR);
+        let destination = (target - transform.translation).length();  
+        //println!("Cursor update: target is {:?}, transform is : {:?}, destination is : {:?}", target, transform.translation, destination);
+        
+        if destination > POSITION_TOLERANCE {
+            transform.translation = transform.translation.lerp(
+                target,
+                CURSOR_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
+            );
+        } else {
+            transform.translation = target;
+        }
     }
 }

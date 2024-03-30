@@ -10,13 +10,13 @@ pub mod cursor_render;
 
 use self::{
     tilemap_render::spawn_map_render,
-    pieces_render::{spawn_piece_renderer, path_animator_update, spawn_exit_render}, //melee_animation
-    cursor_render::{spawn_game_cursor, update_game_cursor},
+    pieces_render::{spawn_piece_renderer, spawn_exit_render}, //melee_animation
+    cursor_render::spawn_game_cursor,
 };
 
 use crate::{
     globals::STANDARD_TILE_SIZE, 
-    game::states::GameState, vectors::Vector2Int, game::combat::CombatSet,
+    game::states::GameState, vectors::Vector2Int, 
 };
 
 pub struct GraphicsPlugin;
@@ -31,9 +31,8 @@ impl Plugin for GraphicsPlugin {
             .add_systems(OnEnter(GameState::Initialise), spawn_game_cursor)     
             .add_systems(OnEnter(GameState::Initialise), spawn_exit_render)    
 
-            //.add_systems(Update, (walk_animation, path_animator_update, melee_animation).in_set(TurnSet::Animation))
-            .add_systems(Update, (path_animator_update).in_set(CombatSet::Animation))   //melee_animation
-            .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))     
+
+
 
             // La première camera.
             .add_systems(Startup, spawn_camera)    
@@ -62,10 +61,7 @@ fn spawn_camera(mut commands: Commands) {
 }
 
 
-/* 
-#[derive(Event)]
-pub struct GraphicsWaitEvent;
-*/
+
 
 // TODO : Changer de place?
 
