@@ -47,6 +47,7 @@ impl Message for LoadGameMessage {
         let state: SaveState = serde_json::from_str(&data).unwrap();
 
         world.insert_resource(state.map);
+        world.insert_resource(state.logs);
 
         for entity in state.entities {
             let mut e = world.spawn_empty();         

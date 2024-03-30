@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use super::ui::{ui_game_logs::draw_log_ui, ReloadUiEvent};
 
@@ -17,7 +18,7 @@ impl Plugin for GameLogsPlugin {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Clone, Default, Deserialize, Serialize, Debug)]  
 pub struct Gamelog {
     pub entries : Vec<String>
 }
@@ -30,6 +31,9 @@ impl Gamelog {
             println!("LOG:Added to Log: {}", log.clone());
         }
         logs
+    }
+    pub fn clear(&mut self) {
+        self.entries = Vec::new();
     }
 }
 
