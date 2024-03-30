@@ -19,3 +19,6 @@ pub struct CombatInfos {
     pub turn: u32,
     pub current_entity: Option<Entity>
 }
+
+#[derive(Component)]
+pub struct IsDead;

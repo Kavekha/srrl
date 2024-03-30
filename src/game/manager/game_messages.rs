@@ -56,7 +56,7 @@ pub struct GameOverMessage;
 impl Message for GameOverMessage {
     fn execute(&self, world: &mut World) {
         println!("Game Over Message!");
-        world.send_event(MessageEvent(Box::new(QuitGameMessage)));
+        world.send_event(MessageEvent(Box::new(QuitGameMessage))); 
         world.send_event(MessageEvent(Box::new(EndGameRecapMessage{recap_type:RecapType::GameOver})));
         let music_name = "gameover".to_string();
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
