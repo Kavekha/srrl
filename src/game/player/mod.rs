@@ -8,7 +8,7 @@ pub mod cursor;
 pub use components::Player;
 pub use cursor::Cursor;
 
-use self::{components::OnClickEvent, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, on_click_action, player_mouse_input}, player_systems::{camera_follow, exit_step_check}};
+use self::{components::OnClickEvent, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, on_click_action, player_mouse_input}, player_systems::{camera_follow, exit_step_check}};
 
 use crate::game::states::GameState;
 
@@ -37,6 +37,8 @@ impl Plugin for PlayerPlugin{
             
             .add_systems(Update, camera_follow.run_if(in_state(GameState::Running)))
             .add_systems(Update, exit_step_check.run_if(in_state(GameState::Running)))
+
+            .add_systems(Update, mouse_scroll)
             ;
     }
 }

@@ -3,9 +3,7 @@ use bevy::ecs::{schedule::NextState, world::World};
 use crate::{
     engine::{audios::{AudioConfig, AudioType}, save_load_system::has_save_file},
     game::{
-        manager::{MessageEvent, PlayMusicMessage}, 
-        menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType},
-        states::MenuState}, globals::{ RELEASE, VERSION},
+        gamelog::Gamelog, manager::{MessageEvent, PlayMusicMessage}, menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, states::MenuState}, globals::{ RELEASE, VERSION},
     menu_builders::{Menu, MenuItem}, 
 };
 
@@ -212,16 +210,25 @@ pub struct EndGameRecapMessage{
     pub recap_type: RecapType
 }
 impl Message for EndGameRecapMessage {
-    fn execute(&self, world: &mut World) {        
+    fn execute(&self, world: &mut World) {    
+        // Logs we want to display 0.16.1
+        let mut logs = Vec::new();
+        if let Some(game_logs) = world.get_resource_mut::<Gamelog>() {
+            for log in game_logs.entries.iter() {
+                logs.push(log.clone());
+            }
+        } 
         match self.recap_type {
             RecapType::GameOver => {
                 let mut menu = Menu::new("game_over", Vec::new());
 
                 menu.add(MenuItem::header("You died."));
-                menu.add(MenuItem::description("A ghoul has eaten you."));
+                for log in logs.iter().rev() {
+                    menu.add(MenuItem::scrolling_text(log));
+                };                
+                //menu.add(MenuItem::description("A ghoul has eaten you.")); 
                 menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
-                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
-                
+                menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));                
         
                 world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
                 world.send_event(MenuEvent{menu:menu, menu_type:MenuType::RECAPMENU});
@@ -232,6 +239,9 @@ impl Message for EndGameRecapMessage {
 
                 menu.add(MenuItem::header("victory!"));
                 menu.add(MenuItem::description("You flee the place."));
+                for log in logs.iter().rev() {
+                    menu.add(MenuItem::scrolling_text(log));
+                };  
                 menu.add(MenuItem::action(MenuButtonAction::Play, "Retry"));
                 menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
         
