@@ -4,15 +4,15 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-mod graphic_resources;
-mod audio_resources;
+pub mod graphic_resources;
+pub mod audio_resources;
 
 pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
 const IMAGES: [&str; 1] = ["shadowrun_title_alone"];
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
-const TEXTURES: [&str; 2] = ["human", "ghoul"];
+const TEXTURES: [&str; 3] = ["human", "ghoul", "blood"];
 const SEWERS_TILES_TEXTURES: [&str; 17] = [
     "floor", "wall_0","wall_1","wall_2","wall_3","wall_4","wall_5","wall_6","wall_7","wall_8",
     "wall_9","wall_10","wall_11","wall_12","wall_13","wall_14","wall_15"];

@@ -129,7 +129,7 @@ impl Plugin for CombatPlugin {
 
 
 pub fn combat_clean_death(
-    mut commands: Commands,
+    //mut commands: Commands,
     player_q: Query<&Player>,
     mut ev_message: EventWriter<MessageEvent>,   //NEW MESSAGE EVENT SYSTEM v0.15.2
     dead_q: Query<(Entity, &IsDead)>
@@ -138,7 +138,7 @@ pub fn combat_clean_death(
         if let Ok(_is_player) = player_q.get(entity) {  
             ev_message.send(MessageEvent(Box::new(GameOverMessage)));
         }
-        commands.entity(entity).despawn();
+        //commands.entity(entity).despawn();
     }
 }
 
