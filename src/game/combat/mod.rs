@@ -147,7 +147,7 @@ pub fn combat_clean_death(
 pub fn combat_start(    
     mut commands: Commands,
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
-    fighters: Query<(Entity, &Health, &Stats, Option<&Player>)>,
+    fighters: Query<(Entity, &Health, &Stats, Option<&Player>), Without<IsDead>>,
 ) {    
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
