@@ -4,14 +4,14 @@ use bevy::prelude::*;
 
 use crate::{
     engine::{audios::AudioType, save_load_system::has_save_file},
-    game::manager::{
+    game::{manager::{
             audio_messages::{ChangeMusicVolumeMessage, ChangeSoundVolumeMessage}, 
             change_state_messages::{ChangeGameStateRunningMessage, QuitGameMessage}, 
             game_messages::{ClearGameMessage, StartGameMessage},
             menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsAudioMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, 
             save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, 
             ExitAppMessage, MessageEvent
-        }
+        }, states::GameState}
 };
 
 use super::components::{MenuButtonAction, ResolutionSettings};
@@ -33,7 +33,8 @@ pub fn common_menu_action(
     interaction_query: Query<(&Interaction, &MenuButtonAction), (Changed<Interaction>, With<Button>),>,
     mut windows: Query<&mut Window>,
     resolution: Res<ResolutionSettings>,
-    mut ev_message: EventWriter<MessageEvent>
+    mut ev_message: EventWriter<MessageEvent>,
+    state: Res<State<GameState>>
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -82,7 +83,12 @@ pub fn common_menu_action(
                     match audio_type {
                         AudioType::Sound => ev_message.send(MessageEvent(Box::new(ChangeSoundVolumeMessage { modify_value:modify_volume_by.clone()}))),
                         AudioType::Music => ev_message.send(MessageEvent(Box::new(ChangeMusicVolumeMessage { modify_value:modify_volume_by.clone()})))
-                    };                     
+                    }; 
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
+                    match state.get() {
+                        GameState::Disabled => ev_message.send(MessageEvent(Box::new(MainMenuSettingsAudioMessage))),
+                        _ => ev_message.send(MessageEvent(Box::new(InGameSettingsAudioMessage)))
+                    };
                     //ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     //ev_message.send(MessageEvent(Box::new(menu_button_action)));       // No Refresh, mais on est pas reconduit au Main Menu si on change le volume ig.
                 }
