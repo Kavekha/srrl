@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.17.1";
+pub const VERSION: &str = "0.18.0";
 pub const RELEASE: &str = "R0.4";
 
 // Min - Max VOLUME
