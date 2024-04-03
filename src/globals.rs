@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.17.0";
+pub const VERSION: &str = "0.17.1";
 pub const RELEASE: &str = "R0.4";
 
 // Min - Max VOLUME
@@ -25,6 +25,7 @@ pub const CHAR_SIZE: f32 = 16.0;
 pub const STANDARD_TILE_SIZE:i32 = 32;  //64;
 // RENDERING ORDER
 pub const ORDER_FLOOR: f32 = 0.0;
+pub const ORDER_CORPSE: f32 = 1.0;
 pub const ORDER_WALL: f32 = 5.0;
 pub const ORDER_NPC: f32 = 8.0;
 pub const ORDER_EXIT: f32 = 9.0;

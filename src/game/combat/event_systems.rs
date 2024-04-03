@@ -4,15 +4,12 @@ use bevy::prelude::*;
 
 
 use crate::{
-    engine::{audios::SoundEvent,animations::events::AnimateEvent, asset_loaders::graphic_resources::GraphicsAssets},
-    game::{
-        combat::{rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE, components::IsDead}, 
+    engine::{animations::events::AnimateEvent, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
+        combat::{components::IsDead, rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
-    }, 
-    map_builders::map::Map, 
-    vectors::{find_path, Vector2Int}
+    }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::{find_path, Vector2Int}
 };
 
 use super::events::EntityHitMissEvent;
@@ -181,7 +178,8 @@ pub fn entity_dies(
     graph_assets: Res<GraphicsAssets>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_log: EventWriter<LogEvent>,
-    mut body_q: Query<&mut Handle<Image>>
+    mut body_q: Query<&mut Handle<Image>>,
+    mut transform_q: Query<&mut Transform>
 
 ){
     for event in ev_die.read() {
@@ -190,9 +188,13 @@ pub fn entity_dies(
         commands.entity(event.entity).remove::<ActionPoints>();
         commands.entity(event.entity).remove::<Occupier>();
 
+        // Transformation en Corps.
         if let Ok(mut body) = body_q.get_mut(event.entity) {
             *body = graph_assets.textures["blood"].clone();
         };
+        if let Ok(mut transform) = transform_q.get_mut(event.entity) {
+            transform.translation.z = ORDER_CORPSE;
+        }
         // SOUND
         ev_sound.send(SoundEvent{id:"death_scream".to_string()});
 
