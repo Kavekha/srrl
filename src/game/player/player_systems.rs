@@ -10,7 +10,7 @@ use super::components::Player;
 
 
 //TODO : Pas a être là.
-pub fn camera_follow(
+pub fn _camera_follow(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
 ) {

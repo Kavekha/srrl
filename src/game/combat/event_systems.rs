@@ -2,18 +2,15 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::engine::animations::events::AnimateEvent;
-use crate::game::combat::components::IsDead;
+
 use crate::{
-    engine::audios::SoundEvent,
-    game::{
-        combat::{rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE}, 
+    engine::{animations::events::AnimateEvent, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
+        combat::{components::IsDead, rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
-        tileboard::components::BoardPosition, ui::ReloadUiEvent}, 
-        map_builders::map::Map, 
-        vectors::{find_path, Vector2Int}
-    };
+        tileboard::components::BoardPosition, ui::ReloadUiEvent
+    }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::{find_path, Vector2Int}
+};
 
 use super::events::EntityHitMissEvent;
 use super::{
@@ -178,13 +175,26 @@ pub fn entity_dies(
     mut ev_die: EventReader<EntityDeathEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     name_q: Query<&Name>,
-
+    graph_assets: Res<GraphicsAssets>,
     mut ev_sound: EventWriter<SoundEvent>,
-    mut ev_log: EventWriter<LogEvent>
+    mut ev_log: EventWriter<LogEvent>,
+    mut body_q: Query<&mut Handle<Image>>,
+    mut transform_q: Query<&mut Transform>
+
 ){
     for event in ev_die.read() {
         println!("Entity {:?} is dead", event.entity);
         commands.entity(event.entity).insert(IsDead);
+        commands.entity(event.entity).remove::<ActionPoints>();
+        commands.entity(event.entity).remove::<Occupier>();
+
+        // Transformation en Corps.
+        if let Ok(mut body) = body_q.get_mut(event.entity) {
+            *body = graph_assets.textures["blood"].clone();
+        };
+        if let Ok(mut transform) = transform_q.get_mut(event.entity) {
+            transform.translation.z = ORDER_CORPSE;
+        }
         // SOUND
         ev_sound.send(SoundEvent{id:"death_scream".to_string()});
 
@@ -214,7 +224,7 @@ pub fn create_action_infos(
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,
-    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>)>,
+    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>)>,
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
 ) {
     for _event in ev_refresh_action.read() {

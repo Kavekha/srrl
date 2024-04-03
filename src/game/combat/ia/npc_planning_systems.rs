@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{combat::{components::{ActionPoints, CombatInfos}, events::{EntityEndTurnEvent, EntityTryMoveEvent, Turn}, AP_COST_MELEE, AP_COST_MOVE}, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{combat::{components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, EntityTryMoveEvent, Turn}, AP_COST_MELEE, AP_COST_MOVE}, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 
 
@@ -34,7 +34,7 @@ pub struct NpcGoal {
 pub fn npc_planning(
     combat_info: Res<CombatInfos>,
     query_npc: Query<(&ActionPoints, &BoardPosition), (With<Npc>, With<Turn>)>,
-    query_player: Query<&BoardPosition, With<Player>>,
+    query_player: Query<&BoardPosition, (With<Player>, Without<IsDead>)>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
