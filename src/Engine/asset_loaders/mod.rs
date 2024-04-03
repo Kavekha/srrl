@@ -19,6 +19,7 @@ const SEWERS_TILES_TEXTURES: [&str; 17] = [
 const SEWERS_ITEMS: [&str;1] = ["exit"];
 const MUSICS: [&str;5] = ["main_menu", "combat", "gamemap", "gameover", "victory"];
 const SOUNDS: [&str;3] = ["hit_punch_1", "death_scream", "hit_air_1"];//["air_hit", "fast_blow", "impact_blow", "impact_strong_punch", "soft_quick_punch"];
+const EFFECTS: [&str;2] = ["hit_punch_miss", "hit_punch_blood"];
 
 
 pub struct AssetsPlugin;
@@ -83,6 +84,13 @@ fn load_assets(
         sounds.insert(name, handle);
     }
 
+    // Effects
+    let mut effects = HashMap::new();
+    for name in EFFECTS {
+        let handle:Handle<Image> = asset_server.load(format!("effects/{}.png", name));
+        effects.insert(name, handle);
+    }
+
     commands.insert_resource(
         GraphicsAssets { 
             images: images,
@@ -90,6 +98,7 @@ fn load_assets(
             textures: textures,
             map_textures: sewer_textures,
             map_items: sewer_items,
+            effects: effects
         }
     );
 

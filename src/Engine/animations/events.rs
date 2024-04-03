@@ -20,3 +20,24 @@ pub struct PathAnimator {
     pub path:VecDeque<Vec3>,
     pub wait_anim: bool
 }
+
+#[derive(Event)]
+pub struct EffectEvent {
+    pub id: String,
+    pub x: f32,
+    pub y: f32,
+
+}
+
+#[derive(Component)]
+pub struct AnimationIndices {
+    pub first: usize,
+    pub last: usize,
+}
+
+#[derive(Component)]
+pub struct RemoveEntity;
+
+
+#[derive(Component, Deref, DerefMut)]
+pub struct AnimationTimer(pub Timer);

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.17.1";
+pub const VERSION: &str = "0.18.0";
 pub const RELEASE: &str = "R0.4";
 
 // Min - Max VOLUME
@@ -30,7 +30,8 @@ pub const ORDER_WALL: f32 = 5.0;
 pub const ORDER_NPC: f32 = 8.0;
 pub const ORDER_EXIT: f32 = 9.0;
 pub const ORDER_PLAYER: f32 = 10.0;
-pub const ORDER_CURSOR: f32 = 11.0;
+pub const ORDER_EFFECT: f32 = 15.0;
+pub const ORDER_CURSOR: f32 = 20.0;
 
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_EXIT: &str = "exit";
