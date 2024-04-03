@@ -1,3 +1,10 @@
+// => DOCUMENTATION
+/*
+Pour le moment, on envoit un event EffectEvent, avec l'id de l'effet + les positions où il doit apparaitre.
+On ne fait que du 32x32 en 3 images, en 0.1 sec.
+spawn_hit_effect contient les infos necessaires de base, avec le timing, le nb d'images et la taille si ce doit être rendu configurable.
+ */
+
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
