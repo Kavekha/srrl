@@ -21,7 +21,7 @@ pub mod states;
 pub mod manager;
 pub mod gamelog;
 pub mod movements;
-
+ 
 
 use crate::game::tileboard::components::ExitMapTile;
 use crate::game::states::GameState;
@@ -50,7 +50,7 @@ impl Plugin for GamePlugin {
     }
 }
  
-
+ 
 pub fn despawn_component<T: Component>(
     to_despawn: Query<Entity, With<T>>, 
     commands: &mut Commands) {

@@ -2,9 +2,9 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-
+use crate::engine::render::get_world_position;
 use crate::{
-    engine::{animations::events::AnimateEvent, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
+    engine::{animations::events::{AnimateEvent, EffectEvent}, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
         combat::{components::IsDead, rules::roll_dices_against, AP_COST_MELEE, AP_COST_MOVE}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
@@ -119,9 +119,16 @@ pub fn action_entity_miss_attack(
     name_q: Query<&Name>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_log: EventWriter<LogEvent>,
+    mut ev_effect: EventWriter<EffectEvent>,
+    position_q: Query<&BoardPosition>,
 ){
     for event in ev_try_miss.read() {
         ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
+        // effect
+        if let Ok(position) = position_q.get(event.defender) {
+            let transform = get_world_position(&position.v);
+            ev_effect.send(EffectEvent { id: "hit_punch_miss".to_string(), x: transform.0, y: transform.1 });
+        }; 
         //logs 
         let Ok(entity_name) = name_q.get(event.entity) else { continue; };
         let Ok(defender_entity_name) = name_q.get(event.defender) else { continue;};
@@ -136,6 +143,8 @@ pub fn action_entity_get_hit(
     mut ev_die: EventWriter<EntityDeathEvent>,    
     mut ev_log: EventWriter<LogEvent>,
     name_q: Query<&Name>,
+    mut ev_effect: EventWriter<EffectEvent>,
+    position_q: Query<&BoardPosition>, 
 ) {
     for event in ev_gethit.read() {
         println!("Entity {:?} has been hit by {:?} for {:?} dmg.", event.entity, event.attacker, event.dmg);
@@ -154,7 +163,11 @@ pub fn action_entity_get_hit(
         if defender_health.current == 0 {            
             ev_die.send(EntityDeathEvent { entity: event.entity, attacker: event.attacker });
         }
-
+        // effect
+        if let Ok(position) = position_q.get(event.entity) {
+            let transform = get_world_position(&position.v);
+            ev_effect.send(EffectEvent { id: "hit_punch_blood".to_string(), x: transform.0, y: transform.1 });
+        };        
         //logs 
         let Ok(entity_name) = name_q.get(event.entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(event.attacker) else { continue;};
@@ -243,7 +256,7 @@ pub fn create_action_infos(
 
         let tile_position = cursor.grid_position;
         if !board.entity_tiles.contains_key(&tile_position) { 
-            println!("Create action: out of map for {:?} with position: {:?}", entity, position);
+            //println!("Create action: out of map for {:?} with position: {:?}", entity, position);
             return }
 
         let mut has_target = false;
