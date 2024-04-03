@@ -1,8 +1,42 @@
 use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
 
-use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityTryMoveEvent, RefreshActionCostEvent}}, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}}, menu_builders::ScrollingList};
+use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityTryMoveEvent, RefreshActionCostEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
 
 use super::{components::OnClickEvent, Cursor, Player};
+
+
+
+// 0.18 : ranged attack at last.
+pub fn player_choose_action_input(
+    keys: Res<ButtonInput<KeyCode>>,
+    mut res_cursor: ResMut<Cursor>,
+    mut ev_log: EventWriter<LogEvent>,
+) {
+    if keys.just_pressed(KeyCode::Digit1) {
+        match res_cursor.mode {
+            CursorMode::MELEE => {
+                ev_log.send(LogEvent {entry: format!("Already in Melee mode.")});    //TO CHANGE
+            },
+            _ => {
+                res_cursor.mode = CursorMode::MELEE;
+                ev_log.send(LogEvent {entry: format!("Now in Melee mode.")});                
+            },
+        };        
+        println!("Choosing Melee combat.");
+    }
+    if keys.just_pressed(KeyCode::Digit2) {
+        match res_cursor.mode {
+            CursorMode::TARGET => {
+                ev_log.send(LogEvent {entry: format!("Already in Targeting mode.")});    //TO CHANGE
+            },
+            _ => {
+                res_cursor.mode = CursorMode::TARGET;
+                ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});                
+            },
+        };   
+        println!("Choosing Ranged combat.");
+    }
+}
 
 
 // TODO : Est-ce normal que le cout AP soit ici?
@@ -67,7 +101,7 @@ pub fn combat_input(
         let destination = res_cursor.grid_position;
 
         println!("Click !");
-        ev_on_click.send(OnClickEvent { entity: entity, tile: destination });
+        ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() });           
 
         /* 
         println!("Clic to move!");
@@ -84,14 +118,20 @@ pub fn on_click_action(
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,
     action_infos: Res<ActionInfos>,
 ){
-    for _event in ev_onclick.read() {
-        let path = action_infos.path.clone();
-        let Some(entity) = action_infos.entity else { continue };
-        let Some(path) = path else { continue };
-
-        println!("On clic action: OK. Send event.");
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
-
+    for event in ev_onclick.read() {
+        match event.mode {
+            CursorMode::MELEE => {
+                let path = action_infos.path.clone();
+                let Some(entity) = action_infos.entity else { continue };
+                let Some(path) = path else { continue };
+        
+                println!("On clic action: OK. Send event.");
+                ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
+            },
+            CursorMode::TARGET => {
+                println!("Targeting here");
+            }
+        };
     }
 }
 
