@@ -1,6 +1,6 @@
 use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
 
-use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityHitTryEvent, EntityHitTryRangedEvent, EntityTryMoveEvent, RefreshActionCostEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
+use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityTryMoveEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
 
 use super::{components::OnClickEvent, Cursor, Player};
 
@@ -86,7 +86,8 @@ pub fn combat_input(
     player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
-    mut ev_on_click: EventWriter<OnClickEvent>
+    mut ev_on_click: EventWriter<OnClickEvent>,
+    mut ev_want_to_hit: EventWriter<WantToHitEvent>
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
@@ -101,41 +102,33 @@ pub fn combat_input(
         let destination = res_cursor.grid_position;
 
         println!("Click !");
-        ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() });           
-
-        /* 
-        println!("Clic to move!");
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, destination: destination});
-        */
+        match res_cursor.mode {
+            CursorMode::MELEE => {
+                ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() }); 
+            },
+            CursorMode::TARGET => {
+                ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination, mode: res_cursor.mode.clone() }); // refacto 0.19b
+            }
+        }
 
     }
 }
 
 
 /// Player clicked on a tile.
+/// 0.19b: le ranged ne passe pas par là mais par WantToHitEvent.
 pub fn on_click_action(
     mut ev_onclick: EventReader<OnClickEvent>,
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    mut ev_try_attack: EventWriter<EntityHitTryEvent>,
-    mut ev_try_ranged_attack: EventWriter<EntityHitTryRangedEvent>,
     action_infos: Res<ActionInfos>,
 ){
-    for event in ev_onclick.read() {
+    for _event in ev_onclick.read() {
         let path = action_infos.path.clone();
         let Some(entity) = action_infos.entity else { continue };
         let Some(path) = path else { continue };
 
-        match event.mode {
-            CursorMode::MELEE => {        
-                println!("On clic action: OK. Send event.");
-                ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
-            },
-            CursorMode::TARGET => {
-                println!("Targeting here");
-                let Some(target) = action_infos.target else { continue };
-                ev_try_ranged_attack.send(EntityHitTryRangedEvent {entity: entity, target: target });
-            }
-        };
+        println!("On clic action: OK. Send event.");
+        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
     }
 }
 

@@ -12,7 +12,7 @@ use self::{components::OnClickEvent, player_inputs::{combat_input, ig_call_menu_
 
 use crate::game::states::GameState;
 
-use super::combat::CombatSet;
+use super::combat::{events::WantToHitEvent, CombatSet};
 
 
  
@@ -26,6 +26,7 @@ impl Plugin for PlayerPlugin{
         app          
             .add_event::<PlayerInputReadyEvent>()
             .add_event::<OnClickEvent>()               // Joueur clique: Attaque ou mouvement?    
+            .add_event::<WantToHitEvent>()  // 0.19b
             
             .add_systems(Update, player_mouse_input.run_if(in_state(GameState::Running)))   
 

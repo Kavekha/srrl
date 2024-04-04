@@ -9,6 +9,10 @@ use rand::prelude::*;
 
 use super::components::ActionPoints;
 
+pub const AP_COST_MOVE:u32 = 1;
+pub const AP_COST_MELEE:u32 = 3;
+pub const AP_COST_RANGED:u32 = 5;
+
 
 pub struct DiceRollResult{
     pub success: u32,

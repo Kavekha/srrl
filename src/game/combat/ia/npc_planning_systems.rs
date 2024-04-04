@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{combat::{components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, EntityTryMoveEvent, Turn}, AP_COST_MELEE, AP_COST_MOVE}, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{combat::{components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, EntityTryMoveEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE}}, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 
 
