@@ -28,14 +28,12 @@ pub struct IsDead;
 
 #[derive(Component)]
 pub struct WantToHit{
-    pub source: Entity,
     pub mode: AttackType,
     pub target: Vector2Int
 }
 
 #[derive(Component)]
 pub struct TryHit{
-    pub attacker: Entity,
     pub mode: AttackType,
     pub defender: Entity
 }
@@ -48,8 +46,18 @@ pub enum AttackType{
 
 #[derive(Component)]
 pub struct MissHit{
-    pub attacker: Entity, 
     pub mode: AttackType,
     pub defender: Entity
 }
 
+#[derive(Component)]
+pub struct GetHit{
+    pub attacker: Entity, 
+    pub mode: AttackType,
+    pub dmg: u32,
+}
+
+#[derive(Component)]
+pub struct Die{
+    pub killer: Entity
+}

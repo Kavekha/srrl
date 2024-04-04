@@ -10,7 +10,7 @@ pub struct CursorPlugin;
 impl Plugin for CursorPlugin{
     fn build(&self, app: &mut App) {
         app 
-            .insert_resource(Cursor{grid_position:Vector2Int{x:0,y:0},world_position:Vec3::new(0.0, 0.0, 0.0), screen_position: None, mode:CursorMode::MELEE}) 
+            .insert_resource(Cursor{grid_position:Vector2Int{x:0,y:0},world_position:Vec3::new(0.0, 0.0, 0.0), screen_position: None, mode:CursorMode::MOVE}) 
             .add_systems(Update, cursor_position.run_if(in_state(GameState::Running)))
         ;
     }
@@ -19,8 +19,9 @@ impl Plugin for CursorPlugin{
 
 #[derive(Clone)]
 pub enum CursorMode{
-    MELEE,
-    TARGET    
+    MOVE,
+    TARGET,
+    MELEE    
 }
 
 //camera.logical_viewport_size() donne la taille de l'ecran en pixel, de 0 à +X, et de 0 à +Y.

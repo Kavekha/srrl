@@ -2,7 +2,7 @@ use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}}
 
 use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityTryMoveEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
 
-use super::{components::OnClickEvent, Cursor, Player};
+use super::{components::{OnClickEvent, WantToMoveEvent}, Cursor, Player};
 
 
 
@@ -14,11 +14,11 @@ pub fn player_choose_action_input(
 ) {
     if keys.just_pressed(KeyCode::Digit1) {
         match res_cursor.mode {
-            CursorMode::MELEE => {
+            CursorMode::MOVE => {
                 ev_log.send(LogEvent {entry: format!("Already in Melee mode.")});    //TO CHANGE
             },
             _ => {
-                res_cursor.mode = CursorMode::MELEE;
+                res_cursor.mode = CursorMode::MOVE;
                 ev_log.send(LogEvent {entry: format!("Now in Melee mode.")});                
             },
         };        
@@ -86,8 +86,9 @@ pub fn combat_input(
     player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
-    mut ev_on_click: EventWriter<OnClickEvent>,
-    mut ev_want_to_hit: EventWriter<WantToHitEvent>
+    //mut ev_on_click: EventWriter<OnClickEvent>,
+    mut ev_want_to_hit: EventWriter<WantToHitEvent>,
+    mut ev_want_to_move: EventWriter<WantToMoveEvent>
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
@@ -103,16 +104,22 @@ pub fn combat_input(
 
         println!("Click !");
         match res_cursor.mode {
-            CursorMode::MELEE => {
-                ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() }); 
+            CursorMode::MOVE => {
+                //ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() }); 
+                ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone()});
+
             },
             CursorMode::TARGET => {
                 ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination, mode: res_cursor.mode.clone() }); // refacto 0.19b
-            }
+            },
+            _ => println!("Not implemented.")
         }
 
     }
 }
+
+
+
 
 
 /// Player clicked on a tile.

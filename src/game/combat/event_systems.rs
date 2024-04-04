@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::engine::render::get_world_position;
-use crate::game::combat::components::{AttackType, MissHit, TryHit, WantToHit};
+use crate::game::combat::components::{AttackType, Die, GetHit, MissHit, TryHit, WantToHit};
 use crate::game::player::cursor::CursorMode;
 use crate::{
     engine::{animations::events::{AnimateEvent, EffectEvent}, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
@@ -14,7 +14,7 @@ use crate::{
     }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::{find_path, Vector2Int}
 };
 
-use super::events::{EntityHitMissEvent, EntityHitTryRangedEvent, WantToHitEvent};
+use super::events::{EntityHitMissEvent, WantToHitEvent};
 use super::{
     components::ActionPoints, events::{
         EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn
@@ -58,7 +58,6 @@ pub fn on_event_entity_want_hit(
             CursorMode::TARGET => { 
                 println!("Je veux atteindre une cible!");
                 let want_hit = WantToHit{ 
-                    source: event.source,
                     mode: AttackType::RANGED,
                     target: event.target
                 };
@@ -73,7 +72,7 @@ pub fn on_event_entity_want_hit(
 // Ici on verifie tout.
 pub fn entity_want_hit(
     mut commands: Commands,
-    want_hit_q: Query<&WantToHit>,
+    want_hit_q: Query<(Entity, &WantToHit)>,
     player_q: Query<&Player>,    
     mut action_q: Query<&mut ActionPoints>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,    
@@ -84,22 +83,22 @@ pub fn entity_want_hit(
     //position_q: Query<&BoardPosition>,            // 0.19b MELEE 
     //mut ev_animate: EventWriter<AnimateEvent>,    // 0.19b MELEE only
 ) {
-    for want in want_hit_q.iter() {
+    for (entity, want) in want_hit_q.iter() {
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
-        commands.entity(want.source).remove::<WantToHit>();
+        commands.entity(entity).remove::<WantToHit>();
 
         println!("RangedAttack: Refacto Combat 0.19b");
-        println!("Je suis {:?} et j'attaque à la position {:?}", want.source, want.target);
+        println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
 
-        let Ok(_attacker_stats) = stats_q.get(want.source) else { 
+        let Ok(_attacker_stats) = stats_q.get(entity) else { 
             ev_log.send(LogEvent {entry: format!("ERROR: Not a valid fighter, can't attack. Stats missing.")});  // No Stats, can't be attacked.
             continue };    
 
         //Payer le prix de l'action.    // A reviser.
         // A changer dans l'action en elle-même logiquement. Ici on ne devrait que verifier.
-        let Ok(mut action_points) = action_q.get_mut(want.source) else { continue };
+        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
         consume_actionpoints(&mut action_points, AP_COST_RANGED);
-        if let Ok(_is_player) = player_q.get(want.source) {
+        if let Ok(_is_player) = player_q.get(entity) {
             ev_interface.send(ReloadUiEvent);   // Utile? TOCHECK
             ev_refresh_action.send(RefreshActionCostEvent); // Ui ? TOCHECK
         }
@@ -113,12 +112,12 @@ pub fn entity_want_hit(
         for (target_entity, _target_position, _target_stats) in target_entities.iter() {     
             println!("Want hit: potentielle target: {:?}", *target_entity);
             // Can't hit yourself.
-            if want.source == * target_entity { 
+            if entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
                 continue; }; 
 
-                let try_hit = TryHit { attacker: want.source, mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
-                commands.entity(want.source).insert(try_hit);
+                let try_hit = TryHit { mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
+                commands.entity(entity).insert(try_hit);
 
             // Animation MELEE.
             /* 
@@ -138,9 +137,8 @@ pub fn entity_try_hit(
     mut commands: Commands,
     try_hit_q: Query<(Entity, &TryHit)>,
     stats_q: Query<&Stats>,       
-    mut ev_gethit: EventWriter<EntityGetHitEvent>,
-    mut ev_sound: EventWriter<SoundEvent>,
-    mut ev_try_miss: EventWriter<EntityHitMissEvent>
+    //mut ev_gethit: EventWriter<EntityGetHitEvent>,
+    mut ev_sound: EventWriter<SoundEvent>
 ){
     for (entity, attack) in try_hit_q.iter() {
         commands.entity(entity).remove::<TryHit>(); // On retire au debut, car command joué à la fin & si continue au milieu ne sera pas traité.
@@ -159,12 +157,11 @@ pub fn entity_try_hit(
         let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
 
         if dice_roll.success > 0 {
-            // DEBUG: println!("HIT target with {:?} success! for {:?} dmg", dice_roll.success, dmg);
-            ev_gethit.send(EntityGetHitEvent { entity: attack.defender, attacker: entity, dmg: dmg });
+            commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: dmg});
             ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
         } else {
             //ev_try_miss.send(EntityHitMissEvent{entity: entity, defender: attack.defender});
-            commands.entity(entity).insert(MissHit { attacker: attack.attacker, mode: attack.mode.clone(), defender:attack.defender});
+            commands.entity(entity).insert(MissHit { mode: attack.mode.clone(), defender:attack.defender});
         }
     }
 }
@@ -284,6 +281,56 @@ pub fn action_entity_miss_attack(
     }
 }
 
+// 0.19b
+pub fn entity_get_hit(    
+    mut commands: Commands,
+    get_hit_q: Query<(Entity, &GetHit)>,     
+    position_q: Query<&BoardPosition>,    
+    mut ev_effect: EventWriter<EffectEvent>,
+    name_q: Query<&Name>,
+    mut ev_log: EventWriter<LogEvent>,    
+    mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,    
+    //mut ev_die: EventWriter<EntityDeathEvent>,
+){
+    for (entity, get_hit) in get_hit_q.iter() {
+        commands.entity(entity).remove::<GetHit>();
+
+        let Ok(defender_infos) = stats_health_q.get_mut(entity) else { 
+            println!("Pas de stats / health pour le defender");
+            continue };
+        let (defender_stats, mut defender_health, _is_player) = defender_infos;
+
+        // Roll resist.
+        let dice_roll = roll_dices_against(defender_stats.resilience, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
+        let dmg = get_hit.dmg.saturating_sub(dice_roll.success); 
+
+        // Reducing health.
+        defender_health.current = defender_health.current.saturating_sub(dmg);
+        println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
+        if defender_health.current == 0 {            
+            //ev_die.send(EntityDeathEvent { entity: entity, attacker: get_hit.attacker });
+            commands.entity(entity).insert(Die { killer: get_hit.attacker});
+        }
+        // effect
+        if let Ok(position) = position_q.get(entity) {
+            let transform = get_world_position(&position.v);
+            ev_effect.send(EffectEvent { id: "hit_punch_blood".to_string(), x: transform.0, y: transform.1 });
+        };        
+        //logs 
+        let Ok(entity_name) = name_q.get(entity) else { continue; };
+        let Ok(attacker_entity_name) = name_q.get(get_hit.attacker) else { continue;};
+        if dice_roll.success == 0 {     // No dmg reduction.
+            ev_log.send(LogEvent {entry: format!("{} takes a full blow from {}, for {:?} damages!", entity_name, attacker_entity_name, dmg)});        // Log v0
+        }
+        else if dmg > 0 {
+            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", attacker_entity_name, entity_name, dmg)});        // Log v0
+        } else {
+            ev_log.send(LogEvent {entry: format!("{} takes a hit without effect from {}.",entity_name, attacker_entity_name)});        // Log v0
+        }
+
+    }
+}
+
 
 pub fn action_entity_get_hit(
     mut ev_gethit: EventReader<EntityGetHitEvent>,
@@ -330,8 +377,48 @@ pub fn action_entity_get_hit(
     }
 }
 
-//To treat at end of turn?
+
 pub fn entity_dies(
+    mut commands: Commands,    
+    die_q: Query<(Entity, &Die)>,   
+    mut body_q: Query<&mut Handle<Image>>,
+    graph_assets: Res<GraphicsAssets>,    
+    mut transform_q: Query<&mut Transform>,
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut ev_sound: EventWriter<SoundEvent>,
+    mut ev_log: EventWriter<LogEvent>,
+    name_q: Query<&Name>,
+){
+    for (entity, death) in die_q.iter() {
+        commands.entity(entity).remove::<Die>();
+
+        println!("Entity {:?} is dead", entity);
+        commands.entity(entity).insert(IsDead);
+        commands.entity(entity).remove::<ActionPoints>();
+        commands.entity(entity).remove::<Occupier>();
+
+        // Transformation en Corps.
+        if let Ok(mut body) = body_q.get_mut(entity) {
+            *body = graph_assets.textures["blood"].clone();
+        };
+        if let Ok(mut transform) = transform_q.get_mut(entity) {
+            transform.translation.z = ORDER_CORPSE;
+        }
+        // SOUND
+        ev_sound.send(SoundEvent{id:"death_scream".to_string()});
+
+        ev_refresh_action.send(RefreshActionCostEvent);
+
+        //Logs.. TODO : Ameliorer.
+        let Ok(entity_name) = name_q.get(entity) else { continue; };
+        let Ok(attacker_entity_name) = name_q.get(death.killer) else { continue;};        
+        ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0
+    }
+}
+
+
+//To treat at end of turn? Old version
+pub fn event_entity_dies(
     mut commands: Commands,
     mut ev_die: EventReader<EntityDeathEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
