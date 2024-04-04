@@ -1,6 +1,6 @@
 use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
 
-use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityTryMoveEvent, RefreshActionCostEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
+use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityHitTryEvent, EntityHitTryRangedEvent, EntityTryMoveEvent, RefreshActionCostEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
 
 use super::{components::OnClickEvent, Cursor, Player};
 
@@ -116,20 +116,24 @@ pub fn combat_input(
 pub fn on_click_action(
     mut ev_onclick: EventReader<OnClickEvent>,
     mut ev_try_move: EventWriter<EntityTryMoveEvent>,
+    mut ev_try_attack: EventWriter<EntityHitTryEvent>,
+    mut ev_try_ranged_attack: EventWriter<EntityHitTryRangedEvent>,
     action_infos: Res<ActionInfos>,
 ){
     for event in ev_onclick.read() {
+        let path = action_infos.path.clone();
+        let Some(entity) = action_infos.entity else { continue };
+        let Some(path) = path else { continue };
+
         match event.mode {
-            CursorMode::MELEE => {
-                let path = action_infos.path.clone();
-                let Some(entity) = action_infos.entity else { continue };
-                let Some(path) = path else { continue };
-        
+            CursorMode::MELEE => {        
                 println!("On clic action: OK. Send event.");
                 ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
             },
             CursorMode::TARGET => {
                 println!("Targeting here");
+                let Some(target) = action_infos.target else { continue };
+                ev_try_ranged_attack.send(EntityHitTryRangedEvent {entity: entity, target: target });
             }
         };
     }

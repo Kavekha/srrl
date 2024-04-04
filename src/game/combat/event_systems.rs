@@ -12,7 +12,7 @@ use crate::{
     }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::{find_path, Vector2Int}
 };
 
-use super::events::EntityHitMissEvent;
+use super::events::{EntityHitMissEvent, EntityHitTryRangedEvent};
 use super::{
     components::ActionPoints, events::{
         EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn
@@ -46,7 +46,33 @@ pub fn action_entity_end_turn(
 }
 
 
-// TODO : Au choix: Try_attack devrait soit verifier que l'entité peut accomplir son attaque, soit tester la réussite de son attaque.
+// Ranged TODO refacto pour mixer avec action_entity_try_attack
+pub fn action_entity_try_ranged_attack(
+    mut ev_try_ranged_attack: EventReader<EntityHitTryRangedEvent>,
+    mut action_q: Query<&mut ActionPoints>,    
+    player_q: Query<&Player>,    
+    mut ev_interface: EventWriter<ReloadUiEvent>,    
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+){
+    for event in ev_try_ranged_attack.read() {
+        //Ai-je des AP pour payer?
+        let Ok(mut action_points) = action_q.get_mut(event.entity) else { continue };
+            consume_actionpoints(&mut action_points, AP_COST_MELEE);
+            if let Ok(_is_player) = player_q.get(event.entity) {
+                ev_interface.send(ReloadUiEvent);   // Utile? TOCHECK
+                ev_refresh_action.send(RefreshActionCostEvent); // Ui ? TOCHECK
+            }
+            println!("PEW PEW! J'ai tiré pour des AP sur ma cible !");
+
+        //Cible visible?
+        //Suis-je a bonne distance?
+        //Cible legitime?
+        // => J'attaque.
+    }
+}
+
+
+//Melee. Verification & Try devraient être séparés.
 pub fn action_entity_try_attack(
     mut ev_try_attack: EventReader<EntityHitTryEvent>,    
     mut ev_gethit: EventWriter<EntityGetHitEvent>,
@@ -66,7 +92,7 @@ pub fn action_entity_try_attack(
         // Verification. Devrait être ailleurs.
         println!("Je suis {:?} et j'attaque à la position {:?}", event.entity, event.target);
 
-        // TODO : maybe refresh in consume? Maybe consume in some Event?
+        // TODO : maybe refresh in consume? Maybe consume in some Event? Ca me fait payer avant les autres verifications non?!
         let Ok(mut action_points) = action_q.get_mut(event.entity) else { continue };
         consume_actionpoints(&mut action_points, AP_COST_MELEE);
         if let Ok(_is_player) = player_q.get(event.entity) {

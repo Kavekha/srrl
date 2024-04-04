@@ -45,6 +45,13 @@ pub struct EntityTryMoveEvent {
 
 
 #[derive(Event)]
+pub struct EntityHitTryRangedEvent {
+    pub entity: Entity,
+    pub target: Vector2Int,
+}
+
+
+#[derive(Event)]
 pub struct EntityHitTryEvent {
     pub entity: Entity,
     pub target: Vector2Int,
