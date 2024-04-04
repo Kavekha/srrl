@@ -15,3 +15,10 @@ pub struct OnClickEvent {
     pub mode: CursorMode
 }
 
+#[derive(Event)]
+pub struct WantToMoveEvent {
+    pub entity: Entity,
+    pub tile: Vector2Int, 
+    pub mode: CursorMode
+}
+

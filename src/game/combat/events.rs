@@ -29,56 +29,7 @@ pub struct Turn;
 
 
 #[derive(Event)]
-pub struct EntityMoveEvent {
-    pub entity: Entity,
-    pub path: VecDeque<Vector2Int>,    
-    pub target: Option<Vector2Int>,
-}
-
-#[derive(Event)]
-pub struct EntityTryMoveEvent {
-    pub entity: Entity,
-    pub path: VecDeque<Vector2Int>,
-    pub target: Option<Vector2Int>,
-    //pub destination: Vector2Int
-}
-
-
-#[derive(Event)]
-pub struct EntityHitTryRangedEvent {
-    pub entity: Entity,
-    pub target: Vector2Int,
-}
-
-
-#[derive(Event)]
-pub struct EntityHitTryEvent {
-    pub entity: Entity,
-    pub target: Vector2Int,
-}
-
-#[derive(Event)]
-pub struct EntityHitMissEvent {
-    pub entity: Entity,
-    pub defender: Entity
-}
-
-#[derive(Event)]
-pub struct EntityGetHitEvent {
-    pub entity: Entity,
-    pub attacker: Entity,
-    pub dmg: u32,
-}
-
-#[derive(Event)]
-pub struct EntityDeathEvent {
-    pub entity: Entity,
-    pub attacker: Entity
-}
-
-#[derive(Event)]
 pub struct RefreshActionCostEvent;
-
 
 // 0.19 Refacto
 #[derive(Event)]
