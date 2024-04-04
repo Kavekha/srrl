@@ -1,7 +1,39 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
+
 use super::spawners::Kind;
+
+
+#[derive(Bundle)]
+pub struct CharacterBundle {    
+    piece: Piece,
+    name: Name,
+    stats: Stats,
+    health: Health,
+    melee: Melee,
+    position: BoardPosition,
+    occupier: Occupier
+}
+impl Default for CharacterBundle {
+    fn default() -> Self {
+        Self {
+            piece: Piece { kind: Kind::Human },
+            name: Name::new("Nobody"),  //TODO change i guess
+            stats: Stats {
+                power: 1,         
+                attack: 1,
+                dodge: 1,
+                resilience: 1
+            },
+            health: Health { max: 10, current: 10 },
+            melee: Melee { damage: 0 },
+            position: BoardPosition { v: Vector2Int { x:0, y: 0 } },
+            occupier: Occupier
+        }
+    }
+}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Piece {
@@ -44,3 +76,15 @@ pub struct Stats {
     pub dodge: u32,
     pub resilience: u32
 } 
+
+// 0.19 - A tester: solution aux deux modes de combat?
+#[derive(Component)]
+pub struct Capacities {
+    pub current: Option<Capacity>,
+    pub available: Option<Vec<Capacity>>
+}
+
+pub enum Capacity {
+    Melee,
+    Shoot
+}

@@ -57,7 +57,8 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
             .insert(Health { max: 10, current: 10 })
             .insert(Melee { damage: 1 })
             .insert(BoardPosition{ v:player_starting_position })
-            .insert(Occupier);
+            .insert(Occupier)
+            ;
     //}
 }
 

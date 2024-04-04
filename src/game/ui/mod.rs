@@ -18,7 +18,7 @@ use crate::game::states::GameState;
 
 use self::{components::UiGameInterface, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::draw_ui_game_character_infos, ui_game_npc_infos::draw_ui_game_enemy_hp};
 
-use super::{despawn_component, combat::{CombatSet, event_systems::create_action_infos}};
+use super::{despawn_component, combat::{CombatSet, action_infos::update_action_infos}};
 
 
 pub const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
@@ -35,8 +35,7 @@ impl Plugin for UiPlugin {
 
             .add_systems(Update, draw_ui_game_character_infos.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
-            .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(create_action_infos))
-
+            .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))
             .add_systems(OnEnter(GameState::Disabled), clear_all_game_interface)
             ;
     }

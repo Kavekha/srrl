@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{event_systems::ActionInfos, events::RefreshActionCostEvent}, despawn_component, player::Player
+        combat::{action_infos::ActionInfos, events::RefreshActionCostEvent}, despawn_component, player::Player
     }, 
     globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
 };
@@ -44,7 +44,6 @@ pub fn draw_ui_action_points_cursor(
     }
 
     if !should_update { return };
-    //println!("Update display action points");
 
     clear_ui_action_points_cursor(&mut commands, interface_query);
 

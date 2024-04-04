@@ -51,6 +51,7 @@ pub mod events;
 pub mod event_systems;  //TODO deplacer les elements publiques?
 pub mod rules;
 pub mod ia;
+pub mod action_infos;
 
 
 use crate::game::{
@@ -59,7 +60,8 @@ use crate::game::{
 
 use self::{
     components::{CurrentEntityTurnQueue, IsDead}, 
-    event_systems::{action_entity_end_turn, create_action_infos, entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit, ActionInfos},
+    event_systems::{action_entity_end_turn,  entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, 
+    action_infos::{update_action_infos, ActionInfos},
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, Turn},
     ia::IaPlugin
 };
@@ -109,7 +111,7 @@ impl Plugin for CombatPlugin {
   
             // Check de la situation PA-wise. Mise à jour.
             .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            .add_systems(Update, create_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick).after(combat_turn_entity_check))
+            .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick))
 
             // TODO: Quitter le combat. PLACEHOLDER.
             .add_systems(OnEnter(GameState::Disabled), combat_end)

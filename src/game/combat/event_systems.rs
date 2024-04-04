@@ -7,11 +7,11 @@ use crate::game::combat::components::{AttackType, Die, GetHit, MissHit, TryHit, 
 use crate::game::player::cursor::CursorMode;
 use crate::{
     engine::{animations::events::{AnimateEvent, EffectEvent}, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
-        combat::{components::IsDead, rules::{roll_dices_against, AP_COST_MELEE, AP_COST_RANGED, AP_COST_MOVE}}, 
+        combat::{components::IsDead, rules::{roll_dices_against, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
-        pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
+        pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
-    }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::{find_path, Vector2Int}
+    }, globals::ORDER_CORPSE, vectors::Vector2Int
 };
 
 use super::events::WantToHitEvent;
@@ -97,7 +97,7 @@ pub fn entity_want_hit(
         //Payer le prix de l'action.    // A reviser.
         // A changer dans l'action en elle-même logiquement. Ici on ne devrait que verifier.
         let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
-        consume_actionpoints(&mut action_points, AP_COST_RANGED);
+        consume_actionpoints(&mut action_points, AP_COST_RANGED);       // TOCHANGE: A cause de ca, pas compatible Melee / Ranged.
         if let Ok(_is_player) = player_q.get(entity) {
             ev_interface.send(ReloadUiEvent);   // Utile? TOCHECK
             ev_refresh_action.send(RefreshActionCostEvent); // Ui ? TOCHECK
@@ -280,76 +280,3 @@ pub fn entity_dies(
 }
 
 
-
-// Ui?
-
-#[derive(Resource)]
-pub struct ActionInfos {
-    pub cost: Option<u32>,
-    pub path: Option<VecDeque<Vector2Int>>,
-    pub target: Option<Vector2Int>,
-    pub entity: Option<Entity>,
-}
-
-pub fn create_action_infos(
-    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-    board: Res<Map>,
-    mut action_infos: ResMut<ActionInfos>,
-    cursor: Res<Cursor>,
-    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>)>,
-    mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
-) {
-    for _event in ev_refresh_action.read() {
-        //println!("Updating ActionInfos ");
-        //Reset:
-        action_infos.cost = None;
-        action_infos.path = None;
-        action_infos.target = None; //Some(cursor.grid_position);
-        action_infos.entity = None;
-
-        let Ok(player_infos) = query_character_turn.get_single() else { 
-            println!("create action: No player infos");
-            return };
-        let (entity, action_points, position) = player_infos;
-        action_infos.entity = Some(entity);
-
-        let tile_position = cursor.grid_position;
-        if !board.entity_tiles.contains_key(&tile_position) { 
-            //println!("Create action: out of map for {:?} with position: {:?}", entity, position);
-            return }
-
-        let mut has_target = false;
-        if piece_position.iter().any(|board_position| board_position.v == tile_position) {
-            has_target = true;
-            action_infos.target = Some(tile_position);
-        }
-        //DEBUG: println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
-
-        let path_to_destination = find_path(
-            position.v,
-            tile_position,
-            &board.entity_tiles.keys().cloned().collect(),
-            &query_occupied.iter().map(|p| p.v).collect(),
-            has_target,
-        ); 
-
-        let Some(path) = path_to_destination else { 
-                //DEBUG: println!("Pas de Path");
-            return };
-
-        //DEBUG: println!("All return checks are done.");
-        let mut ap_cost = path.len() as u32;
-        if has_target {
-            let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
-            ap_cost = ap_cost.saturating_add(ap_melee_cost)
-        }
-
-        if action_points.current >= ap_cost {
-            action_infos.cost = Some(ap_cost);
-            action_infos.path = Some(path);
-        };
-
-        // DEBUG: println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
-    }
-}
