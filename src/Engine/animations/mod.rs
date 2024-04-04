@@ -50,7 +50,7 @@ impl Plugin for AnimationsPlugin {
 // Necessaire, mais est-ce la bonne manière?
 fn clean_animations(
     mut commands: Commands,
-    mut remove_q: Query<Entity, With<RemoveEntity>>
+    remove_q: Query<Entity, With<RemoveEntity>>
 ) {
     despawn_component(remove_q, &mut commands);
 }
@@ -63,10 +63,8 @@ fn animate_sprite(
     for (entity, indices, mut timer, mut atlas) in &mut query {
         //println!("Effect timer: animate sprite.");
         timer.tick(time.delta());
-        if timer.just_finished() {
-            println!("for entity {:?}, index is now : {:?}", entity, atlas.index);
+        if timer.just_finished() {           
             if atlas.index == indices.last {
-                println!("Please remove entity {:?}", entity);
                 commands.entity(entity).insert(RemoveEntity);        
             } else {
                 atlas.index += 1
@@ -79,7 +77,7 @@ fn animate_sprite(
 pub fn spawn_hit_effect(
     mut commands: Commands,
     mut ev_spawn_effect: EventReader<EffectEvent>,
-    mut graph_assets: ResMut<GraphicsAssets>,
+    graph_assets: ResMut<GraphicsAssets>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     for event in ev_spawn_effect.read() {

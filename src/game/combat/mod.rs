@@ -35,8 +35,7 @@ On note aussi que l'animation est aussi ici pour les deplacements.
 */
 
 
-pub const AP_COST_MOVE:u32 = 1;
-pub const AP_COST_MELEE:u32 = 3;
+
 
 #[derive(SystemSet, Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum CombatSet {
@@ -63,8 +62,8 @@ use crate::game::{
 
 use self::{
     components::{CurrentEntityTurnQueue, IsDead}, 
-    event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_miss_attack, action_entity_try_attack, create_action_infos, entity_dies, ActionInfos},
-    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitMissEvent, EntityHitTryEvent, RefreshActionCostEvent, Turn},
+    event_systems::{action_entity_end_turn, action_entity_get_hit, action_entity_miss_attack, action_entity_try_attack, create_action_infos, entity_dies, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit, ActionInfos},
+    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityDeathEvent, EntityEndTurnEvent, EntityGetHitEvent, EntityHitMissEvent, EntityHitTryEvent, EntityHitTryRangedEvent, RefreshActionCostEvent, Turn},
     ia::IaPlugin
 };
 use super::{manager::MessageEvent, movements::action_entity_try_move, pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
@@ -89,6 +88,7 @@ impl Plugin for CombatPlugin {
             
 
             .add_event::<EntityHitTryEvent>()          // Entity tente d'attaquer.
+            .add_event::<EntityHitTryRangedEvent>()        // Entity tente d'attaquer à distance. Combat v2, WIP. 0.19
             .add_event::<EntityHitMissEvent>()         // Entity échoue à toucher sa cible.
             .add_event::<EntityGetHitEvent>()          // Entity subit des degats d'une source.
             .add_event::<EntityDeathEvent>()           // L'entité vient de mourir: on transforme son corps et retire les composants.
@@ -111,7 +111,14 @@ impl Plugin for CombatPlugin {
             // Gestion des actions demandées. Resolution.   // Vraiment dans le combat? Certaines pourraient se faire hors baston.
             .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 
+            // 0.19b back to component. Ranged only.
+            .add_systems(Update, on_event_entity_want_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) 
+            .add_systems(Update, entity_want_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(on_event_entity_want_hit))
+            .add_systems(Update, entity_try_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_want_hit))
+            .add_systems(Update, entity_miss_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_try_hit))
+                                 
             .add_systems(Update, action_entity_try_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_move))
+
             .add_systems(Update, action_entity_get_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_attack))
             .add_systems(Update, action_entity_miss_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_try_attack))
             .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(action_entity_get_hit))

@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::game::combat::{AP_COST_MELEE, AP_COST_MOVE};
+use crate::game::combat::rules::{AP_COST_MELEE, AP_COST_MOVE};
 use crate::engine::animations::events::AnimateEvent;
 use crate::vectors::Vector2Int;
 

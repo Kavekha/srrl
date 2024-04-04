@@ -7,6 +7,7 @@ pub const RELEASE: &str = "R0.4";
 // Min - Max VOLUME
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 5.0;
+
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
 pub const RESOLUTION: f32 = 16.0 / 9.0;
@@ -23,6 +24,7 @@ pub const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
 pub const STANDARD_TILE_SIZE:i32 = 32;  //64;
+
 // RENDERING ORDER
 pub const ORDER_FLOOR: f32 = 0.0;
 pub const ORDER_CORPSE: f32 = 1.0;

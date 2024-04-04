@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::vectors::Vector2Int;
+use crate::{game::player::cursor::CursorMode, vectors::Vector2Int};
 
 
 
@@ -45,6 +45,13 @@ pub struct EntityTryMoveEvent {
 
 
 #[derive(Event)]
+pub struct EntityHitTryRangedEvent {
+    pub entity: Entity,
+    pub target: Vector2Int,
+}
+
+
+#[derive(Event)]
 pub struct EntityHitTryEvent {
     pub entity: Entity,
     pub target: Vector2Int,
@@ -71,3 +78,12 @@ pub struct EntityDeathEvent {
 
 #[derive(Event)]
 pub struct RefreshActionCostEvent;
+
+
+// 0.19 Refacto
+#[derive(Event)]
+pub struct WantToHitEvent {
+    pub source: Entity,
+    pub target: Vector2Int,
+    pub mode: CursorMode    // TO CHANGE : Demonstration ici du ridicule d'avoir le mode sur le curseur.    
+}
