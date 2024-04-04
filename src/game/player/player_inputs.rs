@@ -81,12 +81,9 @@ pub fn ig_inside_menu_input(
 pub fn combat_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
-    //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    //player_query: Query<(Entity, Has<Player>)>,   // no entity at the end? // TO DELETE?
     player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     res_cursor: Res<Cursor>,    //TODO : On click event?
-    //mut ev_on_click: EventWriter<OnClickEvent>,
     mut ev_want_to_hit: EventWriter<WantToHitEvent>,
     mut ev_want_to_move: EventWriter<WantToMoveEvent>
 ){
@@ -119,7 +116,7 @@ pub fn combat_input(
 }
 
 
-//DEBUG / TEST 0.16.1
+// 0.16.1
 pub fn mouse_scroll(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
