@@ -90,6 +90,8 @@ pub fn update_action_infos(
                 // On attaque à distance ici, s'il y a une cible. Sinon on ne peut rien faire.
                 if has_target {
                     ap_cost = AP_COST_RANGED;
+                } else {
+                    return  // Cost sera a None, car on ne peut rien faire si pas de vraie cible.
                 }
             }
         }
