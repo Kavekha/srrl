@@ -1,3 +1,14 @@
+// ==> DOCUMENTATION 0.19
+/*
+Le joueur a deux modes: Move & target.
+Au clic, il determine un point où se deplacer. Component TryToMove.
+On regarde si cela reponds à diverses contraintes. Si OK, Component MoveTo.
+On deplace ensuite les persos avec le MoveTo.
+
+Les NPC utilisent le même principe une fois qu'ils savent où ils veulent aller.
+
+ */
+
 use bevy::prelude::*;
 
 pub mod movement_systems;

@@ -96,9 +96,7 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start).in_set(CombatSet::Logic))
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
-            .add_systems(Update, combat_clean_death.after(combat_turn_end).in_set(CombatSet::Logic))
-
-            // Gestion des actions demandées. Resolution.   // Vraiment dans le combat? Certaines pourraient se faire hors baston.
+            .add_systems(Update, combat_clean_death.after(combat_turn_end).in_set(CombatSet::Logic))            
             .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 
             // 0.19b back to component. 
