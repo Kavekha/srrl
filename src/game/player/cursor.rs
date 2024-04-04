@@ -21,7 +21,7 @@ impl Plugin for CursorPlugin{
 pub enum CursorMode{
     MOVE,
     TARGET,
-    MELEE    
+    //MELEE    
 }
 
 //camera.logical_viewport_size() donne la taille de l'ecran en pixel, de 0 à +X, et de 0 à +Y.

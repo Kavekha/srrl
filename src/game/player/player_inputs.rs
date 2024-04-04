@@ -1,8 +1,8 @@
 use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
 
-use crate::{game::{combat::{event_systems::ActionInfos, events::{EntityEndTurnEvent, EntityTryMoveEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
+use crate::{game::{combat::events::{EntityEndTurnEvent, RefreshActionCostEvent, WantToHitEvent}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
 
-use super::{components::{OnClickEvent, WantToMoveEvent}, Cursor, Player};
+use super::{components::WantToMoveEvent, Cursor, Player};
 
 
 
@@ -112,30 +112,9 @@ pub fn combat_input(
             CursorMode::TARGET => {
                 ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination, mode: res_cursor.mode.clone() }); // refacto 0.19b
             },
-            _ => println!("Not implemented.")
+            //_ => println!("Not implemented.")
         }
 
-    }
-}
-
-
-
-
-
-/// Player clicked on a tile.
-/// 0.19b: le ranged ne passe pas par là mais par WantToHitEvent.
-pub fn on_click_action(
-    mut ev_onclick: EventReader<OnClickEvent>,
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    action_infos: Res<ActionInfos>,
-){
-    for _event in ev_onclick.read() {
-        let path = action_infos.path.clone();
-        let Some(entity) = action_infos.entity else { continue };
-        let Some(path) = path else { continue };
-
-        println!("On clic action: OK. Send event.");
-        ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: action_infos.target });
     }
 }
 

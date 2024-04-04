@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{combat::{components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, EntityTryMoveEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE}}, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{combat::{components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE}}, movements::components::WantToMove, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 
 
@@ -32,13 +32,13 @@ pub struct NpcGoal {
 }
 
 pub fn npc_planning(
+    mut commands: Commands,
     combat_info: Res<CombatInfos>,
     query_npc: Query<(&ActionPoints, &BoardPosition), (With<Npc>, With<Turn>)>,
     query_player: Query<&BoardPosition, (With<Player>, Without<IsDead>)>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
-    mut ev_try_move: EventWriter<EntityTryMoveEvent>
 ) {
     //println!("Planing: First step:");
     
@@ -73,7 +73,8 @@ pub fn npc_planning(
         // Est ce que je peux toucher le PJ?
         if (path.len() as u32 * AP_COST_MOVE) + AP_COST_MELEE < npc_action_points.current {
             println!("Planning: My target is close enough to hit: {:?}", entity);
-            ev_try_move.send(EntityTryMoveEvent { entity: entity, path: path.clone(), target: Some(player_position.v) });
+            //ev_try_move.send(EntityTryMoveEvent { entity: entity, path: path.clone(), target: Some(player_position.v) });     // Avant 0.19b
+            commands.entity(entity).insert(WantToMove { entity: entity, path: path, target: Some(player_position.v)});
             return
         }
         // Si je ne peux pas le toucher, je m'approche quand même.
@@ -93,7 +94,8 @@ pub fn npc_planning(
         }
         if !new_path.is_empty() {
             println!("Planning: Moving closer: {:?}", entity);
-            ev_try_move.send(EntityTryMoveEvent { entity: entity, path: new_path, target: Some(player_position.v) });
+            //ev_try_move.send(EntityTryMoveEvent { entity: entity, path: new_path, target: Some(player_position.v) });
+            commands.entity(entity).insert(WantToMove { entity: entity, path: new_path, target: Some(player_position.v)});
             return
         }
     }

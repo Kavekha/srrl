@@ -8,7 +8,7 @@ pub mod cursor;
 pub use components::Player;
 pub use cursor::Cursor;
 
-use self::{components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, on_click_action, player_choose_action_input, player_mouse_input}, player_systems::{camera_smooth_follow, exit_step_check}};
+use self::{components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}, player_systems::{camera_smooth_follow, exit_step_check}};
 
 use crate::game::states::GameState;
 
@@ -31,10 +31,8 @@ impl Plugin for PlayerPlugin{
             
             .add_systems(Update, player_mouse_input.run_if(in_state(GameState::Running)))   
 
-            // 0.19b           
-
+            // 0.19b
             .add_systems(Update, combat_input.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            .add_systems(Update, on_click_action.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(combat_input))
             .add_systems(Update, player_choose_action_input.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic)) 
 
             .add_systems(Update, ig_call_menu_input.run_if(in_state(GameState::Running)))   // Appeler IG Menu si In Game.            
