@@ -2,12 +2,16 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::engine::render::get_world_position;
-use crate::game::combat::components::{AttackType, Die, GetHit, MissHit, TryHit, WantToHit};
-use crate::game::player::cursor::CursorMode;
 use crate::{
-    engine::{animations::events::{AnimateEvent, EffectEvent}, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
-        combat::{components::IsDead, rules::{roll_dices_against, AP_COST_RANGED }}, 
+    engine::{
+        animations::events::{AnimateEvent, EffectEvent}, 
+        asset_loaders::graphic_resources::GraphicsAssets, 
+        audios::SoundEvent,
+        render::get_world_position
+    }, 
+    game::{
+        combat::{components::{AttackType, Die, GetHit, MissHit, TryHit, WantToHit, IsDead}, 
+        rules::{roll_dices_against, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
@@ -47,24 +51,18 @@ pub fn action_entity_end_turn(
     }
 }
 
-// 0.19b Ranged + Refacto.
+// 0.19b Ranged + Refacto.  // 0.19c TO CHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
 pub fn on_event_entity_want_hit(
     mut commands: Commands,
-    mut ev_want_to_hit: EventReader<WantToHitEvent>
+    mut ev_want_to_hit: EventReader<WantToHitEvent>,
 ){
     for event in ev_want_to_hit.read() {
         println!("Someone want to hit something.");
-        match event.mode {
-            CursorMode::TARGET => { 
-                println!("Je veux atteindre une cible!");
-                let want_hit = WantToHit{ 
-                    mode: AttackType::RANGED,
-                    target: event.target
-                };
-                commands.entity(event.source).insert(want_hit);
-            },
-            _ => println!("Not yet supported.")
+        let want_hit = WantToHit{ 
+            mode: AttackType::RANGED,
+            target: event.target
         };
+        commands.entity(event.source).insert(want_hit);
     }
 }
 

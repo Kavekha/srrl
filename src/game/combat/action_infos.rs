@@ -8,9 +8,9 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{pieces::components::{Health, Occupier, Stats}, player::{cursor::CursorMode, Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{combat::abilities::AbilityType, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{components::{ActionPoints, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
+use super::{abilities::AbilityAttack, components::{ActionPoints, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
 
 
 // Ui?
@@ -21,6 +21,7 @@ pub struct ActionInfos {
     pub path: Option<VecDeque<Vector2Int>>, //Si accessible, on a quelque chose ici: le trajet pour se rendre à la destination (Non enregistrée)
     pub target: Option<Vector2Int>,     // Il y a un fighter a cette position là (Position, Health, Stats, not isDead)
     pub entity: Option<Entity>,     // C'est le joueur. // CAREFUL : Un jour on aura plus de un personnage.
+    pub ability: Option<AbilityAttack>  // 0.19.c
 }
 
 
@@ -75,9 +76,10 @@ pub fn update_action_infos(
 
         // On remonte le cout en AP de l'action en cours.
         // TOCHANGE : Le systeme de Melee / Distance est basé sur le Cursor ce qui est de la merde. En attendant, on utilise ce mecanisme.
-        let mut ap_cost = 0;
-        match cursor.mode {
-            CursorMode::MOVE => {
+        let mut ap_cost: u32;
+
+        match &action_infos.ability {
+            None => {
                 // Le chemin pour se rendre à la cible.
                 ap_cost = path.len() as u32;
                 // S'il y a une Target (un fighter), on ajoute alors le cout du Melee - le cout du deplacement (car on ne fera pas le dernier pas)
@@ -86,15 +88,29 @@ pub fn update_action_infos(
                     ap_cost = ap_cost.saturating_add(ap_melee_cost)
                 }
             },
-            CursorMode::TARGET => {
-                // On attaque à distance ici, s'il y a une cible. Sinon on ne peut rien faire.
-                if has_target {
-                    ap_cost = AP_COST_RANGED;
-                } else {
-                    return  // Cost sera a None, car on ne peut rien faire si pas de vraie cible.
-                }
-            }
-        }
+            Some(ability) => {
+                match ability.ability_type {
+                    AbilityType::Melee => {
+                        // Le chemin pour se rendre à la cible. // Doublon de none car on ne distingue pas le fait de se deplacer sur qq un ou sur une tuile.
+                        ap_cost = path.len() as u32;
+                        // S'il y a une Target (un fighter), on ajoute alors le cout du Melee - le cout du deplacement (car on ne fera pas le dernier pas)
+                        if has_target {
+                            let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
+                            ap_cost = ap_cost.saturating_add(ap_melee_cost)
+                        }
+                    },
+                    AbilityType::Ranged => {
+                        // On attaque à distance ici, s'il y a une cible. Sinon on ne peut rien faire.
+                        if has_target {
+                            ap_cost = AP_COST_RANGED;
+                        } else {
+                            return  // Cost sera a None, car on ne peut rien faire si pas de vraie cible.
+                        }
+                    }
+                };
+            },
+            //_ => println!("Not combat_input.")
+        };
 
         //Si on a autant ou moins de AP disponibles que le cout mentionné, alors on affiche le cout AP et enregistre le Path.
         if action_points.current >= ap_cost {

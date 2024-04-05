@@ -52,6 +52,7 @@ pub mod event_systems;  //TODO deplacer les elements publiques?
 pub mod rules;
 pub mod ia;
 pub mod action_infos;
+pub mod abilities;
 
 
 use crate::game::{
@@ -76,7 +77,7 @@ impl Plugin for CombatPlugin {
             .add_plugins(IaPlugin)
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
-            .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None })
+            .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None, ability: None })
 
             .add_event::<CombatTurnStartEvent>()        // Lance le tour.
             .add_event::<CombatTurnNextEntityEvent>()   // Envoyé pour prendre le nouvel acteur.
