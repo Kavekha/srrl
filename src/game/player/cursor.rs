@@ -16,14 +16,6 @@ impl Plugin for CursorPlugin{
     }
 }
 
-/* 
-#[derive(Clone)]
-pub enum CursorMode{
-    MOVE,
-    TARGET,
-    //MELEE    
-}
-*/
 
 //camera.logical_viewport_size() donne la taille de l'ecran en pixel, de 0 à +X, et de 0 à +Y.
 #[derive(Resource, Component)]
@@ -74,15 +66,4 @@ pub fn get_grid_position(
 
     Vector2Int{x:grid_x as i32, y:grid_y as i32}
 
-    /*
-    //println!("GetGridPosition: {:?}", (x, y));
-    // We need to reverse the numbers.
-    let world_x = x;
-    let world_y = y - (y * 2.0);
-
-    let grid_x_floor = world_x / STANDARD_TILE_SIZE as f32;
-    let grid_y_floor = world_y / STANDARD_TILE_SIZE as f32;
-
-    Vector2Int{x:grid_x_floor as i32, y:grid_y_floor as i32}
-     */
 }

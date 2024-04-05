@@ -103,21 +103,6 @@ pub fn combat_input(
             },
             //_ => println!("Not combat_input.")
         };
-
-        /* 0.19b 
-        match res_cursor.mode {
-            CursorMode::MOVE => {
-                //ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() }); 
-                ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone()});
-
-            },
-            CursorMode::TARGET => {
-                ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination, mode: res_cursor.mode.clone() }); // refacto 0.19b
-            },
-            //_ => println!("Not implemented.")
-        }
-        */
-
     }
 }
 
