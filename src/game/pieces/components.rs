@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{game::{tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
 
 use super::spawners::Kind;
 

@@ -11,7 +11,7 @@ use crate::{
     }, 
     game::{
         combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, 
-        rules::{roll_dices_against, DiceRollResult, AP_COST_MELEE, AP_COST_RANGED }}, 
+        rules::{combat_test, dmg_resist_test, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
@@ -145,21 +145,20 @@ pub fn entity_try_hit(
             continue };     
 
         // Jet d'attaque. Tout ca est à mettre dans Rules.
-        let dice_roll:DiceRollResult;
-        let dmg:u32;
+        let combat_result: RuleCombatResult;
+        //let dice_roll:DiceRollResult;
+        //let dmg:u32;
         match attack.mode {
             AttackType::MELEE => {
-                dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
-                dmg = dice_roll.success.saturating_add(attacker_stats.strength as u32);
+                combat_result = combat_test(&AttackType::MELEE, attacker_stats, defender_stats);
             },
             AttackType::RANGED => {
-                dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);   
-                dmg = dice_roll.success.saturating_add(attacker_stats.logic as u32);
+                combat_result = combat_test(&AttackType::RANGED, attacker_stats, defender_stats);
             }
         }
 
-        if dice_roll.success > 0 {
-            commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: dmg});
+        if combat_result.success {
+            commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: combat_result.dmg});
             ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
         } else {
             commands.entity(entity).insert(MissHit { mode: attack.mode.clone(), defender:attack.defender});
@@ -227,12 +226,12 @@ pub fn entity_get_hit(
         let (defender_stats, mut defender_health, _is_player) = defender_infos;
 
         // Roll resist.
-        let dice_roll = roll_dices_against(defender_stats.strength, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
-        let dmg = get_hit.dmg.saturating_sub(dice_roll.success); 
+        let test_resist = dmg_resist_test(&get_hit.mode, &defender_stats);
+        let final_dmg = get_hit.dmg.saturating_sub(test_resist.dmg_reduction); 
 
         // Reducing health.
-        defender_health.current = defender_health.current.saturating_sub(dmg);
-        println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
+        defender_health.current = defender_health.current.saturating_sub(final_dmg);
+        println!("Dmg on health for {:?} is now {:?}/{:?}", final_dmg, defender_health.current, defender_health.max);
         if defender_health.current == 0 {            
             //ev_die.send(EntityDeathEvent { entity: entity, attacker: get_hit.attacker });
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
@@ -245,11 +244,11 @@ pub fn entity_get_hit(
         //logs 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(get_hit.attacker) else { continue;};
-        if dice_roll.success == 0 {     // No dmg reduction.
-            ev_log.send(LogEvent {entry: format!("{} takes a full blow from {}, for {:?} damages!", entity_name, attacker_entity_name, dmg)});        // Log v0
+        if test_resist.success == false {     // No dmg reduction.
+            ev_log.send(LogEvent {entry: format!("{} takes a full blow from {}, for {:?} damages!", entity_name, attacker_entity_name, final_dmg)});        // Log v0
         }
-        else if dmg > 0 {
-            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", attacker_entity_name, entity_name, dmg)});        // Log v0
+        else if final_dmg > 0 {
+            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", attacker_entity_name, entity_name, final_dmg)});        // Log v0
         } else {
             ev_log.send(LogEvent {entry: format!("{} takes a hit without effect from {}.",entity_name, attacker_entity_name)});        // Log v0
         }
