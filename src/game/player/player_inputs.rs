@@ -1,45 +1,30 @@
 use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
 
-use crate::{game::{combat::events::{EntityEndTurnEvent, RefreshActionCostEvent, WantToHitEvent}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player::cursor::CursorMode}, menu_builders::ScrollingList};
+use crate::{game::{combat::{action_infos::ActionInfos, components::AttackType, events::{EntityEndTurnEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
+    manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
+    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}}, menu_builders::ScrollingList};
 
 use super::{components::WantToMoveEvent, Cursor, Player};
 
 
-
-// 0.18 : ranged attack at last.
+// 0.19d : Removal Abilities for now.
 pub fn player_choose_action_input(
+    mut action_infos: ResMut<ActionInfos>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut res_cursor: ResMut<Cursor>,
     mut ev_log: EventWriter<LogEvent>,
 ) {
     if keys.just_pressed(KeyCode::Digit1) {
-        match res_cursor.mode {
-            CursorMode::MOVE => {
-                ev_log.send(LogEvent {entry: format!("Already in Melee mode.")});    //TO CHANGE
-            },
-            _ => {
-                res_cursor.mode = CursorMode::MOVE;
-                ev_log.send(LogEvent {entry: format!("Now in Melee mode.")});                
-            },
-        };        
-        println!("Choosing Melee combat.");
+        action_infos.attack = Some(AttackType::MELEE);
+        ev_log.send(LogEvent {entry: format!("Now in Melee mode.")});  
     }
     if keys.just_pressed(KeyCode::Digit2) {
-        match res_cursor.mode {
-            CursorMode::TARGET => {
-                ev_log.send(LogEvent {entry: format!("Already in Targeting mode.")});    //TO CHANGE
-            },
-            _ => {
-                res_cursor.mode = CursorMode::TARGET;
-                ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});                
-            },
-        };   
-        println!("Choosing Ranged combat.");
+        action_infos.attack = Some(AttackType::RANGED);
+        ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});       
     }
 }
 
 
-// TODO : Est-ce normal que le cout AP soit ici?
+// Recalcule tout ActionInfos 
 pub fn player_mouse_input(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut mouse_move: EventReader<MouseMotion>,
@@ -81,18 +66,16 @@ pub fn ig_inside_menu_input(
 pub fn combat_input(
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
-    //mut ev_try_move: EventWriter<EntityTryMoveEvent>,
-    //player_query: Query<(Entity, Has<Player>)>,   // no entity at the end? // TO DELETE?
     player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
+    action_infos: ResMut<ActionInfos>,  // Contient le type d'attaque utilisé..
     res_cursor: Res<Cursor>,    //TODO : On click event?
-    //mut ev_on_click: EventWriter<OnClickEvent>,
     mut ev_want_to_hit: EventWriter<WantToHitEvent>,
     mut ev_want_to_move: EventWriter<WantToMoveEvent>
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
-        let Ok(result) = player_query.get_single() else { return };
+        let Ok(result) = player_query.get_single() else { return };     // TODO si on conserve action_infos, utiliser l'entité de ActionInfos?
         let entity = result;    //result.0 autrefois
         ev_endturn.send(EntityEndTurnEvent {entity});
         println!("Player asked for End of round for {:?}.", entity);
@@ -103,23 +86,27 @@ pub fn combat_input(
         let destination = res_cursor.grid_position;
 
         println!("Click !");
-        match res_cursor.mode {
-            CursorMode::MOVE => {
-                //ev_on_click.send(OnClickEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone() }); 
-                ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination, mode: res_cursor.mode.clone()});
-
+        match &action_infos.attack {
+            None => {
+                ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination});
             },
-            CursorMode::TARGET => {
-                ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination, mode: res_cursor.mode.clone() }); // refacto 0.19b
+            Some(attack_type) => {
+                match attack_type {
+                    AttackType::MELEE => {
+                        ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination});
+                    },
+                    AttackType::RANGED => {
+                        ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination});
+                    }
+                };
             },
-            //_ => println!("Not implemented.")
-        }
-
+            //_ => println!("Not combat_input.")
+        };
     }
 }
 
 
-//DEBUG / TEST 0.16.1
+// 0.16.1
 pub fn mouse_scroll(
     mut mouse_wheel_events: EventReader<MouseWheel>,
     mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,

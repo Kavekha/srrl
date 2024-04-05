@@ -42,6 +42,7 @@ pub struct ScrollingList {
 
 #[derive(Clone)]
 pub struct Action {pub action: MenuButtonAction, pub text:String}
+
 #[derive(Clone)]
 pub struct Header {pub text: String}
 #[derive(Clone)]

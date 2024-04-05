@@ -2,16 +2,20 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::engine::render::get_world_position;
-use crate::game::combat::components::{AttackType, Die, GetHit, MissHit, TryHit, WantToHit};
-use crate::game::player::cursor::CursorMode;
 use crate::{
-    engine::{animations::events::{AnimateEvent, EffectEvent}, asset_loaders::graphic_resources::GraphicsAssets, audios::SoundEvent}, game::{
-        combat::{components::IsDead, rules::{roll_dices_against, AP_COST_MELEE, AP_COST_RANGED, AP_COST_MOVE}}, 
+    engine::{
+        animations::events::{AnimateEvent, EffectEvent}, 
+        asset_loaders::graphic_resources::GraphicsAssets, 
+        audios::SoundEvent,
+        render::get_world_position
+    }, 
+    game::{
+        combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, 
+        rules::{roll_dices_against, AP_COST_MELEE, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
-        pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player},        
+        pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
-    }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::{find_path, Vector2Int}
+    }, globals::ORDER_CORPSE, vectors::Vector2Int
 };
 
 use super::events::WantToHitEvent;
@@ -47,28 +51,22 @@ pub fn action_entity_end_turn(
     }
 }
 
-// 0.19b Ranged + Refacto.
+// 0.19b Ranged + Refacto.  // 0.19c TO CHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
 pub fn on_event_entity_want_hit(
     mut commands: Commands,
-    mut ev_want_to_hit: EventReader<WantToHitEvent>
+    mut ev_want_to_hit: EventReader<WantToHitEvent>,
 ){
     for event in ev_want_to_hit.read() {
         println!("Someone want to hit something.");
-        match event.mode {
-            CursorMode::TARGET => { 
-                println!("Je veux atteindre une cible!");
-                let want_hit = WantToHit{ 
-                    mode: AttackType::RANGED,
-                    target: event.target
-                };
-                commands.entity(event.source).insert(want_hit);
-            },
-            _ => println!("Not yet supported.")
+        let want_hit = WantToHit{ 
+            mode: AttackType::RANGED,
+            target: event.target
         };
+        commands.entity(event.source).insert(want_hit);
     }
 }
 
-// 0.19b
+// 0.19d : utilisé par Ranged & Melee.
 // Ici on verifie tout.
 pub fn entity_want_hit(
     mut commands: Commands,
@@ -80,8 +78,6 @@ pub fn entity_want_hit(
     available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
     stats_q: Query<&Stats>,        
     mut ev_log: EventWriter<LogEvent>,
-    position_q: Query<&BoardPosition>,            // 0.19b MELEE 
-    mut ev_animate: EventWriter<AnimateEvent>,    // 0.19b MELEE only
 ) {
     for (entity, want) in want_hit_q.iter() {
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
@@ -94,22 +90,26 @@ pub fn entity_want_hit(
             ev_log.send(LogEvent {entry: format!("ERROR: Not a valid fighter, can't attack. Stats missing.")});  // No Stats, can't be attacked.
             continue };    
 
-        //Payer le prix de l'action.    // A reviser.
-        // A changer dans l'action en elle-même logiquement. Ici on ne devrait que verifier.
-        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
-        consume_actionpoints(&mut action_points, AP_COST_RANGED);
-        if let Ok(_is_player) = player_q.get(entity) {
-            ev_interface.send(ReloadUiEvent);   // Utile? TOCHECK
-            ev_refresh_action.send(RefreshActionCostEvent); // Ui ? TOCHECK
-        }
-
         // Targets de la case:
         let target_entities = available_targets.iter().filter(|(_, position, _)| position.v == want.target).collect::<Vec<_>>(); 
         if target_entities.len() == 0 { 
             ev_log.send(LogEvent {entry: format!("There is no available target here.")});        // Log v0
             continue };     
 
-        for (target_entity, target_position, _target_stats) in target_entities.iter() {     
+        //Payer le prix de l'action.
+        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
+        match want.mode {
+            AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
+            AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
+            //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
+        };
+            
+        if let Ok(_is_player) = player_q.get(entity) {
+            ev_interface.send(ReloadUiEvent); 
+            ev_refresh_action.send(RefreshActionCostEvent);
+        }
+
+        for (target_entity, _target_position, _target_stats) in target_entities.iter() {     
             println!("Want hit: potentielle target: {:?}", *target_entity);
             // Can't hit yourself.
             if entity == * target_entity { 
@@ -117,15 +117,7 @@ pub fn entity_want_hit(
                 continue; }; 
 
                 let try_hit = TryHit { mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
-                commands.entity(entity).insert(try_hit);
-
-            // Animation MELEE.
-            if let Ok(entity_position) = position_q.get(entity) {
-                let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
-                path_animation.push_back(target_position.v);            
-                path_animation.push_back(entity_position.v);
-                ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
-            }
+                commands.entity(entity).insert(try_hit);     
         }
     }
 }
@@ -136,7 +128,9 @@ pub fn entity_try_hit(
     try_hit_q: Query<(Entity, &TryHit)>,
     stats_q: Query<&Stats>,       
     //mut ev_gethit: EventWriter<EntityGetHitEvent>,
-    mut ev_sound: EventWriter<SoundEvent>
+    mut ev_sound: EventWriter<SoundEvent>,
+    mut ev_animate: EventWriter<AnimateEvent>,      
+    position_q: Query<&BoardPosition>,   
 ){
     for (entity, attack) in try_hit_q.iter() {
         commands.entity(entity).remove::<TryHit>(); // On retire au debut, car command joué à la fin & si continue au milieu ne sera pas traité.
@@ -148,9 +142,9 @@ pub fn entity_try_hit(
             continue };      
         let Ok(defender_stats) = stats_q.get(attack.defender) else { 
             // DEBUG: println!("Pas de stats pour l'attaquant");
-            continue };  
+            continue };     
 
-        // Jet d'attaque.
+        // Jet d'attaque.   // TODO : Ranged or Melee
         let dice_roll = roll_dices_against(attacker_stats.attack, defender_stats.dodge);   
         let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
 
@@ -158,9 +152,22 @@ pub fn entity_try_hit(
             commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: dmg});
             ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
         } else {
-            //ev_try_miss.send(EntityHitMissEvent{entity: entity, defender: attack.defender});
             commands.entity(entity).insert(MissHit { mode: attack.mode.clone(), defender:attack.defender});
         }
+
+        // Animation 
+        let Ok(target_position) = position_q.get(attack.defender) else { continue };
+        match attack.mode { 
+            AttackType::MELEE => {
+                if let Ok(entity_position) = position_q.get(entity) {
+                    let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
+                    path_animation.push_back(target_position.v);            
+                    path_animation.push_back(entity_position.v);
+                    ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
+                }
+            },
+            _ => println!("Want to hit, not supported yet for other than MELEE")
+        };  
     }
 }
 
@@ -280,76 +287,3 @@ pub fn entity_dies(
 }
 
 
-
-// Ui?
-
-#[derive(Resource)]
-pub struct ActionInfos {
-    pub cost: Option<u32>,
-    pub path: Option<VecDeque<Vector2Int>>,
-    pub target: Option<Vector2Int>,
-    pub entity: Option<Entity>,
-}
-
-pub fn create_action_infos(
-    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-    board: Res<Map>,
-    mut action_infos: ResMut<ActionInfos>,
-    cursor: Res<Cursor>,
-    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>)>,
-    mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
-) {
-    for _event in ev_refresh_action.read() {
-        //println!("Updating ActionInfos ");
-        //Reset:
-        action_infos.cost = None;
-        action_infos.path = None;
-        action_infos.target = None; //Some(cursor.grid_position);
-        action_infos.entity = None;
-
-        let Ok(player_infos) = query_character_turn.get_single() else { 
-            println!("create action: No player infos");
-            return };
-        let (entity, action_points, position) = player_infos;
-        action_infos.entity = Some(entity);
-
-        let tile_position = cursor.grid_position;
-        if !board.entity_tiles.contains_key(&tile_position) { 
-            //println!("Create action: out of map for {:?} with position: {:?}", entity, position);
-            return }
-
-        let mut has_target = false;
-        if piece_position.iter().any(|board_position| board_position.v == tile_position) {
-            has_target = true;
-            action_infos.target = Some(tile_position);
-        }
-        //DEBUG: println!("creation action post has_target: has_target = {:?}, infos.target = {:?}", has_target, action_infos.target);
-
-        let path_to_destination = find_path(
-            position.v,
-            tile_position,
-            &board.entity_tiles.keys().cloned().collect(),
-            &query_occupied.iter().map(|p| p.v).collect(),
-            has_target,
-        ); 
-
-        let Some(path) = path_to_destination else { 
-                //DEBUG: println!("Pas de Path");
-            return };
-
-        //DEBUG: println!("All return checks are done.");
-        let mut ap_cost = path.len() as u32;
-        if has_target {
-            let ap_melee_cost = AP_COST_MELEE.saturating_sub(AP_COST_MOVE); // REMEMBER : En melee, le dernier pas est sur la cible donc il faut le retirer.
-            ap_cost = ap_cost.saturating_add(ap_melee_cost)
-        }
-
-        if action_points.current >= ap_cost {
-            action_infos.cost = Some(ap_cost);
-            action_infos.path = Some(path);
-        };
-
-        // DEBUG: println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
-    }
-}

@@ -2,7 +2,13 @@ use bevy::prelude::*;
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
-use crate::{game::{pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}}, vectors::Vector2Int};
+use crate::{
+    game::{
+        pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+    }, 
+    vectors::Vector2Int};
+
+use super::components::CharacterBundle;
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -31,36 +37,31 @@ pub fn get_random_kind(
     }
 }
 
-
-
+// 0.19 adds Abilities there.
 pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
-    //if let Some(map_infos) = world.get_resource::<MapInfos>(){
-        //let player_starting_position = map_infos.starting_position;
-        println!("Player: Starting position = {:?}", player_starting_position);
-        let kind = get_random_kind();
-        let piece = Piece{kind: kind};
+    println!("Player: Starting position = {:?}", player_starting_position);
+    let kind = get_random_kind();
+    let piece = Piece{kind: kind};
 
-        let mut player = world.spawn_empty();
-        
-        player
-            .insert(piece)
-            .insert(Player)
-            .insert(Name::new("The Shadowrunner"))
-            //TODO : Shadowrun stats
-            .insert(Stats {
+    let player = world.spawn(CharacterBundle{
+            piece: piece, 
+            position: BoardPosition{ v:player_starting_position },
+            name: Name::new("the ShadowRunner"),
+            stats: Stats {
                 power: 3,         
                 attack: 6,
                 dodge: 6,
                 resilience: 3
-            })
-            //.insert(Actor::default(),)
-            .insert(Health { max: 10, current: 10 })
-            .insert(Melee { damage: 1 })
-            .insert(BoardPosition{ v:player_starting_position })
-            .insert(Occupier);
-    //}
+            },
+            health: Health { max: 10, current: 10 },
+            melee: Melee { damage: 0 },
+            occupier: Occupier
+        }).id();
+    //player.insert(Player);
+    world.entity_mut(player).insert(Player);
+    let stats = world.entity(player).get::<Stats>().unwrap();
+    println!("Player stats are {:?}", stats);
 }
-
 
 pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
     for entity_position in entities_pos {
@@ -70,28 +71,30 @@ pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
 }
 
 fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
-) {
-        let mut npc = world.spawn_empty();
-        
-        npc
-        .insert(Name::new(format!("Ghoul")))
-        .insert(Piece{kind: Kind::Ghoul })
-        .insert(Stats {
+){
+    let mut npc = world.spawn(CharacterBundle {
+        piece: Piece{kind: Kind::Ghoul},
+        name: Name::new(format!("Ghoul")),
+        stats: Stats {
             power: 4,         
             attack: 4,
             dodge: 3,
             resilience: 4
-        })
-        //.insert(Actor::default(),)
-        .insert(Npc)
-        .insert(Monster)
-        .insert(Walk)
-        .insert(Melee { damage: 2 })
-        .insert(Health { max: 10, current: 10 })
-        .insert(BoardPosition{ v:npc_spawning_position })
-        .insert(Occupier);
+        },
+        health: Health { max: 10, current: 10 },
+        melee: Melee { damage: 2 },
+        position: BoardPosition{ v:npc_spawning_position },
+        occupier: Occupier,
+    });
+
+    npc
+    .insert(Npc)
+    .insert(Monster)
+    .insert(Walk);
+
     println!("Npc created");
 }
+
 
 pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){
     let mut exit = world.spawn_empty();

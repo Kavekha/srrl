@@ -1,3 +1,30 @@
+// ==> DOCUMENTATION 0.19
+/*
+InGame, player_mouse_input regarde si la mouse a des events et envoi un RefreshActionCostEvent ==> Utilité? 
+ingame, combat_input permets:
+    - De passer le tour (consomme tous les AP),
+    - Faire un clic sur la map.
+        - Enregistre la position de la tuile cliquée.
+        - Selon le CursorMode (Rien a faire là)
+            - Annonce l'intention de se deplacer (Ou attaquer si tuile occupée par un combattant, les deux se melangent encore)
+            - Annonce l'intention d'une attaque à distance.
+InGame, player_choose_action_input permets de choisir le mode d'attaque, enregistré dans le CursorMode pour aucune bonne raison:
+    - Attaque Melee / Move.
+    - Attaque à distance.
+InGame, ig_call_menu_input & ig_inside_menu_input permettent d'appeler ou quitter le IG Menu, en passant le GameState a Unaivailable. Devrait retirer l'UI "in game" du Curseur.
+
+camera_smooth_follow fait que la camera suit le joueur.
+    - Pas vraiment un input.
+    - Pas vraiment un comportement genial: la camera reste très clucky. On devrait pouvoir deplacer la camera soit-même, en l'eloignant du personnage si on le souhaite.
+
+exit_step_check est aussi un element hors input joueur, qui regarde si le joueur a atteint la sortie.
+    - Devrait être un clic sur la sortie?
+    - Devrait sortir de là.
+
+mouse_scroll fait scroller le menu "Log" a l'ecran de Recap.
+    - On devrait d'ailleurs avoir accès aux logs depuis le IG.
+ */
+
 use bevy::prelude::*;
 
 mod player_systems;
