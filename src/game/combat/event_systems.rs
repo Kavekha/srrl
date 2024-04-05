@@ -11,7 +11,7 @@ use crate::{
     }, 
     game::{
         combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, 
-        rules::{roll_dices_against, AP_COST_MELEE, AP_COST_RANGED }}, 
+        rules::{roll_dices_against, DiceRollResult, AP_COST_MELEE, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
@@ -144,9 +144,19 @@ pub fn entity_try_hit(
             // DEBUG: println!("Pas de stats pour l'attaquant");
             continue };     
 
-        // Jet d'attaque.   // TODO : Ranged or Melee
-        let dice_roll = roll_dices_against(attacker_stats.attack, defender_stats.dodge);   
-        let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
+        // Jet d'attaque. Tout ca est à mettre dans Rules.
+        let dice_roll:DiceRollResult;
+        let dmg:u32;
+        match attack.mode {
+            AttackType::MELEE => {
+                dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
+                dmg = dice_roll.success.saturating_add(attacker_stats.strength as u32);
+            },
+            AttackType::RANGED => {
+                dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);   
+                dmg = dice_roll.success.saturating_add(attacker_stats.logic as u32);
+            }
+        }
 
         if dice_roll.success > 0 {
             commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: dmg});
@@ -217,7 +227,7 @@ pub fn entity_get_hit(
         let (defender_stats, mut defender_health, _is_player) = defender_infos;
 
         // Roll resist.
-        let dice_roll = roll_dices_against(defender_stats.resilience, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
+        let dice_roll = roll_dices_against(defender_stats.strength, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
         let dmg = get_hit.dmg.saturating_sub(dice_roll.success); 
 
         // Reducing health.

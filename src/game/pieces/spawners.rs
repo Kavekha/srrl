@@ -42,18 +42,80 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     println!("Player: Starting position = {:?}", player_starting_position);
     let kind = get_random_kind();
     let piece = Piece{kind: kind};
+    println!("Player kind i {:?}", kind);
+
+    // Stats base on Kind.
+    let stats:Stats;
+    let health:Health;
+    match kind {
+        Kind::Human => {
+            stats = Stats {
+                strength: 3,
+                agility: 3,
+                logic: 3,
+                melee: 3,
+                firearms: 3,
+            };
+            health = Health { max: 10, current: 10 };
+        },
+        Kind::Dwarf => {
+            stats = Stats {
+                strength: 4,
+                agility: 3,
+                logic: 3,
+                melee: 3,
+                firearms: 2,
+            };
+            health = Health { max: 10, current: 10 };
+        },
+        Kind::Elf => {
+            stats = Stats {
+                strength: 2,
+                agility: 4,
+                logic: 3,
+                melee: 2,
+                firearms: 4,
+            };
+            health = Health { max: 9, current: 9 };
+        },
+        Kind::Orc => {
+            stats = Stats {
+                strength: 4,
+                agility: 2,
+                logic: 2,
+                melee: 4,
+                firearms: 3,
+            };
+            health = Health { max: 10, current: 10 };
+        },
+        Kind::Troll => {
+            stats = Stats {
+                strength: 6,
+                agility: 2,
+                logic: 1,
+                melee: 5,
+                firearms: 1,
+            };
+            health = Health { max: 11, current: 11 };
+        },
+        Kind::Ghoul => {
+            stats = Stats {
+                strength: 2,
+                agility: 4,
+                logic: 1,
+                melee: 3,
+                firearms: 0,
+            };
+            health = Health { max: 9, current: 9 };
+        }
+    };
 
     let player = world.spawn(CharacterBundle{
             piece: piece, 
             position: BoardPosition{ v:player_starting_position },
             name: Name::new("the ShadowRunner"),
-            stats: Stats {
-                power: 3,         
-                attack: 6,
-                dodge: 6,
-                resilience: 3
-            },
-            health: Health { max: 10, current: 10 },
+            stats: stats,
+            health: health,
             melee: Melee { damage: 0 },
             occupier: Occupier
         }).id();
@@ -76,10 +138,11 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
         piece: Piece{kind: Kind::Ghoul},
         name: Name::new(format!("Ghoul")),
         stats: Stats {
-            power: 4,         
-            attack: 4,
-            dodge: 3,
-            resilience: 4
+            strength: 2,
+            agility: 4,
+            logic: 1,
+            melee: 3,
+            firearms: 0,
         },
         health: Health { max: 10, current: 10 },
         melee: Melee { damage: 2 },
