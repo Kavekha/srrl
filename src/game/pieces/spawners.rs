@@ -4,9 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{
     game::{
-        combat::abilities::{create_ability_attack, Abilities, AbilityType}, 
-        pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, PlayerCharacterBundle, Stats, Walk}, 
-        tileboard::components::{BoardPosition, ExitMapTile}
+        pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, 
     vectors::Vector2Int};
 
@@ -44,22 +42,25 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     println!("Player: Starting position = {:?}", player_starting_position);
     let kind = get_random_kind();
     let piece = Piece{kind: kind};
-    //starting abilities
-    let melee_ability = create_ability_attack(AbilityType::Melee);
-    let ranged_ability = create_ability_attack(AbilityType::Ranged);
-    let mut abilities = Abilities::new();
-    abilities.add(melee_ability);
-    abilities.add(ranged_ability);
 
-    world.spawn(PlayerCharacterBundle{
-        character: CharacterBundle{
+    let player = world.spawn(CharacterBundle{
             piece: piece, 
             position: BoardPosition{ v:player_starting_position },
-            ..default()
-        },
-        abilities: abilities,
-        ..default()
-    });
+            name: Name::new("the ShadowRunner"),
+            stats: Stats {
+                power: 3,         
+                attack: 6,
+                dodge: 6,
+                resilience: 3
+            },
+            health: Health { max: 10, current: 10 },
+            melee: Melee { damage: 0 },
+            occupier: Occupier
+        }).id();
+    //player.insert(Player);
+    world.entity_mut(player).insert(Player);
+    let stats = world.entity(player).get::<Stats>().unwrap();
+    println!("Player stats are {:?}", stats);
 }
 
 pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){

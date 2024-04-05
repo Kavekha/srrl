@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{game::{combat::abilities::Abilities, player::Player, tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{game::{tileboard::components::BoardPosition}, vectors::Vector2Int};
 
 use super::spawners::Kind;
 
@@ -35,30 +35,6 @@ impl Default for CharacterBundle {
     }
 }
 
-#[derive(Bundle)]
-pub struct PlayerCharacterBundle {
-    pub character : CharacterBundle,
-    pub player: Player,
-    pub abilities: Abilities
-}
-impl Default for PlayerCharacterBundle {
-    fn default() -> Self {
-        Self {
-            character: CharacterBundle {
-                name: Name::new("the ShadowRunner"),
-                stats: Stats {
-                    power: 3,         
-                    attack: 6,
-                    dodge: 6,
-                    resilience: 3
-                },
-                ..default()
-            },
-            player: Player, 
-            abilities: Abilities::new()
-        }
-    }
-}
 
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]

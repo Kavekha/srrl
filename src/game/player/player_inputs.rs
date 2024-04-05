@@ -1,25 +1,24 @@
 use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
 
-use crate::{game::{combat::{abilities::{create_ability_attack, AbilityType}, action_infos::ActionInfos, events::{EntityEndTurnEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
+use crate::{game::{combat::{action_infos::ActionInfos, components::AttackType, events::{EntityEndTurnEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
     manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
     menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}}, menu_builders::ScrollingList};
 
 use super::{components::WantToMoveEvent, Cursor, Player};
 
 
-// 0.19c : On ajoute l'abilité selectionnée dans action_infos.
+// 0.19d : Removal Abilities for now.
 pub fn player_choose_action_input(
-    mut action_infos: ResMut<ActionInfos>,  // Entity Player is here
+    mut action_infos: ResMut<ActionInfos>,
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_log: EventWriter<LogEvent>,
-    //mut player_abilities: Query<(Entity, &mut Abilities), With<Player>>,
 ) {
     if keys.just_pressed(KeyCode::Digit1) {
-        action_infos.ability = Some(create_ability_attack(AbilityType::Melee));
+        action_infos.attack = Some(AttackType::MELEE);
         ev_log.send(LogEvent {entry: format!("Now in Melee mode.")});  
     }
     if keys.just_pressed(KeyCode::Digit2) {
-        action_infos.ability = Some(create_ability_attack(AbilityType::Ranged));
+        action_infos.attack = Some(AttackType::RANGED);
         ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});       
     }
 }
@@ -87,16 +86,16 @@ pub fn combat_input(
         let destination = res_cursor.grid_position;
 
         println!("Click !");
-        match &action_infos.ability {
+        match &action_infos.attack {
             None => {
                 ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination});
             },
-            Some(ability) => {
-                match ability.ability_type {
-                    AbilityType::Melee => {
+            Some(attack_type) => {
+                match attack_type {
+                    AttackType::MELEE => {
                         ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination});
                     },
-                    AbilityType::Ranged => {
+                    AttackType::RANGED => {
                         ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination});
                     }
                 };
