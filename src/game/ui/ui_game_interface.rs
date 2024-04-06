@@ -9,6 +9,13 @@ use crate::{
 use super::{components::{UiCharacterInfos, UiGameInterface, UiMainWindow}, ReloadUiEvent};
 
 
+// ====== CONST FOR UI CHARACTERS =====
+const COLOR_BORDER_CHUNK_HEALTH_FULL:Color = Color::rgb(0.5, 0.0, 0.0);
+const COLOR_BACKGROUND_CHUNK_HEALTH_FULL:Color = Color::rgb(0.9, 0.0, 0.0 );
+const COLOR_BORDER_CHUNK_HEALTH_EMPTY:Color = Color::rgb(0.1, 0.1, 0.1);
+const COLOR_BACKGROUND_CHUNK_HEALTH_EMPTY:Color = Color::rgb(0.0, 0.0, 0.0 );//Color::rgba(0.0, 0.0, 0.0, 1.0 );
+
+
 pub fn clear_ui_game_character_infos(
     interface_query: Query<Entity, With<UiCharacterInfos>>,
     commands: &mut Commands,
@@ -30,18 +37,30 @@ pub struct UiActionPoints;
 
 
 pub fn update_ui_character_health(
-    mut ev_ui: EventReader<ReloadUiEvent>
+    mut ev_ui: EventReader<ReloadUiEvent>,
+    mut ui_border_n_background_q: Query<(&mut BackgroundColor, &mut BorderColor,), With<UiChunk>>,
+    player_health_q: Query<&Health, With<Player>>, 
 ){
-    for event in ev_ui.read() {
+    for _event in ev_ui.read() {
         println!("Je dois mettre à jour les Chunks.");
+        let Ok(player_health) = player_health_q.get_single() else { continue;};
+
+        let mut nb_chunks = 1;
+        for (mut background_color, mut border_color) in &mut ui_border_n_background_q {
+            if nb_chunks <= player_health.current {
+                *border_color = COLOR_BORDER_CHUNK_HEALTH_FULL.into();
+                *background_color = COLOR_BACKGROUND_CHUNK_HEALTH_FULL.into();
+            } else {
+                *border_color =  COLOR_BORDER_CHUNK_HEALTH_EMPTY.into();
+                *background_color = COLOR_BACKGROUND_CHUNK_HEALTH_EMPTY.into();
+            }
+            nb_chunks += 1;
+        }
     }
 }
 
 pub fn update_ui_character_action_points(
     mut ev_ui: EventReader<ReloadUiEvent>,
-    //mut interaction_query: Query<(&Interaction, &mut BackgroundColor, &mut BorderColor, &Children,),(Changed<Interaction>, With<Button>)>,
-    //mut ui_ap_q: Query<(Entity, &UiActionPoints, &Children)>,
-    //mut text_query: Query<&mut Text>,
     player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
     mut ap_text_q: Query<&mut Text, With<UiActionPoints>>,
 ){
@@ -53,25 +72,14 @@ pub fn update_ui_character_action_points(
             println!("Points d'action du joueur récupéré!");
             let (_p_entity_action, p_action) = player_action_points;
             action_points = p_action.current;
-        } else {
-            println!("Pas de points récupérés via action. On mets 99 pour voir si ca marche.");
-            action_points = 99;
-        }
+        } 
         // On modifie le contenu.
         for mut text in &mut ap_text_q {
-            text.sections[0].value = format!("{action_points}");
+            text.sections[0].value = format!("{action_points}");    // ATTENTION: Si la section change, ca fout vite la merde avec du gros crash panic....
         }
-
-
-        /* 
-        for (entity, ui_action_points, children) in &mut ui_ap_q {
-            //let mut text = text_query.get_mut(children[0]).unwrap();
-            let mut text = text_query.get_mut(entity).unwrap();
-            text.sections[0].value = action_points.to_string();
-        }
-        */
     }
 }
+
 
 // Refacto 0.19f : Avant on faisait du update, draw_ui_game en boucle. Maintenant on passe par un autre moyen pour faire la mise à jour globale.
 pub fn draw_ui_game_character_infos(
@@ -183,13 +191,13 @@ pub fn draw_ui_game_character_infos(
     // Autant de Chunk que de PV.
     for i in 1..=player_health_max {
         // Couleur des HP 
-        let mut border_color = Color::rgb(0.5, 0.0, 0.0);
-        let mut background_color = Color::rgb(0.9, 0.0, 0.0 );
+        let mut border_color = COLOR_BORDER_CHUNK_HEALTH_FULL;
+        let mut background_color = COLOR_BACKGROUND_CHUNK_HEALTH_FULL;
 
         // Si on affiche des Chunks au delà du Health Current, on les assombri: ils sont vides.
         if i > player_health_current {
-            border_color = Color::rgb(0.1, 0.1, 0.1);
-            background_color = Color::rgba(0.0, 0.0, 0.0, 1.0 );
+            border_color = COLOR_BORDER_CHUNK_HEALTH_EMPTY;
+            background_color = COLOR_BACKGROUND_CHUNK_HEALTH_EMPTY;
         }
 
         // Le chunk en lui-même.
