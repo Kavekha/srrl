@@ -24,3 +24,4 @@ pub struct UiAttackIcon;
 
 #[derive(Component)]
 pub struct UiMainWindow;
+
