@@ -45,12 +45,12 @@ pub fn draw_ui_game_attack_icons(
             style: Style {
                 position_type: PositionType::Relative,
                 align_content: AlignContent::Center,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::FlexStart,
+                align_items: AlignItems::FlexEnd, 
+                justify_content: JustifyContent::FlexEnd, 
                 flex_direction: FlexDirection::Row,
                 width: Val::Percent(50.),
-                height: Val::Percent(10.),
-
+                height: Val::Percent(20.),
+                bottom: Val::Px(10.),
                 ..default()
             },
             ..default()
@@ -59,18 +59,18 @@ pub fn draw_ui_game_attack_icons(
 
 
     // Bouton par icone.
-     for _attack in [AttackType::MELEE, AttackType::RANGED] {
+     for image in ["button_attack_melee", "button_attack_ranged"] {
         let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 1, 1, None, None);
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
         let icon = commands
             .spawn(AtlasImageBundle {
                 style: Style {
-                    width: Val::Px(32.),
-                    height: Val::Px(32.),
+                    width: Val::Px(48.),
+                    height: Val::Px(48.),
                     ..default()
                 },
                 texture_atlas: texture_atlas_handle.into(),
-                image: UiImage::new(assets.images["button_attack_melee"].clone()),
+                image: UiImage::new(assets.images[image].clone()),
                 ..default()
             }).id();
         commands.entity(attack_container).push_children(&[icon]);

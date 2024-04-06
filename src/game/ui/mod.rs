@@ -11,7 +11,7 @@ draw_ui_game_character_infos:
  */
 
  /* 0.19f : 
-    Main Window + Game Char Infos : OK 
+    1. Main Window + Game Char Infos : OK 
         MainWindow:
             position_type: PositionType::Absolute,
             width: Val::Percent(100.0),
@@ -27,8 +27,28 @@ draw_ui_game_character_infos:
             align_content: AlignContent::FlexEnd,   
             justify_content: JustifyContent::FlexStart, 
             align_items: AlignItems::FlexEnd,
+            flex_direction: FlexDirection::Row,            
+            bottom: Val::Px(10.),
+    2. Step1 + GameAttack: OK => Attack a la suite de GameCharInfos (icone à 32 px)
+        GameAttack:
+            position_type: PositionType::Relative,
+            align_content: AlignContent::Center,
+            align_items: AlignItems::FlexEnd, 
+            justify_content: JustifyContent::FlexEnd, 
             flex_direction: FlexDirection::Row,
-            bottom: Val::Px(0.),
+            width: Val::Percent(50.),
+            height: Val::Percent(20.),
+            bottom: Val::Px(10.),
+            ..default()
+        Historique::
+            A.Change: Attack:position_type::Relative => No change.
+            B.Change: GameChar:width: Val::Percent(40.0), => No change.
+            C.Change: Attack:justify_content: JustifyContent::FlexEnd => Attack en second row, mais une ligne au dessus de GameChar. => ACCEPTABLE
+            D.Change: Attack:align_items: AlignItems::FlexStart, => Idem, mais Attack encore plus en hauteur (2-3 lignes de plus cette fois) => NOK 
+            E.Change: Attack:align_items: AlignItems::FlexEnd, => Desormais en bas, p-e un peu trop. => OK 
+            F.Change: Attack:bottom: Val::Px(20.), => OK !
+
+
   */
 
 
@@ -66,7 +86,7 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
             .add_systems(Update, update_ui_character_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_character_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
-            //.add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))            
+            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))            
 
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))

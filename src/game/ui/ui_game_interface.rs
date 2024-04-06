@@ -121,14 +121,13 @@ pub fn draw_ui_game_character_infos(
     let interface = commands.spawn(NodeBundle {
         style: Style {
             position_type: PositionType::Absolute,
-            width: Val::Percent(100.0),
+            width: Val::Percent(40.0),
             height: Val::Percent(10.0),
             align_content: AlignContent::FlexEnd,   
             justify_content: JustifyContent::FlexStart, 
             align_items: AlignItems::FlexEnd,
-            //align_self: AlignSelf::FlexStart,    //FlexEnd,
-            flex_direction: FlexDirection::Row,
-            bottom: Val::Px(0.),
+            flex_direction: FlexDirection::Row,            
+            bottom: Val::Px(5.),
             ..default()
         },
         ..default()
