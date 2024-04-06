@@ -13,7 +13,7 @@ use super::{components::{UiCharacterInfos, UiGameInterface, UiMainWindow}, Reloa
 const COLOR_BORDER_CHUNK_HEALTH_FULL:Color = Color::rgb(0.5, 0.0, 0.0);
 const COLOR_BACKGROUND_CHUNK_HEALTH_FULL:Color = Color::rgb(0.9, 0.0, 0.0 );
 const COLOR_BORDER_CHUNK_HEALTH_EMPTY:Color = Color::rgb(0.1, 0.1, 0.1);
-const COLOR_BACKGROUND_CHUNK_HEALTH_EMPTY:Color = Color::rgb(0.0, 0.0, 0.0 );//Color::rgba(0.0, 0.0, 0.0, 1.0 );
+const COLOR_BACKGROUND_CHUNK_HEALTH_EMPTY:Color = Color::rgba(0.0, 0.0, 0.0, 1.0 );
 
 
 pub fn clear_ui_game_character_infos(
@@ -38,9 +38,11 @@ pub struct UiActionPoints;
 
 pub fn update_ui_character_health(
     mut ev_ui: EventReader<ReloadUiEvent>,
-    mut ui_border_n_background_q: Query<(&mut BackgroundColor, &mut BorderColor,), With<UiChunk>>,
+    //mut ui_border_q: Query<
+    mut ui_border_n_background_q: Query<(&mut BackgroundColor, &mut BorderColor), With<UiChunk>>,
     player_health_q: Query<&Health, With<Player>>, 
 ){
+    //TODO : Pour note, cela ne change pas le color_border, car: component Chunk sur Border & sur son enfant Background. Background est considéré comme ayant les deux dans la Query.
     for _event in ev_ui.read() {
         println!("Je dois mettre à jour les Chunks.");
         let Ok(player_health) = player_health_q.get_single() else { continue;};
@@ -226,7 +228,7 @@ pub fn draw_ui_game_character_infos(
                 },
                 background_color: background_color.into(),
                 ..default()
-            });  
+            }).insert(UiChunk);  
         }).insert(UiChunk).id();
         chunk_list.push(chunk);
     }
