@@ -75,7 +75,7 @@ pub fn entity_want_hit(
     mut action_q: Query<&mut ActionPoints>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,    
-    available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
+    available_targets: Query<(Entity, &BoardPosition, &Stats), (With<Health>, Without<IsDead>)>,
     stats_q: Query<&Stats>,        
     mut ev_log: EventWriter<LogEvent>,
 ) {
@@ -83,7 +83,6 @@ pub fn entity_want_hit(
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
         commands.entity(entity).remove::<WantToHit>();
 
-        println!("RangedAttack: Refacto Combat 0.19b");
         println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
 
         let Ok(_attacker_stats) = stats_q.get(entity) else { 

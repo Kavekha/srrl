@@ -28,7 +28,7 @@ impl Gamelog {
         let mut logs = "".to_string();
         for log in self.entries.iter().rev().take(number).rev() {
             logs = format!("{}{}\n", logs, log.clone());
-            println!("LOG:Added to Log: {}", log.clone());
+            //println!("LOG:Added to Log: {}", log.clone());
         }
         logs
     }

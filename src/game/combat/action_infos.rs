@@ -44,7 +44,7 @@ pub fn update_action_infos(
         action_infos.entity = None;
 
         let Ok(player_infos) = query_character_turn.get_single() else { 
-            println!("action infos: No player info");
+            //println!("action infos: No player info");
             return };
         let (entity, action_points, position) = player_infos;
         action_infos.entity = Some(entity);
