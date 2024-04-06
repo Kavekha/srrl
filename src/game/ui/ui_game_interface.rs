@@ -13,7 +13,7 @@ pub fn clear_ui_game_character_infos(
     interface_query: Query<Entity, With<UiCharacterInfos>>,
     commands: &mut Commands,
 ) {
-    println!("DEBUG: Clear interface ui.");
+    //println!("DEBUG: Clear interface ui.");
     despawn_component(interface_query, commands);
 }
 
@@ -24,14 +24,14 @@ pub fn draw_ui_game_character_infos(
     player_info_query: Query<(Entity, Option<&Name>, &Health), With<Player>>,       //player_info_query: Query<(Entity, &Name, &Health), With<Player>>  // Retrait du Name car au load Save on le perds.
     player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
 ) {
-    println!("DEBUG: draw ui_game_character_infos");
+    //println!("DEBUG: draw ui_game_character_infos");
     clear_ui_game_character_infos(interface_query, &mut commands);
 
     let mut player_name = "Unkwnown Runner";
     let mut player_health_max = INTERFACE_HP_CHUNK_MAX;
     let mut player_health_current = INTERFACE_HP_CHUNK_MAX;
     if let Ok(player_infos) = player_info_query.get_single() {
-        println!("DEBUG : draw interface: Player info OK");
+        //println!("DEBUG : draw interface: Player info OK");
         let (_p_entity, p_name, p_health) = player_infos;   //let (_p_entity, p_name, p_health) = player_infos; // Retrait du name car perdu au save.
         if let Some(name) = p_name {
             player_name = name.as_str();
@@ -39,9 +39,9 @@ pub fn draw_ui_game_character_infos(
         //player_name = p_name.as_str();
         player_health_max = p_health.max;
         player_health_current = p_health.current;
-        println!("DEBUG: Player health current is {} and max {}", player_health_current, player_health_max);
+        println!("DEBUG: Interface: Player health current is {} and max {}", player_health_current, player_health_max);
     } else {
-        println!("DEBUG : draw: not player");
+        //println!("DEBUG : draw: not player");
     }
     let mut action_points = 0;
     if let Ok(player_action_points) = player_actions_query.get_single() {

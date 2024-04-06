@@ -9,6 +9,7 @@ use bevy::audio::PlaybackMode;
 pub mod components;
 
 use crate::engine::asset_loaders::AudioAssets;
+use crate::globals::DEFAULT_VOLUME;
 
 use self::components::{CurrentMusic, CurrentSound};
 
@@ -21,8 +22,8 @@ impl Plugin for GameAudioPlugin{
     ) {
         app
             .insert_resource(AudioConfig {
-                sound_active:true, sound_volume:Volume::new(3.0),
-                music_active:true, music_volume:Volume::new(3.0)
+                sound_active:true, sound_volume:Volume::new(DEFAULT_VOLUME),
+                music_active:true, music_volume:Volume::new(DEFAULT_VOLUME)
             })
 
             .add_event::<MusicEvent>()   

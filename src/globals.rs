@@ -7,6 +7,7 @@ pub const RELEASE: &str = "R0.4";
 // Min - Max VOLUME
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 5.0;
+pub const DEFAULT_VOLUME: f32 = 1.0;
 
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);

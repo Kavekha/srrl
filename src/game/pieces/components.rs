@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{game::{tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
 
 use super::spawners::Kind;
 
@@ -22,10 +22,11 @@ impl Default for CharacterBundle {
             piece: Piece { kind: Kind::Human },
             name: Name::new("Nobody"),  //TODO change i guess
             stats: Stats {
-                power: 1,         
-                attack: 1,
-                dodge: 1,
-                resilience: 1
+                strength: 3,
+                agility: 3,
+                logic: 2,
+                melee: 1,
+                firearms: 1,
             },
             health: Health { max: 10, current: 10 },
             melee: Melee { damage: 0 },
@@ -73,8 +74,15 @@ pub struct Melee {
 //TODO : Adapter à Shadowrun: Skill & Ability.
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Stats {
-    pub power: u32,         
-    pub attack: u32,
-    pub dodge: u32,
-    pub resilience: u32
+    //pub power: u32,         
+    //pub attack: u32,
+    //pub dodge: u32,
+    //pub resilience: u32
+    //Stats
+    pub strength: u32,  // melee dmg & resistance. HP = Str / 2 + 8.
+    pub agility: u32,   // accuracy
+    pub logic: u32,     // Logic + agility = dodge
+    //Skills
+    pub melee:u32,
+    pub firearms:u32
 } 

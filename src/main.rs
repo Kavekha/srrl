@@ -50,8 +50,7 @@ fn main() {
         .add_plugins(EnginePlugin)
         .add_plugins(GamePlugin)
         
-        .init_state::<GameState>()  
-        //.init_state::<EngineState>()
+        .init_state::<GameState>()
         .init_state::<MenuState>()
 
 

@@ -11,7 +11,7 @@ use crate::{
     }, 
     game::{
         combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, 
-        rules::{roll_dices_against, AP_COST_MELEE, AP_COST_RANGED }}, 
+        rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
@@ -75,7 +75,7 @@ pub fn entity_want_hit(
     mut action_q: Query<&mut ActionPoints>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,    
-    available_targets: Query<(Entity, &BoardPosition, &Stats), With<Health>>,
+    available_targets: Query<(Entity, &BoardPosition, &Stats), (With<Health>, Without<IsDead>)>,
     stats_q: Query<&Stats>,        
     mut ev_log: EventWriter<LogEvent>,
 ) {
@@ -83,7 +83,13 @@ pub fn entity_want_hit(
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
         commands.entity(entity).remove::<WantToHit>();
 
-        println!("RangedAttack: Refacto Combat 0.19b");
+        // J'ai un systeme de PA (Je ne devrais pas être là mais bon.)
+        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
+        // Verifie si assez de AP pour l'action.
+        let Ok(_) = enough_ap_for_action(&action_points, &want.mode) else { 
+            ev_log.send(LogEvent {entry: format!("Not enough AP for this action.")});  // No Stats, can't be attacked.
+            continue };
+
         println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
 
         let Ok(_attacker_stats) = stats_q.get(entity) else { 
@@ -96,29 +102,32 @@ pub fn entity_want_hit(
             ev_log.send(LogEvent {entry: format!("There is no available target here.")});        // Log v0
             continue };     
 
-        //Payer le prix de l'action.
-        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
-        match want.mode {
-            AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
-            AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
-            //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
-        };
-            
-        if let Ok(_is_player) = player_q.get(entity) {
-            ev_interface.send(ReloadUiEvent); 
-            ev_refresh_action.send(RefreshActionCostEvent);
-        }
-
+        // Taper!
+        let mut could_hit_someone= false;
         for (target_entity, _target_position, _target_stats) in target_entities.iter() {     
             println!("Want hit: potentielle target: {:?}", *target_entity);
             // Can't hit yourself.
             if entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
                 continue; }; 
-
+                could_hit_someone= true;
                 let try_hit = TryHit { mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
                 commands.entity(entity).insert(try_hit);     
         }
+
+            //Payer le prix de l'action.
+            if could_hit_someone {                
+                match want.mode {
+                    AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
+                    AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
+                    //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
+                };
+
+                if let Ok(_is_player) = player_q.get(entity) {
+                    ev_interface.send(ReloadUiEvent); 
+                    ev_refresh_action.send(RefreshActionCostEvent);
+                }
+            }
     }
 }
 
@@ -144,12 +153,21 @@ pub fn entity_try_hit(
             // DEBUG: println!("Pas de stats pour l'attaquant");
             continue };     
 
-        // Jet d'attaque.   // TODO : Ranged or Melee
-        let dice_roll = roll_dices_against(attacker_stats.attack, defender_stats.dodge);   
-        let dmg = dice_roll.success.saturating_add(attacker_stats.power as u32);
+        // Jet d'attaque. Tout ca est à mettre dans Rules.
+        let combat_result: RuleCombatResult;
+        //let dice_roll:DiceRollResult;
+        //let dmg:u32;
+        match attack.mode {
+            AttackType::MELEE => {
+                combat_result = combat_test(&AttackType::MELEE, attacker_stats, defender_stats);
+            },
+            AttackType::RANGED => {
+                combat_result = combat_test(&AttackType::RANGED, attacker_stats, defender_stats);
+            }
+        }
 
-        if dice_roll.success > 0 {
-            commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: dmg});
+        if combat_result.success {
+            commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: combat_result.dmg});
             ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
         } else {
             commands.entity(entity).insert(MissHit { mode: attack.mode.clone(), defender:attack.defender});
@@ -217,12 +235,12 @@ pub fn entity_get_hit(
         let (defender_stats, mut defender_health, _is_player) = defender_infos;
 
         // Roll resist.
-        let dice_roll = roll_dices_against(defender_stats.resilience, 0);       // Pas d'opposant ni difficulté : On encaisse X dmg.
-        let dmg = get_hit.dmg.saturating_sub(dice_roll.success); 
+        let test_resist = dmg_resist_test(&get_hit.mode, &defender_stats);
+        let final_dmg = get_hit.dmg.saturating_sub(test_resist.dmg_reduction); 
 
         // Reducing health.
-        defender_health.current = defender_health.current.saturating_sub(dmg);
-        println!("Dmg on health for {:?} is now {:?}/{:?}", dmg, defender_health.current, defender_health.max);
+        defender_health.current = defender_health.current.saturating_sub(final_dmg);
+        println!("Dmg on health for {:?} is now {:?}/{:?}", final_dmg, defender_health.current, defender_health.max);
         if defender_health.current == 0 {            
             //ev_die.send(EntityDeathEvent { entity: entity, attacker: get_hit.attacker });
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
@@ -235,11 +253,11 @@ pub fn entity_get_hit(
         //logs 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(get_hit.attacker) else { continue;};
-        if dice_roll.success == 0 {     // No dmg reduction.
-            ev_log.send(LogEvent {entry: format!("{} takes a full blow from {}, for {:?} damages!", entity_name, attacker_entity_name, dmg)});        // Log v0
+        if test_resist.success == false {     // No dmg reduction.
+            ev_log.send(LogEvent {entry: format!("{} takes a full blow from {}, for {:?} damages!", entity_name, attacker_entity_name, final_dmg)});        // Log v0
         }
-        else if dmg > 0 {
-            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", attacker_entity_name, entity_name, dmg)});        // Log v0
+        else if final_dmg > 0 {
+            ev_log.send(LogEvent {entry: format!("{:?} hit {:?} for {:?} damages.", attacker_entity_name, entity_name, final_dmg)});        // Log v0
         } else {
             ev_log.send(LogEvent {entry: format!("{} takes a hit without effect from {}.",entity_name, attacker_entity_name)});        // Log v0
         }

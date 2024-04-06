@@ -13,7 +13,7 @@ pub fn clear_ui_log(
     commands: &mut Commands,    
     interface_query: Query<Entity, With<UiLog>>,
 ) {
-    println!("DEBUG: Clear Logs UI");
+    //println!("DEBUG: Clear Logs UI");
     despawn_component(interface_query, commands);
 }
 

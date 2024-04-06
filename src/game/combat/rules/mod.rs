@@ -7,17 +7,83 @@ L'idée est aussi qu'il soit possible de les configurer.
 
 use rand::prelude::*;
 
-use super::components::ActionPoints;
+use crate::game::pieces::components::Stats;
+
+use super::components::{ActionPoints, AttackType};
 
 pub const AP_COST_MOVE:u32 = 1;
 pub const AP_COST_MELEE:u32 = 3;
 pub const AP_COST_RANGED:u32 = 5;
+pub const AP_COST_NO_VALUE:u32 = 999;   // Pour couvrir un cas non supporté
+
+
+pub struct RuleCombatResult{
+    pub success: bool,
+    pub dmg: u32    
+}
+pub struct RuleDamageResist{
+    pub success: bool,
+    pub dmg_reduction: u32
+}
+
+pub fn dmg_resist_test(
+    attack_type:&AttackType,
+    defender_stats: &Stats,
+) -> RuleDamageResist {
+    let dice_roll :DiceRollResult;
+    match attack_type {
+        AttackType::MELEE => dice_roll = roll_dices_against(defender_stats.strength, 0),
+        AttackType::RANGED => dice_roll = roll_dices_against(defender_stats.logic, 0)        // Pas d'opposant ni difficulté : On encaisse X dmg.
+    }
+    
+    //let dmg = get_hit.dmg.saturating_sub(dice_roll.success); 
+    let (success, nb_success) = dice_roll.result();
+    RuleDamageResist { success: success, dmg_reduction: nb_success}
+}
+
+pub fn combat_test(
+    attack_type:&AttackType, 
+    attacker_stats: &Stats,
+    defender_stats: &Stats
+) -> RuleCombatResult {
+    let dice_roll:DiceRollResult;
+    let mut dmg=0;
+    let success:bool;
+    let nb_success:u32;
+    match attack_type {
+        AttackType::MELEE => {
+            dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
+            (success, nb_success) = dice_roll.result();
+            if success {
+                dmg = nb_success.saturating_add(attacker_stats.strength as u32);
+            }            
+        },
+        AttackType::RANGED => {
+            dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);   
+            (success, nb_success) = dice_roll.result();
+            if success {
+                dmg = nb_success.saturating_add(attacker_stats.logic as u32);
+            }              
+        }
+    }
+    return RuleCombatResult { success:success, dmg: dmg }
+}
 
 
 pub struct DiceRollResult{
     pub success: u32,
     pub fail: u32,
     pub glitch: u32 
+}
+impl DiceRollResult{
+    pub fn result(&self) -> (bool, u32) {
+        let nb_success = self.success.saturating_add(self.fail).saturating_add(self.glitch);
+        if nb_success > 0 {
+            return (true, nb_success)
+        } else {
+            return (false, 0)
+        }
+    }
 }
 
 
@@ -68,4 +134,26 @@ pub fn consume_actionpoints(
     lost_value: u32,
 ) {
     actionpoints_component.current = actionpoints_component.current.saturating_sub(lost_value);
+}
+
+
+pub fn enough_ap_for_action(
+    actionpoints_component: &ActionPoints,
+    attack_type: &AttackType
+) -> Result<bool, bool> {
+    let ap_cost: u32;
+    match attack_type {
+        AttackType::MELEE => ap_cost = AP_COST_MELEE,
+        AttackType::RANGED => ap_cost = AP_COST_RANGED,
+        /*
+        _ => { 
+            ap_cost = AP_COST_NO_VALUE;
+            println!("No ap cost verification for {:?}", attack_type);
+        }, */
+    };
+    if actionpoints_component.current >= ap_cost {
+        return Ok(true)
+    } else {
+        return Err(false)
+    }
 }
