@@ -11,7 +11,7 @@ use crate::{
     }, 
     game::{
         combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, 
-        rules::{combat_test, dmg_resist_test, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED }}, 
+        rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED }}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
@@ -83,6 +83,13 @@ pub fn entity_want_hit(
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
         commands.entity(entity).remove::<WantToHit>();
 
+        // J'ai un systeme de PA (Je ne devrais pas être là mais bon.)
+        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
+        // Verifie si assez de AP pour l'action.
+        let Ok(_) = enough_ap_for_action(&action_points, &want.mode) else { 
+            ev_log.send(LogEvent {entry: format!("Not enough AP for this action.")});  // No Stats, can't be attacked.
+            continue };
+
         println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
 
         let Ok(_attacker_stats) = stats_q.get(entity) else { 
@@ -95,29 +102,32 @@ pub fn entity_want_hit(
             ev_log.send(LogEvent {entry: format!("There is no available target here.")});        // Log v0
             continue };     
 
-        //Payer le prix de l'action.
-        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
-        match want.mode {
-            AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
-            AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
-            //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
-        };
-            
-        if let Ok(_is_player) = player_q.get(entity) {
-            ev_interface.send(ReloadUiEvent); 
-            ev_refresh_action.send(RefreshActionCostEvent);
-        }
-
+        // Taper!
+        let mut could_hit_someone= false;
         for (target_entity, _target_position, _target_stats) in target_entities.iter() {     
             println!("Want hit: potentielle target: {:?}", *target_entity);
             // Can't hit yourself.
             if entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
                 continue; }; 
-
+                could_hit_someone= true;
                 let try_hit = TryHit { mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
                 commands.entity(entity).insert(try_hit);     
         }
+
+            //Payer le prix de l'action.
+            if could_hit_someone {                
+                match want.mode {
+                    AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
+                    AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
+                    //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
+                };
+
+                if let Ok(_is_player) = player_q.get(entity) {
+                    ev_interface.send(ReloadUiEvent); 
+                    ev_refresh_action.send(RefreshActionCostEvent);
+                }
+            }
     }
 }
 

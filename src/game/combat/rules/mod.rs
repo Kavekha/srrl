@@ -14,6 +14,7 @@ use super::components::{ActionPoints, AttackType};
 pub const AP_COST_MOVE:u32 = 1;
 pub const AP_COST_MELEE:u32 = 3;
 pub const AP_COST_RANGED:u32 = 5;
+pub const AP_COST_NO_VALUE:u32 = 999;   // Pour couvrir un cas non supporté
 
 
 pub struct RuleCombatResult{
@@ -133,4 +134,25 @@ pub fn consume_actionpoints(
     lost_value: u32,
 ) {
     actionpoints_component.current = actionpoints_component.current.saturating_sub(lost_value);
+}
+
+
+pub fn enough_ap_for_action(
+    actionpoints_component: &ActionPoints,
+    attack_type: &AttackType
+) -> Result<bool, bool> {
+    let ap_cost: u32;
+    match attack_type {
+        AttackType::MELEE => ap_cost = AP_COST_MELEE,
+        AttackType::RANGED => ap_cost = AP_COST_RANGED,
+        _ => { 
+            ap_cost = AP_COST_NO_VALUE;
+            println!("No ap cost verification for {:?}", attack_type);
+        },
+    };
+    if actionpoints_component.current >= ap_cost {
+        return Ok(true)
+    } else {
+        return Err(false)
+    }
 }
