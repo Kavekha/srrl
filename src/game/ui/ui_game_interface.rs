@@ -40,21 +40,36 @@ pub fn update_ui_character_health(
 pub fn update_ui_character_action_points(
     mut ev_ui: EventReader<ReloadUiEvent>,
     //mut interaction_query: Query<(&Interaction, &mut BackgroundColor, &mut BorderColor, &Children,),(Changed<Interaction>, With<Button>)>,
-    mut ui_ap_q: Query<(&UiActionPoints, &Children)>,
-    mut text_query: Query<&mut Text>,
+    //mut ui_ap_q: Query<(Entity, &UiActionPoints, &Children)>,
+    //mut text_query: Query<&mut Text>,
     player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
+    mut ap_text_q: Query<&mut Text, With<UiActionPoints>>,
 ){
     for _event in ev_ui.read() {
         println!("Je dois mettre à jour les Action Points.");
+
         let mut action_points = 0;
         if let Ok(player_action_points) = player_actions_query.get_single() {
+            println!("Points d'action du joueur récupéré!");
             let (_p_entity_action, p_action) = player_action_points;
             action_points = p_action.current;
+        } else {
+            println!("Pas de points récupérés via action. On mets 99 pour voir si ca marche.");
+            action_points = 99;
         }
-        for (ui_action_points, children) in &mut ui_ap_q {
-            let mut text = text_query.get_mut(children[0]).unwrap();
+        // On modifie le contenu.
+        for mut text in &mut ap_text_q {
+            text.sections[0].value = format!("{action_points}");
+        }
+
+
+        /* 
+        for (entity, ui_action_points, children) in &mut ui_ap_q {
+            //let mut text = text_query.get_mut(children[0]).unwrap();
+            let mut text = text_query.get_mut(entity).unwrap();
             text.sections[0].value = action_points.to_string();
         }
+        */
     }
 }
 
