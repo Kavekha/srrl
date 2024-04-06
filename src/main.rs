@@ -1,12 +1,10 @@
-// On charge ici les principaux modules:
-// Engine
-// Game
-
-
 //#![windows_subsystem = "windows"]     // Empeche de voir le terminal dans VS Code.... -_-
 #![allow(clippy::redundant_field_names)]
 use bevy::{prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
+
+extern crate bresenham;
+use bresenham::Bresenham;
 
 mod engine;
 mod map_builders;
@@ -55,5 +53,11 @@ fn main() {
 
 
         .run(); 
+
+
+        // test Crate Bresenham
+        for (x, y) in Bresenham::new((0, 1), (6, 4)) {
+            println!("{}, {}", x, y);
+        }
 }
 

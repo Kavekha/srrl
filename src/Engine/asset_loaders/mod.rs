@@ -18,8 +18,8 @@ const SEWERS_TILES_TEXTURES: [&str; 17] = [
     "wall_9","wall_10","wall_11","wall_12","wall_13","wall_14","wall_15"];
 const SEWERS_ITEMS: [&str;1] = ["exit"];
 const MUSICS: [&str;5] = ["main_menu", "combat", "gamemap", "gameover", "victory"];
-const SOUNDS: [&str;3] = ["hit_punch_1", "death_scream", "hit_air_1"];//["air_hit", "fast_blow", "impact_blow", "impact_strong_punch", "soft_quick_punch"];
-const EFFECTS: [&str;2] = ["hit_punch_miss", "hit_punch_blood"];
+const SOUNDS: [&str;5] = ["hit_punch_1", "death_scream", "hit_air_1", "gun_shot_1", "gun_reload_1"];//["air_hit", "fast_blow", "impact_blow", "impact_strong_punch", "soft_quick_punch"];
+const EFFECTS: [&str;3] = ["hit_punch_miss", "hit_punch_blood", "hit_muzzle_1"];
 
 
 pub struct AssetsPlugin;

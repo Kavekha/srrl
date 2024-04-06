@@ -14,7 +14,9 @@ use super::components::{ActionPoints, AttackType};
 pub const AP_COST_MOVE:u32 = 1;
 pub const AP_COST_MELEE:u32 = 3;
 pub const AP_COST_RANGED:u32 = 5;
-pub const AP_COST_NO_VALUE:u32 = 999;   // Pour couvrir un cas non supporté
+//pub const AP_COST_NO_VALUE:u32 = 999;   // Pour couvrir un cas non supporté
+
+pub const RANGED_ATTACK_RANGE_MAX: i32 = 15;
 
 
 pub struct RuleCombatResult{
