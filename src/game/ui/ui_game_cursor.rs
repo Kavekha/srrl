@@ -19,7 +19,7 @@ pub fn clear_ui_action_points_cursor(
     //println!("DEBUG: Clear action points on Cursor ui.");
     despawn_component(interface_query, commands);
 }
-
+ 
 
 pub fn draw_ui_action_points_cursor(
     mut commands: Commands,

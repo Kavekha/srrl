@@ -5,18 +5,21 @@ Un tag UI commence par Ui dans l'ideal.
 
  */
 
+ // !!! TO TEST : L'UI passe son temps à être Update sans recevoir d'event pour cela. Ca consomme! A verifier.
+
 use bevy::prelude::*;
 
 pub mod ui_game_interface;
 pub mod ui_game_cursor;
 pub mod ui_game_logs;
 pub mod ui_game_npc_infos;
+pub mod ui_game_attacks;
 mod components;
 
 
 use crate::game::states::GameState;
 
-use self::{components::UiGameInterface, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::draw_ui_game_character_infos, ui_game_npc_infos::draw_ui_game_enemy_hp};
+use self::{components::{ UiGameInterface, UiMainWindow}, ui_game_attacks::draw_ui_game_attack_icons, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::draw_ui_game_character_infos, ui_game_npc_infos::draw_ui_game_enemy_hp};
 
 use super::{despawn_component, combat::{CombatSet, action_infos::update_action_infos}};
 
@@ -32,24 +35,48 @@ impl Plugin for UiPlugin {
             .add_event::<ReloadUiEvent>()
 
             .add_systems(OnEnter(GameState::Initialise), display_interface)
+            .add_systems(OnEnter(GameState::Initialise), draw_ui_main_window)
+
+            .add_systems(Update, draw_ui_main_window.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
 
             .add_systems(Update, draw_ui_game_character_infos.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))
+            .add_systems(Update, draw_ui_game_attack_icons.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))            
             .add_systems(OnEnter(GameState::Disabled), clear_all_game_interface)
             ;
     }
 }
 
-
 #[derive(Event)]
 pub struct ReloadUiEvent;
+
 
 fn display_interface(
     mut ev_ui: EventWriter<ReloadUiEvent>
 ) {
     ev_ui.send(ReloadUiEvent);
 }
+
+fn draw_ui_main_window(
+    mut commands: Commands,
+) {
+    commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::FlexEnd,
+            //row_gap: Val::Px(text_style.font_size * 2.),    // ?
+            bottom: Val::Px(0.),
+            ..default()
+        },
+        ..default()
+    }).insert(UiGameInterface).insert(UiMainWindow);  
+}
+
+
 
 
 // A cause de command / mut commands, on ne peut utiliser que celle-ci en systeme.

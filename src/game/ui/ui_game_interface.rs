@@ -6,7 +6,7 @@ use crate::{
     globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE
 };
 
-use super::components::{UiGameInterface, UiCharacterInfos};
+use super::components::{UiCharacterInfos, UiMainWindow};
 
 
 pub fn clear_ui_game_character_infos(
@@ -23,6 +23,7 @@ pub fn draw_ui_game_character_infos(
     interface_query: Query<Entity, With<UiCharacterInfos>>,
     player_info_query: Query<(Entity, Option<&Name>, &Health), With<Player>>,       //player_info_query: Query<(Entity, &Name, &Health), With<Player>>  // Retrait du Name car au load Save on le perds.
     player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
+    ui_main_q: Query<(Entity, &UiMainWindow)>,
 ) {
     //println!("DEBUG: draw ui_game_character_infos");
     clear_ui_game_character_infos(interface_query, &mut commands);
@@ -50,7 +51,13 @@ pub fn draw_ui_game_character_infos(
     }
 
 
-    // Interface container.
+    // Interface container. 0.19f : Move to mods, car fenetre globale.
+    let Ok(main_window) = ui_main_q.get_single() else { 
+        println!("No main Window, can't display anything.");
+        return ;
+    };
+    let (container, _main_window_component) = main_window;
+    /* 
     let container = commands.spawn(NodeBundle {
         style: Style {
             position_type: PositionType::Absolute,
@@ -63,6 +70,7 @@ pub fn draw_ui_game_character_infos(
         },
         ..default()
     }).insert(UiGameInterface).insert(UiCharacterInfos).id();  
+*/
 
     let player_action_display = commands.spawn(
         TextBundle::from_section(
@@ -78,7 +86,7 @@ pub fn draw_ui_game_character_infos(
             margin: UiRect::all(Val::Px(8.)),            
             ..default()
         }),
-    ).id();
+    ).insert(UiCharacterInfos).id();
 
     let player_name_tag = commands.spawn((
         TextBundle::from_section(

@@ -10,7 +10,7 @@ pub mod audio_resources;
 pub use graphic_resources::GraphicsAssets;
 pub use audio_resources::AudioAssets;
 
-const IMAGES: [&str; 1] = ["shadowrun_title_alone"];
+const IMAGES: [&str; 3] = ["shadowrun_title_alone", "button_attack_melee", "button_attack_ranged"];
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
 const TEXTURES: [&str; 3] = ["human", "ghoul", "blood"];
 const SEWERS_TILES_TEXTURES: [&str; 17] = [

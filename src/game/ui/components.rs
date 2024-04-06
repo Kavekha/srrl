@@ -18,3 +18,9 @@ pub struct UiActionPointsOnCursor;
 
 #[derive(Component)]
 pub struct UiLog;
+
+#[derive(Component)]
+pub struct UiAttackIcon;
+
+#[derive(Component)]
+pub struct UiMainWindow;
