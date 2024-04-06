@@ -87,13 +87,13 @@ pub fn update_action_infos(
             action_infos.target = Some(tile_position);
         }
 
-        // 0.19e : Visuel   // POC
+        // 0.19e : Visuel 
         if has_target {
             let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap(), RANGED_ATTACK_RANGE_MAX) else {
                 println!("Has target, not in view");
                 continue;
             };
-        }
+        }  
         
 
         // On calcule un trajet jusqu'à la cible. si Cible, on ne verifie pas si on peut marcher sur la dernière case (car on ne pourrait pas: elle est utilisée par la Target)

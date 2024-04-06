@@ -8,14 +8,12 @@ use crate::{
         asset_loaders::graphic_resources::GraphicsAssets, 
         audios::SoundEvent,
         render::get_world_position
-    }, 
-    game::{
-        combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, 
-        rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED }}, 
+    }, game::{
+        combat::{action_infos::is_in_sight, components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX }}, 
         gamelog::LogEvent, 
         pieces::components::{Health, Occupier, Stats}, player::Player,        
         tileboard::components::BoardPosition, ui::ReloadUiEvent
-    }, globals::ORDER_CORPSE, vectors::Vector2Int
+    }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int
 };
 
 use super::events::WantToHitEvent;
@@ -76,8 +74,10 @@ pub fn entity_want_hit(
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,    
     available_targets: Query<(Entity, &BoardPosition, &Stats), (With<Health>, Without<IsDead>)>,
+    position_q: Query<&BoardPosition>,
     stats_q: Query<&Stats>,        
     mut ev_log: EventWriter<LogEvent>,
+    board: Res<Map>,
 ) {
     for (entity, want) in want_hit_q.iter() {
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
@@ -104,30 +104,38 @@ pub fn entity_want_hit(
 
         // Taper!
         let mut could_hit_someone= false;
-        for (target_entity, _target_position, _target_stats) in target_entities.iter() {     
+        for (target_entity, target_position, _target_stats) in target_entities.iter() {     
             println!("Want hit: potentielle target: {:?}", *target_entity);
             // Can't hit yourself.
             if entity == * target_entity { 
                 println!("On ne peut pas s'attaquer soit même.");
                 continue; }; 
-                could_hit_someone= true;
-                let try_hit = TryHit { mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
-                commands.entity(entity).insert(try_hit);     
+
+            // 0.19e : Visuel : Ne prends pas en compte le type. TODO: Reach lié à l'attaque / equipement.
+            let Ok(entity_position) = position_q.get(entity) else { continue; };
+            let Ok(_in_los) = is_in_sight(&board, &entity_position.v, &target_position.v, RANGED_ATTACK_RANGE_MAX) else {
+                println!("Has target, not in view");
+                continue;
+            };
+
+            could_hit_someone= true;
+            let try_hit = TryHit { mode: want.mode.clone(), defender: *target_entity};       //TODO : A un moment, il faudra distinguer l'auteur de l'outil (source?).
+            commands.entity(entity).insert(try_hit);     
         }
 
-            //Payer le prix de l'action.
-            if could_hit_someone {                
-                match want.mode {
-                    AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
-                    AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
-                    //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
-                };
+        //Payer le prix de l'action.
+        if could_hit_someone {                
+            match want.mode {
+                AttackType::MELEE => consume_actionpoints(&mut action_points, AP_COST_MELEE),
+                AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
+                //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
+            };
 
-                if let Ok(_is_player) = player_q.get(entity) {
-                    ev_interface.send(ReloadUiEvent); 
-                    ev_refresh_action.send(RefreshActionCostEvent);
-                }
+            if let Ok(_is_player) = player_q.get(entity) {
+                ev_interface.send(ReloadUiEvent); 
+                ev_refresh_action.send(RefreshActionCostEvent);
             }
+        }
     }
 }
 
@@ -140,6 +148,7 @@ pub fn entity_try_hit(
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,      
     position_q: Query<&BoardPosition>,   
+    mut ev_effect: EventWriter<EffectEvent>,
 ){
     for (entity, attack) in try_hit_q.iter() {
         commands.entity(entity).remove::<TryHit>(); // On retire au debut, car command joué à la fin & si continue au milieu ne sera pas traité.
@@ -168,7 +177,19 @@ pub fn entity_try_hit(
 
         if combat_result.success {
             commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: combat_result.dmg});
-            ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
+            match attack.mode {
+                AttackType::MELEE => {
+                    ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
+                },
+                AttackType::RANGED => {
+                    ev_sound.send(SoundEvent{id:"gun_shot_1".to_string()});
+                    ev_sound.send(SoundEvent{id:"gun_reload_1".to_string()});    
+                    if let Ok(position) = position_q.get(entity) {
+                        let transform = get_world_position(&position.v);
+                        ev_effect.send(EffectEvent { id: "hit_muzzle_1".to_string(), x: transform.0, y: transform.1 });
+                    };                
+                }
+            }            
         } else {
             commands.entity(entity).insert(MissHit { mode: attack.mode.clone(), defender:attack.defender});
         }
