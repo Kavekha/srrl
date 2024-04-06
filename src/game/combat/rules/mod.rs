@@ -145,10 +145,11 @@ pub fn enough_ap_for_action(
     match attack_type {
         AttackType::MELEE => ap_cost = AP_COST_MELEE,
         AttackType::RANGED => ap_cost = AP_COST_RANGED,
+        /*
         _ => { 
             ap_cost = AP_COST_NO_VALUE;
             println!("No ap cost verification for {:?}", attack_type);
-        },
+        }, */
     };
     if actionpoints_component.current >= ap_cost {
         return Ok(true)
