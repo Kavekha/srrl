@@ -1,8 +1,10 @@
 // ==> DOCUMENTATION 0.19
 /*
 On recoit un event RefreshActionCostEvent.
-
+On recalcule tout ce qui est utile pour prise de décision du joueur: Cout AP, chemin, cible, type d'attaque etc.
 */
+extern crate bresenham;
+use bresenham::Bresenham;
 
 use std::collections::VecDeque;
 
@@ -10,10 +12,9 @@ use bevy::prelude::*;
 
 use crate::{game::{ pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{ components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
+use super::{ components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
 
 
-// Ui?
 
 #[derive(Resource)]
 pub struct ActionInfos {
@@ -25,9 +26,34 @@ pub struct ActionInfos {
 }
 
 
+pub fn is_in_sight(
+    board: &Map,
+    origin: &Vector2Int,
+    end: &Vector2Int,
+    range: i32
+) ->Result<bool, bool> {
+    println!("BRESENHAM ==== ");
+    let mut step = 0;
+    for (x, y) in Bresenham::new((origin.x.try_into().unwrap(), origin.y.try_into().unwrap()), (end.x.try_into().unwrap(), end.y.try_into().unwrap())) {
+        println!("{}, {}", x, y);
+        if board.is_blocked(x as i32, y as i32) { //(i32::from(x), i32::from(y)) {
+            println!("View is blocked");
+            return Err(false)
+        }
+        step += 1;
+        if step >= range {
+            println!("Max range reached.");
+            return Err(false)
+        }
+    }
+    println!("View is clear!");
+    return Ok(true)
+}
+
+
 pub fn update_action_infos(
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
-    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>,
+    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>,         // TODO: Not with Turn? Why?
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
@@ -60,6 +86,15 @@ pub fn update_action_infos(
             has_target = true;
             action_infos.target = Some(tile_position);
         }
+
+        // 0.19e : Visuel   // POC
+        if has_target {
+            let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap(), RANGED_ATTACK_RANGE_MAX) else {
+                println!("Has target, not in view");
+                continue;
+            };
+        }
+        
 
         // On calcule un trajet jusqu'à la cible. si Cible, on ne verifie pas si on peut marcher sur la dernière case (car on ne pourrait pas: elle est utilisée par la Target)
         let path_to_destination = find_path(
