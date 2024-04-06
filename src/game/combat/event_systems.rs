@@ -114,7 +114,7 @@ pub fn entity_want_hit(
             // 0.19e : Visuel : Ne prends pas en compte le type. TODO: Reach lié à l'attaque / equipement.
             let Ok(entity_position) = position_q.get(entity) else { continue; };
             let Ok(_in_los) = is_in_sight(&board, &entity_position.v, &target_position.v, RANGED_ATTACK_RANGE_MAX) else {
-                println!("Has target, not in view");
+                ev_log.send(LogEvent {entry: format!("Target is not in view.")}); 
                 continue;
             };
 
