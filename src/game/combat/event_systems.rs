@@ -183,11 +183,7 @@ pub fn entity_try_hit(
                 },
                 AttackType::RANGED => {
                     ev_sound.send(SoundEvent{id:"gun_shot_1".to_string()});
-                    ev_sound.send(SoundEvent{id:"gun_reload_1".to_string()});    
-                    if let Ok(position) = position_q.get(entity) {
-                        let transform = get_world_position(&position.v);
-                        ev_effect.send(EffectEvent { id: "hit_muzzle_1".to_string(), x: transform.0, y: transform.1 });
-                    };                
+                    ev_sound.send(SoundEvent{id:"gun_reload_1".to_string()});           
                 }
             }            
         } else {
@@ -205,7 +201,12 @@ pub fn entity_try_hit(
                     ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
                 }
             },
-            _ => println!("Want to hit, not supported yet for other than MELEE")
+            AttackType::RANGED => { 
+                if let Ok(position) = position_q.get(entity) {
+                    let transform = get_world_position(&position.v);
+                    ev_effect.send(EffectEvent { id: "hit_muzzle_1".to_string(), x: transform.0, y: transform.1 });
+                };
+            },
         };  
     }
 }
