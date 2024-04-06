@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{combat::components::ActionPoints, despawn_component, pieces::components::Health, player::Player, ui::{INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_MAX, INTERFACE_HP_CHUNK_WIDTH}}, 
+    game::{combat::components::ActionPoints, pieces::components::Health, player::Player, ui::{INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_MAX, INTERFACE_HP_CHUNK_WIDTH}}, 
     globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE
 };
 
@@ -14,15 +14,6 @@ const COLOR_BORDER_CHUNK_HEALTH_FULL:Color = Color::rgb(0.5, 0.0, 0.0);
 const COLOR_BACKGROUND_CHUNK_HEALTH_FULL:Color = Color::rgb(0.9, 0.0, 0.0 );
 const COLOR_BORDER_CHUNK_HEALTH_EMPTY:Color = Color::rgb(0.1, 0.1, 0.1);
 const COLOR_BACKGROUND_CHUNK_HEALTH_EMPTY:Color = Color::rgba(0.0, 0.0, 0.0, 1.0 );
-
-
-pub fn clear_ui_game_character_infos(
-    interface_query: Query<Entity, With<UiCharacterInfos>>,
-    commands: &mut Commands,
-) {
-    //println!("DEBUG: Clear interface ui.");
-    despawn_component(interface_query, commands);
-}
 
 
 #[derive(Component)]
@@ -132,10 +123,11 @@ pub fn draw_ui_game_character_infos(
             position_type: PositionType::Absolute,
             width: Val::Percent(100.0),
             height: Val::Percent(10.0),
-            align_content: AlignContent::FlexEnd,       // Added 0.19f
+            align_content: AlignContent::FlexEnd,   
             justify_content: JustifyContent::FlexStart, 
             align_items: AlignItems::FlexEnd,
-            align_self: AlignSelf::FlexEnd,
+            //align_self: AlignSelf::FlexStart,    //FlexEnd,
+            flex_direction: FlexDirection::Row,
             bottom: Val::Px(0.),
             ..default()
         },

@@ -1,11 +1,36 @@
 // === DOCUMENTATION
 /*
-Les UI en jeu utilisent le tag UiGameInterface sur le container, pour pouvoir être supprimé quand on disabled la partie en cours.
-Un tag UI commence par Ui dans l'ideal.
+A LIRE ICI : https://cssreference.io/flexbox/#align-self
+
+draw_ui_main_window : 
+    En Row. Chaque élement ajouté s'ajoutera sur la même ligne.
+    AlignItems:Flexstar les fait commencer de la gauche.
+draw_ui_game_character_infos:
+    En Column, mais de façon à ce que ca s'ecrase pour 
 
  */
 
- // !!! TO TEST : L'UI passe son temps à être Update sans recevoir d'event pour cela. Ca consomme! A verifier.
+ /* 0.19f : 
+    Main Window + Game Char Infos : OK 
+        MainWindow:
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::FlexEnd,       
+            flex_direction: FlexDirection::Row,
+            bottom: Val::Px(0.),
+        GameCharInfos: 
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(10.0),
+            align_content: AlignContent::FlexEnd,   
+            justify_content: JustifyContent::FlexStart, 
+            align_items: AlignItems::FlexEnd,
+            flex_direction: FlexDirection::Row,
+            bottom: Val::Px(0.),
+  */
+
 
 use bevy::prelude::*;
 
@@ -41,13 +66,11 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
             .add_systems(Update, update_ui_character_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_character_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            //.add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))            
 
-            
-
-            //.add_systems(Update, draw_ui_game_character_infos.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))
-            //.add_systems(Update, draw_ui_game_attack_icons.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))            
+                        
             .add_systems(OnEnter(GameState::Disabled), clear_all_game_interface)
             ;
     }
@@ -72,8 +95,8 @@ fn draw_ui_main_window(
             width: Val::Percent(100.0),
             height: Val::Percent(100.0),
             justify_content: JustifyContent::SpaceBetween,
-            align_items: AlignItems::FlexEnd,
-            //row_gap: Val::Px(text_style.font_size * 2.),    // ?
+            align_items: AlignItems::FlexEnd,       
+            flex_direction: FlexDirection::Row,
             bottom: Val::Px(0.),
             ..default()
         },
