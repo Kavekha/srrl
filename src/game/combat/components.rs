@@ -38,7 +38,7 @@ pub struct TryHit{
     pub defender: Entity
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum AttackType{
     RANGED,
     MELEE

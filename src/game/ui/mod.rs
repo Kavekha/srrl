@@ -1,9 +1,56 @@
 // === DOCUMENTATION
 /*
-Les UI en jeu utilisent le tag UiGameInterface sur le container, pour pouvoir être supprimé quand on disabled la partie en cours.
-Un tag UI commence par Ui dans l'ideal.
+A LIRE ICI : https://cssreference.io/flexbox/#align-self
+
+draw_ui_main_window : 
+    En Row. Chaque élement ajouté s'ajoutera sur la même ligne.
+    AlignItems:Flexstar les fait commencer de la gauche.
+draw_ui_game_character_infos:
+    En Column, mais de façon à ce que ca s'ecrase pour 
 
  */
+
+ /* 0.19f : 
+    1. Main Window + Game Char Infos : OK 
+        MainWindow:
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::FlexEnd,       
+            flex_direction: FlexDirection::Row,
+            bottom: Val::Px(0.),
+        GameCharInfos: 
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(10.0),
+            align_content: AlignContent::FlexEnd,   
+            justify_content: JustifyContent::FlexStart, 
+            align_items: AlignItems::FlexEnd,
+            flex_direction: FlexDirection::Row,            
+            bottom: Val::Px(10.),
+    2. Step1 + GameAttack: OK => Attack a la suite de GameCharInfos (icone à 32 px)
+        GameAttack:
+            position_type: PositionType::Relative,
+            align_content: AlignContent::Center,
+            align_items: AlignItems::FlexEnd, 
+            justify_content: JustifyContent::FlexEnd, 
+            flex_direction: FlexDirection::Row,
+            width: Val::Percent(50.),
+            height: Val::Percent(20.),
+            bottom: Val::Px(10.),
+            ..default()
+        Historique::
+            A.Change: Attack:position_type::Relative => No change.
+            B.Change: GameChar:width: Val::Percent(40.0), => No change.
+            C.Change: Attack:justify_content: JustifyContent::FlexEnd => Attack en second row, mais une ligne au dessus de GameChar. => ACCEPTABLE
+            D.Change: Attack:align_items: AlignItems::FlexStart, => Idem, mais Attack encore plus en hauteur (2-3 lignes de plus cette fois) => NOK 
+            E.Change: Attack:align_items: AlignItems::FlexEnd, => Desormais en bas, p-e un peu trop. => OK 
+            F.Change: Attack:bottom: Val::Px(20.), => OK !
+
+
+  */
+
 
 use bevy::prelude::*;
 
@@ -11,12 +58,13 @@ pub mod ui_game_interface;
 pub mod ui_game_cursor;
 pub mod ui_game_logs;
 pub mod ui_game_npc_infos;
+pub mod ui_game_attacks;
 mod components;
 
 
 use crate::game::states::GameState;
 
-use self::{components::UiGameInterface, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::draw_ui_game_character_infos, ui_game_npc_infos::draw_ui_game_enemy_hp};
+use self::{components::{ UiGameInterface, UiMainWindow}, ui_game_attacks::{draw_ui_game_attack_icons, update_ui_game_attack_icons}, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, ui_game_npc_infos::draw_ui_game_enemy_hp};
 
 use super::{despawn_component, combat::{CombatSet, action_infos::update_action_infos}};
 
@@ -32,24 +80,53 @@ impl Plugin for UiPlugin {
             .add_event::<ReloadUiEvent>()
 
             .add_systems(OnEnter(GameState::Initialise), display_interface)
+            .add_systems(OnEnter(GameState::Initialise), draw_ui_main_window)
 
-            .add_systems(Update, draw_ui_game_character_infos.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            // Refacto 0.19f : Nouveau fonctionnement UI.
+            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
+            .add_systems(Update, update_ui_character_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            .add_systems(Update, update_ui_character_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))       
+            .add_systems(Update, update_ui_game_attack_icons.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+                
+
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))
+                        
             .add_systems(OnEnter(GameState::Disabled), clear_all_game_interface)
             ;
     }
 }
 
-
 #[derive(Event)]
 pub struct ReloadUiEvent;
+
 
 fn display_interface(
     mut ev_ui: EventWriter<ReloadUiEvent>
 ) {
     ev_ui.send(ReloadUiEvent);
 }
+
+fn draw_ui_main_window(
+    mut commands: Commands,
+) {
+    commands.spawn(NodeBundle {
+        style: Style {
+            position_type: PositionType::Absolute,
+            width: Val::Percent(100.0),
+            height: Val::Percent(100.0),
+            justify_content: JustifyContent::SpaceBetween,
+            align_items: AlignItems::FlexEnd,       
+            flex_direction: FlexDirection::Row,
+            bottom: Val::Px(0.),
+            ..default()
+        },
+        ..default()
+    }).insert(UiGameInterface).insert(UiMainWindow);  
+}
+
+
 
 
 // A cause de command / mut commands, on ne peut utiliser que celle-ci en systeme.
