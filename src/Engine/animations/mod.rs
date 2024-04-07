@@ -123,7 +123,7 @@ pub fn walk_animation(
             let target = Vec3::new(world_position.0, world_position.1, 2.0);
             path_animation.push_back(target);
         }
-        println!("PathAnimator created");
+        //println!("PathAnimator created");
         commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
     }
 }

@@ -20,6 +20,9 @@ pub const AP_COST_RANGED:u32 = 5;
 
 /// Ranged.
 pub const RANGED_ATTACK_RANGE_MAX: i32 = 15;
+
+/// NPC 
+pub const NPC_VISION_RANGE_MAX: i32 = 25;
 ///==============================================================================
 
 

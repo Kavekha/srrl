@@ -15,7 +15,7 @@ pub fn on_want_to_move_event(
     action_infos: Res<ActionInfos>,
 ){
     for event in ev_want_to_move.read() {
-        println!("Move Event recu");
+        //println!("Move Event recu");
         let path = action_infos.path.clone();
         let Some(entity) = action_infos.entity else { continue };
         let Some(path) = path else { continue };
@@ -34,7 +34,7 @@ pub fn entity_want_to_move(
     //mut ev_move: EventWriter<EntityMoveEvent>,
 ){
     for (entity, want_move) in want_move_q.iter() {
-        println!("Want To Move component.");
+        //println!("Want To Move component.");
         commands.entity(entity).remove::<WantToMove>();
 
         let Ok(action_points) = actions_q.get(entity) else { continue };
@@ -73,7 +73,7 @@ pub fn entity_move_to(
     for (entity, movement) in move_q.iter() {
         commands.entity(entity).remove::<MoveTo>();
 
-        println!("{:?} : Je bouge!", entity);
+        //println!("{:?} : Je bouge!", entity);
         let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
             //println!("ActionMove: Je n'ai pas les infos Entité");   // TODO : Quand Action_entity_try_move pose le component MovePath, le Query action_entity_move ne le recupere pas pour le moment (asynchrone?)
             continue };

@@ -33,38 +33,12 @@ pub fn update_ui_game_cursor_from_action(
     for _event in cursor_moved_events.read() {should_update = true; break;}
     for _event in ev_refresh_ui.read() { should_update = true; break;}
     if !should_update { return };
-    println!("Je dois mettre à jour l'apparence du Curseur.");  
-
+    //println!("Je dois mettre à jour l'apparence du Curseur.");  
     let Ok(entity) = entity_cursor_q.get_single() else { return };
-
     if let Ok(mut cursor) = cursor_q.get_mut(entity) {
-        if action_infos.attack == Some(AttackType::RANGED) {
-            *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
-        } else if action_infos.target.is_some() {
-            *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
-        } else {
-            *cursor = graph_assets.cursors[CURSOR_MOVING].clone();
-        }
-
-        /* 
-        let mut has_target = false;
-        let mut has_ranged= false;
-        if action_infos.target.is_some() {
-            has_target = true;
-        }
-        if action_infos.attack == Some(AttackType::RANGED) {
-            has_ranged = true;
-        }
-        if !has_target && !has_ranged{
-            *cursor = graph_assets.cursors["cursor_moving"].clone();
-        }
-        if has_ranged{
-            *cursor = graph_assets.cursors["cursor_targeting"].clone();
-        }
-        if has_target && !has_ranged{
-            *cursor = graph_assets.cursors["cursor_punching"].clone();
-        }
-        */
+        if action_infos.attack == Some(AttackType::RANGED) { *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
+        } else if action_infos.target.is_some() { *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
+        } else { *cursor = graph_assets.cursors[CURSOR_MOVING].clone(); }
     }    
 }
 
@@ -77,19 +51,11 @@ pub fn update_ui_game_cursor_display_action_points(
 ){
     // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
-    for _event in cursor_moved_events.read() {
-        should_update = true;
-        break;
-    }
-    for _event in ev_refresh_ui.read() {
-        should_update = true;
-        break;
-    }
+    for _event in cursor_moved_events.read() { should_update = true; break; }
+    for _event in ev_refresh_ui.read() { should_update = true; break; }
     if !should_update { return };
-    println!("Je dois mettre à jour l'affichage des AP à coté du Curseur.");
-
+    //println!("Je dois mettre à jour l'affichage des AP à coté du Curseur.");
     let Ok(_player) = player_q.get_single() else { return };
-    //let ap_cost_result = get_ap_cost(query_character, query_occupied, board, cursor.grid_position, player);
     
     let mut ap_valid = false;
     let mut ap_result = format!("x");
@@ -100,7 +66,7 @@ pub fn update_ui_game_cursor_display_action_points(
     }
 
     for mut text in &mut ap_cursor_q {
-        println!("J'ai un Text pour UiActionPointsOnCursor");
+        //println!("J'ai un Text pour UiActionPointsOnCursor");
         text.sections[0].value = format!("{ap_result}");
         text.sections[0].style.color = UI_CURSOR_DISPLAY_AP_NOTVALID.into();
         if ap_valid {
@@ -120,25 +86,18 @@ pub fn update_ui_game_cursor_position_action_points(
 ){
     // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
-    for _event in cursor_moved_events.read() {
-        should_update = true;
-        break;
-    }
-    for _event in ev_refresh_ui.read() {
-        should_update = true;
-        break;
-    }
+    for _event in cursor_moved_events.read() { should_update = true; break; }
+    for _event in ev_refresh_ui.read() { should_update = true; break; }
     if !should_update { return };
-    println!("Je dois mettre à jour la position des AP à coté du curseur");
-
+    //println!("Je dois mettre à jour la position des AP à coté du curseur");
 
     for mut style in &mut ap_cursor_style_q {
-        println!("J'ai un Style pour positionner mes AP à coté du curseur");
+        //println!("J'ai un Style pour positionner mes AP à coté du curseur");
         let (camera, camera_transform) = camera_q.single();
         let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
 
         for transform in query_game_cursor.iter() {
-            println!("J'ai un Transform de ma Query Game Cursor");
+            //println!("J'ai un Transform de ma Query Game Cursor");
 
             //==== On calcule à partir de la grille IG / Camera2d où placer l'UI.
             // TODO : Rassembler ce calcul avec celui utilisé dans ui_game_npc_infos pour afficher les HP enemis?
