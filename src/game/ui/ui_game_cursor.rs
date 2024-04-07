@@ -124,139 +124,57 @@ pub fn update_ui_game_cursor_position_action_points(
     }
 }
 
-/*
-pub fn update_ui_character_action_points(
-    mut ev_ui: EventReader<ReloadUiEvent>,
-    player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
-    mut ap_text_q: Query<&mut Text, With<UiActionPoints>>,
-){
-    for _event in ev_ui.read() {
-        println!("Je dois mettre à jour les Action Points.");
-
-        let mut action_points = 0;
-        if let Ok(player_action_points) = player_actions_query.get_single() {
-            println!("Points d'action du joueur récupéré!");
-            let (_p_entity_action, p_action) = player_action_points;
-            action_points = p_action.current;
-        } 
-        // On modifie le contenu.
-        for mut text in &mut ap_text_q {
-            text.sections[0].value = format!("{action_points}");    // ATTENTION: Si la section change, ca fout vite la merde avec du gros crash panic....
-        }
-    }
-}pub fn update_ui_character_action_points(
-    mut ev_ui: EventReader<ReloadUiEvent>,
-    player_actions_query: Query<(Entity, &ActionPoints), With<Player>>,
-    mut ap_text_q: Query<&mut Text, With<UiActionPoints>>,
-){
-    for _event in ev_ui.read() {
-        println!("Je dois mettre à jour les Action Points.");
-
-        let mut action_points = 0;
-        if let Ok(player_action_points) = player_actions_query.get_single() {
-            println!("Points d'action du joueur récupéré!");
-            let (_p_entity_action, p_action) = player_action_points;
-            action_points = p_action.current;
-        } 
-        // On modifie le contenu.
-        for mut text in &mut ap_text_q {
-            text.sections[0].value = format!("{action_points}");    // ATTENTION: Si la section change, ca fout vite la merde avec du gros crash panic....
-        }
-    }
-} */
-
 // Refacto 0.19g
 pub fn draw_ui_cursor_action_points(
     mut commands: Commands,
     assets: Res<GraphicsAssets>,
     camera_q: Query<(&Camera, &GlobalTransform)>, 
     query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
-    //interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
     player_q: Query<Entity, With<Player>>,
     action_infos: Res<ActionInfos>,
-    mut cursor_moved_events: EventReader<CursorMoved>,
-    mut ev_refresh_ap: EventReader<RefreshActionCostEvent>,
-
 ){
     println!("Draw UI Cursor action points : in progress");
-    let Ok(_player) = player_q.get_single() else { return };
-    //let ap_cost_result = get_ap_cost(query_character, query_occupied, board, cursor.grid_position, player);
- 
-    let mut ap_valid = false;
-    let mut ap_result = format!("x");
-    if let Some(ap_cost) = action_infos.cost {
-        let ap_char = ap_cost.to_string(); 
-        ap_valid = true;
-        ap_result = ap_char;
-    }
+    // Le Container. On ne va pas l'attacher à la Main Window pour pas foutre le dawa, et car independant de l'interface.
+    let ap_container = commands.spawn(NodeBundle {
+        style: Style {                
+            //left: Val::Px(left),
+            //right: Val::Px(right),
+            //top: Val::Px(top),
+            //bottom: Val::Px(bottom),
+            //width: Val::Px(width),
+            //height: Val::Px(height),
+            //flex_grow: grow,
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            flex_direction: FlexDirection::Row,
+            position_type: PositionType::Absolute,
+            ..default()
+        },
+        //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
+        ..default()
+    })//.insert(UiActionPointsOnCursor).insert(UiGameInterface)
+    .id();  
 
-    let (camera, camera_transform) = camera_q.single();
-    let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
-
-    for transform in query_game_cursor.iter() {
-
-        //==== On calcule à partir de la grille IG / Camera2d où placer l'UI.
-        // TODO : Rassembler ce calcul avec celui utilisé dans ui_game_npc_infos pour afficher les HP enemis?
-        let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
-        //If not in screen, we don't display.
-        if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
-  
-        let left = screen_position.x + (CHAR_SIZE as f32 / 2.0);
-        let top = screen_position.y + (CHAR_SIZE as f32 / 2.0); 
-
-        let width = CHAR_SIZE as f32; 
-        let height = CHAR_SIZE as f32 / 2.0;
-
-        let grow = CHAR_SIZE as f32 * 2.0;
-
-        // === La couleur du chiffre.
-        let mut ap_color = Color::RED;
-        if ap_valid {
-            ap_color = Color::YELLOW;
-        };
-
-
-        // Le Container. On ne va pas l'attacher à la Main Window pour pas foutre le dawa, et car independant de l'interface.
-        let ap_container = commands.spawn(NodeBundle {
-            style: Style {                
-                left: Val::Px(left),
-                //right: Val::Px(right),
-                top: Val::Px(top),
-                //bottom: Val::Px(bottom),
-                width: Val::Px(width),
-                height: Val::Px(height),
-                flex_grow: grow,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                flex_direction: FlexDirection::Row,
-                position_type: PositionType::Absolute,
+    let cursor_action_display = commands.spawn(
+        TextBundle::from_section(
+            format!(""), 
+            TextStyle { 
+                font: assets.font.clone(),  
+                font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                //color: ap_color,
                 ..default()
             },
-            //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
+        )
+        .with_style(Style {
+            margin: UiRect::all(Val::Px(8.)),            
             ..default()
-        })//.insert(UiActionPointsOnCursor).insert(UiGameInterface)
-        .id();  
+        }),
+    ).insert(UiActionPointsOnCursor).id();
 
-        let cursor_action_display = commands.spawn(
-            TextBundle::from_section(
-                format!("{}", ap_result),     //("{}",action_points),
-                TextStyle { 
-                    font: assets.font.clone(),  
-                    font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
-                    color: ap_color,
-                },
-            )
-            .with_style(Style {
-                margin: UiRect::all(Val::Px(8.)),            
-                ..default()
-            }),
-        ).insert(UiActionPointsOnCursor).id();
- 
-        commands.entity(ap_container).add_child(cursor_action_display);
-        println!("Draw UI Cursor action points : iteration: OK");
-    }
-
+    commands.entity(ap_container).add_child(cursor_action_display);
+    println!("Draw UI Cursor action points : iteration: OK");
 }
+
 
 
 pub fn draw_ui_action_points_cursor_old(
