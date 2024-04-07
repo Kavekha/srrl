@@ -5,6 +5,25 @@ use bevy::prelude::*;
 use crate::{game::{combat::{components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE}}, movements::components::WantToMove, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 
+// ===> DOCUMENTATION 0.19h
+/*
+Conception:
+* Chaque NPC regarde s'ils voient le PJ.
+    * Chaque NPC qui voient le PJ communiquent avec les autres NPC pour les en informer.
+* Si NPC est mélée only, regarde s'il peut porter au moins un coup.
+    * S'il ne peut pas porter au moins un coup, regarde si d'autres autour de lui peuvent frapper: si c'est le cas, il approche quand même.
+    * Sinon, il essait de rejoindre d'autres NPC
+    * Sinon il s'approche mais petit à petit.
+    * Sinon il se rends vers la sortie.
+
+----------------------------------------------------------------------------------------------------
+| 0.19h    | 0.3 |
+| 0.13     | 0.2 | IA  planifie, attaque si AP, bouge si AP, abandonne si rien à faire.
+| 0.6      | 0.1 | NPC poursuivent le joueur.
+------------------------------------------------------------------------------------------------
+ */
+
+
 
 /// NPC : Generate / Choice to forfeit their turn.
 #[allow(dead_code)]
@@ -35,7 +54,7 @@ pub fn npc_planning(
     mut commands: Commands,
     combat_info: Res<CombatInfos>,
     query_npc: Query<(&ActionPoints, &BoardPosition), (With<Npc>, With<Turn>)>,
-    query_player: Query<&BoardPosition, (With<Player>, Without<IsDead>)>,
+    query_player: Query<&BoardPosition, (With<Player>, Without<IsDead>)>,       // TODO : si pas Without<IsDead>, crash car jeu quitté suite au Game Over sans que les NPC ne finissent leur tour.
     mut ev_endturn: EventWriter<EntityEndTurnEvent>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
