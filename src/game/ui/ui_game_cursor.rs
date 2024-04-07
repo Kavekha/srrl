@@ -16,6 +16,41 @@ const UI_CURSOR_DISPLAY_AP_VALID:Color = Color::YELLOW;
 const UI_CURSOR_DISPLAY_AP_NOTVALID:Color = Color::RED;
 //===
 
+pub fn update_ui_game_cursor_from_action(
+    mut ev_refresh_ui: EventReader<ReloadUiEvent>,
+    mut cursor_moved_events: EventReader<CursorMoved>,
+    entity_cursor_q: Query<Entity, With<GameCursorRender>>,
+    action_infos: Res<ActionInfos>,
+    mut cursor_q: Query<&mut Handle<Image>>,
+    graph_assets: Res<GraphicsAssets>
+){
+     // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
+    let mut should_update = false;
+    for _event in cursor_moved_events.read() {
+        should_update = true;
+        break;
+    }
+    for _event in ev_refresh_ui.read() {
+        should_update = true;
+        break;
+    }
+    if !should_update { return };
+    println!("Je dois mettre à jour l'apparence du Curseur.");   
+
+    // Transformation du curseur
+    let Ok(entity) = entity_cursor_q.get_single() else { return };
+
+    if let Ok(mut cursor) = cursor_q.get_mut(entity) {
+        if action_infos.target.is_some() {
+            *cursor = graph_assets.cursors["cursor_targeting"].clone();
+        } else {
+            *cursor = graph_assets.cursors["cursor_moving"].clone();
+        }        
+    };
+
+    
+}
+
 pub fn update_ui_game_cursor_display_action_points(
     mut ev_refresh_ui: EventReader<ReloadUiEvent>,
     mut cursor_moved_events: EventReader<CursorMoved>,

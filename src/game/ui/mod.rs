@@ -67,7 +67,7 @@ use crate::game::states::GameState;
 use self::{
     components::{ UiGameInterface, UiMainWindow}, 
     ui_game_attacks::{draw_ui_game_attack_icons, update_ui_game_attack_icons}, 
-    ui_game_cursor::{draw_ui_cursor_action_points, update_ui_game_cursor_display_action_points, update_ui_game_cursor_position_action_points}, 
+    ui_game_cursor::{draw_ui_cursor_action_points, update_ui_game_cursor_display_action_points, update_ui_game_cursor_from_action, update_ui_game_cursor_position_action_points}, 
     ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, 
     ui_game_npc_infos::draw_ui_game_enemy_hp};
 
@@ -88,17 +88,21 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Initialise), draw_ui_main_window)
 
             // Refacto 0.19f : Nouveau fonctionnement UI.
+            // Character UI
             .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
             .add_systems(Update, update_ui_character_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_character_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            // Attacks
             .add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))       
             .add_systems(Update, update_ui_game_attack_icons.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+            // Cursor UI
             .add_systems(OnEnter(GameState::Running), draw_ui_cursor_action_points)  //.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))
             .add_systems(Update, update_ui_game_cursor_display_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
-            .add_systems(Update, update_ui_game_cursor_position_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_game_cursor_display_action_points.run_if(on_event::<CursorMoved>()).run_if(in_state(GameState::Running)))
+            .add_systems(Update, update_ui_game_cursor_position_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_game_cursor_position_action_points.run_if(on_event::<CursorMoved>()).run_if(in_state(GameState::Running)))
-
+            .add_systems(Update, update_ui_game_cursor_from_action.run_if(on_event::<CursorMoved>()).run_if(in_state(GameState::Running)))
+            .add_systems(Update, update_ui_game_cursor_from_action.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             
             // Desactivé: Menu pour UI.
             //.add_systems(OnEnter(GameState::Initialise), setup_ui_cursor)
