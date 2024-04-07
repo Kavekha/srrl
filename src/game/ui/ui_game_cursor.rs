@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::ActionInfos, components::AttackType}, player::Player
+        combat::{action_infos::ActionInfos, components::AttackType}, player::Player, ui::components::UiGameInterface
     }, 
     globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
 };
@@ -177,14 +177,7 @@ pub fn draw_ui_cursor_action_points(
     println!("Draw UI Cursor action points : in progress");
     // Le Container. On ne va pas l'attacher à la Main Window pour pas foutre le dawa, et car independant de l'interface.
     let ap_container = commands.spawn(NodeBundle {
-        style: Style {                
-            //left: Val::Px(left),
-            //right: Val::Px(right),
-            //top: Val::Px(top),
-            //bottom: Val::Px(bottom),
-            //width: Val::Px(width),
-            //height: Val::Px(height),
-            //flex_grow: grow,
+        style: Style {   
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
             flex_direction: FlexDirection::Row,
@@ -193,8 +186,7 @@ pub fn draw_ui_cursor_action_points(
         },
         //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
         ..default()
-    })//.insert(UiActionPointsOnCursor).insert(UiGameInterface)
-    .id();  
+    }).insert(UiGameInterface).id();  
     
     let cursor_action_display = commands.spawn(
         TextBundle::from_section(

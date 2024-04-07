@@ -87,7 +87,10 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Initialise), display_interface)
             .add_systems(OnEnter(GameState::Initialise), draw_ui_main_window)
 
+            // TODO : Doit pouvoir se melanger en une seule fonction avec le Nextstate...
             .add_systems(OnEnter(GameState::Initialise), windows_mouse_desactivate)
+            .add_systems(OnEnter(GameState::Running), windows_mouse_desactivate)
+            .add_systems(OnEnter(GameState::Unavailable), windows_mouse_activate)
             .add_systems(OnEnter(GameState::Disabled), windows_mouse_activate)
 
             // Refacto 0.19f : Nouveau fonctionnement UI.
