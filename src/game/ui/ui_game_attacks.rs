@@ -1,29 +1,40 @@
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::{combat::components::AttackType, despawn_component}};
+use crate::{engine::asset_loaders::GraphicsAssets, game::{combat::{action_infos::ActionInfos, components::AttackType}, despawn_component}};
 
-use super::components::{UiAttackIcon, UiMainWindow};
+use super::{components::{UiAttackIcon, UiGameInterface, UiMainWindow}, ReloadUiEvent};
 
+
+const UI_ATTACK_BORDER_SELECTED: Color = Color::rgba(0.5, 0.5, 0.0, 1.0);
+const UI_ATTACK_BORDER_INVISIBLE: Color = Color::rgba(0.5, 0.5, 0.0, 0.0);
+
+
+pub fn update_ui_game_attack_icons(
+    mut ev_ui: EventReader<ReloadUiEvent>,
+    mut ui_attack_border_q: Query<(&mut BorderColor, &UiAttackIcon)>,
+    action_infos: Res<ActionInfos>
+){
+    for _event in ev_ui.read() {
+        println!("Je dois mettre à jour les cadres d'icone.");
+        
+        let Some(action_attack) = action_infos.attack.clone() else { continue;};
+
+        for (mut border_color, attack_icon) in &mut ui_attack_border_q {
+            if attack_icon.attack_type == action_attack {
+                *border_color = UI_ATTACK_BORDER_SELECTED.into();
+            } else {
+                *border_color = UI_ATTACK_BORDER_INVISIBLE.into();
+            }
+        }
+    }
+}
 
 pub fn draw_ui_game_attack_icons(
     mut commands: Commands,
     assets: Res<GraphicsAssets>,
     ui_main_q: Query<(Entity, &UiMainWindow)>,
-    ui_attack_icon_q: Query<Entity, With<UiAttackIcon>>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
-
-/* 
-    camera_q: Query<(&Camera, &GlobalTransform)>, 
-    query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
-    interface_query: Query<Entity, With<UiActionPointsOnCursor>>,
-    player_q: Query<Entity, With<Player>>,
-    action_infos: Res<ActionInfos>,
-    mut cursor_moved_events: EventReader<CursorMoved>,
-
-*/
 ){
-    //clear_ui_game_attack_icons(&mut commands, ui_attack_icon_q);
-
     // Interface container. 0.19f : fenetre globale dans mod.rs.
     let Ok(main_window) = ui_main_q.get_single() else { 
         println!("No main Window, can't display anything.");
@@ -46,21 +57,21 @@ pub fn draw_ui_game_attack_icons(
                 ..default()
             },
             ..default()
-        }).insert(UiAttackIcon).id();
+        }).insert(UiGameInterface).id();
     commands.entity(container).push_children(&[attack_container]);
 
 
-    // Bouton par icone.
-    let mut icon_n=1;
-    for image in ["button_attack_melee", "button_attack_ranged"] {
+    // Bouton par icone.    // TODO: Ce sera a changer, car beaucoup encore en dur. 
+
+    for attack in [AttackType::MELEE, AttackType::RANGED] {
+
         let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 1, 1, None, None);
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
-        let border_color: Color;
-        if icon_n == 2 {
-            border_color = Color::rgba(0.5, 0.5, 0.0, 0.0);
-        } else {
-            border_color = Color::rgba(0.5, 0.5, 0.0, 1.0);
+        let image: &str;
+        match attack {
+            AttackType::MELEE => image = "button_attack_melee",
+            AttackType::RANGED => image = "button_attack_ranged",
         }
 
         let border_icon = commands
@@ -71,9 +82,9 @@ pub fn draw_ui_game_attack_icons(
                 border: UiRect::all(Val::Px(5.)),                    
                 ..default()
             },
-            border_color: border_color.into(), //Color::rgba(0.5, 0.5, 0.0, 0.0).into(),
+            border_color: UI_ATTACK_BORDER_INVISIBLE.into(), //Color::rgba(0.5, 0.5, 0.0, 0.0).into(),
              ..default()
-        }).insert(UiAttackIcon).id();
+        }).insert(UiAttackIcon {attack_type: attack} ).id();
 
         let icon = commands
         .spawn(AtlasImageBundle {
@@ -88,8 +99,6 @@ pub fn draw_ui_game_attack_icons(
             ..default()
         }).id();
         
-        icon_n += 1;
-
         commands.entity(border_icon).push_children(&[icon]);
         commands.entity(attack_container).push_children(&[border_icon]);
     }

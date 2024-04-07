@@ -224,8 +224,18 @@ pub fn entity_miss_attack(
 ){
     for (entity, miss) in miss_hit_q.iter() {
         commands.entity(entity).remove::<MissHit>();
+        // sounds.
+        match miss.mode {
+            AttackType::MELEE => {
+                ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
+            },
+            AttackType::RANGED => {
+                ev_sound.send(SoundEvent{id:"gun_shot_1".to_string()});
+                ev_sound.send(SoundEvent{id:"gun_reload_1".to_string()});           
+            }
+        }    
 
-        ev_sound.send(SoundEvent{id:"hit_air_1".to_string()});
+        // fx.
         if let Ok(position) = position_q.get(miss.defender) {
             let transform = get_world_position(&position.v);
             ev_effect.send(EffectEvent { id: "hit_punch_miss".to_string(), x: transform.0, y: transform.1 });

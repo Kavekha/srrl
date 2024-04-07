@@ -64,7 +64,7 @@ mod components;
 
 use crate::game::states::GameState;
 
-use self::{components::{ UiGameInterface, UiMainWindow}, ui_game_attacks::draw_ui_game_attack_icons, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, ui_game_npc_infos::draw_ui_game_enemy_hp};
+use self::{components::{ UiGameInterface, UiMainWindow}, ui_game_attacks::{draw_ui_game_attack_icons, update_ui_game_attack_icons}, ui_game_cursor::draw_ui_action_points_cursor, ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, ui_game_npc_infos::draw_ui_game_enemy_hp};
 
 use super::{despawn_component, combat::{CombatSet, action_infos::update_action_infos}};
 
@@ -86,7 +86,9 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
             .add_systems(Update, update_ui_character_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_character_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
-            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))            
+            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))       
+            .add_systems(Update, update_ui_game_attack_icons.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
+                
 
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
             .add_systems(Update, draw_ui_action_points_cursor.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))
