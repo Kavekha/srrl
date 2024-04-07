@@ -10,8 +10,7 @@ pub fn spawn_game_cursor(
     asset_server: Res<AssetServer>,
 ){
     println!("Spawning Cursor");
-    commands.spawn(GameCursorRender)
-            .insert(SpriteBundle {
+    commands.spawn(SpriteBundle {
                 texture: asset_server.load(CURSOR),    
                 transform: Transform {
                     translation: Vec3::new(0.0, 0.0, ORDER_CURSOR),  
@@ -21,6 +20,7 @@ pub fn spawn_game_cursor(
                 ..default()            
             })
             .insert(Name::new("Cursor"))
+            .insert(GameCursorRender)
             ;
 }
 

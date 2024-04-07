@@ -71,7 +71,7 @@ use self::{
     ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, 
     ui_game_npc_infos::draw_ui_game_enemy_hp};
 
-use super::{despawn_component, combat::{CombatSet, action_infos::update_action_infos}};
+use super::despawn_component;
 
 
 pub const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
