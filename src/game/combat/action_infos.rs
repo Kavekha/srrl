@@ -22,7 +22,7 @@ pub struct ActionInfos {
     pub path: Option<VecDeque<Vector2Int>>, //Si accessible, on a quelque chose ici: le trajet pour se rendre à la destination (Non enregistrée)
     pub target: Option<Vector2Int>,     // Il y a un fighter a cette position là (Position, Health, Stats, not isDead)
     pub entity: Option<Entity>,     // C'est le joueur. // CAREFUL : Un jour on aura plus de un personnage.
-    pub attack: Option<AttackType>  // 0.19.c
+    pub attack: Option<AttackType>  // 0.19.c       // TODO : En Not an option?
 }
 
 

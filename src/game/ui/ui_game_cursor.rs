@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::action_infos::ActionInfos, player::Player
+        combat::{action_infos::ActionInfos, components::AttackType}, player::Player
     }, 
     globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
 };
@@ -14,6 +14,10 @@ use super::{components::UiActionPointsOnCursor, ReloadUiEvent};
 //===
 const UI_CURSOR_DISPLAY_AP_VALID:Color = Color::YELLOW;
 const UI_CURSOR_DISPLAY_AP_NOTVALID:Color = Color::RED;
+
+pub const CURSOR_MOVING:&str = "cursor_moving";
+const CURSOR_TARGETING:&str = "cursor_targeting";
+const CURSOR_PUNCHING:&str = "cursor_punching";
 //===
 
 pub fn update_ui_game_cursor_from_action(
@@ -26,29 +30,42 @@ pub fn update_ui_game_cursor_from_action(
 ){
      // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
-    for _event in cursor_moved_events.read() {
-        should_update = true;
-        break;
-    }
-    for _event in ev_refresh_ui.read() {
-        should_update = true;
-        break;
-    }
+    for _event in cursor_moved_events.read() {should_update = true; break;}
+    for _event in ev_refresh_ui.read() { should_update = true; break;}
     if !should_update { return };
-    println!("Je dois mettre à jour l'apparence du Curseur.");   
+    println!("Je dois mettre à jour l'apparence du Curseur.");  
 
-    // Transformation du curseur
     let Ok(entity) = entity_cursor_q.get_single() else { return };
 
     if let Ok(mut cursor) = cursor_q.get_mut(entity) {
-        if action_infos.target.is_some() {
-            *cursor = graph_assets.cursors["cursor_targeting"].clone();
+        if action_infos.attack == Some(AttackType::RANGED) {
+            *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
+        } else if action_infos.target.is_some() {
+            *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
         } else {
-            *cursor = graph_assets.cursors["cursor_moving"].clone();
-        }        
-    };
+            *cursor = graph_assets.cursors[CURSOR_MOVING].clone();
+        }
 
-    
+        /* 
+        let mut has_target = false;
+        let mut has_ranged= false;
+        if action_infos.target.is_some() {
+            has_target = true;
+        }
+        if action_infos.attack == Some(AttackType::RANGED) {
+            has_ranged = true;
+        }
+        if !has_target && !has_ranged{
+            *cursor = graph_assets.cursors["cursor_moving"].clone();
+        }
+        if has_ranged{
+            *cursor = graph_assets.cursors["cursor_targeting"].clone();
+        }
+        if has_target && !has_ranged{
+            *cursor = graph_assets.cursors["cursor_punching"].clone();
+        }
+        */
+    }    
 }
 
 pub fn update_ui_game_cursor_display_action_points(

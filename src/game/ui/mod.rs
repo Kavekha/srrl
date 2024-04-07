@@ -87,6 +87,9 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Initialise), display_interface)
             .add_systems(OnEnter(GameState::Initialise), draw_ui_main_window)
 
+            .add_systems(OnEnter(GameState::Initialise), windows_mouse_desactivate)
+            .add_systems(OnEnter(GameState::Disabled), windows_mouse_activate)
+
             // Refacto 0.19f : Nouveau fonctionnement UI.
             // Character UI
             .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
@@ -117,6 +120,20 @@ impl Plugin for UiPlugin {
 
 #[derive(Event)]
 pub struct ReloadUiEvent;
+
+// TODO : Do better...
+fn windows_mouse_desactivate(
+    mut windows: Query<&mut Window>
+) {
+    let mut window: Mut<Window> = windows.single_mut();
+    window.cursor.visible = false;
+}
+fn windows_mouse_activate(
+    mut windows: Query<&mut Window>
+) {
+    let mut window: Mut<Window> = windows.single_mut();
+    window.cursor.visible = true;
+}
 
 
 fn display_interface(

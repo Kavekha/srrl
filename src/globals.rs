@@ -63,7 +63,6 @@ pub const SPRITE_PLAYER_HUMAN: &str = "human";
 pub const SPRITE_PLAYER_ORC: &str = "human";
 pub const SPRITE_PLAYER_ELF: &str = "human";
 pub const SPRITE_PLAYER_TROLL: &str = "human";
-pub const CURSOR: &str = "cursors/base_cursor_32.png";      //TODO to put in Assets
 
 // MAP GENERATOR
 pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
