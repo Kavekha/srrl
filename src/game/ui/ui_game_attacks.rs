@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::{combat::{action_infos::ActionInfos, components::AttackType}, despawn_component}};
+use crate::{engine::asset_loaders::GraphicsAssets, game::combat::{action_infos::ActionInfos, components::AttackType}, globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
 
 use super::{components::{UiAttackIcon, UiGameInterface, UiMainWindow}, ReloadUiEvent};
 
@@ -41,6 +41,7 @@ pub fn draw_ui_game_attack_icons(
         return ;
     };
     let (container, _main_window_component) = main_window;
+    let mut attack_button= 0;
 
     // Attack containers.
     let attack_container = commands 
@@ -65,6 +66,7 @@ pub fn draw_ui_game_attack_icons(
 
     for attack in [AttackType::MELEE, AttackType::RANGED] {
 
+        attack_button += 1;
         let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 1, 1, None, None);
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
@@ -99,9 +101,24 @@ pub fn draw_ui_game_attack_icons(
             ..default()
         }).id();
         
+        //TODO : Ici aussi c'est en dur, c'est bof.
+        let attack_button_display = commands.spawn(
+            TextBundle::from_section(
+                format!("{}",attack_button),
+                TextStyle { 
+                    font: assets.font.clone(),  
+                    font_size: INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE,
+                    color: Color::WHITE,
+                },
+            )
+        ).id();
+
+        commands.entity(icon).push_children(&[attack_button_display]);
         commands.entity(border_icon).push_children(&[icon]);
         commands.entity(attack_container).push_children(&[border_icon]);
     }
+
+    
 }
 
 //
