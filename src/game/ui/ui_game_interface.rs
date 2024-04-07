@@ -35,7 +35,7 @@ pub fn update_ui_character_health(
 ){
     //TODO : Pour note, cela ne change pas le color_border, car: component Chunk sur Border & sur son enfant Background. Background est considéré comme ayant les deux dans la Query.
     for _event in ev_ui.read() {
-        println!("Je dois mettre à jour les Chunks.");
+        //println!("Je dois mettre à jour les Chunks.");
         let Ok(player_health) = player_health_q.get_single() else { continue;};
 
         let mut nb_chunks = 1;
@@ -58,16 +58,17 @@ pub fn update_ui_character_action_points(
     mut ap_text_q: Query<&mut Text, With<UiActionPoints>>,
 ){
     for _event in ev_ui.read() {
-        println!("Je dois mettre à jour les Action Points.");
+        //println!("Je dois mettre à jour les Action Points dans Ui Character.");
 
         let mut action_points = 0;
         if let Ok(player_action_points) = player_actions_query.get_single() {
-            println!("Points d'action du joueur récupéré!");
+            //println!("Points d'action du joueur récupéré!");
             let (_p_entity_action, p_action) = player_action_points;
             action_points = p_action.current;
         } 
         // On modifie le contenu.
         for mut text in &mut ap_text_q {
+            //println!("J'ai du texte à modifier pour mon Ui Character: les action points dépensés.");
             text.sections[0].value = format!("{action_points}");    // ATTENTION: Si la section change, ca fout vite la merde avec du gros crash panic....
         }
     }

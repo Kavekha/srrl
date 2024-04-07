@@ -20,6 +20,7 @@ pub fn update_ui_game_attack_icons(
         let Some(action_attack) = action_infos.attack.clone() else { continue;};
 
         for (mut border_color, attack_icon) in &mut ui_attack_border_q {
+            println!("J'ai une BorderColor avec UiAttackIcon");
             if attack_icon.attack_type == action_attack {
                 *border_color = UI_ATTACK_BORDER_SELECTED.into();
             } else {
