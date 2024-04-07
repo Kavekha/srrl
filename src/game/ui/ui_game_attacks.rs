@@ -5,14 +5,6 @@ use crate::{engine::asset_loaders::GraphicsAssets, game::{combat::components::At
 use super::components::{UiAttackIcon, UiMainWindow};
 
 
-pub fn clear_ui_game_attack_icons(
-    commands: &mut Commands,    
-    attack_icon_q: Query<Entity, With<UiAttackIcon>>,
-) {
-    //println!("DEBUG: Clear Attack Icons ui.");    
-    despawn_component(attack_icon_q, commands);
-}
-
 pub fn draw_ui_game_attack_icons(
     mut commands: Commands,
     assets: Res<GraphicsAssets>,
@@ -59,21 +51,48 @@ pub fn draw_ui_game_attack_icons(
 
 
     // Bouton par icone.
-     for image in ["button_attack_melee", "button_attack_ranged"] {
+    let mut icon_n=1;
+    for image in ["button_attack_melee", "button_attack_ranged"] {
         let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 1, 1, None, None);
         let texture_atlas_handle = texture_atlases.add(texture_atlas);
-        let icon = commands
-            .spawn(AtlasImageBundle {
-                style: Style {
-                    width: Val::Px(48.),
-                    height: Val::Px(48.),
-                    ..default()
-                },
-                texture_atlas: texture_atlas_handle.into(),
-                image: UiImage::new(assets.images[image].clone()),
+
+        let border_color: Color;
+        if icon_n == 2 {
+            border_color = Color::rgba(0.5, 0.5, 0.0, 0.0);
+        } else {
+            border_color = Color::rgba(0.5, 0.5, 0.0, 1.0);
+        }
+
+        let border_icon = commands
+        .spawn(NodeBundle {
+            style: Style {
+                width: Val::Px(58.),
+                height: Val::Px(58.),
+                border: UiRect::all(Val::Px(5.)),                    
                 ..default()
-            }).id();
-        commands.entity(attack_container).push_children(&[icon]);
+            },
+            border_color: border_color.into(), //Color::rgba(0.5, 0.5, 0.0, 0.0).into(),
+             ..default()
+        }).insert(UiAttackIcon).id();
+
+        let icon = commands
+        .spawn(AtlasImageBundle {
+            style: Style {
+                width: Val::Px(48.),
+                height: Val::Px(48.),
+                border: UiRect::all(Val::Px(2.)),                    
+                ..default()
+            },                
+            texture_atlas: texture_atlas_handle.into(),
+            image: UiImage::new(assets.images[image].clone()),
+            ..default()
+        }).id();
+        
+        icon_n += 1;
+
+        commands.entity(border_icon).push_children(&[icon]);
+        commands.entity(attack_container).push_children(&[border_icon]);
     }
 }
 
+//
