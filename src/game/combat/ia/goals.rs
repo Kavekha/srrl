@@ -1,13 +1,41 @@
 //v0.19h
 //https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://citeseerx.ist.psu.edu/document%3Frepid%3Drep1%26type%3Dpdf%26doi%3D012ef03d0f951092b8645b69aebdbce900ac03e4&ved=2ahUKEwingo_qkrKFAxWsTaQEHYTTAFIQFnoECCMQAQ&usg=AOvVaw3spa-hKcVtGhhaO5QmYsWT
 
+/*
+Goal KillEnemy, satisfait par Attack
+Veut faire Attack, doit Voir la Cible, etre au Cac.
+Veut Voir la Cible, doit se deplacer ou interroger gens autour de lui.
+Veut être au CaC, doit se deplacer.
+Veut rester en vie, satisfait par ne pas être attaqué.
+Ne pas être attaqué => Satisfait par être hors de vue. 
+
+Conditions pour Attack Melee:
+    target dead : false 
+    ap superieure à 3 : true,
+    target in view: false,
+    in range 1 : true 
+
+Conditions pour Attack Ranged:
+    target dead: false 
+    ap superieure à 5 : true
+    target in view: false, 
+    in range: 15
+
+Conditions pour avoir de l'AP
+    forfeit: True 
+
+*/
+
 use bevy::prelude::*;
 
-use crate::{game::{combat::{components::{ActionPoints, AttackType, IsDead, WantToHit}, events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE}}, movements::components::WantToMove, pieces::components::{Health, Npc, Occupier, Stats}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{combat::{components::{ActionPoints, AttackType, IsDead, WantToHit}, events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_FORFEIT, AP_COST_MELEE, AP_COST_MOVE}}, movements::components::WantToMove, pieces::components::{Health, Npc, Occupier, Stats}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 // =========================================================
 const KILL_ENTITY_PLAN_MOVE_WEIGHT: u32 = 100;
-const KILL_ENTITY_PLAN_HIT_MELEE_WEIGHT: u32 = 200;
+const KILL_ENTITY_PLAN_HIT_MELEE_WEIGHT: u32 = 1000;
+const KILL_ENTITY_PLAN_FORFEIT_WEIGHT: u32 = 10;
+
+
 
 
 
@@ -17,14 +45,16 @@ pub enum GoalType{
     None,
 }
 
+
 // Necessaire pour que le NPC sache qu'il doit plannifier.
 #[derive(Component)]
 pub struct Planning;
 
 #[derive(Component)]
 pub struct Goal {
-    id: GoalType
+    id: GoalType,
 }
+
 
 #[derive(Component)]
 pub struct PlanHitMelee {
@@ -41,6 +71,12 @@ pub struct PlanMove {
     weight: u32
 }
 
+#[derive(Component)]
+pub struct PlanForfeitTurn {
+    target: Entity,
+    ap_cost: u32,
+    weight: u32
+}
 
 //TODO : Deplacer ailleurs.
 pub fn enought_ap(
@@ -68,7 +104,7 @@ pub fn npc_initialise_goals(
 // A voir comment industrialiser la requête. => Donner un composant que l'on veut sur une entité par exemple.
 pub fn npc_goal_reached(
     mut commands: Commands,
-    npc_entity_goal_q: Query<(Entity, &Goal), (With<Npc>, With<Planning>, Without<IsDead>)>,
+    npc_entity_goal_q: Query<(Entity, &Goal), (With<Npc>, With<Planning>, With<Turn>, Without<IsDead>)>,    // Si pas de Turn, ca tournera en boucle.
     entity_killed_q: Query<&IsDead>,
 ) {
     for (npc_entity, npc_goal) in npc_entity_goal_q.iter() {
@@ -86,6 +122,98 @@ pub fn npc_goal_reached(
             GoalType::None => {}
         };
     };
+}
+
+// TODO : Mega degueu, sequentiel. Mais on veut que ca marche d'abord avant de diviser logiquement.
+pub fn npc_plan_on_conditions(
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,  
+    position_q: Query<&BoardPosition>,
+    board: Res<Map>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
+    mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
+){
+    for (npc_entity, npc_position, _, _, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+        match npc_goal.id {
+            GoalType::KillEntity{id} => {
+                // Pour tuer, on doit Attaquer la Cible.
+                    // Pour Attaquer la cible en Melee, on doit:
+                        let mut is_melee_position = false;  // - Etre au CaC.
+                        //let mut has_target_in_view = false; // - Voir la Cible  (On ignore pour l'instant)
+                        let mut has_ap_for_melee_hit = false;   // AP pour attaquer.
+                        
+                        let Ok(target_position) = position_q.get(id) else { continue; };
+                        // TOCHECK : pourrait être fait avec le pathfinding?
+                        if (target_position.v.x - npc_position.v.x).abs() < 2 && (target_position.v.y - npc_position.v.y).abs() < 2 {
+                            is_melee_position = true;
+                        }                        
+                        if npc_ap.current >= AP_COST_MELEE {
+                            has_ap_for_melee_hit = true;
+                        }
+                        // Can Melee ?
+                        if is_melee_position && has_ap_for_melee_hit {
+                            //commands.entity(npc_entity).insert(PlanHitMelee { target: id, ap_cost: AP_COST_MELEE, weight: KILL_ENTITY_PLAN_HIT_MELEE_WEIGHT});
+                            commands.entity(npc_entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
+                            continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
+                        }
+                    // Pour avoir de l'AP pour Melee Hit, il faut passer son tour.
+                    if !has_ap_for_melee_hit {
+                        //commands.entity(npc_entity).insert(PlanForfeitTurn { target: npc_entity, ap_cost: AP_COST_FORFEIT, weight: KILL_ENTITY_PLAN_FORFEIT_WEIGHT});
+                        ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
+                        continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
+                    }
+                    // Pour être en position de melee, il faut se rapprocher de la cible.
+                    if !is_melee_position {
+                        // Pour se rapprocher de la cible il faut:
+                            //voir la cible OU connaitre son emplacement (on ignore pour l'instant)
+                            let mut has_path_to_target= false; //avoir un chemin.
+                            let mut has_ap_to_move= false;  //avoir des PA à utiliser.
+
+                            // A les AP?
+                            if npc_ap.current >= AP_COST_MOVE {
+                                has_ap_to_move = true;
+                            }
+
+                            // A un chemin?
+                            let path_to_destination = find_path(
+                                npc_position.v,
+                                target_position.v, 
+                                &board.entity_tiles.keys().cloned().collect(), 
+                                &query_occupied.iter().map(|p| p.v).collect(),
+                                true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
+                            );                    
+                            if path_to_destination.is_some() {
+                                has_path_to_target = true;
+                            }
+
+                            // Can se deplacer vers la cible?
+                            if has_ap_to_move && has_path_to_target {
+                                if let Some(path) = path_to_destination {
+                                    commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(target_position.v)});
+                                    continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
+                                }                                
+                            }
+                        // Pour avoir de l'AP, il faut forfeit (again)
+                        if !has_ap_to_move {
+                            //commands.entity(npc_entity).insert(PlanForfeitTurn { target: npc_entity, ap_cost: AP_COST_FORFEIT, weight: KILL_ENTITY_PLAN_FORFEIT_WEIGHT});
+                            ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
+                            continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
+                        }
+                        // Pour avoir la chance d'avoir un nouveau path vers la cible il faut?
+                        // En theorie rien à faire, y a forcement un chemin jusqu'à la cible puisqu'on ne limite pas le calcul du pathfinding. TODO : Limiter le nombre de cases ^^
+                        
+                    }
+                    // Rien d'autre à foutre, si je suis là c'est que je ne réuni aucune condition etrangement.
+                    //commands.entity(npc_entity).insert(PlanForfeitTurn { target: npc_entity, ap_cost: AP_COST_FORFEIT, weight: KILL_ENTITY_PLAN_FORFEIT_WEIGHT});
+                    ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
+                    continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
+            },
+            GoalType::None => {}
+        };        
+    }
+
+
+
 }
 
 pub fn npc_planning_from_goals(
