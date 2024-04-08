@@ -1,5 +1,20 @@
 // ===> DOCUMENTATION 0.19h
 /*
+Au debut, on donne le but de tuer le joueur à tous les NPC.
+Au debut de chaque tour, on demande aux NPC de planifier leurs actions selon leur goal.
+Le fait d'avoir le goal KillEntity fait planifier un mouvement vers le joueur.
+Le fait d'avoir Planifier un Mouvement fait demander une serie de MoveTo vers le joueur.
+Par le fonctionnement actuel du Melee (TOCHANGE), le NPC va sur lui pour le taper.
+/!\ Une fois qu'il a tapé le joueur, il n'a plus de WantToMove vers le joueur et ne tape plus. Mais il a encore des PA qu'il ne sait pas utilisé => Jeu bloqué.
+
+
+https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://citeseerx.ist.psu.edu/document%3Frepid%3Drep1%26type%3Dpdf%26doi%3D012ef03d0f951092b8645b69aebdbce900ac03e4&ved=2ahUKEwingo_qkrKFAxWsTaQEHYTTAFIQFnoECCMQAQ&usg=AOvVaw3spa-hKcVtGhhaO5QmYsWT
+On veut:
+- Un Goal
+- Des actions qui permettent de réaliser ce Goal.
+- Ces Actions seront disponibles ou non pour les NPC selon leur type (Ranged, Melee)
+- Ces Actions ont des conditions pour pouvoir être jouées: Avoir les AP nécessaires par exemple.
+
 Conception:
 * Chaque NPC regarde s'ils voient le PJ.
     * Chaque NPC qui voient le PJ communiquent avec les autres NPC pour les en informer.
@@ -32,10 +47,11 @@ use bevy::prelude::*;
 
 use crate::game::states::GameState;
 
-use self::npc_planning_systems::{npc_plan_check_surroundings, npc_planning};
+use self::{goals::{ npc_goal_reached, npc_initialise_goals, npc_planning_from_goals, npc_planning_hit_melee_target, npc_planning_movement_to_destination}, npc_planning_systems::{npc_plan_check_surroundings, npc_planning}};
 
 use super::CombatSet;
 pub mod npc_planning_systems;
+pub mod goals;
 
 
 pub struct IaPlugin;
@@ -43,8 +59,20 @@ pub struct IaPlugin;
 impl Plugin for IaPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            .add_systems(Update, npc_planning.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))        
+            // IA v0.3 (0.19h) - Refacto de l'IA. Reproduit la v0.2 avec la logique v0.3 à venir.
+            .add_systems(OnEnter(GameState::Running), npc_initialise_goals)// Pas fou car chaque retour en Running on va refaire ça. TODO: Faire des sets sur l'initialisation pour mieux la controler.
+
+            .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
+            .add_systems(Update, npc_planning_from_goals.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_goal_reached)) 
+
+            .add_systems(Update, npc_planning_movement_to_destination.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_planning_from_goals))
+            .add_systems(Update, npc_planning_hit_melee_target.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_planning_from_goals))
+ 
+
+            .add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
+
+            // IA v0.2 (0.13)
+            //.add_systems(Update, npc_planning.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))        
         ;
     }
 }

@@ -2,9 +2,15 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{combat::{action_infos::is_in_sight, components::{ActionPoints, CombatInfos, IsDead}, events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE, NPC_VISION_RANGE_MAX}}, movements::components::WantToMove, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{
+    game::{combat::{action_infos::is_in_sight, components::{ActionPoints, CombatInfos, IsDead}, 
+    events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE, NPC_VISION_RANGE_MAX}}, 
+    movements::components::WantToMove, pieces::components::{Npc, Occupier}, player::Player, tileboard::components::BoardPosition},
+    map_builders::map::Map, vectors::find_path
+};
 
 
+// IA v0.3 (0.19h) 
 pub fn npc_plan_check_surroundings(
     query_npc: Query<(Entity, &ActionPoints, &BoardPosition), (With<Npc>, With<Turn>, Without<IsDead>)>,// Les NPC dont c'est le tour et qui ont des Action Points.
     query_player: Query<&BoardPosition, (With<Player>, Without<IsDead>)>,
@@ -20,14 +26,14 @@ pub fn npc_plan_check_surroundings(
             println!("NPC {:?}: Player is not in view.", npc_entity);
             continue;
         };
-        println!("NPC {:?}: saw the Player!", npc_entity);       
+        println!("NPC {:?}: saw the Player!", npc_entity);
+
         // TODO : J'enregistre sa position. 
         // TODO : J'informe mes copains de cette position.
         // TODO : Au prochain check, je prendrais en compte cette information de position si je l'ai et que je ne vois pas le Player.
         // TODO : Comme je vois / sais où est le Joueur, je vais vers lui / sur lui pour l'attaquer en Melee.
     }
 }
-
 
 
 /// NPC : Generate / Choice to forfeit their turn.
@@ -47,14 +53,10 @@ pub fn plan_action_forfeit(
 }
 
 
-/// NPC preconditions to resolve their goal.
-#[allow(dead_code)]
-pub struct NpcGoal {
-    pub can_see_target: bool,
-    pub have_path_to_target: bool,
-    pub path: Option<VecDeque<Vector2Int>>    
-}
 
+
+// IA v0.2 (0.13). Desactivé pour laisser place à son successeur.
+#[allow(dead_code)]
 pub fn npc_planning(
     mut commands: Commands,
     combat_info: Res<CombatInfos>,
@@ -75,7 +77,7 @@ pub fn npc_planning(
 
     // Can do something?
     if npc_action_points.current < AP_COST_MELEE { 
-        ev_endturn.send(EntityEndTurnEvent {entity}); 
+        ev_endturn.send(EntityEndTurnEvent {entity: entity}); 
         return
     }
     //println!("Planing: {:?} Has enough AP : {:?}", entity, npc_action_points.current);

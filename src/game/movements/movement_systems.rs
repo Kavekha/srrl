@@ -34,7 +34,7 @@ pub fn entity_want_to_move(
     //mut ev_move: EventWriter<EntityMoveEvent>,
 ){
     for (entity, want_move) in want_move_q.iter() {
-        //println!("Want To Move component.");
+        println!("{:?} Want To Move.", entity);
         commands.entity(entity).remove::<WantToMove>();
 
         let Ok(action_points) = actions_q.get(entity) else { continue };

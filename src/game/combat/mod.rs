@@ -59,13 +59,9 @@ use crate::game::{
     };
 
 use self::{
-    components::{CurrentEntityTurnQueue, IsDead}, 
-    event_systems::{action_entity_end_turn,  entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, 
-    action_infos::{update_action_infos, ActionInfos},
-    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, Turn},
-    ia::IaPlugin
+    action_infos::{update_action_infos, ActionInfos}, components::{CurrentEntityTurnQueue, IsDead}, event_systems::{action_entity_end_turn,  entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, Turn}, ia::{goals::Planning, IaPlugin}
 };
-use super::{manager::MessageEvent, pieces::components::{Health, Stats}, player::Player, ui::ReloadUiEvent};
+use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::ReloadUiEvent};
 
 
 pub struct CombatPlugin;
@@ -110,7 +106,7 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_get_hit))
   
             // Check de la situation PA-wise. Mise à jour.
-            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
+            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) //was Logic, mit dans Tick. v0.19h
             .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick))
 
             // TODO: Quitter le combat. PLACEHOLDER.
@@ -195,7 +191,8 @@ pub fn combat_turn_next_entity(
     action_points_q: Query<&ActionPoints>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,
-    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,    
+    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,  
+    npc_q: Query<&Npc>,  // 0.19h
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
@@ -211,6 +208,10 @@ pub fn combat_turn_next_entity(
 
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);   
+    // v0.19h : On doit donner aux NPC le component Planning pour qu'il planifie.
+    if let Ok(_is_npc) = npc_q.get(entity) {
+        commands.entity(entity).insert(Planning);    
+    };
     ev_refresh_ap.send(RefreshActionCostEvent);
 }
 
@@ -241,13 +242,15 @@ pub fn combat_turn_entity_check(
             let (ap_entity, is_player) = entity_infos;
             //If no AP anymore, next entity turn.
             if ap_entity.current <= 0 {
-                println!("This entity has no AP: let's turn to next entity event.");
+                println!("This entity {:?} has no AP: let's turn to next entity event.", entity);
                 commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {
                 //println!("This entity has AP and is the Player.");
                 //combat_state.set(CombatState::PlayerTurn);
            } else {
+            // 0.19h: Pour le NPC, on lui redemande de planifier?
+            commands.entity(entity).insert(Planning);
             //println!("This entity has AP but is not the player");
            }
         }
