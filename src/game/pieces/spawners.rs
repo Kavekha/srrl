@@ -150,10 +150,12 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
         occupier: Occupier,
     });
 
+    // TODO: Clean up sur les Components non utilisés.
     npc
     .insert(Npc)
     .insert(Monster)
-    .insert(Walk);
+    .insert(Walk)
+    ;
 
     println!("Npc created");
 }

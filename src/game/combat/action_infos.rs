@@ -93,8 +93,7 @@ pub fn update_action_infos(
                 println!("Has target, not in view");
                 continue;
             };
-        }  
-        
+        }          
 
         // On calcule un trajet jusqu'à la cible. si Cible, on ne verifie pas si on peut marcher sur la dernière case (car on ne pourrait pas: elle est utilisée par la Target)
         let path_to_destination = find_path(
