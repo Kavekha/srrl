@@ -47,11 +47,14 @@ use bevy::prelude::*;
 
 use crate::game::states::GameState;
 
-use self::{goals::{ npc_goal_reached, npc_initialise_goals, npc_plan_on_conditions, npc_planning_from_goals, npc_planning_hit_melee_target, npc_planning_movement_to_destination}, npc_planning_systems::{npc_plan_check_surroundings, npc_planning}};
+use self::{
+    goals::{ npc_ai_plan_forfeit, npc_goal_reached, npc_ia_plan_approaching, npc_ia_plan_when_adjacent, npc_initialise_goals}, 
+    npc_planning_systems::npc_plan_check_surroundings};
 
 use super::CombatSet;
 pub mod npc_planning_systems;
 pub mod goals;
+pub mod components;
 
 
 pub struct IaPlugin;
@@ -59,21 +62,17 @@ pub struct IaPlugin;
 impl Plugin for IaPlugin {
     fn build(&self, app: &mut App) {
         app
-            // IA v0.3 (0.19h) - Refacto de l'IA. Reproduit la v0.2 avec la logique v0.3 à venir.
+            // IA v0.3 (0.19i) - Refacto de l'IA. Reproduit la v0.2 avec la logique v0.3 à venir.
             .add_systems(OnEnter(GameState::Running), npc_initialise_goals)// Pas fou car chaque retour en Running on va refaire ça. TODO: Faire des sets sur l'initialisation pour mieux la controler.
 
-            .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
-            .add_systems(Update, npc_plan_on_conditions.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_goal_reached))
+            // L'ordre doit être respecté, car dés qu'on trouve une action faisable on ne fait pas les autres. La toute dernière doit être forfeit.
+            //TODO : Choix doit être fait en amont?
+            .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
+            .add_systems(Update, npc_ia_plan_when_adjacent.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
+            .add_systems(Update, npc_ia_plan_approaching.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_when_adjacent))
+            .add_systems(Update, npc_ai_plan_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_approaching))
 
-            //.add_systems(Update, npc_planning_from_goals.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_goal_reached)) 
-            //.add_systems(Update, npc_planning_movement_to_destination.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_planning_from_goals))
-            //.add_systems(Update, npc_planning_hit_melee_target.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(npc_planning_from_goals))
- 
-
-            .add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
-
-            // IA v0.2 (0.13)
-            //.add_systems(Update, npc_planning.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))        
+            .add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
         ;
     }
 }

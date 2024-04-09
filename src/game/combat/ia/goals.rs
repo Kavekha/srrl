@@ -28,64 +28,29 @@ Conditions pour avoir de l'AP
 
 use bevy::prelude::*;
 
-use crate::{game::{combat::{components::{ActionPoints, AttackType, IsDead, WantToHit}, events::{EntityEndTurnEvent, Turn}, rules::{AP_COST_FORFEIT, AP_COST_MELEE, AP_COST_MOVE}}, movements::components::WantToMove, pieces::components::{Health, Npc, Occupier, Stats}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{
+    game::{
+        combat::{components::{ActionPoints, AttackType, IsDead, WantToHit}, events::{EntityEndTurnEvent, Turn}, ia::components::{Goal, GoalType, Planning}, rules::AP_COST_MELEE}, 
+        movements::components::WantToMove, pieces::components::{Health, Npc, Occupier, Stats}, 
+        player::Player, tileboard::components::BoardPosition}, 
+        map_builders::map::Map, 
+        vectors::find_path
+    };
 
-// =========================================================
-const KILL_ENTITY_PLAN_MOVE_WEIGHT: u32 = 100;
-const KILL_ENTITY_PLAN_HIT_MELEE_WEIGHT: u32 = 1000;
-const KILL_ENTITY_PLAN_FORFEIT_WEIGHT: u32 = 10;
-
-
-
-
-
-#[derive(Debug)]
-pub enum GoalType{
-    KillEntity { id: Entity },
-    None,
-}
+use super::components::CheckGoal;
 
 
-// Necessaire pour que le NPC sache qu'il doit plannifier.
-#[derive(Component)]
-pub struct Planning;
-
-#[derive(Component)]
-pub struct Goal {
-    id: GoalType,
-}
 
 
-#[derive(Component)]
-pub struct PlanHitMelee {
-    target: Entity, 
-    ap_cost: u32,
-    weight: u32
-}
-
-
-#[derive(Component)]
-pub struct PlanMove {
-    destination: Vector2Int,
-    ap_cost: u32,    
-    weight: u32
-}
-
-#[derive(Component)]
-pub struct PlanForfeitTurn {
-    target: Entity,
-    ap_cost: u32,
-    weight: u32
-}
-
-//TODO : Deplacer ailleurs.
+/* 
+//TODO : placer là où c'est utile.
 pub fn enought_ap(
     ap_component: &ActionPoints,
     ap_cost: u32
 ) -> bool { 
     if ap_component.current < ap_cost { return false } else { return true};
 }
-
+*/
 
 // Donne à chaque NPC le but de tuer le joueur.
 pub fn npc_initialise_goals(
@@ -104,7 +69,7 @@ pub fn npc_initialise_goals(
 // A voir comment industrialiser la requête. => Donner un composant que l'on veut sur une entité par exemple.
 pub fn npc_goal_reached(
     mut commands: Commands,
-    npc_entity_goal_q: Query<(Entity, &Goal), (With<Npc>, With<Planning>, With<Turn>, Without<IsDead>)>,    // Si pas de Turn, ca tournera en boucle.
+    npc_entity_goal_q: Query<(Entity, &Goal), (With<Npc>, With<CheckGoal>, With<Turn>, Without<IsDead>)>,    // Si pas de Turn, ca tournera en boucle.
     entity_killed_q: Query<&IsDead>,
 ) {
     for (npc_entity, npc_goal) in npc_entity_goal_q.iter() {
@@ -113,9 +78,9 @@ pub fn npc_goal_reached(
                 if let Ok(_entity_dead) = entity_killed_q.get(id) {
                     println!("Goal {:?} for NPC {:?} is resolved.", npc_goal.id, npc_entity);
                     // Ici on retire le Planning car on a un seul goal. 
-                    commands.entity(npc_entity).remove::<Planning>(); 
+                    commands.entity(npc_entity).remove::<CheckGoal>(); 
                 } else {
-                    // TODO : Ici notre goal est tjrs valide. On doit avoir des actions pour l'accomplir.
+                    commands.entity(npc_entity).insert(Planning);
                     println!("Goal {:?} for NPC {:?} is still not true and need to be accomplished.", npc_goal.id, npc_entity);                    
                 }
             },
@@ -124,121 +89,105 @@ pub fn npc_goal_reached(
     };
 }
 
-// TODO : Mega degueu, sequentiel. Mais on veut que ca marche d'abord avant de diviser logiquement.
-pub fn npc_plan_on_conditions(
+// IA verifie si elle est physiquement à coté d'un personnage, 
+// Puis on regarde si on veut faire une action selon notre goal: taper pour le moment.
+pub fn npc_ia_plan_when_adjacent(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,  
-    position_q: Query<&BoardPosition>,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    position_q: Query<&BoardPosition>,    
+) {
+    for (npc_entity, npc_position, _, _, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+        // A moyen terme, faudra changer ce fonctionnement de regarder objectif par objectif, car l'info peut être utile pour plein de raison.
+        match npc_goal.id {
+            GoalType::KillEntity{id} => {
+
+                let mut is_melee_position = false;
+                let Ok(target_position) = position_q.get(id) else { continue; };
+                if (target_position.v.x - npc_position.v.x).abs() < 2 && (target_position.v.y - npc_position.v.y).abs() < 2 {
+                    println!("NPC {:?} est coté de sa cible.", npc_entity);
+                    is_melee_position = true;
+                } 
+                // Ici on check si on veut taper ou non.
+                if is_melee_position {
+                    if npc_ap.current >= AP_COST_MELEE {
+                        commands.entity(npc_entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
+                        println!("NPC {:?} is at position {:?} and their target is at {:?}. AP are OK so they wan't to HIT in MELEE.", npc_entity, npc_position.v, target_position.v);
+                        commands.entity(npc_entity).remove::<Planning>();   // On retire puisque le choix est OK.
+                    } else {
+                        println!("NPC {:?} n'a pas les AP pour attaquer sa cible.", npc_entity);
+                    }
+                }
+            },
+            _ => {}
+        };
+
+    }
+}
+
+// IA veut approcher physiquement de la cible / tuile.
+// TODO : Un choix IA devra choisir s'il veut approcher, fuir, ou chercher, et deposer un WantToApproach / WantToFlee / WantToFind qui gérera ca.
+pub fn npc_ia_plan_approaching( 
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    position_q: Query<&BoardPosition>,     
     board: Res<Map>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
-){
+) {
     for (npc_entity, npc_position, _, _, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+        // A moyen terme, faudra changer ce fonctionnement de regarder objectif par objectif, car l'info peut être utile pour plein de raison.
         match npc_goal.id {
             GoalType::KillEntity{id} => {
-                // Pour tuer, on doit Attaquer la Cible.
-                    // Pour Attaquer la cible en Melee, on doit:
-                        let mut is_melee_position = false;  // - Etre au CaC.
-                        //let mut has_target_in_view = false; // - Voir la Cible  (On ignore pour l'instant)
-                        let mut has_ap_for_melee_hit = false;   // AP pour attaquer.
-                        
-                        let Ok(target_position) = position_q.get(id) else { continue; };
-                        // TOCHECK : pourrait être fait avec le pathfinding?
-                        if (target_position.v.x - npc_position.v.x).abs() < 2 && (target_position.v.y - npc_position.v.y).abs() < 2 {
-                            is_melee_position = true;
-                        }                        
-                        if npc_ap.current >= AP_COST_MELEE {
-                            has_ap_for_melee_hit = true;
-                        }
-                        // Can Melee ?
-                        if is_melee_position && has_ap_for_melee_hit {
-                            //commands.entity(npc_entity).insert(PlanHitMelee { target: id, ap_cost: AP_COST_MELEE, weight: KILL_ENTITY_PLAN_HIT_MELEE_WEIGHT});
-                            commands.entity(npc_entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
-                            continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
-                        }
-                    // Pour avoir de l'AP pour Melee Hit, il faut passer son tour.
-                    if !has_ap_for_melee_hit {
-                        //commands.entity(npc_entity).insert(PlanForfeitTurn { target: npc_entity, ap_cost: AP_COST_FORFEIT, weight: KILL_ENTITY_PLAN_FORFEIT_WEIGHT});
-                        ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
-                        continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
-                    }
-                    // Pour être en position de melee, il faut se rapprocher de la cible.
-                    if !is_melee_position {
-                        // Pour se rapprocher de la cible il faut:
-                            //voir la cible OU connaitre son emplacement (on ignore pour l'instant)
-                            let mut has_path_to_target= false; //avoir un chemin.
-                            let mut has_ap_to_move= false;  //avoir des PA à utiliser.
+                // Pas les AP.
+                // TODO !! WARNING: On est obligé de mettre du AP COST MELEE pour le moment CAR:
+                //  1. J'ai 2 AP. J'ai le droit de me deplacer.
+                //  2. La case où je veux me deplacer est celle de ma cible. Aller sur cette case pour le taper coute 3 PA.
+                //  3. => Je n'ai pas 3 PA, je ne peux pas taper mais j'ai 1-2 PA, je peux bouger mais je ne peux pas bouger ou je veux car je n'ai pas 3 PA etc.
+                // => TOFIX : 
+                //      - Séparer Move / Taper.
+                //      - Avoir un retour dans les WantTo pour sortir le NPC en cas de galere?
+                //      - Pouvoir avoir le pathfinding sans aller sur la dernière case. Remove de la derniere etape à chaque fois?
+                if npc_ap.current < AP_COST_MELEE {  //AP_COST_MOVE {
+                    println!("NPC {:?} n'a pas les AP pour se deplacer.", npc_entity);
+                    continue;
+                };
+ 
+                let Ok(target_position) = position_q.get(id) else { continue; };
+                let path_to_destination = find_path(
+                    npc_position.v,
+                    target_position.v, 
+                    &board.entity_tiles.keys().cloned().collect(), 
+                    &query_occupied.iter().map(|p| p.v).collect(),
+                    true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
+                );
+                
+                if let Some(path) = path_to_destination {
+                    println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
+                    commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(target_position.v)});    
+                    commands.entity(npc_entity).remove::<Planning>();   // On retire puisque le choix est OK.     
+                } else {
+                    println!("Pas de chemin pour moi.");
+                }
 
-                            // A les AP?
-                            if npc_ap.current >= AP_COST_MOVE {
-                                has_ap_to_move = true;
-                            }
-
-                            // A un chemin?
-                            let path_to_destination = find_path(
-                                npc_position.v,
-                                target_position.v, 
-                                &board.entity_tiles.keys().cloned().collect(), 
-                                &query_occupied.iter().map(|p| p.v).collect(),
-                                true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
-                            );                    
-                            if path_to_destination.is_some() {
-                                has_path_to_target = true;
-                            }
-
-                            // Can se deplacer vers la cible?
-                            if has_ap_to_move && has_path_to_target {
-                                if let Some(path) = path_to_destination {
-                                    commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(target_position.v)});
-                                    continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
-                                }                                
-                            }
-                        // Pour avoir de l'AP, il faut forfeit (again)
-                        if !has_ap_to_move {
-                            //commands.entity(npc_entity).insert(PlanForfeitTurn { target: npc_entity, ap_cost: AP_COST_FORFEIT, weight: KILL_ENTITY_PLAN_FORFEIT_WEIGHT});
-                            ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
-                            continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
-                        }
-                        // Pour avoir la chance d'avoir un nouveau path vers la cible il faut?
-                        // En theorie rien à faire, y a forcement un chemin jusqu'à la cible puisqu'on ne limite pas le calcul du pathfinding. TODO : Limiter le nombre de cases ^^
-                        
-                    }
-                    // Rien d'autre à foutre, si je suis là c'est que je ne réuni aucune condition etrangement.
-                    //commands.entity(npc_entity).insert(PlanForfeitTurn { target: npc_entity, ap_cost: AP_COST_FORFEIT, weight: KILL_ENTITY_PLAN_FORFEIT_WEIGHT});
-                    ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
-                    continue;   // On continue pour le moment mais dans l'ideal il faudra choisir entre chaque Plan via le Weight.
-            },
-            GoalType::None => {}
-        };        
-    }
-
-
-
-}
-
-pub fn npc_planning_from_goals(
-    mut commands: Commands,
-    npc_entity_goal_q: Query<(Entity, &Goal), (With<Npc>, With<Planning>, Without<IsDead>)>,    // On plannifie ici. On recoit ce component quand c'est notre tour.
-    position_q: Query<&BoardPosition>,
-){
-    for (npc_entity, npc_goal) in npc_entity_goal_q.iter() {
-        commands.entity(npc_entity).remove::<Planning>();       // On le retire ici car pour le moment le Planning ne se passe que ici.
-        println!("{:?}: mon goal est {:?}.", npc_entity, npc_goal.id);
-
-        match npc_goal.id {
-            // KILL ENTITY
-            GoalType::KillEntity{id} => {
-                let Ok(target_position) = position_q.get(id) else { continue;};
-                // TODO : Cette liste devrait dependre des capacités du NPC.
-                // Plan Move.
-                commands.entity(npc_entity).insert(PlanMove {destination: target_position.v, ap_cost: AP_COST_MOVE, weight: KILL_ENTITY_PLAN_MOVE_WEIGHT });
-                // Plan Hit Melee
-                commands.entity(npc_entity).insert(PlanHitMelee { target: id, ap_cost: AP_COST_MELEE, weight: KILL_ENTITY_PLAN_HIT_MELEE_WEIGHT});
             },
             GoalType::None => {},
-        };        
+        };
     }
 }
+
+
+pub fn npc_ai_plan_forfeit(
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
+) {
+    for (npc_entity, _,_,_,_,_) in npc_entity_fighter_q.iter() {
+        commands.entity(npc_entity).remove::<Planning>();   // On retire puisque le choix est OK.
+        println!("NPC {:?} n'a rien a faire.", npc_entity);
+        ev_endturn.send(EntityEndTurnEvent {entity : npc_entity});
+    }
+}
+
+/* 0.19h : Peut servir plus tard si on veut diviser un peu decision encore pluss. 
 
 
 pub fn npc_planning_hit_melee_target(
@@ -328,3 +277,4 @@ pub fn npc_planning_movement_to_destination(
         };
     }
 }
+*/

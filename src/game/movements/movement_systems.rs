@@ -38,7 +38,9 @@ pub fn entity_want_to_move(
         commands.entity(entity).remove::<WantToMove>();
 
         let Ok(action_points) = actions_q.get(entity) else { continue };
-        if action_points.current < AP_COST_MOVE { continue };
+        if action_points.current < AP_COST_MOVE {
+            println!("NPC {:?} wanted to move but doesnt have the AP.", entity);
+             continue };
 
         // Target check
         let Some(destination) = want_move.path.get(0) else { continue };

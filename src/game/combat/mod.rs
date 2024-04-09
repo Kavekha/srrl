@@ -59,7 +59,11 @@ use crate::game::{
     };
 
 use self::{
-    action_infos::{update_action_infos, ActionInfos}, components::{CurrentEntityTurnQueue, IsDead}, event_systems::{action_entity_end_turn,  entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, Turn}, ia::{goals::Planning, IaPlugin}
+    action_infos::{update_action_infos, ActionInfos}, 
+    components::{CurrentEntityTurnQueue, IsDead}, 
+    event_systems::{action_entity_end_turn, entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, 
+    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, Turn}, 
+    ia::{components::CheckGoal, IaPlugin}
 };
 use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::ReloadUiEvent};
 
@@ -208,9 +212,9 @@ pub fn combat_turn_next_entity(
 
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);   
-    // v0.19h : On doit donner aux NPC le component Planning pour qu'il planifie.
+    // v0.19h : On doit donner aux NPC le component CheckGoal pour qu'il planifie.
     if let Ok(_is_npc) = npc_q.get(entity) {
-        commands.entity(entity).insert(Planning);    
+        commands.entity(entity).insert(CheckGoal);    
     };
     ev_refresh_ap.send(RefreshActionCostEvent);
 }
@@ -249,9 +253,9 @@ pub fn combat_turn_entity_check(
                 //println!("This entity has AP and is the Player.");
                 //combat_state.set(CombatState::PlayerTurn);
            } else {
-            // 0.19h: Pour le NPC, on lui redemande de planifier?
-            commands.entity(entity).insert(Planning);
-            //println!("This entity has AP but is not the player");
+            // 0.19h: Pour le NPC, on lui redemande de CheckGoal
+            commands.entity(entity).insert(CheckGoal);
+            println!("NPC {:?} : has done some action, will check their goal.", entity);
            }
         }
        //println!("Turn Entity check: {:?} turn.", entity);

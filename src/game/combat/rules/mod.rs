@@ -16,7 +16,6 @@ use super::components::{ActionPoints, AttackType};
 pub const AP_COST_MOVE:u32 = 1;
 pub const AP_COST_MELEE:u32 = 3;
 pub const AP_COST_RANGED:u32 = 5;
-pub const AP_COST_FORFEIT:u32 = 0; 
 //pub const AP_COST_NO_VALUE:u32 = 999;   // Pour couvrir un cas non supporté
 
 /// Ranged.
