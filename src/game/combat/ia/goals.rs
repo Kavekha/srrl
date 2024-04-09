@@ -30,7 +30,8 @@ use bevy::prelude::*;
 
 use crate::{
     game::{
-        combat::{components::{ActionPoints, AttackType, IsDead, WantToHit}, events::{EntityEndTurnEvent, Turn}, ia::components::{Goal, GoalType, Planning}, rules::AP_COST_MELEE}, 
+        combat::{action_infos::is_in_sight, components::{ActionPoints, AttackType, IsDead, WantToHit}, 
+        events::{EntityEndTurnEvent, Turn}, ia::components::{Goal, GoalType, PlanMove, Planning}, rules::{AP_COST_MELEE, NPC_VISION_RANGE_MAX}}, 
         movements::components::WantToMove, pieces::components::{Health, Npc, Occupier, Stats}, 
         player::Player, tileboard::components::BoardPosition}, 
         map_builders::map::Map, 
@@ -124,11 +125,60 @@ pub fn npc_ia_plan_when_adjacent(
     }
 }
 
+// IA regarde autour d'elle et prends une decision a partir de ce qu'elle voit ou ne voit pas.
+pub fn npc_ia_plan_on_view(
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    position_q: Query<&BoardPosition>,     
+    board: Res<Map>,
+    //query_occupied: Query<&BoardPosition, With<Occupier>>, 
+) {
+    for (npc_entity, npc_position, _, _, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+        match npc_goal.id {
+            GoalType::KillEntity{id} => {   
+                // Pas les AP.
+                // TODO !! WARNING: On est obligé de mettre du AP COST MELEE pour le moment CAR:
+                //  1. J'ai 2 AP. J'ai le droit de me deplacer.
+                //  2. La case où je veux me deplacer est celle de ma cible. Aller sur cette case pour le taper coute 3 PA.
+                //  3. => Je n'ai pas 3 PA, je ne peux pas taper mais j'ai 1-2 PA, je peux bouger mais je ne peux pas bouger ou je veux car je n'ai pas 3 PA etc.
+                // => TOFIX : 
+                //      - Séparer Move / Taper.
+                //      - Avoir un retour dans les WantTo pour sortir le NPC en cas de galere?
+                //      - Pouvoir avoir le pathfinding sans aller sur la dernière case. Remove de la derniere etape à chaque fois?
+                if npc_ap.current < AP_COST_MELEE {  //AP_COST_MOVE {
+                    println!("NPC {:?} n'a pas les AP pour se deplacer.", npc_entity);
+                    continue;
+                };
+
+                let Ok(target_position) = position_q.get(id) else { 
+                    println!("No position found for player. NPC can't check for target.");
+                    return
+                }; 
+
+                println!("Npc {:?} a position {:?} verifie sa ligne de vue vers {:?}.", npc_entity, npc_position.v, target_position.v);
+                let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_VISION_RANGE_MAX) else {
+                    println!("NPC {:?}: target {:?} is not in view.", npc_entity, id);
+                    // TODO : Search for target.
+                    continue;
+                };
+                println!("NPC {:?}: saw their target {:?}!", npc_entity, id);
+                // TODO : Ici on ne retire pas le planning par facilité. 
+                // => PlanMove fait aller dans npc_ia_plan_approaching, qui verifie aussi le planning et le retirera si necessaire.
+                // => En gros on voit : On va approaching, on voit pas, on ignore approaching et on va a la suite (forfeit)
+                commands.entity(npc_entity).insert(PlanMove);   
+
+
+            }
+            GoalType::None => {}
+        };
+    }
+}
+
 // IA veut approcher physiquement de la cible / tuile.
 // TODO : Un choix IA devra choisir s'il veut approcher, fuir, ou chercher, et deposer un WantToApproach / WantToFlee / WantToFind qui gérera ca.
 pub fn npc_ia_plan_approaching( 
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>, With<PlanMove>)>,
     position_q: Query<&BoardPosition>,     
     board: Res<Map>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,

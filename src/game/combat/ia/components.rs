@@ -22,6 +22,8 @@ pub struct CheckGoal;
 #[derive(Component)]
 pub struct Planning;
 
+#[derive(Component)]
+pub struct PlanMove;
 
 /*
 
@@ -29,14 +31,6 @@ pub struct Planning;
 pub struct PlanHitMelee {
     target: Entity, 
     ap_cost: u32,
-    weight: u32
-}
-
-
-#[derive(Component)]
-pub struct PlanMove {
-    destination: Vector2Int,
-    ap_cost: u32,    
     weight: u32
 }
 
