@@ -217,7 +217,8 @@ pub fn npc_ia_plan_approaching(
                 } else {
                     println!("Pas de chemin pour moi.");
                 }
-
+                // Retrait du PlanMove sinon on ne refait plus le check View.   // REMINDER: C'etait très cool !
+                commands.entity(npc_entity).remove::<PlanMove>();
             },
             GoalType::None => {},
         };

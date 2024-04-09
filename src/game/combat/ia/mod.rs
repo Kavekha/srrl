@@ -47,12 +47,8 @@ use bevy::prelude::*;
 
 use crate::game::states::GameState;
 
-use self::{
-    goals::{ npc_ai_plan_forfeit, npc_goal_reached, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_initialise_goals}, 
-    npc_planning_systems::npc_plan_check_surroundings};
-
+use self::goals::{ npc_ai_plan_forfeit, npc_goal_reached, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_initialise_goals};
 use super::CombatSet;
-pub mod npc_planning_systems;
 pub mod goals;
 pub mod components;
 
@@ -73,7 +69,7 @@ impl Plugin for IaPlugin {
             .add_systems(Update, npc_ia_plan_approaching.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_on_view))
             .add_systems(Update, npc_ai_plan_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_approaching))
 
-            .add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
+            //.add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
         ;
     }
 }
