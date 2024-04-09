@@ -47,10 +47,11 @@ use bevy::prelude::*;
 
 use crate::game::states::GameState;
 
-use self::goals::{ npc_ai_plan_forfeit, npc_goal_reached, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_initialise_goals};
+use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent}};
 use super::CombatSet;
-pub mod goals;
+pub mod goal_systems;
 pub mod components;
+pub mod plan_systems;
 
 
 pub struct IaPlugin;

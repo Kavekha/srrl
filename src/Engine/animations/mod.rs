@@ -136,12 +136,13 @@ pub fn path_animator_update(
     time: Res<Time>,
     mut ev_wait: EventWriter<GraphicsWaitEvent>
 ) {
+    let mut to_remove= Vec::new();
     for (entity, mut animator, mut transform) in query.iter_mut() {
         // DEBUG: println!("Anim: Entity is : {:?}", entity);
         if animator.path.len() == 0 {
             // this entity has completed it's animation
             // DEBUG: println!("PathAnimator: Anim completed.");
-            commands.entity(entity).remove::<PathAnimator>();
+            to_remove.push(entity);
             continue;
         }
         //DEBUG: println!("Anim update");
@@ -162,8 +163,10 @@ pub fn path_animator_update(
         if animator.wait_anim {
             ev_wait.send(GraphicsWaitEvent);
             //println!("wait_anim: True");
-        }
-        
+        }        
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<PathAnimator>();
     }
 }
 

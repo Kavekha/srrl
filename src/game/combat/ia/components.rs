@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::vectors::Vector2Int;
+
 
 #[derive(Debug)]
 pub enum GoalType{
@@ -23,7 +25,9 @@ pub struct CheckGoal;
 pub struct Planning;
 
 #[derive(Component)]
-pub struct PlanMove;
+pub struct PlanMove {
+    pub destination: Vector2Int
+}
 
 /*
 
