@@ -71,7 +71,8 @@ impl Message for ChangeGameStateDisabledMessage {
 pub struct QuitGameMessage;
 impl Message for QuitGameMessage {
     fn execute(&self, world: &mut World) {
-        world.send_event(MessageEvent(Box::new(ClearGameMessage)));
-        world.send_event(MessageEvent(Box::new(ChangeGameStateDisabledMessage)));
+        world.send_event(MessageEvent(Box::new(ClearGameMessage)));        
+        world.send_event(MessageEvent(Box::new(ChangeGameStateUnavailableMessage)));
+        //world.send_event(MessageEvent(Box::new(ChangeGameStateDisabledMessage)));
     }
 }

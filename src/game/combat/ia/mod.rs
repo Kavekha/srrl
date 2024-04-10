@@ -48,7 +48,7 @@ use bevy::prelude::*;
 use crate::game::{combat::rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, pieces::components::Npc, player::Player, states::GameState, tileboard::components::BoardPosition};
 
 use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
-use super::{components::IsDead, events::Turn, CombatSet};
+use super::{components::IsDead, events::{EntityEndTurnEvent, Turn}, CombatSet};
 pub mod goal_systems;
 pub mod components;
 pub mod plan_systems;
@@ -64,7 +64,7 @@ impl Plugin for IaPlugin {
 
             // L'ordre doit être respecté, car dés qu'on trouve une action faisable on ne fait pas les autres. La toute dernière doit être forfeit.
             //TODO : Choix doit être fait en amont?
-            .add_systems(Update, ignore_npc_out_of_game_range)
+            .add_systems(Update, ignore_npc_out_of_game_range.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
             .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).before(npc_ia_plan_when_adjacent))
             .add_systems(Update, npc_ia_plan_when_adjacent.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
             .add_systems(Update, npc_ia_plan_when_in_range.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))            
@@ -81,7 +81,8 @@ pub fn ignore_npc_out_of_game_range(
     mut commands: Commands,
     npc_entity_fighter_q: Query<(Entity, &BoardPosition), (With<Npc>, With<Turn>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>, 
-    player_q: Query<Entity, With<Player>>
+    player_q: Query<Entity, With<Player>>,
+    mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
 ){
     let Ok(player_entity) = player_q.get_single() else { return };
     let Ok(player_position) = position_q.get(player_entity) else { return };
@@ -95,5 +96,6 @@ pub fn ignore_npc_out_of_game_range(
     };
     for entity in turn_to_remove {
         commands.entity(entity).remove::<Turn>();
+        ev_endturn.send(EntityEndTurnEvent {entity : entity});  // FIX un peu cheum où on s'assure qu'il ne reste pas bloqué en boucle dans combat_turn_entity_check 0.19j
     }
 }
