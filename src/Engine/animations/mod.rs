@@ -8,6 +8,7 @@ spawn_hit_effect contient les infos necessaires de base, avec le timing, le nb d
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 
 pub mod events;
 
@@ -112,6 +113,7 @@ pub fn walk_animation(
     mut commands: Commands,
     mut ev_animate: EventReader<AnimateEvent>,
 ) {
+    let mut to_add = HashMap::new();
     for ev in ev_animate.read() {
         let mut path = ev.path.clone();
 
@@ -123,8 +125,13 @@ pub fn walk_animation(
             let target = Vec3::new(world_position.0, world_position.1, 2.0);
             path_animation.push_back(target);
         }
+        let path_animator = PathAnimator{path:VecDeque::from(path_animation), wait_anim: true};
         //println!("PathAnimator created");
-        commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
+        to_add.insert(ev.entity, path_animator);
+        //commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
+    }
+    for (entity, path_animator) in to_add {
+        commands.entity(entity).insert(path_animator);
     }
 }
 

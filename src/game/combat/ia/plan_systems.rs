@@ -6,10 +6,10 @@ use crate::{game::
         components::{ActionPoints, AttackType, IsDead, WantToHit}, 
         events::{EntityEndTurnEvent, Turn}, 
         ia::components::PlanMove, 
-        rules::AP_COST_MELEE, 
+        rules::{AP_COST_MELEE, AP_COST_RANGED, NPC_VISION_RANGE_MAX}, 
     },
     movements::components::WantToMove, 
-    pieces::components::{Melee, Npc, Occupier, Walk}, 
+    pieces::components::{Melee, Npc, Occupier, Ranged, Walk}, 
     tileboard::components::BoardPosition, 
     },
     map_builders::map::Map, 
@@ -60,7 +60,38 @@ pub fn npc_ia_plan_when_adjacent(
 }
 
 
-pub fn npc_ia_plan_when_in_range(){}
+pub fn npc_ia_plan_when_in_range(
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, With<Ranged>, Without<IsDead>)>,
+    position_q: Query<&BoardPosition>,  
+    board: Res<Map>,  
+){
+    let mut to_remove = Vec::new();
+    for (npc_entity, npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+        match npc_goal.id {
+            GoalType::KillEntity { id } => {
+                if npc_ap.current < AP_COST_RANGED {  //AP_COST_MOVE {
+                    println!("NPC {:?} n'a pas les AP tirer.", npc_entity);
+                    continue;
+                };
+
+                // In view?
+                let Ok(target_position) = position_q.get(id) else { 
+                    println!("No position found for player. NPC can't check for target.");
+                    continue;
+                }; 
+                if let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_VISION_RANGE_MAX) {
+                    commands.entity(npc_entity).insert(WantToHit { mode: AttackType::RANGED, target: target_position.v });
+                    to_remove.push(npc_entity);
+                };
+            },
+            GoalType::None => {},
+        };
+    };
+    for entity in to_remove {
+        commands.entity(entity).remove::<Planning>(); 
+    }
+}
 
 
 // IA regarde autour d'elle et prends une decision a partir de ce qu'elle voit ou ne voit pas.
