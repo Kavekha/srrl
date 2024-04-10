@@ -33,9 +33,10 @@ pub fn entity_want_to_move(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     //mut ev_move: EventWriter<EntityMoveEvent>,
 ){
+    let mut to_remove = Vec::new();
     for (entity, want_move) in want_move_q.iter() {
         println!("{:?} Want To Move.", entity);
-        commands.entity(entity).remove::<WantToMove>();
+        to_remove.push(entity);
 
         let Ok(action_points) = actions_q.get(entity) else { continue };
         if action_points.current < AP_COST_MOVE {
@@ -59,6 +60,9 @@ pub fn entity_want_to_move(
         //ev_move.send(EntityMoveEvent {entity: want_move.entity, path: path, target: want_move.target});
         commands.entity(want_move.entity).insert(MoveTo { path: path, target: want_move.target});   //TODO: Normalement on a plus de "Some()" à ce moment là, hors on est en Option.
     }
+    for entity in to_remove {        
+        commands.entity(entity).remove::<WantToMove>();
+    }
 }
 
 
@@ -72,8 +76,9 @@ pub fn entity_move_to(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
 ){
+    let mut to_remove = Vec::new();
     for (entity, movement) in move_q.iter() {
-        commands.entity(entity).remove::<MoveTo>();
+        to_remove.push(entity);
 
         //println!("{:?} : Je bouge!", entity);
         let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
@@ -100,6 +105,8 @@ pub fn entity_move_to(
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
         ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
-
+    }
+    for entity in to_remove {        
+        commands.entity(entity).remove::<MoveTo>();
     }
 }

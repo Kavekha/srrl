@@ -8,6 +8,7 @@ spawn_hit_effect contient les infos necessaires de base, avec le timing, le nb d
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
+use bevy::utils::HashMap;
 
 pub mod events;
 
@@ -112,6 +113,7 @@ pub fn walk_animation(
     mut commands: Commands,
     mut ev_animate: EventReader<AnimateEvent>,
 ) {
+    let mut to_add = HashMap::new();
     for ev in ev_animate.read() {
         let mut path = ev.path.clone();
 
@@ -123,8 +125,13 @@ pub fn walk_animation(
             let target = Vec3::new(world_position.0, world_position.1, 2.0);
             path_animation.push_back(target);
         }
+        let path_animator = PathAnimator{path:VecDeque::from(path_animation), wait_anim: true};
         //println!("PathAnimator created");
-        commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
+        to_add.insert(ev.entity, path_animator);
+        //commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        
+    }
+    for (entity, path_animator) in to_add {
+        commands.entity(entity).insert(path_animator);
     }
 }
 
@@ -136,12 +143,13 @@ pub fn path_animator_update(
     time: Res<Time>,
     mut ev_wait: EventWriter<GraphicsWaitEvent>
 ) {
+    let mut to_remove= Vec::new();
     for (entity, mut animator, mut transform) in query.iter_mut() {
         // DEBUG: println!("Anim: Entity is : {:?}", entity);
         if animator.path.len() == 0 {
             // this entity has completed it's animation
             // DEBUG: println!("PathAnimator: Anim completed.");
-            commands.entity(entity).remove::<PathAnimator>();
+            to_remove.push(entity);
             continue;
         }
         //DEBUG: println!("Anim update");
@@ -162,8 +170,10 @@ pub fn path_animator_update(
         if animator.wait_anim {
             ev_wait.send(GraphicsWaitEvent);
             //println!("wait_anim: True");
-        }
-        
+        }        
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<PathAnimator>();
     }
 }
 

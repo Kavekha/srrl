@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::vectors::Vector2Int;
+
 
 #[derive(Debug)]
 pub enum GoalType{
@@ -22,28 +24,8 @@ pub struct CheckGoal;
 #[derive(Component)]
 pub struct Planning;
 
-
-/*
-
-#[derive(Component)]
-pub struct PlanHitMelee {
-    target: Entity, 
-    ap_cost: u32,
-    weight: u32
-}
-
-
 #[derive(Component)]
 pub struct PlanMove {
-    destination: Vector2Int,
-    ap_cost: u32,    
-    weight: u32
+    pub destination: Vector2Int
 }
 
-#[derive(Component)]
-pub struct PlanForfeitTurn {
-    target: Entity,
-    ap_cost: u32,
-    weight: u32
-}
- */

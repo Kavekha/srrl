@@ -47,14 +47,11 @@ use bevy::prelude::*;
 
 use crate::game::states::GameState;
 
-use self::{
-    goals::{ npc_ai_plan_forfeit, npc_goal_reached, npc_ia_plan_approaching, npc_ia_plan_when_adjacent, npc_initialise_goals}, 
-    npc_planning_systems::npc_plan_check_surroundings};
-
+use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
 use super::CombatSet;
-pub mod npc_planning_systems;
-pub mod goals;
+pub mod goal_systems;
 pub mod components;
+pub mod plan_systems;
 
 
 pub struct IaPlugin;
@@ -69,10 +66,12 @@ impl Plugin for IaPlugin {
             //TODO : Choix doit être fait en amont?
             .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
             .add_systems(Update, npc_ia_plan_when_adjacent.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
-            .add_systems(Update, npc_ia_plan_approaching.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_when_adjacent))
+            .add_systems(Update, npc_ia_plan_when_in_range.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))            
+            .add_systems(Update, npc_ia_plan_on_view.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
+            .add_systems(Update, npc_ia_plan_approaching.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_on_view))
             .add_systems(Update, npc_ai_plan_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_approaching))
 
-            .add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
+            //.add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
         ;
     }
 }

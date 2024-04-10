@@ -33,6 +33,7 @@ pub fn is_in_sight(
     range: i32
 ) ->Result<bool, bool> {
     //println!("BRESENHAM ==== ");
+    println!("origin is {:?}, end is {:?}", origin, end);
     let mut step = 0;
     for (x, y) in Bresenham::new((origin.x.try_into().unwrap(), origin.y.try_into().unwrap()), (end.x.try_into().unwrap(), end.y.try_into().unwrap())) {
         //println!("{}, {}", x, y);
@@ -109,7 +110,6 @@ pub fn update_action_infos(
             return };
 
         // On remonte le cout en AP de l'action en cours.
-        // TOCHANGE : Le systeme de Melee / Distance est basé sur le Cursor ce qui est de la merde. En attendant, on utilise ce mecanisme.
         let mut ap_cost: u32;
 
         match &action_infos.attack {

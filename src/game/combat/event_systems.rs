@@ -66,6 +66,7 @@ pub fn on_event_entity_want_hit(
 
 // 0.19d : utilisé par Ranged & Melee.
 // Ici on verifie tout.
+// TODO : C'est bien grand la dedans.
 pub fn entity_want_hit(
     mut commands: Commands,
     want_hit_q: Query<(Entity, &WantToHit)>,
@@ -79,9 +80,11 @@ pub fn entity_want_hit(
     mut ev_log: EventWriter<LogEvent>,
     board: Res<Map>,
 ) {
+    let mut to_remove = Vec::new();
     for (entity, want) in want_hit_q.iter() {
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
-        commands.entity(entity).remove::<WantToHit>();
+        to_remove.push(entity);
+
 
         // J'ai un systeme de PA (Je ne devrais pas être là mais bon.)
         let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
@@ -137,6 +140,9 @@ pub fn entity_want_hit(
             }
         }
     }
+    for entity in to_remove {
+        commands.entity(entity).remove::<WantToHit>();
+    }
 }
 
 // 0.19b
@@ -150,8 +156,9 @@ pub fn entity_try_hit(
     position_q: Query<&BoardPosition>,   
     mut ev_effect: EventWriter<EffectEvent>,
 ){
+    let mut to_remove = Vec::new();
     for (entity, attack) in try_hit_q.iter() {
-        commands.entity(entity).remove::<TryHit>(); // On retire au debut, car command joué à la fin & si continue au milieu ne sera pas traité.
+        to_remove.push(entity);
         println!("{:?} try to attack {:?}.", entity, attack.defender);
         //done.
 
@@ -209,6 +216,9 @@ pub fn entity_try_hit(
             },
         };  
     }
+    for entity in to_remove {
+        commands.entity(entity).remove::<TryHit>(); // On retire au debut, car command joué à la fin & si continue au milieu ne sera pas traité.
+    }
 }
 
 
@@ -222,8 +232,9 @@ pub fn entity_miss_attack(
     name_q: Query<&Name>,
     mut ev_log: EventWriter<LogEvent>,
 ){
+    let mut to_remove = Vec::new();
     for (entity, miss) in miss_hit_q.iter() {
-        commands.entity(entity).remove::<MissHit>();
+        to_remove.push(entity);        
         // sounds.
         match miss.mode {
             AttackType::MELEE => {
@@ -245,6 +256,9 @@ pub fn entity_miss_attack(
         let Ok(defender_entity_name) = name_q.get(miss.defender) else { continue;};
         ev_log.send(LogEvent {entry: format!("{:?} misses {:?}!", entity_name, defender_entity_name)});        // Log v0
     }
+    for entity in to_remove {
+        commands.entity(entity).remove::<MissHit>();
+    }
 }
 
 // 0.19b
@@ -258,8 +272,9 @@ pub fn entity_get_hit(
     mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,    
     //mut ev_die: EventWriter<EntityDeathEvent>,
 ){
+    let mut to_remove = Vec::new();
     for (entity, get_hit) in get_hit_q.iter() {
-        commands.entity(entity).remove::<GetHit>();
+        to_remove.push(entity);
 
         let Ok(defender_infos) = stats_health_q.get_mut(entity) else { 
             println!("Pas de stats / health pour le defender");
@@ -293,7 +308,9 @@ pub fn entity_get_hit(
         } else {
             ev_log.send(LogEvent {entry: format!("{} takes a hit without effect from {}.",entity_name, attacker_entity_name)});        // Log v0
         }
-
+    }
+    for entity in to_remove {        
+        commands.entity(entity).remove::<GetHit>();
     }
 }
 
@@ -309,13 +326,12 @@ pub fn entity_dies(
     mut ev_log: EventWriter<LogEvent>,
     name_q: Query<&Name>,
 ){
+    let mut to_remove=Vec::new();
     for (entity, death) in die_q.iter() {
-        commands.entity(entity).remove::<Die>();
+        to_remove.push(entity);        
 
         println!("Entity {:?} is dead", entity);
         commands.entity(entity).insert(IsDead);
-        commands.entity(entity).remove::<ActionPoints>();
-        commands.entity(entity).remove::<Occupier>();
 
         // Transformation en Corps.
         if let Ok(mut body) = body_q.get_mut(entity) {
@@ -333,6 +349,11 @@ pub fn entity_dies(
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(death.killer) else { continue;};        
         ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<Die>();
+        commands.entity(entity).remove::<ActionPoints>();
+        commands.entity(entity).remove::<Occupier>();
     }
 }
 

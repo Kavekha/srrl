@@ -1,56 +1,15 @@
 //v0.19h
 //https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://citeseerx.ist.psu.edu/document%3Frepid%3Drep1%26type%3Dpdf%26doi%3D012ef03d0f951092b8645b69aebdbce900ac03e4&ved=2ahUKEwingo_qkrKFAxWsTaQEHYTTAFIQFnoECCMQAQ&usg=AOvVaw3spa-hKcVtGhhaO5QmYsWT
 
-/*
-Goal KillEnemy, satisfait par Attack
-Veut faire Attack, doit Voir la Cible, etre au Cac.
-Veut Voir la Cible, doit se deplacer ou interroger gens autour de lui.
-Veut être au CaC, doit se deplacer.
-Veut rester en vie, satisfait par ne pas être attaqué.
-Ne pas être attaqué => Satisfait par être hors de vue. 
-
-Conditions pour Attack Melee:
-    target dead : false 
-    ap superieure à 3 : true,
-    target in view: false,
-    in range 1 : true 
-
-Conditions pour Attack Ranged:
-    target dead: false 
-    ap superieure à 5 : true
-    target in view: false, 
-    in range: 15
-
-Conditions pour avoir de l'AP
-    forfeit: True 
-
-*/
 
 use bevy::prelude::*;
 
-use crate::{
-    game::{
-        combat::{components::{ActionPoints, AttackType, IsDead, WantToHit}, events::{EntityEndTurnEvent, Turn}, ia::components::{Goal, GoalType, Planning}, rules::AP_COST_MELEE}, 
-        movements::components::WantToMove, pieces::components::{Health, Npc, Occupier, Stats}, 
-        player::Player, tileboard::components::BoardPosition}, 
-        map_builders::map::Map, 
-        vectors::find_path
-    };
+
+use crate::game::{combat::{components::IsDead, events::Turn, ia::components::{Goal, GoalType, Planning}}, pieces::components::Npc, player::Player};
 
 use super::components::CheckGoal;
 
 
-
-
-/* 
-//TODO : placer là où c'est utile.
-pub fn enought_ap(
-    ap_component: &ActionPoints,
-    ap_cost: u32
-) -> bool { 
-    if ap_component.current < ap_cost { return false } else { return true};
-}
-*/
 
 // Donne à chaque NPC le but de tuer le joueur.
 pub fn npc_initialise_goals(
@@ -72,13 +31,15 @@ pub fn npc_goal_reached(
     npc_entity_goal_q: Query<(Entity, &Goal), (With<Npc>, With<CheckGoal>, With<Turn>, Without<IsDead>)>,    // Si pas de Turn, ca tournera en boucle.
     entity_killed_q: Query<&IsDead>,
 ) {
+    let mut to_remove = Vec::new();
     for (npc_entity, npc_goal) in npc_entity_goal_q.iter() {
         match npc_goal.id {
             GoalType::KillEntity{id} => {
                 if let Ok(_entity_dead) = entity_killed_q.get(id) {
                     println!("Goal {:?} for NPC {:?} is resolved.", npc_goal.id, npc_entity);
                     // Ici on retire le Planning car on a un seul goal. 
-                    commands.entity(npc_entity).remove::<CheckGoal>(); 
+                    to_remove.push(npc_entity);
+                    
                 } else {
                     commands.entity(npc_entity).insert(Planning);
                     println!("Goal {:?} for NPC {:?} is still not true and need to be accomplished.", npc_goal.id, npc_entity);                    
@@ -87,103 +48,9 @@ pub fn npc_goal_reached(
             GoalType::None => {}
         };
     };
-}
-
-// IA verifie si elle est physiquement à coté d'un personnage, 
-// Puis on regarde si on veut faire une action selon notre goal: taper pour le moment.
-pub fn npc_ia_plan_when_adjacent(
-    mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    position_q: Query<&BoardPosition>,    
-) {
-    for (npc_entity, npc_position, _, _, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-        // A moyen terme, faudra changer ce fonctionnement de regarder objectif par objectif, car l'info peut être utile pour plein de raison.
-        match npc_goal.id {
-            GoalType::KillEntity{id} => {
-
-                let mut is_melee_position = false;
-                let Ok(target_position) = position_q.get(id) else { continue; };
-                if (target_position.v.x - npc_position.v.x).abs() < 2 && (target_position.v.y - npc_position.v.y).abs() < 2 {
-                    println!("NPC {:?} est coté de sa cible.", npc_entity);
-                    is_melee_position = true;
-                } 
-                // Ici on check si on veut taper ou non.
-                if is_melee_position {
-                    if npc_ap.current >= AP_COST_MELEE {
-                        commands.entity(npc_entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
-                        println!("NPC {:?} is at position {:?} and their target is at {:?}. AP are OK so they wan't to HIT in MELEE.", npc_entity, npc_position.v, target_position.v);
-                        commands.entity(npc_entity).remove::<Planning>();   // On retire puisque le choix est OK.
-                    } else {
-                        println!("NPC {:?} n'a pas les AP pour attaquer sa cible.", npc_entity);
-                    }
-                }
-            },
-            _ => {}
-        };
-
-    }
-}
-
-// IA veut approcher physiquement de la cible / tuile.
-// TODO : Un choix IA devra choisir s'il veut approcher, fuir, ou chercher, et deposer un WantToApproach / WantToFlee / WantToFind qui gérera ca.
-pub fn npc_ia_plan_approaching( 
-    mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    position_q: Query<&BoardPosition>,     
-    board: Res<Map>,
-    query_occupied: Query<&BoardPosition, With<Occupier>>,
-) {
-    for (npc_entity, npc_position, _, _, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-        // A moyen terme, faudra changer ce fonctionnement de regarder objectif par objectif, car l'info peut être utile pour plein de raison.
-        match npc_goal.id {
-            GoalType::KillEntity{id} => {
-                // Pas les AP.
-                // TODO !! WARNING: On est obligé de mettre du AP COST MELEE pour le moment CAR:
-                //  1. J'ai 2 AP. J'ai le droit de me deplacer.
-                //  2. La case où je veux me deplacer est celle de ma cible. Aller sur cette case pour le taper coute 3 PA.
-                //  3. => Je n'ai pas 3 PA, je ne peux pas taper mais j'ai 1-2 PA, je peux bouger mais je ne peux pas bouger ou je veux car je n'ai pas 3 PA etc.
-                // => TOFIX : 
-                //      - Séparer Move / Taper.
-                //      - Avoir un retour dans les WantTo pour sortir le NPC en cas de galere?
-                //      - Pouvoir avoir le pathfinding sans aller sur la dernière case. Remove de la derniere etape à chaque fois?
-                if npc_ap.current < AP_COST_MELEE {  //AP_COST_MOVE {
-                    println!("NPC {:?} n'a pas les AP pour se deplacer.", npc_entity);
-                    continue;
-                };
- 
-                let Ok(target_position) = position_q.get(id) else { continue; };
-                let path_to_destination = find_path(
-                    npc_position.v,
-                    target_position.v, 
-                    &board.entity_tiles.keys().cloned().collect(), 
-                    &query_occupied.iter().map(|p| p.v).collect(),
-                    true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
-                );
-                
-                if let Some(path) = path_to_destination {
-                    println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
-                    commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(target_position.v)});    
-                    commands.entity(npc_entity).remove::<Planning>();   // On retire puisque le choix est OK.     
-                } else {
-                    println!("Pas de chemin pour moi.");
-                }
-
-            },
-            GoalType::None => {},
-        };
-    }
-}
-
-
-pub fn npc_ai_plan_forfeit(
-    mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &Health, &Stats, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
-) {
-    for (npc_entity, _,_,_,_,_) in npc_entity_fighter_q.iter() {
-        commands.entity(npc_entity).remove::<Planning>();   // On retire puisque le choix est OK.
-        println!("NPC {:?} n'a rien a faire.", npc_entity);
-        ev_endturn.send(EntityEndTurnEvent {entity : npc_entity});
+    // On retire le Planning à toutes les entités. // REMINDER : Hors de la boucle pour eviter les erreurs. TODO ailleurs.
+    for entity in to_remove {
+        commands.entity(entity).remove::<CheckGoal>();
     }
 }
 

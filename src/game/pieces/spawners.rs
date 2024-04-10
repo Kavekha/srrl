@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{
     game::{
-        pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+        pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, 
     vectors::Vector2Int};
 
@@ -116,11 +116,10 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
             name: Name::new("the ShadowRunner"),
             stats: stats,
             health: health,
-            melee: Melee { damage: 0 },
-            occupier: Occupier
+            occupier: Occupier,
         }).id();
     //player.insert(Player);
-    world.entity_mut(player).insert(Player);
+    world.entity_mut(player).insert(Player).insert(Melee).insert(Ranged);
     let stats = world.entity(player).get::<Stats>().unwrap();
     println!("Player stats are {:?}", stats);
 }
@@ -145,7 +144,6 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
             firearms: 0,
         },
         health: Health { max: 10, current: 10 },
-        melee: Melee { damage: 2 },
         position: BoardPosition{ v:npc_spawning_position },
         occupier: Occupier,
     });
@@ -155,6 +153,8 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
     .insert(Npc)
     .insert(Monster)
     .insert(Walk)
+    .insert(Melee)
+    .insert(Ranged)
     ;
 
     println!("Npc created");
