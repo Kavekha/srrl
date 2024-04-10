@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::{
     game::{
-        pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+        combat::rules::NPC_CHANCE_TO_BE_RANGED, pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, 
     vectors::Vector2Int};
 
@@ -18,7 +18,8 @@ pub enum Kind {
     Human,
     Orc,
     Troll,
-    Ghoul   
+    Ghoul,
+    GhoulRanged
 }
 
 /// TEMP : Renvoie infos rendus pour les differentes races jouables par le PJ.
@@ -107,7 +108,17 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
                 firearms: 0,
             };
             health = Health { max: 9, current: 9 };
-        }
+        },
+        Kind::GhoulRanged => {
+            stats = Stats {
+                strength: 1,
+                agility: 5,
+                logic: 2,
+                melee: 0,
+                firearms: 2,
+            };
+            health = Health { max: 9, current: 9 };
+        },
     };
 
     let player = world.spawn(CharacterBundle{
@@ -133,16 +144,35 @@ pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
 
 fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
 ){
-    let mut npc = world.spawn(CharacterBundle {
-        piece: Piece{kind: Kind::Ghoul},
-        name: Name::new(format!("Ghoul")),
-        stats: Stats {
+    let mut rng = rand::thread_rng();
+    let rand = rng.gen_range(0..100);
+
+    let piece:Piece;
+    let stats: Stats;
+    if rand <= NPC_CHANCE_TO_BE_RANGED {
+        //ranged
+        piece = Piece{kind: Kind::GhoulRanged};
+        stats = Stats {
+            strength: 1,
+            agility: 5,
+            logic: 2,
+            melee: 0,
+            firearms: 2,
+        };
+    } else {
+        piece = Piece{kind: Kind::Ghoul};
+        stats = Stats {
             strength: 2,
             agility: 4,
             logic: 1,
             melee: 3,
             firearms: 0,
-        },
+        };
+    };
+    let mut npc = world.spawn(CharacterBundle {
+        piece: piece,
+        name: Name::new(format!("Ghoul")),
+        stats: stats,
         health: Health { max: 10, current: 10 },
         position: BoardPosition{ v:npc_spawning_position },
         occupier: Occupier,
@@ -154,8 +184,10 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
     .insert(Monster)
     .insert(Walk)
     .insert(Melee)
-    .insert(Ranged)
     ;
+    if rand <= NPC_CHANCE_TO_BE_RANGED { 
+        npc.insert(Ranged);
+    }
 
     println!("Npc created");
 }

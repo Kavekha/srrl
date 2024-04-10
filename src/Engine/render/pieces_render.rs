@@ -1,13 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    globals::{
-        SPRITE_GHOUL, SPRITE_PLAYER_HUMAN, 
-        SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, MAP_EXIT},
-    game::{
-        player::Player, pieces::{components::Piece, spawners::Kind}, 
-        tileboard::components::{BoardPosition, ExitMapTile},
-    }, engine::asset_loaders::GraphicsAssets, engine::render::get_world_position
+    engine::{asset_loaders::GraphicsAssets, render::get_world_position}, game::{
+        pieces::{components::Piece, spawners::Kind}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+    }, globals::{
+        MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, SPRITE_GHOUL, SPRITE_GHOUL_RANGED, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, SPRITE_PLAYER_HUMAN, SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL}
 };
 
 
@@ -84,6 +81,7 @@ pub fn get_texture_from_kind(
         Kind::Orc => { SPRITE_PLAYER_ORC }
         Kind::Troll => { SPRITE_PLAYER_TROLL }
         Kind::Ghoul => { SPRITE_GHOUL }
+        Kind::GhoulRanged => { SPRITE_GHOUL_RANGED }
         //_ => { SPRITE_PLAYER }
     }
 }
