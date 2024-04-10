@@ -29,19 +29,3 @@ pub struct PlanMove {
     pub destination: Vector2Int
 }
 
-/*
-
-#[derive(Component)]
-pub struct PlanHitMelee {
-    target: Entity, 
-    ap_cost: u32,
-    weight: u32
-}
-
-#[derive(Component)]
-pub struct PlanForfeitTurn {
-    target: Entity,
-    ap_cost: u32,
-    weight: u32
-}
- */

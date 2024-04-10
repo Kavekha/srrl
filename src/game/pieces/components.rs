@@ -12,9 +12,8 @@ pub struct CharacterBundle {
     pub name: Name,
     pub stats: Stats,
     pub health: Health,
-    pub melee: Melee,
     pub position: BoardPosition,
-    pub occupier: Occupier
+    pub occupier: Occupier,
 }
 impl Default for CharacterBundle {
     fn default() -> Self {
@@ -29,7 +28,6 @@ impl Default for CharacterBundle {
                 firearms: 1,
             },
             health: Health { max: 10, current: 10 },
-            melee: Melee { damage: 0 },
             position: BoardPosition { v: Vector2Int { x:0, y: 0 } },
             occupier: Occupier
         }
@@ -68,9 +66,10 @@ pub struct Health {
 }
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
-pub struct Melee {
-    pub damage: u32
-}
+pub struct Melee;
+
+#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
+pub struct Ranged;
 
 //TODO : Adapter à Shadowrun: Skill & Ability.
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]

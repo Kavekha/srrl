@@ -110,7 +110,6 @@ pub fn update_action_infos(
             return };
 
         // On remonte le cout en AP de l'action en cours.
-        // TOCHANGE : Le systeme de Melee / Distance est basé sur le Cursor ce qui est de la merde. En attendant, on utilise ce mecanisme.
         let mut ap_cost: u32;
 
         match &action_infos.attack {
