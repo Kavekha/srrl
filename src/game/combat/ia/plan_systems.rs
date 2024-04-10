@@ -73,9 +73,10 @@ pub fn npc_ia_plan_on_view(
 
                 let Ok(target_position) = position_q.get(id) else { 
                     println!("No position found for player. NPC can't check for target.");
-                    return
+                    continue;
                 }; 
 
+                /* TODO : On fera ca en 0.20 
                 println!("Npc {:?} a position {:?} verifie sa ligne de vue vers {:?}.", npc_entity, npc_position.v, target_position.v);
                 let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_VISION_RANGE_MAX) else {
                     println!("NPC {:?}: target {:?} is not in view.", npc_entity, id);
@@ -83,6 +84,8 @@ pub fn npc_ia_plan_on_view(
                     continue;
                 };
                 println!("NPC {:?}: saw their target {:?}!", npc_entity, id);
+                */
+                
                 // TODO : Ici on ne retire pas le planning par facilité. 
                 // => PlanMove fait aller dans npc_ia_plan_approaching, qui verifie aussi le planning et le retirera si necessaire.
                 // => En gros on voit : On va approaching, on voit pas, on ignore approaching et on va a la suite (forfeit)
