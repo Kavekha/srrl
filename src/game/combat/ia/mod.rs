@@ -45,10 +45,10 @@ let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap()
 
 use bevy::prelude::*;
 
-use crate::game::states::GameState;
+use crate::game::{combat::rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, pieces::components::Npc, player::Player, states::GameState, tileboard::components::BoardPosition};
 
 use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
-use super::CombatSet;
+use super::{components::IsDead, events::Turn, CombatSet};
 pub mod goal_systems;
 pub mod components;
 pub mod plan_systems;
@@ -64,7 +64,8 @@ impl Plugin for IaPlugin {
 
             // L'ordre doit être respecté, car dés qu'on trouve une action faisable on ne fait pas les autres. La toute dernière doit être forfeit.
             //TODO : Choix doit être fait en amont?
-            .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
+            .add_systems(Update, ignore_npc_out_of_game_range)
+            .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).before(npc_ia_plan_when_adjacent))
             .add_systems(Update, npc_ia_plan_when_adjacent.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
             .add_systems(Update, npc_ia_plan_when_in_range.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))            
             .add_systems(Update, npc_ia_plan_on_view.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
@@ -73,5 +74,26 @@ impl Plugin for IaPlugin {
 
             //.add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
         ;
+    }
+}
+
+pub fn ignore_npc_out_of_game_range(
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    position_q: Query<&BoardPosition>, 
+    player_q: Query<Entity, With<Player>>
+){
+    let Ok(player_entity) = player_q.get_single() else { return };
+    let Ok(player_position) = position_q.get(player_entity) else { return };
+    let mut turn_to_remove = Vec::new();
+
+    for (npc_entity, npc_position) in npc_entity_fighter_q.iter() {
+        if (player_position.v.x - npc_position.v.x).abs() > NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN 
+        || (player_position.v.y - npc_position.v.y).abs() > NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN {
+            turn_to_remove.push(npc_entity)
+        };
+    };
+    for entity in turn_to_remove {
+        commands.entity(entity).remove::<Turn>();
     }
 }
