@@ -117,6 +117,7 @@ impl Plugin for UiPlugin {
             .add_systems(Update, draw_ui_game_enemy_hp.run_if(in_state(GameState::Running)))
                               
             .add_systems(OnEnter(GameState::Disabled), clear_all_game_interface)
+            .add_systems(OnEnter(GameState::Unavailable), clear_all_game_interface)
             ;
     }
 }

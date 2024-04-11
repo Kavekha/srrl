@@ -12,6 +12,7 @@ rustflags = ["-Ctarget-feature=+crt-static"]
 [dependencies]
 
 bevy-inspector-egui= "0.23.4" 
+egui ="*"
 bevy = "0.13"
 #bevy            = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
 serde           = "^1"

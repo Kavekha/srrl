@@ -29,3 +29,7 @@ pub struct PlanMove {
     pub destination: Vector2Int
 }
 
+// Pas vraiment dans l'IA.
+// Sert à ignorer un NPC qui n'a pas de raison d'être actif & voler du cpu pour prendre des decisions ou etre joué.
+#[derive(Component)]
+pub struct Frozen;

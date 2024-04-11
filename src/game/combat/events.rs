@@ -37,3 +37,6 @@ pub struct WantToHitEvent {
     pub source: Entity,
     pub target: Vector2Int      
 }
+
+#[derive(Event)]
+pub struct TickEvent;

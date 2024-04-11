@@ -54,16 +54,16 @@ pub mod ia;
 pub mod action_infos;
 
 
-use crate::game::{
+use crate::{engine::animations::events::GraphicsWaitEvent, game::{
         combat::components::{ActionPoints, CombatInfos}, manager::game_messages::GameOverMessage, states::GameState 
-    };
+    }};
 
 use self::{
     action_infos::{update_action_infos, ActionInfos}, 
     components::{CurrentEntityTurnQueue, IsDead}, 
     event_systems::{action_entity_end_turn, entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, 
-    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, Turn}, 
-    ia::{components::CheckGoal, IaPlugin}
+    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, TickEvent, Turn}, 
+    ia::{components::{CheckGoal, Frozen}, IaPlugin}
 };
 use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::ReloadUiEvent};
 
@@ -82,6 +82,7 @@ impl Plugin for CombatPlugin {
             .add_event::<CombatTurnNextEntityEvent>()   // Envoyé pour prendre le nouvel acteur.
             .add_event::<CombatTurnEndEvent>()          // Envoyé quand plus aucun acteur dans la Queue du Tour de Combat.
             .add_event::<RefreshActionCostEvent>()              // Recalcule le cout d'une action / deplacement.
+            .add_event::<TickEvent>()                           // De retour en 0.19j : Donne le rythme en recheckant où en sont les acteurs du combat.
 
             .add_event::<EntityEndTurnEvent>()         // Envoyé par l'Entité qui mets volontairement fin à son tour.    //TODO : Meilleur nom: c'est une Action d'un NPC. 
   
@@ -110,7 +111,9 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_get_hit))
   
             // Check de la situation PA-wise. Mise à jour.
-            .add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) //was Logic, mit dans Tick. v0.19h
+            .add_systems(Update, tick.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
+            //.add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) //was Logic, mit dans Tick. v0.19h
+            .add_systems(Update, combat_turn_entity_check.run_if(on_event::<TickEvent>())) //was Logic, mit dans Tick. v0.19h
             .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick))
 
             // TODO: Quitter le combat. PLACEHOLDER.
@@ -135,6 +138,16 @@ pub fn combat_clean_death(
     }
 }
 
+// 0.19j on remets ce tick qui regarde si on doit attendre la fin des animations.   // TODO audit du fonctionnel animation & l'usage de ce systeme.
+// Tick event active la suite du cycle.
+fn tick(
+    mut ev_wait: EventReader<GraphicsWaitEvent>,
+    mut ev_tick: EventWriter<TickEvent>
+) {
+    if ev_wait.read().len() == 0 {
+        ev_tick.send(TickEvent);
+    }
+}
 
 /// Donne AP aux participants, créé le CombatInfos ressource, passe en StartTurn.
 pub fn combat_start(    
@@ -229,13 +242,15 @@ pub fn combat_turn_end(
 }
 
 
+/// 0.19j c'est cette fonction qui donne le rythme ! REMEMBER => Elle est très importante.
 /// Regarde si tous les PA ont été dépensé par le personnage dont c'est le tour.
 /// Si c'est le cas, passe au perso suivant.
 pub fn combat_turn_entity_check(
     mut commands: Commands,
     current_combat: ResMut<CombatInfos>,
-    query_action_points: Query<(&ActionPoints, Option<&Player>)>,
-    mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
+    query_action_points: Query<(&ActionPoints, Option<&Player>, Option<&Frozen>)>,  // Frozen => entité qu'on ne veut pas utiliser car non active.
+    mut ev_next: EventWriter<CombatTurnNextEntityEvent>,  
+    //mut ev_tick: EventReader<TickEvent>
 ) {
     //println!("Combat turn entity check...");
     // On recupere l'entité de CombatInfos.
@@ -243,10 +258,10 @@ pub fn combat_turn_entity_check(
         //println!("There is a current entity in CombatInfos");
         if let Ok(entity_infos) = query_action_points.get(entity) {
             //println!("This entity has action points.");
-            let (ap_entity, is_player) = entity_infos;
+            let (ap_entity, is_player, is_frozen) = entity_infos;
             //If no AP anymore, next entity turn.
-            if ap_entity.current <= 0 {
-                println!("This entity {:?} has no AP: let's turn to next entity event.", entity);
+            if ap_entity.current <= 0 || is_frozen.is_some() {
+                println!("This entity {:?} has no AP or is Frozen: let's turn to next entity event.", entity);
                 commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {

@@ -23,9 +23,7 @@ pub struct GraphicsPlugin;
 
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
-        app
-            //.add_event::<GraphicsWaitEvent>()
-    
+        app    
             .add_systems(OnEnter(GameState::Initialise), spawn_map_render)                  
             .add_systems(OnEnter(GameState::Initialise), spawn_piece_renderer)
             .add_systems(OnEnter(GameState::Initialise), spawn_game_cursor)     

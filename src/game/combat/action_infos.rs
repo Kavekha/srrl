@@ -33,7 +33,7 @@ pub fn is_in_sight(
     range: i32
 ) ->Result<bool, bool> {
     //println!("BRESENHAM ==== ");
-    println!("origin is {:?}, end is {:?}", origin, end);
+    //println!("origin is {:?}, end is {:?}", origin, end);
     let mut step = 0;
     for (x, y) in Bresenham::new((origin.x.try_into().unwrap(), origin.y.try_into().unwrap()), (end.x.try_into().unwrap(), end.y.try_into().unwrap())) {
         //println!("{}, {}", x, y);
