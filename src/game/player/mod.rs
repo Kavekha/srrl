@@ -27,7 +27,7 @@ mouse_scroll fait scroller le menu "Log" a l'ecran de Recap.
 
 use bevy::prelude::*;
 
-mod player_systems;
+mod camera_exit;
 mod player_inputs;
 pub mod components;
 pub mod cursor;
@@ -36,7 +36,7 @@ pub mod cursor;
 pub use components::Player;
 pub use cursor::Cursor;
 
-use self::{components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}, player_systems::{camera_smooth_follow, exit_step_check}};
+use self::{components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}, camera_exit::{camera_smooth_follow, exit_step_check}};
 
 use crate::game::states::GameState;
 
@@ -67,9 +67,8 @@ impl Plugin for PlayerPlugin{
             .add_systems(Update, ig_inside_menu_input.run_if(in_state(GameState::Unavailable)))     // TODO : Put the game In Unavailable quand Menu Open 
             
             //.add_systems(Update, camera_follow.run_if(in_state(GameState::Running)))
-            .add_systems(Update, camera_smooth_follow.run_if(in_state(GameState::Running)))
-            
-            .add_systems(Update, exit_step_check.run_if(in_state(GameState::Running)))
+            .add_systems(Update, camera_smooth_follow.run_if(in_state(GameState::Running)))            
+            .add_systems(Update, exit_step_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 
             .add_systems(Update, mouse_scroll)
             ;
