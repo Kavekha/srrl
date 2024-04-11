@@ -20,7 +20,7 @@ pub fn spawn_hit_effect(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     for event in ev_spawn_effect.read() {
-        println!("Creating effect");
+        //println!("Creating effect");
         let texture = graph_assets.effects[event.id.as_str()].clone();
         let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 3, 1, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);

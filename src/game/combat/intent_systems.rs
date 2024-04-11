@@ -23,7 +23,7 @@ pub fn on_event_entity_want_hit(
     mut ev_want_to_hit: EventReader<WantToHitEvent>,
 ){
     for event in ev_want_to_hit.read() {
-        println!("Someone want to hit something.");
+        //println!("Someone want to hit something.");
         let want_hit = WantToHit{ 
             mode: AttackType::RANGED,
             target: event.target
@@ -84,7 +84,7 @@ pub fn entity_want_hit(
                 ev_log.send(LogEvent {entry: format!("Not enough AP for this action.")});  // No Stats, can't be attacked.
             }
             continue };
-        println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
+        //println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
 
         // Targets de la case:
         let target_entities = available_targets.iter().filter(|(_, position, _)| position.v == want.target).collect::<Vec<_>>(); 
@@ -97,10 +97,10 @@ pub fn entity_want_hit(
         // Taper!
         let mut could_hit_someone= false;
         for (target_entity, target_position, _target_stats) in target_entities.iter() {     
-            println!("Want hit: potentielle target: {:?}", *target_entity);
+            //println!("Want hit: potentielle target: {:?}", *target_entity);
             // Can't hit yourself.
             if entity == * target_entity { 
-                println!("On ne peut pas s'attaquer soit même.");
+                //println!("On ne peut pas s'attaquer soit même.");
                 continue; }; 
 
             // 0.19e : Visuel : Ne prends pas en compte le type. TODO: Reach lié à l'attaque / equipement.
@@ -265,7 +265,7 @@ pub fn entity_get_hit(
         to_remove.push(entity);
 
         let Ok(defender_infos) = stats_health_q.get_mut(entity) else { 
-            println!("Pas de stats / health pour le defender");
+            //println!("Pas de stats / health pour le defender");
             continue };
         let (defender_stats, mut defender_health, _is_player) = defender_infos;
 
@@ -275,7 +275,7 @@ pub fn entity_get_hit(
 
         // Reducing health.
         defender_health.current = defender_health.current.saturating_sub(final_dmg);
-        println!("Dmg on health for {:?} is now {:?}/{:?}", final_dmg, defender_health.current, defender_health.max);
+        //println!("Dmg on health for {:?} is now {:?}/{:?}", final_dmg, defender_health.current, defender_health.max);
         if defender_health.current == 0 {            
             //ev_die.send(EntityDeathEvent { entity: entity, attacker: get_hit.attacker });
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
@@ -318,7 +318,7 @@ pub fn entity_dies(
     for (entity, death, mut transform) in die_q.iter_mut() {
         to_remove.push(entity);        
 
-        println!("Entity {:?} is dead", entity);
+        //println!("Entity {:?} is dead", entity);
         commands.entity(entity).insert(IsDead);
 
         // Transformation en Corps.        
