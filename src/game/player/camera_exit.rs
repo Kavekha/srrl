@@ -8,8 +8,6 @@ use crate::{game::{
 use super::components::Player;
 
 
-
-//TODO : Pas a être là.
 pub fn _camera_follow(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
@@ -41,10 +39,6 @@ pub fn camera_smooth_follow(
     }
 }
 
-
-
-
-//TODO : Pas a etre là.
 //Le log est envoyé 3 fois car 3 check?
 pub fn exit_step_check(
     player_query: Query<&BoardPosition, With<Player>>,

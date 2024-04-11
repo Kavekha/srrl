@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.19.k";
+pub const VERSION: &str = "0.20.a";
 pub const RELEASE: &str = "R0.4";
 
 // Min - Max VOLUME
@@ -15,13 +15,8 @@ pub const RESOLUTION: f32 = 16.0 / 9.0;
 pub const HEIGHT: f32 = 800.0;
 //pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 
-// Menu colors
-pub const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-pub const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
-pub const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-pub const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
-pub const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
+// TODO : En attente de la R0.5 et du Loader
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
 pub const STANDARD_TILE_SIZE:i32 = 32;  //64;
@@ -54,7 +49,6 @@ pub const MAP_WALL_13: &str = "wall_13";
 pub const MAP_WALL_14: &str = "wall_14";
 pub const MAP_WALL_15: &str = "wall_15";
 
-
 // sprite
 //pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
 pub const SPRITE_GHOUL: &str = "ghoul";
@@ -64,14 +58,6 @@ pub const SPRITE_PLAYER_ORC: &str = "human";
 pub const SPRITE_PLAYER_ELF: &str = "human";
 pub const SPRITE_PLAYER_TROLL: &str = "human";
 pub const SPRITE_GHOUL_RANGED: &str = "ghoul_ranged";
-
-// MAP GENERATOR
-pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
-#[allow(dead_code)]
-pub const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
-pub const MAPWIDTH : usize = 80;
-pub const MAPHEIGHT : usize = 50;
-pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
 
 
 //SAVE
@@ -83,5 +69,3 @@ pub const BASE_SPEED: f32 = 5.0;
 pub const SPEED_MULTIPLIER: f32 = 5.0;      // FAST debug / balance on speed movement.
 pub const CURSOR_SPEED: f32 = 20.0;
 
-// Interface
-pub const INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE: f32 = 16.0;

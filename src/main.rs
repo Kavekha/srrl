@@ -3,19 +3,17 @@
 use bevy::{prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
 
-extern crate bresenham;
-use bresenham::Bresenham;
-
 mod engine;
 mod map_builders;
 mod game;           
 mod globals;
 mod vectors;
 mod menu_builders;
+mod commons;
 
 use game::GamePlugin;
 use engine::EnginePlugin;
-use game::states::GameState;    //{GameState, EngineState};
+use game::states::GameState;   
 use globals::{HEIGHT, RESOLUTION, CLEAR};
 
 use crate::game::states::MenuState;
@@ -53,11 +51,4 @@ fn main() {
 
 
         .run(); 
-
-
-        // test Crate Bresenham
-        for (x, y) in Bresenham::new((0, 1), (6, 4)) {
-            println!("{}, {}", x, y);
-        }
 }
-

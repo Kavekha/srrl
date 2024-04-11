@@ -48,8 +48,7 @@ impl Message for ClearMenuMessage {
 pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
-        //let description = "{} - {}", VERSION, RELEASE)
-        let mut menu = Menu::new("main_menu", Vec::new());
+        let mut menu = Menu::new(Vec::new());   //"main_menu", 
         menu.add(MenuItem::image("shadowrun_title_alone"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         if has_save_file() {
@@ -57,7 +56,7 @@ impl Message for MainMenuOpenMessage {
         }
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
-        menu.add(MenuItem::footer( &format!("{VERSION} - {RELEASE}")));
+        menu.add(MenuItem::footer( &format!("{RELEASE} - {VERSION}")));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
@@ -69,7 +68,7 @@ impl Message for MainMenuOpenMessage {
 pub struct MainMenuSettingsMessage;
 impl Message for MainMenuSettingsMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("main_menu_settings", Vec::new());
+        let mut menu = Menu::new(Vec::new());   //"main_menu_settings", 
         menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettingsAudio, "Audio"));
@@ -86,7 +85,7 @@ impl Message for MainMenuSettingsMessage {
 pub struct MainMenuSettingsDisplayMessage;
 impl Message for MainMenuSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("main_menu_settings_display", Vec::new());
+        let mut menu = Menu::new( Vec::new());  //"main_menu_settings_display",
         menu.add(MenuItem::description("Choose your resolution"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
@@ -104,10 +103,10 @@ pub struct MainMenuSettingsAudioMessage;
 impl Message for MainMenuSettingsAudioMessage {
     fn execute(&self, world: &mut World) {
         let audio_resource = world.resource_mut::<AudioConfig>();
-        let mut menu = Menu::new("main_menu_settings_audio", Vec::new());
+        let mut menu = Menu::new( Vec::new());  //"main_menu_settings_audio",
         menu.add(MenuItem::description("Choose your music volume"));
-        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.music_volume, "Music volume", AudioType::Music));
-        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.sound_volume, "Sound volume", AudioType::Sound));
+        menu.add(MenuItem::slider( audio_resource.music_volume, "Music volume", AudioType::Music));
+        menu.add(MenuItem::slider( audio_resource.sound_volume, "Sound volume", AudioType::Sound));
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Back"));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::AUDIO});
@@ -120,10 +119,10 @@ pub struct InGameSettingsAudioMessage;
 impl Message for InGameSettingsAudioMessage {
     fn execute(&self, world: &mut World) {
         let audio_resource = world.resource_mut::<AudioConfig>();
-        let mut menu = Menu::new("main_menu_settings_audio", Vec::new());
+        let mut menu = Menu::new( Vec::new());  //"main_menu_settings_audio",
         menu.add(MenuItem::description("Choose your music volume"));
-        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.music_volume, "Music volume", AudioType::Music));
-        menu.add(MenuItem::slider(-0.1, 0.1, audio_resource.sound_volume, "Sound volume", AudioType::Sound));
+        menu.add(MenuItem::slider( audio_resource.music_volume, "Music volume", AudioType::Music));
+        menu.add(MenuItem::slider( audio_resource.sound_volume, "Sound volume", AudioType::Sound));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Back"));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::AUDIO});
@@ -136,7 +135,7 @@ impl Message for InGameSettingsAudioMessage {
 pub struct MainMenuQuitMessage;
 impl Message for MainMenuQuitMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("main_menu_quit", Vec::new());
+        let mut menu = Menu::new(Vec::new());   //"main_menu_quit", 
         menu.add(MenuItem::description("Do you want to quit?"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Cancel"));
         menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
@@ -150,7 +149,7 @@ impl Message for MainMenuQuitMessage {
 pub struct OpenInGameMenuOpenMessage;
 impl Message for OpenInGameMenuOpenMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("ig_menu", Vec::new());
+        let mut menu = Menu::new(Vec::new());   //"ig_menu", 
         menu.add(MenuItem::action(MenuButtonAction::Close, "Resume"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::BackToMainMenu, "Main Menu"));
@@ -164,7 +163,7 @@ impl Message for OpenInGameMenuOpenMessage {
 pub struct InGameMenuSettingsOpenMessage;
 impl Message for InGameMenuSettingsOpenMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("ig_menu_settings", Vec::new());
+        let mut menu = Menu::new(Vec::new());       //"ig_menu_settings", 
         menu.add(MenuItem::description("Settings"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuDisplay, "Display"));
         menu.add(MenuItem::action(MenuButtonAction::InGameMenuAudio, "Audio"));
@@ -179,7 +178,7 @@ impl Message for InGameMenuSettingsOpenMessage {
 pub struct InGameMenuQuitMessage;
 impl Message for InGameMenuQuitMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("main_menu_quit", Vec::new());
+        let mut menu = Menu::new( Vec::new());      //"main_menu_quit",
         menu.add(MenuItem::description("Do you want to quit?"));
         menu.add(MenuItem::action(MenuButtonAction::BackToInGameMenu, "Cancel"));
         menu.add(MenuItem::action(MenuButtonAction::QuitConfirm, "Confirm"));
@@ -193,7 +192,7 @@ impl Message for InGameMenuQuitMessage {
 pub struct InGameSettingsDisplayMessage;
 impl Message for InGameSettingsDisplayMessage {
     fn execute(&self, world: &mut World) {
-        let mut menu = Menu::new("main_menu_settings_display", Vec::new());
+        let mut menu = Menu::new( Vec::new());      //"main_menu_settings_display",
         menu.add(MenuItem::description("Choose your resolution"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayLow, "Low"));
         menu.add(MenuItem::action(MenuButtonAction::DisplayMedium, "Medium"));
@@ -220,7 +219,7 @@ impl Message for EndGameRecapMessage {
         } 
         match self.recap_type {
             RecapType::GameOver => {
-                let mut menu = Menu::new("game_over", Vec::new());
+                let mut menu = Menu::new(Vec::new());   //"game_over", 
 
                 menu.add(MenuItem::header("You died."));
                 for log in logs.iter().rev() {
@@ -235,7 +234,7 @@ impl Message for EndGameRecapMessage {
                 println!("Recap GameOver generated and send for opening.");
             },
             RecapType::Victory => {
-                let mut menu = Menu::new("victory", Vec::new());
+                let mut menu = Menu::new( Vec::new());      //"victory",
 
                 menu.add(MenuItem::header("victory!"));
                 menu.add(MenuItem::description("You flee the place."));

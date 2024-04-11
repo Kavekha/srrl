@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
-use crate::{game::{combat::components::IsDead, despawn_component, pieces::components::{Health, Monster}}, 
+use crate::{game::{combat::components::IsDead, despawn_component, pieces::components::{Health, Npc}}, 
     globals::STANDARD_TILE_SIZE
 };
 
 use super::{components::{ UiEnemyHp, UiGameInterface}, INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_WIDTH};
 
 
-pub fn clear_ui_game_enemy_hp(
+fn clear_ui_game_enemy_hp(
     commands: &mut Commands,    
     interface_query: Query<Entity, With<UiEnemyHp>>,
 ) {
@@ -18,7 +18,7 @@ pub fn clear_ui_game_enemy_hp(
 
 pub fn draw_ui_game_enemy_hp(
     mut commands: Commands,
-    enemies_q: Query<(&Health, &Transform), (With<Monster>, Without<IsDead>)>,
+    enemies_q: Query<(&Health, &Transform), (With<Npc>, Without<IsDead>)>,
     camera_q: Query<(&Camera, &GlobalTransform)>,    
     interface_query: Query<Entity, With<UiEnemyHp>>,
 ){

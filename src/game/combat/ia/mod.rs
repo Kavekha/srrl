@@ -31,7 +31,7 @@ Conception:
         * Peut se deplacer plus lentement dans cette situation.
 
 ----------------------------------------------------------------------------------------------------
-| 0.19h    | 0.3 |
+| 0.19h    | 0.3 | Goal unique + serie de plannings sequentiels jusqu'à trouver celui qui convient et s'y arrêter.
 | 0.13     | 0.2 | IA  planifie, attaque si AP, bouge si AP, abandonne si rien à faire.
 | 0.6      | 0.1 | NPC poursuivent le joueur.
 ------------------------------------------------------------------------------------------------
@@ -46,12 +46,12 @@ let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap()
 use bevy::prelude::*;
 
 use crate::game::{combat::{ia::components::Frozen, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN}, pieces::components::Npc, player::Player, states::GameState, tileboard::components::BoardPosition};
-
 use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
-use super::{components::IsDead, events::{EntityEndTurnEvent, Turn}, CombatSet};
-pub mod goal_systems;
+use super::{components::IsDead, events::Turn, CombatSet};
+
+mod goal_systems;
 pub mod components;
-pub mod plan_systems;
+mod plan_systems;
 
 
 pub struct IaPlugin;
@@ -77,7 +77,7 @@ impl Plugin for IaPlugin {
     }
 }
 
-pub fn ignore_npc_out_of_game_range(
+fn ignore_npc_out_of_game_range(
     mut commands: Commands,
     npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<Turn>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>, 

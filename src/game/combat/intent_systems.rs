@@ -3,53 +3,21 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{
-    engine::{
+    commons::get_world_position, engine::{
         animations::events::{AnimateEvent, EffectEvent}, 
         asset_loaders::graphic_resources::GraphicsAssets, 
         audios::SoundEvent,
-        render::get_world_position
     }, game::{
-        combat::{action_infos::is_in_sight, components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX }}, 
-        gamelog::LogEvent, 
-        pieces::components::{Health, Occupier, Stats}, player::Player,        
-        tileboard::components::BoardPosition, ui::ReloadUiEvent
+        combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit},
+        rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX }}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Occupier, Stats}, player::Player, tileboard::components::BoardPosition, ui::ReloadUiEvent
     }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int
 };
 
-use super::events::WantToHitEvent;
-use super::{
-    components::ActionPoints, events::{
-        EntityEndTurnEvent, RefreshActionCostEvent, Turn
-    }, rules::consume_actionpoints
-};
+use super::{components::WantToForfeit, events::WantToHitEvent};
+use super::{ components::ActionPoints, events::{ RefreshActionCostEvent, Turn }, rules::consume_actionpoints };
 
 
-/// Gestion de l'action de forfeit.
-pub fn action_entity_end_turn(
-    mut ev_endturn: EventReader<EntityEndTurnEvent>,
-    mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
-    mut ev_interface: EventWriter<ReloadUiEvent>,  
-    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    mut ev_log: EventWriter<LogEvent>
-) {
-    //println!("action entity forfeit turn");
-    for event in ev_endturn.read() {
-        //L'entité n'a pas de Action points / Pas son tour, on ignore.
-        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
-        let (_entity, mut action_points, is_player) = entity_infos;
-
-        let lost_value = action_points.max.saturating_add(0);
-        consume_actionpoints(&mut action_points, lost_value);
-        
-        if is_player.is_some() {
-            ev_interface.send(ReloadUiEvent);
-            ev_refresh_action.send(RefreshActionCostEvent);
-            ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
-        }
-    }
-}
-
-// 0.19b Ranged + Refacto.  // 0.19c TO CHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
+// 0.19b Ranged + Refacto.  // 0.19c TOCHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
 pub fn on_event_entity_want_hit(
     mut commands: Commands,
     mut ev_want_to_hit: EventReader<WantToHitEvent>,
@@ -64,40 +32,57 @@ pub fn on_event_entity_want_hit(
     }
 }
 
+
+pub fn entity_want_forfeit(
+    mut commands: Commands,
+    mut entity_actions_q: Query<(Entity, &mut ActionPoints, Option<&Player>), (With<Turn>, With<WantToForfeit>)>,
+    mut ev_interface: EventWriter<ReloadUiEvent>,  
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut ev_log: EventWriter<LogEvent>
+) {
+    let mut to_remove = Vec::new();
+    for (entity, mut action_points, is_player) in entity_actions_q.iter_mut() {
+        let lost_value = action_points.max.saturating_add(0);
+        consume_actionpoints(&mut action_points, lost_value);
+        to_remove.push(entity);
+        
+        if is_player.is_some() {
+            ev_interface.send(ReloadUiEvent);
+            ev_refresh_action.send(RefreshActionCostEvent);
+            ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
+        }
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<WantToForfeit>();
+    }
+}
+
 // 0.19d : utilisé par Ranged & Melee.
 // Ici on verifie tout.
-// TODO : C'est bien grand la dedans.
+// 0.20a : Review Query OK
 pub fn entity_want_hit(
     mut commands: Commands,
-    want_hit_q: Query<(Entity, &WantToHit)>,
-    player_q: Query<&Player>,    
-    mut action_q: Query<&mut ActionPoints>,    
+    mut want_hit_q: Query<(Entity, &WantToHit, &mut ActionPoints, &BoardPosition, Option<&Player>), (With<Stats>, Without<IsDead>)>,
+    //player_q: Query<&Player>,    
+    //mut action_q: Query<&mut ActionPoints>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,    
     available_targets: Query<(Entity, &BoardPosition, &Stats), (With<Health>, Without<IsDead>)>,
-    position_q: Query<&BoardPosition>,
-    stats_q: Query<&Stats>,        
+    //position_q: Query<&BoardPosition>,
+    //stats_q: Query<&Stats>,        
     mut ev_log: EventWriter<LogEvent>,
     board: Res<Map>,
 ) {
     let mut to_remove = Vec::new();
-    for (entity, want) in want_hit_q.iter() {
+    for (entity, want, mut action_points, entity_position, is_player) in want_hit_q.iter_mut() {
         // Je le degage avant, car je sors à chaque cas non valide par la suite. Si c'est à la fin, je ne lirai pas cette commande.
         to_remove.push(entity);
 
-
-        // J'ai un systeme de PA (Je ne devrais pas être là mais bon.)
-        let Ok(mut action_points) = action_q.get_mut(entity) else { continue };
         // Verifie si assez de AP pour l'action.
         let Ok(_) = enough_ap_for_action(&action_points, &want.mode) else { 
             ev_log.send(LogEvent {entry: format!("Not enough AP for this action.")});  // No Stats, can't be attacked.
             continue };
-
         println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
-
-        let Ok(_attacker_stats) = stats_q.get(entity) else { 
-            ev_log.send(LogEvent {entry: format!("ERROR: Not a valid fighter, can't attack. Stats missing.")});  // No Stats, can't be attacked.
-            continue };    
 
         // Targets de la case:
         let target_entities = available_targets.iter().filter(|(_, position, _)| position.v == want.target).collect::<Vec<_>>(); 
@@ -115,9 +100,10 @@ pub fn entity_want_hit(
                 continue; }; 
 
             // 0.19e : Visuel : Ne prends pas en compte le type. TODO: Reach lié à l'attaque / equipement.
-            let Ok(entity_position) = position_q.get(entity) else { continue; };
             let Ok(_in_los) = is_in_sight(&board, &entity_position.v, &target_position.v, RANGED_ATTACK_RANGE_MAX) else {
-                ev_log.send(LogEvent {entry: format!("Target is not in view.")}); 
+                if is_player.is_some() {
+                    ev_log.send(LogEvent {entry: format!("Target is not in view.")}); 
+                }
                 continue;
             };
 
@@ -133,8 +119,7 @@ pub fn entity_want_hit(
                 AttackType::RANGED => consume_actionpoints(&mut action_points, AP_COST_RANGED),
                 //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
             };
-
-            if let Ok(_is_player) = player_q.get(entity) {
+            if is_player.is_some() {
                 ev_interface.send(ReloadUiEvent); 
                 ev_refresh_action.send(RefreshActionCostEvent);
             }
@@ -148,7 +133,7 @@ pub fn entity_want_hit(
 // 0.19b
 pub fn entity_try_hit(
     mut commands: Commands,
-    try_hit_q: Query<(Entity, &TryHit)>,
+    try_hit_q: Query<(Entity, &TryHit), Without<IsDead>>,
     stats_q: Query<&Stats>,       
     //mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut ev_sound: EventWriter<SoundEvent>,
@@ -161,12 +146,12 @@ pub fn entity_try_hit(
         to_remove.push(entity);
         println!("{:?} try to attack {:?}.", entity, attack.defender);
         //done.
-
+  
         let Ok(attacker_stats) = stats_q.get(entity) else { 
             // DEBUG: println!("Pas de stats pour l'attaquant");
-            continue };      
+            continue };   
         let Ok(defender_stats) = stats_q.get(attack.defender) else { 
-            // DEBUG: println!("Pas de stats pour l'attaquant");
+            // DEBUG: println!("Pas de stats pour le defender");
             continue };     
 
         // Jet d'attaque. Tout ca est à mettre dans Rules.
@@ -225,11 +210,11 @@ pub fn entity_try_hit(
 // Refacto 0.19b
 pub fn entity_miss_attack(
     mut commands: Commands,
-    miss_hit_q: Query<(Entity, &MissHit)>,     
-    mut ev_sound: EventWriter<SoundEvent>,    
-    position_q: Query<&BoardPosition>,    
-    mut ev_effect: EventWriter<EffectEvent>,
+    miss_hit_q: Query<(Entity, &MissHit), Without<IsDead>>, 
+    position_q: Query<&BoardPosition>,       
     name_q: Query<&Name>,
+    mut ev_sound: EventWriter<SoundEvent>,    
+     mut ev_effect: EventWriter<EffectEvent>,
     mut ev_log: EventWriter<LogEvent>,
 ){
     let mut to_remove = Vec::new();
@@ -264,13 +249,12 @@ pub fn entity_miss_attack(
 // 0.19b
 pub fn entity_get_hit(    
     mut commands: Commands,
-    get_hit_q: Query<(Entity, &GetHit)>,     
-    position_q: Query<&BoardPosition>,    
-    mut ev_effect: EventWriter<EffectEvent>,
+    get_hit_q: Query<(Entity, &GetHit), Without<IsDead>>,     
     name_q: Query<&Name>,
+    position_q: Query<&BoardPosition>,      
+    mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,      
+    mut ev_effect: EventWriter<EffectEvent>,
     mut ev_log: EventWriter<LogEvent>,    
-    mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,    
-    //mut ev_die: EventWriter<EntityDeathEvent>,
 ){
     let mut to_remove = Vec::new();
     for (entity, get_hit) in get_hit_q.iter() {
@@ -317,35 +301,35 @@ pub fn entity_get_hit(
 
 pub fn entity_dies(
     mut commands: Commands,    
-    die_q: Query<(Entity, &Die)>,   
+    mut die_q: Query<(Entity, &Die, &mut Transform)>,   
     mut body_q: Query<&mut Handle<Image>>,
     graph_assets: Res<GraphicsAssets>,    
-    mut transform_q: Query<&mut Transform>,
+    //mut transform_q: Query<&mut Transform>,
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_log: EventWriter<LogEvent>,
     name_q: Query<&Name>,
 ){
     let mut to_remove=Vec::new();
-    for (entity, death) in die_q.iter() {
+    for (entity, death, mut transform) in die_q.iter_mut() {
         to_remove.push(entity);        
 
         println!("Entity {:?} is dead", entity);
         commands.entity(entity).insert(IsDead);
 
-        // Transformation en Corps.
+        // Transformation en Corps.        
         if let Ok(mut body) = body_q.get_mut(entity) {
             *body = graph_assets.textures["blood"].clone();
         };
-        if let Ok(mut transform) = transform_q.get_mut(entity) {
+        //if let Ok(mut transform) = transform_q.get_mut(entity) {
             transform.translation.z = ORDER_CORPSE;
-        }
+        //}
         // SOUND
         ev_sound.send(SoundEvent{id:"death_scream".to_string()});
 
         ev_refresh_action.send(RefreshActionCostEvent);
 
-        //Logs.. TODO : Ameliorer.
+        //Logs.. 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(death.killer) else { continue;};        
         ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0

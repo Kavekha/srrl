@@ -2,8 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{combat::components::ActionPoints, pieces::components::Health, player::Player, ui::{INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_MAX, INTERFACE_HP_CHUNK_WIDTH}}, 
-    globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE
+    game::{combat::components::ActionPoints, pieces::components::Health, player::Player, ui::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_MAX, INTERFACE_HP_CHUNK_WIDTH}}, 
 };
 
 use super::{components::{UiCharacterInfos, UiGameInterface, UiMainWindow}, ReloadUiEvent};
@@ -33,7 +32,7 @@ pub fn update_ui_character_health(
     mut ui_border_n_background_q: Query<(&mut BackgroundColor, &mut BorderColor), With<UiChunk>>,
     player_health_q: Query<&Health, With<Player>>, 
 ){
-    //TODO : Pour note, cela ne change pas le color_border, car: component Chunk sur Border & sur son enfant Background. Background est considéré comme ayant les deux dans la Query.
+    //REMINDER : Pour note, cela ne change pas le color_border, car: component Chunk sur Border & sur son enfant Background. Background est considéré comme ayant les deux dans la Query.
     for _event in ev_ui.read() {
         //println!("Je dois mettre à jour les Chunks.");
         let Ok(player_health) = player_health_q.get_single() else { continue;};
@@ -134,7 +133,7 @@ pub fn draw_ui_game_character_infos(
         ..default()
     }).insert(UiGameInterface).id();  
 
-    //== Points d'action.       // TODO : Cette info se mets à jour en Update.
+    //== Points d'action.
     let player_action_display = commands.spawn(
         TextBundle::from_section(
             format!("{}",action_points),
@@ -171,7 +170,7 @@ pub fn draw_ui_game_character_infos(
         //UiGameInterface,
     )).id();
 
-    // === L'endroit où sont mis les Chunks.    //TODO : fonction a part?
+    // === L'endroit où sont mis les Chunks.
     let chunk_container = commands.spawn(NodeBundle {
         style: Style {
             ..default()
@@ -179,7 +178,6 @@ pub fn draw_ui_game_character_infos(
         ..default()
     }).insert(UiChunkContainer).id();     // ChunkContainer utile?
 
-    // TODO : Ici on fait une mise à jour des PV.
     let mut chunk_list:Vec<Entity> = Vec::new();
 
     // Autant de Chunk que de PV.

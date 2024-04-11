@@ -27,35 +27,36 @@ use bevy::{audio::Volume, prelude::*};
 use crate::game::menus::components::{MenuButtonAction, OnScreenMenu};
 use crate::engine::audios::AudioType;
 use crate::engine::asset_loaders::GraphicsAssets;
-use crate::globals::{NORMAL_BUTTON, TEXT_COLOR};
+use crate::game::menus::{NORMAL_BUTTON, TEXT_COLOR};
+//use crate::globals::{NORMAL_BUTTON, TEXT_COLOR};
 use crate::menu_builders::MenuButtonAction::SettingsAudioChange;
+
 
 
 
 //MenuBuilder v2
 
+// 0.20a : utilisé par game\player
 #[derive(Component, Default)]
 pub struct ScrollingList {
     pub position: f32,
 }
 
-
+//0.20a Techniquement possible de les avoir en private, mais elles sont utilisés par MenuItem qui doit être public. Les attributs peuvent être privés.
 #[derive(Clone)]
-pub struct Action {pub action: MenuButtonAction, pub text:String}
-
+pub struct Action {action: MenuButtonAction, text:String}
 #[derive(Clone)]
-pub struct Header {pub text: String}
+pub struct Header {text: String}
 #[derive(Clone)]
-pub struct Description {pub text: String}
+pub struct Description {text: String}
 #[derive(Clone)]
-pub struct Image {pub name: String}
+pub struct Image { name: String}
 #[derive(Clone)]
-pub struct Footer {pub text: String}
+pub struct Footer { text: String}
 #[derive(Clone)]
-pub struct Slider {pub button_1_value:f32, pub button_2_value:f32, pub original_value:Volume, pub text:String, pub audio_type:AudioType}
+pub struct Slider { original_value:Volume, text:String, audio_type:AudioType}
 #[derive(Clone)]
-pub struct ScrollingText {pub text: String}
-
+pub struct ScrollingText {text: String}
 
 #[derive(Clone)]
 pub enum MenuItem{
@@ -89,9 +90,9 @@ impl MenuItem{
     ) -> MenuItem {
         MenuItem::Footer(Footer{text: text.to_string()})
     } 
-    pub fn slider(button_1_value:f32, button_2_value:f32, original_value:Volume, text:&str, audio_type:AudioType    // TODO : Supporter autre chose pour le type. Transmettre la resource?
+    pub fn slider( original_value:Volume, text:&str, audio_type:AudioType    // AMELIORATION : Supporter autre chose pour le type. Transmettre la resource?
     ) -> MenuItem {
-        MenuItem::Slider(Slider{button_1_value: button_1_value, button_2_value:button_2_value, original_value:original_value, text:text.to_string(), audio_type:audio_type})
+        MenuItem::Slider(Slider{ original_value:original_value, text:text.to_string(), audio_type:audio_type})
     }
     pub fn scrolling_text(text: &str
     ) -> MenuItem {
@@ -100,13 +101,14 @@ impl MenuItem{
 }
 
 pub struct Menu{
-    pub id: String,
-    pub entries: Vec<MenuItem>
+    //id: String,
+    entries: Vec<MenuItem>
 }
 impl Menu{
-    pub fn new(id: &str, entries: Vec<MenuItem>) -> Menu {
+    pub fn new(entries: Vec<MenuItem>) -> Menu {
+    //pub fn new(id: &str, entries: Vec<MenuItem>) -> Menu {
         let menu = Menu{
-            id: id.to_string(),
+            //id: id.to_string(),
             entries: entries
         };
         menu
@@ -164,7 +166,7 @@ pub fn spawn_menu(
         */
     let button_text_style = TextStyle {
         font_size: 20.0,    //40
-        color: TEXT_COLOR,
+        color: TEXT_COLOR,      // AMELIORATION : Mettre dan sle Menu Builder
         ..default()
     };
 
@@ -309,7 +311,7 @@ pub fn spawn_menu(
                 let slider_button_decrease = commands.spawn((
                     ButtonBundle {
                         style: button_style.clone(),
-                        background_color: NORMAL_BUTTON.into(),
+                        background_color: NORMAL_BUTTON.into(), // AMELIORATION : Mettre dans le builder.
                         ..default()
                     },
                     SettingsAudioChange {modify_volume_by: -0.1, audio_type: slider.audio_type.clone()} //slider,    //Reduce value?   // Une image a la place?

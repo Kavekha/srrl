@@ -17,6 +17,7 @@ impl Plugin for CursorPlugin{
 }
 
 
+
 //camera.logical_viewport_size() donne la taille de l'ecran en pixel, de 0 à +X, et de 0 à +Y.
 #[derive(Resource, Component)]
 pub struct Cursor {    
@@ -25,7 +26,7 @@ pub struct Cursor {
     pub screen_position: Option<Vec2>,      // OptionVec2.
 }
 
-pub fn cursor_position(
+fn cursor_position(
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut res_cursor: ResMut<Cursor>,
     window_query: Query<&Window>,
@@ -52,7 +53,7 @@ pub fn cursor_position(
 
 ///map.x = (screen.x / TILE_WIDTH_HALF + screen.y / TILE_HEIGHT_HALF) /2;
 ///map.y = (screen.y / TILE_HEIGHT_HALF -(screen.x / TILE_WIDTH_HALF)) /2;
-pub fn get_grid_position(
+fn get_grid_position(
     x: f32,
     y: f32
 ) -> Vector2Int {

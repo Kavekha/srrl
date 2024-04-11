@@ -11,7 +11,7 @@ Les NPC utilisent le même principe une fois qu'ils savent où ils veulent aller
 
 use bevy::prelude::*;
 
-pub mod movement_systems;
+mod movement_systems;
 pub mod components;
 
 

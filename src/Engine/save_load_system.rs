@@ -10,7 +10,7 @@ use bevy::prelude::*;
 
 //pub struct SaveLoadPlugin;
 
-use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stats, Npc, Monster};   //Actor
+use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stats, Npc};   //Actor
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
@@ -37,7 +37,6 @@ pub struct SaveEntity {
     pub player: bool, 
     pub stats: Option<Stats>,
     pub npc: bool, 
-    pub monster: bool,
     pub piece: Option<Piece>,
     pub position: Option<BoardPosition>,
     pub health: Option<Health>,
@@ -85,7 +84,6 @@ impl SaveState {
                 let mut has_component_to_save = false;
                 if world.get::<Player>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Npc>(world.entity(*current_entity).id()).is_some()
-                || world.get::<Monster>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Stats>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Piece>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
@@ -121,7 +119,6 @@ impl SaveState {
                         entity: *current_entity,
                         player: world.get::<Player>(*current_entity).is_some(),
                         npc: world.get::<Npc>(*current_entity).is_some(),
-                        monster: world.get::<Monster>(*current_entity).is_some(),
                         stats: world.get::<Stats>(*current_entity).cloned(),
                         piece: world.get::<Piece>(*current_entity).cloned(),
                         position: world.get::<BoardPosition>(*current_entity).cloned(),

@@ -3,14 +3,11 @@
 On recoit un event RefreshActionCostEvent.
 On recalcule tout ce qui est utile pour prise de décision du joueur: Cout AP, chemin, cible, type d'attaque etc.
 */
-extern crate bresenham;
-use bresenham::Bresenham;
-
 use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{ pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 use super::{ components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
 
@@ -22,39 +19,15 @@ pub struct ActionInfos {
     pub path: Option<VecDeque<Vector2Int>>, //Si accessible, on a quelque chose ici: le trajet pour se rendre à la destination (Non enregistrée)
     pub target: Option<Vector2Int>,     // Il y a un fighter a cette position là (Position, Health, Stats, not isDead)
     pub entity: Option<Entity>,     // C'est le joueur. // CAREFUL : Un jour on aura plus de un personnage.
-    pub attack: Option<AttackType>  // 0.19.c       // TODO : En Not an option?
+    pub attack: Option<AttackType>  // 0.19.c      
 }
 
 
-pub fn is_in_sight(
-    board: &Map,
-    origin: &Vector2Int,
-    end: &Vector2Int,
-    range: i32
-) ->Result<bool, bool> {
-    //println!("BRESENHAM ==== ");
-    //println!("origin is {:?}, end is {:?}", origin, end);
-    let mut step = 0;
-    for (x, y) in Bresenham::new((origin.x.try_into().unwrap(), origin.y.try_into().unwrap()), (end.x.try_into().unwrap(), end.y.try_into().unwrap())) {
-        //println!("{}, {}", x, y);
-        if board.is_blocked(x as i32, y as i32) { //(i32::from(x), i32::from(y)) {
-            //println!("View is blocked");
-            return Err(false)
-        }
-        step += 1;
-        if step >= range {
-            //println!("Max range reached.");
-            return Err(false)
-        }
-    }
-    //println!("View is clear!");
-    return Ok(true)
-}
 
 
 pub fn update_action_infos(
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
-    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>,         // TODO: Not with Turn? Why?
+    query_character_turn: Query<(Entity, &ActionPoints), With<Player>>, 
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
@@ -73,8 +46,9 @@ pub fn update_action_infos(
         let Ok(player_infos) = query_character_turn.get_single() else { 
             //println!("action infos: No player info");
             return };
-        let (entity, action_points, position) = player_infos;
+        let (entity, action_points) = player_infos;
         action_infos.entity = Some(entity);
+        let Ok(position) = piece_position.get(entity) else { return };
 
         let tile_position = cursor.grid_position;
         if !board.entity_tiles.contains_key(&tile_position) { 

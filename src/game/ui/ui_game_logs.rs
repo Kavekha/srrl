@@ -3,13 +3,12 @@ use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{despawn_component, gamelog::Gamelog}, 
-    globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE
 };
 
-use super::components::{UiGameInterface, UiLog};
+use super::{components::{UiGameInterface, UiLog}, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
 
 
-pub fn clear_ui_log(
+fn clear_ui_log(
     commands: &mut Commands,    
     interface_query: Query<Entity, With<UiLog>>,
 ) {

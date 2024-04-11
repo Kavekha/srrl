@@ -10,10 +10,12 @@ use crate::vectors::Vector2Int;
 #[derive(Default, Resource)]
 pub struct CombatTurnQueue(pub VecDeque<Entity>);
 
+/* 
 #[derive(Event)]
 pub struct EntityEndTurnEvent {
     pub entity: Entity
 }
+*/
 
 #[derive(Event)]
 pub struct CombatTurnEndEvent;

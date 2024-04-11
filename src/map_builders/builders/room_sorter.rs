@@ -41,7 +41,7 @@ impl RoomSorter {
                     let a_center_pt = Vector2Int {x: a_center.0, y: a_center.1 };
                     let b_center = b.center();
                     let b_center_pt = Vector2Int {x: b_center.0, y: b_center.1 };
-                    let distance_a = a_center_pt.manhattan(map_center); //TODO : Manhattan ignore les diagonales...
+                    let distance_a = a_center_pt.manhattan(map_center); //NOTE : Manhattan ignore les diagonales...
                     let distance_b = b_center_pt.manhattan(map_center); 
                     distance_a.partial_cmp(&distance_b).unwrap()
                 };

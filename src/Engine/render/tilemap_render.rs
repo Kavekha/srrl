@@ -2,12 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
 
-    globals::{
-        MAP_WALL_1, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, 
-        MAP_WALL_9, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14, STANDARD_TILE_SIZE, ORDER_FLOOR, ORDER_WALL
-    },
-    map_builders::map::Map, game:: tileboard::components::BoardPosition, 
-    engine::render::{get_world_position, components::GameMapRender, pieces_render::spawn_sprite_render}, vectors::Vector2Int, engine::asset_loaders::GraphicsAssets
+    commons::get_world_position, engine::{asset_loaders::GraphicsAssets, render::{components::GameMapRender, pieces_render::spawn_sprite_render}}, game:: tileboard::components::BoardPosition, globals::{
+        MAP_WALL_1, MAP_WALL_10, MAP_WALL_11, MAP_WALL_12, MAP_WALL_13, MAP_WALL_14, MAP_WALL_15, MAP_WALL_2, MAP_WALL_3, MAP_WALL_4, MAP_WALL_5, MAP_WALL_6, MAP_WALL_7, MAP_WALL_8, MAP_WALL_9, ORDER_FLOOR, ORDER_WALL, STANDARD_TILE_SIZE
+    }, map_builders::map::Map, vectors::Vector2Int
 };
 
 

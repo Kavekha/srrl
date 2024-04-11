@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 use::bevy::prelude::*;
 
 use crate::{
-    map_builders::commons::TileType,
-    globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}, vectors::Vector2Int
+    map_builders::{commons::TileType, MAPCOUNT, MAPHEIGHT, MAPWIDTH},
+    //globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}, 
+    vectors::Vector2Int
 };
 
 
@@ -30,7 +31,7 @@ impl Map {
     ) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
-    /* TODO: Never tested, may not work at all.
+    /* TOTEST: Never tested, may not work at all.   JAMAIS UTILISE pour le moment.
     pub fn idx_xy(
         &self,
         idx: usize

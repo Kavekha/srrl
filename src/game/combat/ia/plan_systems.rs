@@ -2,15 +2,11 @@ use bevy::prelude::*;
 
 use crate::{game::
     {combat::{
-        action_infos::is_in_sight, 
-        components::{ActionPoints, AttackType, IsDead, WantToHit}, 
-        events::{EntityEndTurnEvent, Turn}, 
+        components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
+        events::Turn, 
         ia::components::PlanMove, 
         rules::{AP_COST_MELEE, AP_COST_RANGED, NPC_RANGED_ATTACK_RANGE_MAX}, 
-    },
-    movements::components::WantToMove, 
-    pieces::components::{Melee, Npc, Occupier, Ranged, Walk}, 
-    tileboard::components::BoardPosition, 
+    }, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Melee, Npc, Occupier, Ranged, Walk}, tileboard::components::BoardPosition 
     },
     map_builders::map::Map, 
     vectors::find_path
@@ -100,16 +96,18 @@ pub fn npc_ia_plan_when_in_range(
 // IA regarde autour d'elle et prends une decision a partir de ce qu'elle voit ou ne voit pas.
 pub fn npc_ia_plan_on_view(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    //npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>,     
     //board: Res<Map>,
 ) {    
     // Pas besoin de remove aussi: On pose un PlanSomething si c'est OK. Le PlanSomething sera géré à l'etape suivante.     // TODO : Ca reste assez vulnerable lors d'ajout ou changement.
-    for (npc_entity, _npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+    //for (npc_entity, _npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+    for (npc_entity, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
         match npc_goal.id {
             GoalType::KillEntity{id} => {   
                 // Pas les AP.
-                // TODO !! WARNING: On est obligé de mettre du AP COST MELEE pour le moment CAR:
+                // !! WARNING: On est obligé de mettre du AP COST MELEE pour le moment CAR:
                 //  1. J'ai 2 AP. J'ai le droit de me deplacer.
                 //  2. La case où je veux me deplacer est celle de ma cible. Aller sur cette case pour le taper coute 3 PA.
                 //  3. => Je n'ai pas 3 PA, je ne peux pas taper mais j'ai 1-2 PA, je peux bouger mais je ne peux pas bouger ou je veux car je n'ai pas 3 PA etc.
@@ -190,13 +188,12 @@ pub fn npc_ia_plan_approaching(
 pub fn npc_ai_plan_forfeit(
     mut commands: Commands,
     npc_entity_fighter_q: Query<(Entity, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
 ) {
     let mut to_remove = Vec::new();
     for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
         to_remove.push(npc_entity);
         println!("NPC {:?} n'a rien a faire.", npc_entity);
-        ev_endturn.send(EntityEndTurnEvent {entity : npc_entity});
+        commands.entity(npc_entity).insert(WantToForfeit);
     }
     for entity in to_remove {
         commands.entity(entity).remove::<Planning>();

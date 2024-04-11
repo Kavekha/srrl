@@ -11,7 +11,7 @@
 // Le button_system contient tous les ordres de circulation dans les Menus, et est disponible dés que MenuState::Open.
 // La gestion du ClearMenu reste pas ouf, il faut bien penser à l'ajouter à chaque fois. La mettre dans le Open semble faire le Clear après l'envoi du Menu... -_-
 
-//== TODO 
+//== AMELIORATIONS A FAIRE:
 // Encore beaucoup de doublons entre IG & MainMenu, à cause de la circulation. Peut être enregistrer l'option "Previous" dans le Menu à chaque fois?
 // Desactiver les Controles "IG" / mettre GameState en Unavailable pendant le IG menu.
 
@@ -19,15 +19,29 @@
 
 use bevy::prelude::*;
 
-use crate::{game::despawn_component, globals::{HEIGHT, HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, RESOLUTION}, menu_builders::{spawn_menu, Menu}};
+use crate::{
+    game::despawn_component, 
+    globals::{HEIGHT, 
+        //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, 
+        RESOLUTION}, 
+    menu_builders::{spawn_menu, Menu}};
 use crate::engine::asset_loaders::GraphicsAssets;
 
 use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}};
 
 use super::states::MenuState;
  
+
 pub mod components;
-pub mod menu_systems;
+mod menu_systems;
+
+
+// Menu colors
+pub const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+pub const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);          // TODO : Même couleur que le fond si on veut le cacher. Defaut background button est blanc.
+pub const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+pub const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
+pub const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
 
 
 
@@ -63,7 +77,7 @@ impl Plugin for MenuPlugin {
 }
 
 
-// TODO : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
+// AMELIORATION : Refaire, car pas souple du tout. Ca construit le Menu par procuration, car on recoit un Event depuis World. C'est très moche.
 #[derive(Event)]
 pub struct MenuEvent{
     pub menu: Menu,

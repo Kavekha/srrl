@@ -3,9 +3,9 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::ActionInfos, components::AttackType}, player::Player, ui::components::UiGameInterface
+        combat::{action_infos::ActionInfos, components::AttackType}, player::Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
     }, 
-    globals::{CHAR_SIZE, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
+    globals::CHAR_SIZE
 };
 
 use super::{components::UiActionPointsOnCursor, ReloadUiEvent};
@@ -100,7 +100,7 @@ pub fn update_ui_game_cursor_position_action_points(
             //println!("J'ai un Transform de ma Query Game Cursor");
 
             //==== On calcule à partir de la grille IG / Camera2d où placer l'UI.
-            // TODO : Rassembler ce calcul avec celui utilisé dans ui_game_npc_infos pour afficher les HP enemis?
+            // !!! Rassembler ce calcul avec celui utilisé dans ui_game_npc_infos pour afficher les HP enemis?
             let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
             //If not in screen, we don't display.
             if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};

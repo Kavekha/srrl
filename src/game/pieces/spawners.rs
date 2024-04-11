@@ -4,9 +4,8 @@ use serde::{Serialize, Deserialize};
 
 use crate::{
     game::{
-        combat::rules::NPC_CHANCE_TO_BE_RANGED, pieces::components::{Health, Melee, Monster, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
-    }, 
-    vectors::Vector2Int};
+        combat::rules::NPC_CHANCE_TO_BE_RANGED, pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+    }, vectors::Vector2Int};
 
 use super::components::CharacterBundle;
 
@@ -23,11 +22,10 @@ pub enum Kind {
 }
 
 /// TEMP : Renvoie infos rendus pour les differentes races jouables par le PJ.
-pub fn get_random_kind(
+fn get_random_kind(
 ) -> Kind {
     let mut rng = rand::thread_rng();
     let rand = rng.gen_range(0..4);
-    //TODO : Le size n'a plus de sens, c'etait une donnée "image" et toutes les images sont maintenant en 64x96.
     match rand {
         0 => { return Kind::Dwarf; }
         1 => { return Kind::Elf; }
@@ -181,7 +179,6 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
     // TODO: Clean up sur les Components non utilisés.
     npc
     .insert(Npc)
-    .insert(Monster)
     .insert(Walk)
     .insert(Melee)
     ;
