@@ -80,14 +80,18 @@ pub fn entity_want_hit(
 
         // Verifie si assez de AP pour l'action.
         let Ok(_) = enough_ap_for_action(&action_points, &want.mode) else { 
-            ev_log.send(LogEvent {entry: format!("Not enough AP for this action.")});  // No Stats, can't be attacked.
+            if is_player.is_some() {
+                ev_log.send(LogEvent {entry: format!("Not enough AP for this action.")});  // No Stats, can't be attacked.
+            }
             continue };
         println!("Je suis {:?} et j'attaque à la position {:?}", entity, want.target);
 
         // Targets de la case:
         let target_entities = available_targets.iter().filter(|(_, position, _)| position.v == want.target).collect::<Vec<_>>(); 
         if target_entities.len() == 0 { 
-            ev_log.send(LogEvent {entry: format!("There is no available target here.")});        // Log v0
+            if is_player.is_some() {
+                ev_log.send(LogEvent {entry: format!("There is no available target here.")});        // Log v0
+            }
             continue };     
 
         // Taper!

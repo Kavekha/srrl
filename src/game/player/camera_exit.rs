@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{game::{
-        gamelog::LogEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}
-    }, globals::{BASE_SPEED, SPEED_MULTIPLIER}};
+use crate::game::{
+        gamelog::LogEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}, BASE_SPEED_CAMERA_SMOOTH_FOLLOW, SPEED_MULTIPLIER
+    };
 
 
 use super::components::Player;
@@ -30,12 +30,12 @@ pub fn camera_smooth_follow(
     if player_transform.translation.x != camera_transform.translation.x {
         camera_transform.translation.x = camera_transform.translation.x.lerp(
             player_transform.translation.x, 
-            BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds())
+            BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
     }
     if player_transform.translation.y != camera_transform.translation.y {
         camera_transform.translation.y = camera_transform.translation.y.lerp(
             player_transform.translation.y, 
-            BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds())
+            BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
     }
 }
 

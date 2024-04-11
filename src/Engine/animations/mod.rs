@@ -63,7 +63,7 @@ fn animate_sprite(
             if atlas.index == indices.last {
                 commands.entity(entity).insert(RemoveEntity);        
             } else {
-                atlas.index += 1
+                atlas.index += 1;
             };
         }
     }
