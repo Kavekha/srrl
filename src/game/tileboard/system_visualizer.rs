@@ -1,7 +1,7 @@
 
 
 /* 
-/// TODO: Broken lors de la separation Logic vs Render: on n'utilise plus de fonction generate_gamemap.
+/// Broken lors de la separation Logic vs Render: on n'utilise plus de fonction generate_gamemap.
 fn display_map_generation(
     mut game_state: ResMut<NextState<GameState>>,
     mut commands: Commands, 

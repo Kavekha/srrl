@@ -19,7 +19,7 @@ impl Default for CharacterBundle {
     fn default() -> Self {
         Self {
             piece: Piece { kind: Kind::Human },
-            name: Name::new("Nobody"),  //TODO change i guess
+            name: Name::new("Nobody"), 
             stats: Stats {
                 strength: 3,
                 agility: 3,
@@ -35,20 +35,18 @@ impl Default for CharacterBundle {
 }
 
 
-
 #[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Piece {
     pub kind: Kind
 }
 
-
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
 
-
+/* 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Monster;
-
+*/
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 // movement behaviour for non-player pieces

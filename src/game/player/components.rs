@@ -4,6 +4,8 @@ use serde::{Serialize, Deserialize};
 use crate::vectors::Vector2Int;
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
+
+
 pub struct Player;
 
 #[derive(Event)]

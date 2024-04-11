@@ -73,10 +73,12 @@ use self::{
 
 use super::despawn_component;
 
+// Interface
+const INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE: f32 = 16.0;
+const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
+const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
+const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
-pub const INTERFACE_HP_CHUNK_HEIGHT: f32 = 16.;
-pub const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
-pub const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
 pub struct UiPlugin;
 impl Plugin for UiPlugin {
@@ -165,10 +167,8 @@ fn draw_ui_main_window(
 }
 
 
-
-
 // A cause de command / mut commands, on ne peut utiliser que celle-ci en systeme.
-pub fn clear_all_game_interface(    
+fn clear_all_game_interface(    
     interface_query: Query<Entity, With<UiGameInterface>>,
     mut commands: Commands,
 ) {

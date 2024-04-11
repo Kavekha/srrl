@@ -18,11 +18,14 @@ pub mod tileboard;
 pub mod ui;
 pub mod menus;
 pub mod states;
-pub mod manager;
 pub mod gamelog;
-pub mod movements;
+
+mod commons;
+mod manager;
+mod movements;
  
 
+use crate::commons::despawn_component;
 use crate::game::tileboard::components::ExitMapTile;
 use crate::game::states::GameState;
 use crate::engine::render::components::{GameMapRender, GameCursorRender};
@@ -51,15 +54,7 @@ impl Plugin for GamePlugin {
 }
  
  
-pub fn despawn_component<T: Component>(
-    to_despawn: Query<Entity, With<T>>, 
-    commands: &mut Commands) {
-    for entity in &to_despawn {
-        commands.entity(entity).despawn_recursive();
-    }
-}
-
-pub fn clean_game_screen(
+fn clean_game_screen(
     mut commands: Commands,
     despawn_npc: Query<Entity, With<Npc>>,    
     despawn_gamemap: Query<Entity, With<GameMap>>,
@@ -77,5 +72,4 @@ pub fn clean_game_screen(
     despawn_component(despawn_gamecursor, &mut commands);
     despawn_component(despawn_exit, &mut commands);
 }
-
 

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    engine::{asset_loaders::GraphicsAssets, render::get_world_position}, game::{
+        commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
         pieces::{components::Piece, spawners::Kind}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, globals::{
         MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, SPRITE_GHOUL, SPRITE_GHOUL_RANGED, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, SPRITE_PLAYER_HUMAN, SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL}

@@ -48,7 +48,6 @@ pub fn npc_goal_reached(
             GoalType::None => {}
         };
     };
-    // On retire le Planning à toutes les entités. // REMINDER : Hors de la boucle pour eviter les erreurs. TODO ailleurs.
     for entity in to_remove {
         commands.entity(entity).remove::<CheckGoal>();
     }
@@ -73,7 +72,7 @@ pub fn npc_planning_hit_melee_target(
         let Ok(_target_fighter) = fighters_q.get(plan_melee.target) else {continue;};
         let Ok(_npc_fighter) = fighters_q.get(npc_entity) else {continue;};
 
-        // TODO : Changer ça, ca n'a rien à faire ici? Sans ça, le NPC plannifie en boucle son mouvement. Cela doit être une condition pour pouvoir utiliser cette action.
+        // !!: Changer ça, ca n'a rien à faire ici? Sans ça, le NPC plannifie en boucle son mouvement. Cela doit être une condition pour pouvoir utiliser cette action.
         let Ok(npc_action_points) = npc_action_points.get(npc_entity) else { continue;};
         if !enought_ap(npc_action_points, plan_melee.ap_cost) {
             ev_endturn.send(EntityEndTurnEvent {entity : npc_entity}); 
@@ -129,7 +128,7 @@ pub fn npc_planning_movement_to_destination(
         
         if let Some(path) = path_to_destination { 
             println!("NPC {:?} has a path.", npc_entity);
-            // Le path peut être assez important sans filtrage de view ici. Normalement le systeme d'AP & WantToMove gère ca car depense de AP dedans une fois valide. TOCHECK
+            // Le path peut être assez important sans filtrage de view ici. Normalement le systeme d'AP & WantToMove gère ca car depense de AP dedans une fois valide.
             //DEBUG:
             let pathlen = path.clone();
             println!("pathlen is {:?}", pathlen.len());
@@ -137,7 +136,7 @@ pub fn npc_planning_movement_to_destination(
             println!("NPC {:?} receives a WantToMove with his path. Path len is : {:?}", npc_entity, pathlen.len());
         } else {
             println!("NPC {:?} has no path", npc_entity);
-            // TODO A voir comment on gère ça autrement. Normalement on devrait regarder les actions possibles et si aucune convient on passe le tour.
+            // !! A voir comment on gère ça autrement. Normalement on devrait regarder les actions possibles et si aucune convient on passe le tour.
             // Pour le moment on a qu'une action possible donc pas de souci.
             ev_endturn.send(EntityEndTurnEvent { entity: npc_entity }); 
             continue;

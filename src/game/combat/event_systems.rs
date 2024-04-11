@@ -3,16 +3,13 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{
-    engine::{
+    commons::get_world_position, engine::{
         animations::events::{AnimateEvent, EffectEvent}, 
         asset_loaders::graphic_resources::GraphicsAssets, 
         audios::SoundEvent,
-        render::get_world_position
     }, game::{
-        combat::{action_infos::is_in_sight, components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit}, rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX }}, 
-        gamelog::LogEvent, 
-        pieces::components::{Health, Occupier, Stats}, player::Player,        
-        tileboard::components::BoardPosition, ui::ReloadUiEvent
+        combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit},
+        rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX }}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Occupier, Stats}, player::Player, tileboard::components::BoardPosition, ui::ReloadUiEvent
     }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int
 };
 
@@ -49,7 +46,7 @@ pub fn action_entity_end_turn(
     }
 }
 
-// 0.19b Ranged + Refacto.  // 0.19c TO CHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
+// 0.19b Ranged + Refacto.  // 0.19c TOCHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
 pub fn on_event_entity_want_hit(
     mut commands: Commands,
     mut ev_want_to_hit: EventReader<WantToHitEvent>,
@@ -345,7 +342,7 @@ pub fn entity_dies(
 
         ev_refresh_action.send(RefreshActionCostEvent);
 
-        //Logs.. TODO : Ameliorer.
+        //Logs.. 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(death.killer) else { continue;};        
         ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0

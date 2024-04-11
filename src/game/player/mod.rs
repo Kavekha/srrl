@@ -32,6 +32,7 @@ mod player_inputs;
 pub mod components;
 pub mod cursor;
 
+
 pub use components::Player;
 pub use cursor::Cursor;
 
@@ -79,5 +80,8 @@ impl Plugin for PlayerPlugin{
 #[derive(Event)]
 pub struct PlayerInputReadyEvent;
 
+//0.20a Ne semble plus utilisé.
+/*
 #[derive(Event)]
-pub struct PlayerActionEvent;
+struct PlayerActionEvent;
+ */

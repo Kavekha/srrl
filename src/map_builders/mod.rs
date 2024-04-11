@@ -1,7 +1,7 @@
 pub mod map;
-pub mod commons;
-pub mod components;
 
+mod commons;
+mod components;
 mod rectangle;
 mod builders;
 mod maps; 
@@ -19,13 +19,24 @@ use crate::{
         maps::simple_map::SimpleMapBuilder,
         map::Map,      
     },
-    globals::SHOW_MAPGEN_VISUALIZER, vectors::Vector2Int,
+    vectors::Vector2Int,
+    //globals::SHOW_MAPGEN_VISUALIZER,
 };
 
 use self::builders::{
     rooms_corridors_dogleg::DoglegCorridors, room_sorter::{RoomSorter, RoomSort},
     map_diagonal_cleanup::DiagonalCleanUp, room_drawer::RoomDrawer
 };
+
+
+
+// MAP GENERATOR
+pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
+#[allow(dead_code)]
+pub const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
+pub const MAPWIDTH : usize = 80;
+pub const MAPHEIGHT : usize = 50;
+pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
 
 
 #[derive(Clone)]
@@ -65,7 +76,7 @@ impl BuilderChain {
                 starting_position: None,
                 rooms: None,
                 history: Vec::new(),
-                exit_position: None,    //TODO: Plusieurs sorties?
+                exit_position: None,    //AMELIORATION: Plusieurs sorties?
             }
         }
     }
@@ -78,7 +89,7 @@ impl BuilderChain {
     pub fn with(&mut self, metabuilder: Box<dyn MetaMapBuilder>) {
         self.builders.push(metabuilder);
     }
-    pub fn build_map(&mut self) {   // TODO: Add RNG Seed there.
+    pub fn build_map(&mut self) {   // AMELIORATION: Add RNG Seed there.
         match &mut self.starter {
             None => panic!("Cannot run a map builder without starting build system"),
             Some(starter) => {
@@ -120,7 +131,6 @@ pub trait MetaMapBuilder {
 }
 
 pub fn random_builder() -> BuilderChain {
-    //let mut rng = rand::thread_rng();   //TODO : Seed & refacto.
 
     let mut builder = BuilderChain::new();
     builder.start_with(SimpleMapBuilder::new());

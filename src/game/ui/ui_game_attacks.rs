@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::combat::{action_infos::ActionInfos, components::AttackType}, globals::INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
+use crate::{engine::asset_loaders::GraphicsAssets, game::combat::{action_infos::ActionInfos, components::AttackType}};
 
-use super::{components::{UiAttackIcon, UiGameInterface, UiMainWindow}, ReloadUiEvent};
+use super::{components::{UiAttackIcon, UiGameInterface, UiMainWindow}, ReloadUiEvent, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
 
 
 const UI_ATTACK_BORDER_SELECTED: Color = Color::rgba(0.5, 0.5, 0.0, 1.0);
@@ -58,7 +58,7 @@ pub fn draw_ui_game_attack_icons(
     commands.entity(container).push_children(&[attack_container]);
 
 
-    // Bouton par icone.    // TODO: Ce sera a changer, car beaucoup encore en dur. 
+    // Bouton par icone.    // A AMELIORER: Ce sera a changer, car beaucoup encore en dur. 
 
     for attack in [AttackType::MELEE, AttackType::RANGED] {
 
@@ -97,7 +97,6 @@ pub fn draw_ui_game_attack_icons(
             ..default()
         }).id();
         
-        //TODO : Ici aussi c'est en dur, c'est bof.
         let attack_button_display = commands.spawn(
             TextBundle::from_section(
                 format!("{}",attack_button),

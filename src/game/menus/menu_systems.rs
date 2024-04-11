@@ -44,7 +44,6 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));   
                     ev_message.send(MessageEvent(Box::new(StartGameMessage)));              
                 }
-                //TODO : Reactive LOAD.
                 MenuButtonAction::Load => {
                     if has_save_file() {
                     println!("Load a saved game!");

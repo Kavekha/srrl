@@ -6,13 +6,13 @@ fn test_music_event(mut ev_message: EventWriter<MessageEvent>) {ev_message.send(
 use bevy::{audio::Volume, prelude::*};
 use bevy::audio::PlaybackMode;
 
-pub mod components;
-
 use crate::engine::asset_loaders::AudioAssets;
 use crate::globals::DEFAULT_VOLUME;
 
 use self::components::{CurrentMusic, CurrentSound};
 
+
+mod components;
  
 pub struct GameAudioPlugin;
 

@@ -8,7 +8,6 @@ L'idée est aussi qu'il soit possible de les configurer.
 use rand::prelude::*;
 
 use crate::game::pieces::components::Stats;
-
 use super::components::{ActionPoints, AttackType};
 
 /// ============================================================================
