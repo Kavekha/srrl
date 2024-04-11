@@ -68,6 +68,7 @@ pub fn npc_ia_plan_when_in_range(
 ){
     let mut to_remove = Vec::new();
     for (npc_entity, npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+        println!("NPC {:?} reflechit s'il doit ou peut utiliser une attaque Ranged.", npc_entity);
         match npc_goal.id {
             GoalType::KillEntity { id } => {
                 if npc_ap.current < AP_COST_RANGED {  //AP_COST_MOVE {
@@ -81,9 +82,11 @@ pub fn npc_ia_plan_when_in_range(
                     continue;
                 }; 
                 if let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_RANGED_ATTACK_RANGE_MAX) {
+                    println!("NPC {:?} peut tirer sur sa victime {:?}.", npc_entity, id);
                     commands.entity(npc_entity).insert(WantToHit { mode: AttackType::RANGED, target: target_position.v });
                     to_remove.push(npc_entity);
                 };
+                println!("NPC {:?} a fini de reflechir à Ranged Attack et passe à autre chose.", npc_entity);
             },
             GoalType::None => {},
         };

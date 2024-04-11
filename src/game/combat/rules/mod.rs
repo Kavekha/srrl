@@ -27,7 +27,7 @@ pub const NPC_RANGED_ATTACK_RANGE_MAX: i32 = 12;
 pub const NPC_CHANCE_TO_BE_RANGED:i32 = 25; // Percent
 
 /// Si NPC depasse cette distance du PJ, on ignore son tour / lui retire.
-pub const NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN:i32 = 40;
+pub const NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN:i32 = 50; 
 ///==============================================================================
 
 

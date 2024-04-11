@@ -63,7 +63,7 @@ use self::{
     components::{CurrentEntityTurnQueue, IsDead}, 
     event_systems::{action_entity_end_turn, entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, 
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, TickEvent, Turn}, 
-    ia::{components::CheckGoal, IaPlugin}
+    ia::{components::{CheckGoal, Frozen}, IaPlugin}
 };
 use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::ReloadUiEvent};
 
@@ -248,7 +248,7 @@ pub fn combat_turn_end(
 pub fn combat_turn_entity_check(
     mut commands: Commands,
     current_combat: ResMut<CombatInfos>,
-    query_action_points: Query<(&ActionPoints, Option<&Player>)>,
+    query_action_points: Query<(&ActionPoints, Option<&Player>, Option<&Frozen>)>,  // Frozen => entité qu'on ne veut pas utiliser car non active.
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,  
     //mut ev_tick: EventReader<TickEvent>
 ) {
@@ -258,10 +258,10 @@ pub fn combat_turn_entity_check(
         //println!("There is a current entity in CombatInfos");
         if let Ok(entity_infos) = query_action_points.get(entity) {
             //println!("This entity has action points.");
-            let (ap_entity, is_player) = entity_infos;
+            let (ap_entity, is_player, is_frozen) = entity_infos;
             //If no AP anymore, next entity turn.
-            if ap_entity.current <= 0 {
-                println!("This entity {:?} has no AP: let's turn to next entity event.", entity);
+            if ap_entity.current <= 0 || is_frozen.is_some() {
+                println!("This entity {:?} has no AP or is Frozen: let's turn to next entity event.", entity);
                 commands.entity(entity).remove::<Turn>();
                 ev_next.send(CombatTurnNextEntityEvent);
            } else if is_player.is_some() {
