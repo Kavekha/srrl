@@ -27,7 +27,7 @@ pub struct ActionInfos {
 
 pub fn update_action_infos(
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
-    query_character_turn: Query<(Entity, &ActionPoints, &BoardPosition), With<Player>>, 
+    query_character_turn: Query<(Entity, &ActionPoints), With<Player>>, 
     query_occupied: Query<&BoardPosition, With<Occupier>>,
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
@@ -46,8 +46,9 @@ pub fn update_action_infos(
         let Ok(player_infos) = query_character_turn.get_single() else { 
             //println!("action infos: No player info");
             return };
-        let (entity, action_points, position) = player_infos;
+        let (entity, action_points) = player_infos;
         action_infos.entity = Some(entity);
+        let Ok(position) = piece_position.get(entity) else { return };
 
         let tile_position = cursor.grid_position;
         if !board.entity_tiles.contains_key(&tile_position) { 

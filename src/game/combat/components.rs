@@ -63,6 +63,4 @@ pub struct Die{
 }
 
 #[derive(Component)]
-pub struct WantToForfeit{
-    pub entity: Entity
-}
+pub struct WantToForfeit;

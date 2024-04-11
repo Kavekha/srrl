@@ -62,7 +62,7 @@ pub struct SoundEvent{
 fn handle_sound_event(
     mut commands: Commands,
     assets: Res<AudioAssets>,
-    _query_music: Query<&AudioSink>,
+    //_query_music: Query<&AudioSink>,
     mut ev_sound: EventReader<SoundEvent>,
     config: Res<AudioConfig>
 ) {

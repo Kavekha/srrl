@@ -96,12 +96,14 @@ pub fn npc_ia_plan_when_in_range(
 // IA regarde autour d'elle et prends une decision a partir de ce qu'elle voit ou ne voit pas.
 pub fn npc_ia_plan_on_view(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    //npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>,     
     //board: Res<Map>,
 ) {    
     // Pas besoin de remove aussi: On pose un PlanSomething si c'est OK. Le PlanSomething sera géré à l'etape suivante.     // TODO : Ca reste assez vulnerable lors d'ajout ou changement.
-    for (npc_entity, _npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+    //for (npc_entity, _npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
+    for (npc_entity, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
         match npc_goal.id {
             GoalType::KillEntity{id} => {   
                 // Pas les AP.
@@ -191,7 +193,7 @@ pub fn npc_ai_plan_forfeit(
     for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
         to_remove.push(npc_entity);
         println!("NPC {:?} n'a rien a faire.", npc_entity);
-        commands.entity(npc_entity).insert(WantToForfeit { entity: npc_entity});
+        commands.entity(npc_entity).insert(WantToForfeit);
     }
     for entity in to_remove {
         commands.entity(entity).remove::<Planning>();

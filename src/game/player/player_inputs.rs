@@ -77,7 +77,7 @@ pub fn combat_input(
     if keys.just_pressed(KeyCode::KeyT) {
         let Ok(result) = player_query.get_single() else { return };     // TODO si on conserve action_infos, utiliser l'entité de ActionInfos?
         let entity = result;    //result.0 autrefois
-        commands.entity(entity).insert(WantToForfeit { entity});
+        commands.entity(entity).insert(WantToForfeit);
         //ev_endturn.send(EntityEndTurnEvent {entity});
         println!("Player asked for End of round for {:?}.", entity);
     }

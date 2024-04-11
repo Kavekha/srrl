@@ -99,7 +99,7 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start).in_set(CombatSet::Logic))
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
-            .add_systems(Update, combat_clean_death.after(combat_turn_end).in_set(CombatSet::Logic))         
+            .add_systems(Update, combat_player_death.after(combat_turn_end).in_set(CombatSet::Logic))         
 
             // 0.19b back to component. 
             .add_systems(Update, on_event_entity_want_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) 
@@ -123,17 +123,14 @@ impl Plugin for CombatPlugin {
 }
 
 
-fn combat_clean_death(
-    //mut commands: Commands,
-    player_q: Query<&Player>,
+fn combat_player_death(
     mut ev_message: EventWriter<MessageEvent>,   //NEW MESSAGE EVENT SYSTEM v0.15.2
-    dead_q: Query<(Entity, &IsDead)>
+    dead_q: Query<(&IsDead, Option<&Player>)>
 ){
-    for (entity, _death) in dead_q.iter() {
-        if let Ok(_is_player) = player_q.get(entity) {  
+    for (_death, is_player) in dead_q.iter() {
+        if is_player.is_some() {  
             ev_message.send(MessageEvent(Box::new(GameOverMessage)));
         }
-        //commands.entity(entity).despawn();
     }
 }
 
@@ -169,9 +166,11 @@ pub fn combat_start(
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
 fn combat_turn_start(
+    // Obligé d'avoir ses 3 queues à cause de npc_query.iter() qui ajoute les entités presentes dans npc_query dans la queue.
     mut action_query: Query<(Entity, &mut ActionPoints)>,
     npc_query: Query<Entity, (With<ActionPoints>, Without<Player>)>,
     player_query: Query<Entity, (With<ActionPoints>, With<Player>)>,
+ 
     mut queue: ResMut<CombatTurnQueue>,
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,  
