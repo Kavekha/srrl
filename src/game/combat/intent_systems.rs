@@ -13,38 +13,9 @@ use crate::{
     }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int
 };
 
-use super::events::WantToHitEvent;
-use super::{
-    components::ActionPoints, events::{
-        EntityEndTurnEvent, RefreshActionCostEvent, Turn
-    }, rules::consume_actionpoints
-};
+use super::{components::WantToForfeit, events::WantToHitEvent};
+use super::{ components::ActionPoints, events::{ RefreshActionCostEvent, Turn }, rules::consume_actionpoints };
 
-
-/// Gestion de l'action de forfeit.
-pub fn action_entity_end_turn(
-    mut ev_endturn: EventReader<EntityEndTurnEvent>,
-    mut query_character_turn: Query<(Entity, &mut ActionPoints, Option<&Player>), With<Turn>>,
-    mut ev_interface: EventWriter<ReloadUiEvent>,  
-    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    mut ev_log: EventWriter<LogEvent>
-) {
-    //println!("action entity forfeit turn");
-    for event in ev_endturn.read() {
-        //L'entité n'a pas de Action points / Pas son tour, on ignore.
-        let Ok(entity_infos) = query_character_turn.get_mut(event.entity) else { continue };
-        let (_entity, mut action_points, is_player) = entity_infos;
-
-        let lost_value = action_points.max.saturating_add(0);
-        consume_actionpoints(&mut action_points, lost_value);
-        
-        if is_player.is_some() {
-            ev_interface.send(ReloadUiEvent);
-            ev_refresh_action.send(RefreshActionCostEvent);
-            ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
-        }
-    }
-}
 
 // 0.19b Ranged + Refacto.  // 0.19c TOCHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.
 pub fn on_event_entity_want_hit(
@@ -58,6 +29,31 @@ pub fn on_event_entity_want_hit(
             target: event.target
         };
         commands.entity(event.source).insert(want_hit);
+    }
+}
+
+
+pub fn entity_want_forfeit(
+    mut commands: Commands,
+    mut entity_actions_q: Query<(Entity, &mut ActionPoints, Option<&Player>), (With<Turn>, With<WantToForfeit>)>,
+    mut ev_interface: EventWriter<ReloadUiEvent>,  
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
+    mut ev_log: EventWriter<LogEvent>
+) {
+    let mut to_remove = Vec::new();
+    for (entity, mut action_points, is_player) in entity_actions_q.iter_mut() {
+        let lost_value = action_points.max.saturating_add(0);
+        consume_actionpoints(&mut action_points, lost_value);
+        to_remove.push(entity);
+        
+        if is_player.is_some() {
+            ev_interface.send(ReloadUiEvent);
+            ev_refresh_action.send(RefreshActionCostEvent);
+            ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
+        }
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<WantToForfeit>();
     }
 }
 

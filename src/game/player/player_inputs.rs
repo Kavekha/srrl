@@ -1,6 +1,6 @@
-use bevy::{prelude::*, input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}};
+use bevy::{input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}, prelude::*};
 
-use crate::{game::{combat::{action_infos::ActionInfos, components::AttackType, events::{EntityEndTurnEvent, RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
+use crate::{game::{combat::{action_infos::ActionInfos, components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
     manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
     menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}}, menu_builders::ScrollingList};
 
@@ -64,8 +64,8 @@ pub fn ig_inside_menu_input(
 
 /// Les events du Joueur.
 pub fn combat_input(
+    mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,  
     player_query: Query<Entity, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
     action_infos: ResMut<ActionInfos>,  // Contient le type d'attaque utilisé..
@@ -77,7 +77,8 @@ pub fn combat_input(
     if keys.just_pressed(KeyCode::KeyT) {
         let Ok(result) = player_query.get_single() else { return };     // TODO si on conserve action_infos, utiliser l'entité de ActionInfos?
         let entity = result;    //result.0 autrefois
-        ev_endturn.send(EntityEndTurnEvent {entity});
+        commands.entity(entity).insert(WantToForfeit { entity});
+        //ev_endturn.send(EntityEndTurnEvent {entity});
         println!("Player asked for End of round for {:?}.", entity);
     }
     if buttons.just_released(MouseButton::Left) {

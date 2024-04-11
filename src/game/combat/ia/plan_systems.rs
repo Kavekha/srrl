@@ -2,8 +2,8 @@ use bevy::prelude::*;
 
 use crate::{game::
     {combat::{
-        components::{ActionPoints, AttackType, IsDead, WantToHit}, 
-        events::{EntityEndTurnEvent, Turn}, 
+        components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
+        events::Turn, 
         ia::components::PlanMove, 
         rules::{AP_COST_MELEE, AP_COST_RANGED, NPC_RANGED_ATTACK_RANGE_MAX}, 
     }, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Melee, Npc, Occupier, Ranged, Walk}, tileboard::components::BoardPosition 
@@ -186,13 +186,12 @@ pub fn npc_ia_plan_approaching(
 pub fn npc_ai_plan_forfeit(
     mut commands: Commands,
     npc_entity_fighter_q: Query<(Entity, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    mut ev_endturn: EventWriter<EntityEndTurnEvent>,
 ) {
     let mut to_remove = Vec::new();
     for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
         to_remove.push(npc_entity);
         println!("NPC {:?} n'a rien a faire.", npc_entity);
-        ev_endturn.send(EntityEndTurnEvent {entity : npc_entity});
+        commands.entity(npc_entity).insert(WantToForfeit { entity: npc_entity});
     }
     for entity in to_remove {
         commands.entity(entity).remove::<Planning>();

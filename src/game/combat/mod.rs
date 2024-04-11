@@ -51,7 +51,7 @@ pub mod events;
 pub mod action_infos;
 pub mod rules;
 mod ia;
-mod event_systems;
+mod intent_systems;
 
 
 
@@ -62,8 +62,8 @@ use crate::{engine::animations::events::GraphicsWaitEvent, game::{
 use self::{
     action_infos::{update_action_infos, ActionInfos}, 
     components::{CurrentEntityTurnQueue, IsDead}, 
-    event_systems::{action_entity_end_turn, entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_hit, on_event_entity_want_hit}, 
-    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, EntityEndTurnEvent, RefreshActionCostEvent, TickEvent, Turn}, 
+    intent_systems::{entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_forfeit, entity_want_hit, on_event_entity_want_hit}, 
+    events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
     ia::{components::{CheckGoal, Frozen}, IaPlugin}
 };
 use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::ReloadUiEvent};
@@ -75,6 +75,7 @@ impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_plugins(IaPlugin)
+
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
             .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None, attack: None })
@@ -84,8 +85,6 @@ impl Plugin for CombatPlugin {
             .add_event::<CombatTurnEndEvent>()          // Envoyé quand plus aucun acteur dans la Queue du Tour de Combat.
             .add_event::<RefreshActionCostEvent>()              // Recalcule le cout d'une action / deplacement.
             .add_event::<TickEvent>()                           // De retour en 0.19j : Donne le rythme en recheckant où en sont les acteurs du combat.
-
-            .add_event::<EntityEndTurnEvent>()         // Envoyé par l'Entité qui mets volontairement fin à son tour.   
   
             .configure_sets(Update, CombatSet::Logic)      
             .configure_sets(Update, CombatSet::Tick.after(CombatSet::Logic))
@@ -100,8 +99,7 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()).after(combat_turn_start).in_set(CombatSet::Logic))
             // toutes les entités ont fait leur tour.
             .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
-            .add_systems(Update, combat_clean_death.after(combat_turn_end).in_set(CombatSet::Logic))            
-            .add_systems(Update, action_entity_end_turn.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
+            .add_systems(Update, combat_clean_death.after(combat_turn_end).in_set(CombatSet::Logic))         
 
             // 0.19b back to component. 
             .add_systems(Update, on_event_entity_want_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) 
@@ -109,11 +107,11 @@ impl Plugin for CombatPlugin {
             .add_systems(Update, entity_try_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_want_hit))
             .add_systems(Update, entity_miss_attack.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_try_hit))
             .add_systems(Update, entity_get_hit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_try_hit))
-            .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_get_hit))
+            .add_systems(Update, entity_dies.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(entity_get_hit))               
+            .add_systems(Update, entity_want_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
   
             // Check de la situation PA-wise. Mise à jour.
             .add_systems(Update, tick.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
-            //.add_systems(Update, combat_turn_entity_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick)) //was Logic, mit dans Tick. v0.19h
             .add_systems(Update, combat_turn_entity_check.run_if(on_event::<TickEvent>())) //was Logic, mit dans Tick. v0.19h
             .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick))
 

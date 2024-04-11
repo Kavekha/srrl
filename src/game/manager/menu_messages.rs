@@ -56,7 +56,7 @@ impl Message for MainMenuOpenMessage {
         }
         menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
         menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
-        menu.add(MenuItem::footer( &format!("{RELEASE} - {VERSION} - ")));
+        menu.add(MenuItem::footer( &format!("{RELEASE} - {VERSION}")));
 
         world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
         world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
