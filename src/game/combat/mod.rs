@@ -118,9 +118,9 @@ impl Plugin for CombatPlugin {
            .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()))
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
-           // toutes les entités ont fait leur tour.
-            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).before(combat_turn_start))
-            //.add_systems(Last, combat_player_death.after(combat_turn_end).in_set(CombatSet::Logic))         
+           // toutes les entités ont fait leur tour.   
+           //debug: .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).before(combat_turn_start).after(combat_turn_next_entity))
+           .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))      
               // Check de la situation PA-wise. Mise à jour.
             .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
             .add_systems(Update, tick.in_set(CombatSet::Logic))
@@ -235,7 +235,7 @@ fn combat_turn_next_entity(
         commands.entity(entity).insert(CheckGoal);    
     };
     ev_refresh_ap.send(RefreshActionCostEvent);
-
+ 
     info!("combat_turn_next_entity: finished for {:?}.", entity)
 }
 
@@ -246,15 +246,21 @@ fn combat_turn_end(
     dead_q: Query<(&IsDead, Option<&Player>)>
 ){
     info!("Combat turn End: executed."); 
+    let mut player_dead = false;
     for (_death, is_player) in dead_q.iter() {
         if is_player.is_some() {  
             info!("Player is dead, Game Over.");
-            ev_message.send(MessageEvent(Box::new(GameOverMessage)));
+            player_dead = true;
         }
+    }
+    if player_dead {
+        ev_message.send(MessageEvent(Box::new(GameOverMessage)));
+        return
     }
     queue.0.clear();
     ev_newturn.send(CombatTurnStartEvent);
     info!("Combat turn End: Send event CombatTurnStartEvent.");    
+
 }
 
 /// 0.19j c'est cette fonction qui donne le rythme ! REMEMBER => Elle est très importante.
