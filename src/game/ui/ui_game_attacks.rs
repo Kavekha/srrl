@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::combat::{action_infos::ActionInfos, components::AttackType}};
+use crate::{engine::asset_loaders::GraphicsAssets, game::combat::{action_infos::ActionInfos, combat_system::components::AttackType}};
 
 use super::{components::{UiAttackIcon, UiGameInterface, UiMainWindow}, ReloadUiEvent, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE};
 

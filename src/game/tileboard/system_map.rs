@@ -19,6 +19,7 @@ pub struct MapInfos{
 // Créer une Map via le Builder. Retourne les elements necessaires au placement des NPC & etc.
 
 pub fn create_map(world: &mut World) -> MapInfos {
+    info!("CreateMapMessage: Building Map.");
     println!("CreateMapMessage: Building Map.");
         let mut builder = random_builder();
         builder.build_map();        

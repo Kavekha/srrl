@@ -1,11 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{game::
-    {combat::{
-        components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
-        events::Turn, 
-        ia::components::PlanMove, 
-        rules::{AP_COST_MELEE, AP_COST_RANGED, NPC_RANGED_ATTACK_RANGE_MAX}, 
+    {combat::{ 
+        combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, events::Turn, ia::components::PlanMove, rules::{AP_COST_MELEE, AP_COST_RANGED, NPC_RANGED_ATTACK_RANGE_MAX} 
     }, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Melee, Npc, Occupier, Ranged, Walk}, tileboard::components::BoardPosition 
     },
     map_builders::map::Map, 

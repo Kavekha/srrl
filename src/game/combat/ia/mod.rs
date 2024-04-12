@@ -46,8 +46,8 @@ let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap()
 use bevy::prelude::*;
 
 use crate::game::{combat::{ia::components::Frozen, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN}, pieces::components::Npc, player::Player, states::GameState, tileboard::components::BoardPosition};
-use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
-use super::{components::IsDead, events::Turn, CombatSet};
+use self::{components::CheckGoal, goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
+use super::{combat_system::components::IsDead, events::Turn, ActionSet};
 
 mod goal_systems;
 pub mod components;
@@ -64,14 +64,15 @@ impl Plugin for IaPlugin {
 
             // L'ordre doit être respecté, car dés qu'on trouve une action faisable on ne fait pas les autres. La toute dernière doit être forfeit.
             //TODO : Choix doit être fait en amont?
-            .add_systems(Update, ignore_npc_out_of_game_range.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic))
-            .add_systems(Update, npc_goal_reached.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).before(npc_ia_plan_when_adjacent))
-            .add_systems(Update, npc_ia_plan_when_adjacent.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
-            .add_systems(Update, npc_ia_plan_when_in_range.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))            
-            .add_systems(Update, npc_ia_plan_on_view.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_goal_reached))
-            .add_systems(Update, npc_ia_plan_approaching.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_on_view))
-            .add_systems(Update, npc_ai_plan_forfeit.run_if(in_state(GameState::Running)).in_set(CombatSet::Logic).after(npc_ia_plan_approaching))
-
+            .add_systems(Update, (
+                ignore_npc_out_of_game_range, 
+                npc_goal_reached,           
+                npc_ia_plan_when_adjacent,  
+                npc_ia_plan_when_in_range,
+                npc_ia_plan_on_view,
+                npc_ia_plan_approaching,
+                npc_ai_plan_forfeit
+            ).chain().in_set(ActionSet::Planning))
             //.add_systems(Update, npc_plan_check_surroundings.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))    
         ;
     }
@@ -79,7 +80,7 @@ impl Plugin for IaPlugin {
 
 fn ignore_npc_out_of_game_range(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<Turn>, With<CheckGoal>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>, 
     player_q: Query<Entity, With<Player>>,
     //mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?

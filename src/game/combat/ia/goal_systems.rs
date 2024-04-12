@@ -5,7 +5,7 @@
 use bevy::prelude::*;
 
 
-use crate::game::{combat::{components::IsDead, events::Turn, ia::components::{Goal, GoalType, Planning}}, pieces::components::Npc, player::Player};
+use crate::game::{combat::{combat_system::components::{IsDead, WantToForfeit}, events::Turn, ia::components::{Goal, GoalType, Planning}}, pieces::components::Npc, player::Player};
 
 use super::components::CheckGoal;
 
@@ -36,10 +36,10 @@ pub fn npc_goal_reached(
         match npc_goal.id {
             GoalType::KillEntity{id} => {
                 if let Ok(_entity_dead) = entity_killed_q.get(id) {
-                    //println!("Goal {:?} for NPC {:?} is resolved.", npc_goal.id, npc_entity);
+                    println!("Goal {:?} for NPC {:?} is resolved.", npc_goal.id, npc_entity);
                     // Ici on retire le Planning car on a un seul goal. 
                     to_remove.push(npc_entity);
-                    
+                    commands.entity(npc_entity).insert(WantToForfeit);                      
                 } else {
                     commands.entity(npc_entity).insert(Planning);
                     //println!("Goal {:?} for NPC {:?} is still not true and need to be accomplished.", npc_goal.id, npc_entity);                    

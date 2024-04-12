@@ -1,4 +1,4 @@
-use bevy::ecs::world::World;
+use bevy::{ecs::world::World, log::info};
 
 use crate::{
     game::{clean_game_screen, combat::combat_start, gamelog::Gamelog, manager::{
@@ -13,6 +13,7 @@ pub struct StartGameMessage;
 
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
+        info!("==== START GAME ===");
         println!("==== START GAME ===");
         let map_infos = create_map(world);
         create_player(world, map_infos.starting_position);
@@ -24,8 +25,6 @@ impl Message for StartGameMessage {
         world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
         world.send_event(MessageEvent(Box::new(GamelogClearMessage)));  
-
-
     }
 }
 
@@ -86,6 +85,7 @@ impl Message for ClearGameMessage {
 pub struct StartCombatMessage;
 impl Message for StartCombatMessage {
     fn execute(&self, world: &mut World) {
+        info!("StartCombatMessage executed");
         let start_combat = world.register_system(combat_start);
         let _result = world.run_system(start_combat);
         //world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"combat".to_string()})));  
