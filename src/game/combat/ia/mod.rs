@@ -46,7 +46,7 @@ let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap()
 use bevy::prelude::*;
 
 use crate::game::{combat::{ia::components::Frozen, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN}, pieces::components::Npc, player::Player, states::GameState, tileboard::components::BoardPosition};
-use self::{goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
+use self::{components::CheckGoal, goal_systems::{ npc_goal_reached, npc_initialise_goals}, plan_systems::{npc_ai_plan_forfeit, npc_ia_plan_approaching, npc_ia_plan_on_view, npc_ia_plan_when_adjacent, npc_ia_plan_when_in_range}};
 use super::{combat_system::components::IsDead, events::Turn, ActionSet};
 
 mod goal_systems;
@@ -80,7 +80,7 @@ impl Plugin for IaPlugin {
 
 fn ignore_npc_out_of_game_range(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<Turn>, With<CheckGoal>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>, 
     player_q: Query<Entity, With<Player>>,
     //mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
