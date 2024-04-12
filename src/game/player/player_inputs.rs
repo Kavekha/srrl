@@ -1,6 +1,6 @@
 use bevy::{input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}, prelude::*};
 
-use crate::{game::{combat::{action_infos::ActionInfos, components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
+use crate::{game::{combat::{action_infos::ActionInfos, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
     manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
     menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}}, menu_builders::ScrollingList};
 

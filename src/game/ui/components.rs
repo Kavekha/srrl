@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::game::combat::components::AttackType;
+use crate::game::combat::combat_system::components::AttackType;
 
 
 // Toute UI in Game utilise ce tag.

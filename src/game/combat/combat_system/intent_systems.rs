@@ -2,19 +2,11 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{
-    commons::get_world_position, engine::{
-        animations::events::{AnimateEvent, EffectEvent}, 
-        asset_loaders::graphic_resources::GraphicsAssets, 
-        audios::SoundEvent,
-    }, game::{
-        combat::{components::{AttackType, Die, GetHit, IsDead, MissHit, TryHit, WantToHit},
-        rules::{combat_test, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX }}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Occupier, Stats}, player::Player, tileboard::components::BoardPosition, ui::ReloadUiEvent
-    }, globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int
-};
+use crate::{commons::get_world_position, engine::{animations::events::{AnimateEvent, EffectEvent}, asset_loaders::GraphicsAssets, audios::SoundEvent}, game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Occupier, Stats}, player::Player, tileboard::components::BoardPosition, ui::ReloadUiEvent}, globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
 
-use super::{components::WantToForfeit, events::WantToHitEvent};
-use super::{ components::ActionPoints, events::{ RefreshActionCostEvent, Turn }, rules::consume_actionpoints };
+use super::components::{ActionPoints, AttackType, Die, IsDead, TryHit, WantToForfeit, WantToHit};
+
+
 
 
 // 0.19b Ranged + Refacto.  // 0.19c TOCHANGE : Encore degueu car on a un Event qui vient du ranged... On s'en sort pas.

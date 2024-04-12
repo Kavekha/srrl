@@ -9,7 +9,7 @@ use bevy::prelude::*;
 
 use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{ components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
+use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
 
 
 

@@ -5,7 +5,7 @@
 use bevy::prelude::*;
 
 
-use crate::game::{combat::{components::IsDead, events::Turn, ia::components::{Goal, GoalType, Planning}}, pieces::components::Npc, player::Player};
+use crate::game::{combat::{combat_system::components::IsDead, events::Turn, ia::components::{Goal, GoalType, Planning}}, pieces::components::Npc, player::Player};
 
 use super::components::CheckGoal;
 

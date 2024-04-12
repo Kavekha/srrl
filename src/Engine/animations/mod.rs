@@ -33,8 +33,8 @@ impl Plugin for AnimationsPlugin {
             .add_systems(Update, walk_animation)
             .add_systems(Update, path_animator_update.in_set(CombatSet::Animation))   // 3 fois le system => 3 fois plus vite. lol.
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))  
-            .add_systems(Update, update_game_cursor)     
-            .add_systems(Update, animate_sprite)
+            .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))     
+            .add_systems(Update, animate_sprite.in_set(CombatSet::Animation))
             .add_systems(Update, spawn_hit_effect.run_if(on_event::<EffectEvent>()))
             .add_systems(Update, clean_animations)
             ;

@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::ActionInfos, components::AttackType}, player::Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
+        combat::{action_infos::ActionInfos, combat_system::components::AttackType}, player::Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
     }, 
     globals::CHAR_SIZE
 };
