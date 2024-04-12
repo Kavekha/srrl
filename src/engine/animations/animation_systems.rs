@@ -3,9 +3,14 @@ use std::collections::VecDeque;
 
 use bevy::{prelude::*, utils::HashMap};
 
-use crate::{commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, asset_loaders::GraphicsAssets, render::components::GameCursorRender}, game::player::Cursor, globals::{BASE_SPEED, CURSOR_SPEED, ORDER_CURSOR, ORDER_EFFECT, POSITION_TOLERANCE, SPEED_MULTIPLIER}};
+use crate::{
+    commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, 
+    asset_loaders::GraphicsAssets, render::components::GameCursorRender}, 
+    game::{player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, BASE_TIME_FRAME_EFFECT, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals::{ ORDER_CURSOR, ORDER_EFFECT}};
 
 use super::events::{AnimateEvent, EffectEvent, GraphicsWaitEvent, PathAnimator};
+
+
 
 // Ne fonctionne que pour un cas pour le moment. Rendre configurable via l'Event à l'origine du spawn effect
 pub fn spawn_hit_effect(
@@ -15,7 +20,7 @@ pub fn spawn_hit_effect(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     for event in ev_spawn_effect.read() {
-        println!("Creating effect");
+        //println!("Creating effect");
         let texture = graph_assets.effects[event.id.as_str()].clone();
         let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 3, 1, None, None);
         let texture_atlas_layout = texture_atlas_layouts.add(layout);
@@ -37,11 +42,13 @@ pub fn spawn_hit_effect(
                 index: animation_indices.first,
             },
             animation_indices,
-            AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)), // Repeating car on passe par autant d'etapes que d'images.
+            AnimationTimer(Timer::from_seconds(BASE_TIME_FRAME_EFFECT, TimerMode::Repeating)), // Repeating car on passe par autant d'etapes que d'images.
         ));
     }
 }
 
+
+// Declenché par AnimateEvent
 pub fn walk_animation(    
     mut commands: Commands,
     mut ev_animate: EventReader<AnimateEvent>,
@@ -54,7 +61,7 @@ pub fn walk_animation(
         while !ev.path.is_empty() {
             let step = path.pop_front();
             let Some(current_step) = step else { break };
-            let world_position = get_world_position(&current_step);        //TODO Est ce qu'un calcul de position Render doit etre là? Bof.
+            let world_position = get_world_position(&current_step); 
             let target = Vec3::new(world_position.0, world_position.1, 2.0);
             path_animation.push_back(target);
         }
@@ -90,7 +97,7 @@ pub fn path_animator_update(
         if destination.length() > POSITION_TOLERANCE {
             transform.translation = transform.translation.lerp(
                 target,
-                BASE_SPEED * SPEED_MULTIPLIER * time.delta_seconds()
+                BASE_SPEED_PATH_ANIMATOR_UPDATE * SPEED_MULTIPLIER * time.delta_seconds()
             );
         } else {
             // the entity is at the desired path position

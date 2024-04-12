@@ -20,7 +20,7 @@ pub fn npc_initialise_goals(
     let Ok(player_entity) = entity_player_q.get_single() else { println!("WARNING: No player found for initialise goals"); return;};
     for npc_entity in entity_npc_q.iter() {
         commands.entity(npc_entity).insert(Goal { id: GoalType::KillEntity { id: player_entity}});
-        println!("Kill Goal initialized for NPC {:?}", npc_entity);
+        //println!("Kill Goal initialized for NPC {:?}", npc_entity);
     }
 }
 
@@ -36,13 +36,13 @@ pub fn npc_goal_reached(
         match npc_goal.id {
             GoalType::KillEntity{id} => {
                 if let Ok(_entity_dead) = entity_killed_q.get(id) {
-                    println!("Goal {:?} for NPC {:?} is resolved.", npc_goal.id, npc_entity);
+                    //println!("Goal {:?} for NPC {:?} is resolved.", npc_goal.id, npc_entity);
                     // Ici on retire le Planning car on a un seul goal. 
                     to_remove.push(npc_entity);
                     
                 } else {
                     commands.entity(npc_entity).insert(Planning);
-                    println!("Goal {:?} for NPC {:?} is still not true and need to be accomplished.", npc_goal.id, npc_entity);                    
+                    //println!("Goal {:?} for NPC {:?} is still not true and need to be accomplished.", npc_goal.id, npc_entity);                    
                 }
             },
             GoalType::None => {}

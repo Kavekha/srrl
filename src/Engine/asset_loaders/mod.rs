@@ -43,7 +43,7 @@ fn load_assets(
     let mut images = HashMap::new();
     for image_name in IMAGES {
         let handle:Handle<Image> = asset_server.load(format!("images/{}.png", image_name));
-        println!("Debug: image handle is : {:?} for {}", handle.clone(), image_name);
+        //println!("Debug: image handle is : {:?} for {}", handle.clone(), image_name);
         images.insert(image_name, handle);
     }
 

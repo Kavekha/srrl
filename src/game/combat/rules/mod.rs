@@ -79,7 +79,7 @@ pub fn combat_test(
             }              
         }
     }
-    println!("Combat test: Result is : success {}, dmg {}", success, dmg);
+    //println!("Combat test: Result is : success {}, dmg {}", success, dmg);
     return RuleCombatResult { success:success, dmg: dmg }
 }
 
@@ -109,12 +109,12 @@ pub fn roll_dices_against(
 ) -> DiceRollResult {
     let mut user_result = roll_dices(user);
     let against_result = roll_dices(against);
-    println!("roll_dices_against: User: {:?}", (user_result.success, user_result.fail, user_result.glitch));
-    println!("roll_dices_against: Against: {:?}", (against_result.success, against_result.fail, against_result.glitch));
+    //println!("roll_dices_against: User: {:?}", (user_result.success, user_result.fail, user_result.glitch));
+    //println!("roll_dices_against: Against: {:?}", (against_result.success, against_result.fail, against_result.glitch));
 
     user_result.success = user_result.success.saturating_sub(against_result.success);   //on retire les succès du Defendeur / difficulté. REMEMBER: saturating_sub => Ne depasse pas la limite, qui est de 0 en u32.
     //user_result.fail = user_result.fail.saturating_add(against_result.success);   // On s'en fout des fails.
-    println!("roll_dices_against: Final User Result: {:?}", user_result.success);
+    //println!("roll_dices_against: Final User Result: {:?}", user_result.success);
     user_result
 }
 

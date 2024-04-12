@@ -155,7 +155,7 @@ pub fn combat_start(
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
         commands.entity(fighter_id).insert(ActionPoints {max: 10, current: 0});
-        println!("Action points added for {:?}", fighter_id);
+        //println!("Action points added for {:?}", fighter_id);
     }
     commands.insert_resource(CombatInfos {turn: 0, current_entity: None});
     //combat_state.set(CombatState::StartTurn);
@@ -192,7 +192,7 @@ fn combat_turn_start(
     if let Ok(player) = player_query.get_single() {
         queue.0.insert(0, player);
     }
-    println!("Combat turn queue has {:?} messages.", queue.0.len());
+    //println!("Combat turn queue has {:?} messages.", queue.0.len());
 
     // On lance le TurnNextEntity pour faire jouer le premier de la Queue.
     println!("Sending Next Entity");
@@ -212,7 +212,7 @@ fn combat_turn_next_entity(
 ) {
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
-        println!("Combat Turn Next Entity: Plus de combattants dans la Queue.");        
+        //println!("Combat Turn Next Entity: Plus de combattants dans la Queue.");        
         ev_turn_end.send(CombatTurnEndEvent);
         return;
     };

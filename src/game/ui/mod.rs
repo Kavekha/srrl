@@ -86,8 +86,8 @@ impl Plugin for UiPlugin {
         app
             .add_event::<ReloadUiEvent>()
 
-            .add_systems(OnEnter(GameState::Initialise), display_interface)
-            .add_systems(OnEnter(GameState::Initialise), draw_ui_main_window)
+            .add_systems(OnEnter(GameState::Running), display_interface)
+            .add_systems(OnEnter(GameState::Running), draw_ui_main_window)
 
             // TODO : Doit pouvoir se melanger en une seule fonction avec le Nextstate...
             .add_systems(OnEnter(GameState::Initialise), windows_mouse_desactivate)
@@ -97,11 +97,11 @@ impl Plugin for UiPlugin {
 
             // Refacto 0.19f : Nouveau fonctionnement UI.
             // Character UI
-            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
+            .add_systems(OnEnter(GameState::Running), draw_ui_game_character_infos.after(draw_ui_main_window))  // On lance dés le debut.
             .add_systems(Update, update_ui_character_health.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             .add_systems(Update, update_ui_character_action_points.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             // Attacks
-            .add_systems(OnEnter(GameState::Initialise), draw_ui_game_attack_icons.after(draw_ui_main_window))       
+            .add_systems(OnEnter(GameState::Running), draw_ui_game_attack_icons.after(draw_ui_main_window))       
             .add_systems(Update, update_ui_game_attack_icons.run_if(on_event::<ReloadUiEvent>()).run_if(in_state(GameState::Running)))
             // Cursor UI
             .add_systems(OnEnter(GameState::Running), draw_ui_cursor_action_points)  //.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick).after(update_action_infos))

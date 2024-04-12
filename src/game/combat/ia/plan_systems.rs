@@ -32,17 +32,17 @@ pub fn npc_ia_plan_when_adjacent(
                 let mut is_melee_position = false;
                 let Ok(target_position) = position_q.get(id) else { continue; };
                 if (target_position.v.x - npc_position.v.x).abs() < 2 && (target_position.v.y - npc_position.v.y).abs() < 2 {
-                    println!("NPC {:?} est coté de sa cible.", npc_entity);
+                    //println!("NPC {:?} est coté de sa cible.", npc_entity);
                     is_melee_position = true;
                 } 
                 // Ici on check si on veut taper ou non.
                 if is_melee_position {
                     if npc_ap.current >= AP_COST_MELEE {
                         commands.entity(npc_entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
-                        println!("NPC {:?} is at position {:?} and their target is at {:?}. AP are OK so they wan't to HIT in MELEE.", npc_entity, npc_position.v, target_position.v);
+                        //println!("NPC {:?} is at position {:?} and their target is at {:?}. AP are OK so they wan't to HIT in MELEE.", npc_entity, npc_position.v, target_position.v);
                         to_remove.push(npc_entity); // On retire puisque le choix est OK.
                     } else {
-                        println!("NPC {:?} n'a pas les AP pour attaquer sa cible.", npc_entity);
+                        //println!("NPC {:?} n'a pas les AP pour attaquer sa cible.", npc_entity);
                     }
                 }
             },
@@ -64,25 +64,25 @@ pub fn npc_ia_plan_when_in_range(
 ){
     let mut to_remove = Vec::new();
     for (npc_entity, npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-        println!("NPC {:?} reflechit s'il doit ou peut utiliser une attaque Ranged.", npc_entity);
+        //println!("NPC {:?} reflechit s'il doit ou peut utiliser une attaque Ranged.", npc_entity);
         match npc_goal.id {
             GoalType::KillEntity { id } => {
                 if npc_ap.current < AP_COST_RANGED {  //AP_COST_MOVE {
-                    println!("NPC {:?} n'a pas les AP tirer.", npc_entity);
+                    //println!("NPC {:?} n'a pas les AP tirer.", npc_entity);
                     continue;
                 };
 
                 // In view?
                 let Ok(target_position) = position_q.get(id) else { 
-                    println!("No position found for player. NPC can't check for target.");
+                    //println!("No position found for player. NPC can't check for target.");
                     continue;
                 }; 
                 if let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_RANGED_ATTACK_RANGE_MAX) {
-                    println!("NPC {:?} peut tirer sur sa victime {:?}.", npc_entity, id);
+                    //println!("NPC {:?} peut tirer sur sa victime {:?}.", npc_entity, id);
                     commands.entity(npc_entity).insert(WantToHit { mode: AttackType::RANGED, target: target_position.v });
                     to_remove.push(npc_entity);
                 };
-                println!("NPC {:?} a fini de reflechir à Ranged Attack et passe à autre chose.", npc_entity);
+                //println!("NPC {:?} a fini de reflechir à Ranged Attack et passe à autre chose.", npc_entity);
             },
             GoalType::None => {},
         };
@@ -116,12 +116,12 @@ pub fn npc_ia_plan_on_view(
                 //      - Avoir un retour dans les WantTo pour sortir le NPC en cas de galere?
                 //      - Pouvoir avoir le pathfinding sans aller sur la dernière case. Remove de la derniere etape à chaque fois?
                 if npc_ap.current < AP_COST_MELEE {  //AP_COST_MOVE {
-                    println!("NPC {:?} n'a pas les AP pour se deplacer.", npc_entity);
+                    //println!("NPC {:?} n'a pas les AP pour se deplacer.", npc_entity);
                     continue;
                 };
 
                 let Ok(target_position) = position_q.get(id) else { 
-                    println!("No position found for player. NPC can't check for target.");
+                    //println!("No position found for player. NPC can't check for target.");
                     continue;
                 }; 
 
@@ -167,11 +167,11 @@ pub fn npc_ia_plan_approaching(
         );
         
         if let Some(path) = path_to_destination {
-            println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
+            //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
             commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(npc_plan.destination)});    
             to_remove_planning.push(npc_entity);
         } else {
-            println!("Pas de chemin pour moi.");
+            //println!("Pas de chemin pour moi.");
         }
         // Retrait du PlanMove sinon on ne refait plus le check View.   // REMINDER: C'etait très cool !
         to_remove_plan_move.push(npc_entity);
@@ -192,7 +192,7 @@ pub fn npc_ai_plan_forfeit(
     let mut to_remove = Vec::new();
     for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
         to_remove.push(npc_entity);
-        println!("NPC {:?} n'a rien a faire.", npc_entity);
+        //println!("NPC {:?} n'a rien a faire.", npc_entity);
         commands.entity(npc_entity).insert(WantToForfeit);
     }
     for entity in to_remove {

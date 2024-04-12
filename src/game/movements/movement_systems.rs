@@ -35,12 +35,12 @@ pub fn entity_want_to_move(
 ){
     let mut to_remove = Vec::new();
     for (entity, want_move) in want_move_q.iter() {
-        println!("{:?} Want To Move.", entity);
+        //println!("{:?} Want To Move.", entity);
         to_remove.push(entity);
 
         let Ok(action_points) = actions_q.get(entity) else { continue };
         if action_points.current < AP_COST_MOVE {
-            println!("NPC {:?} wanted to move but doesnt have the AP.", entity);
+            //println!("NPC {:?} wanted to move but doesnt have the AP.", entity);
              continue };
 
         // Target check
@@ -48,7 +48,7 @@ pub fn entity_want_to_move(
         if let Some(current_target) = want_move.target {
             if current_target == * destination {
                 if action_points.current < AP_COST_MELEE { continue };
-                println!("J'attaque ma cible!!!");
+                //println!("J'attaque ma cible!!!");
                 //ev_try_attack.send( EntityHitTryEvent {entity: want_move.entity, target: current_target});
                 commands.entity(want_move.entity).insert(WantToHit { mode: AttackType::MELEE, target: destination.clone() });
                 continue

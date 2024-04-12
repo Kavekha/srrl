@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.20.a";
+pub const VERSION: &str = "0.20.b";
 pub const RELEASE: &str = "R0.4";
 
 // Min - Max VOLUME
@@ -62,10 +62,3 @@ pub const SPRITE_GHOUL_RANGED: &str = "ghoul_ranged";
 
 //SAVE
 pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";
-
-// Movement
-pub const POSITION_TOLERANCE: f32 = 0.01;
-pub const BASE_SPEED: f32 = 5.0;
-pub const SPEED_MULTIPLIER: f32 = 5.0;      // FAST debug / balance on speed movement.
-pub const CURSOR_SPEED: f32 = 20.0;
-
