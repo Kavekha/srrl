@@ -119,12 +119,12 @@ impl Plugin for CombatPlugin {
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
            // toutes les entités ont fait leur tour.
-            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).after(combat_turn_next_entity).in_set(CombatSet::Logic))
+            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))
             .add_systems(Update, combat_player_death.after(combat_turn_end).in_set(CombatSet::Logic))         
               // Check de la situation PA-wise. Mise à jour.
-            .add_systems(Update, combat_turn_entity_check.run_if(on_event::<TickEvent>()).in_set(CombatSet::Logic)) 
-            .add_systems(Update, tick.in_set(CombatSet::Tick))
-            .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()).in_set(CombatSet::Tick))
+            .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
+            .add_systems(Update, tick)
+            .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()))
             // TODO: Quitter le combat. PLACEHOLDER.
             .add_systems(OnEnter(GameState::Disabled), combat_end) 
             ;
@@ -220,7 +220,7 @@ fn combat_turn_start(
 fn combat_turn_next_entity(
     mut commands: Commands,
     mut queue: ResMut<CombatTurnQueue>,    
-    action_points_q: Query<(&ActionPoints, Option<&Npc>, Option<&Player>)>,
+    action_points_q: Query<(&ActionPoints, Option<&Npc>)>,
     mut ev_turn_end: EventWriter<CombatTurnEndEvent>,
     mut current_combat: ResMut<CombatInfos>,
     mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,  
@@ -236,7 +236,7 @@ fn combat_turn_next_entity(
     };
     // On récupère les informations de l'entité a tjrs des AP et existe tjrs sinon crash.
     let Ok(action_infos ) = action_points_q.get(entity) else { return };
-    let (_action_points, is_npc, is_player) = action_infos;
+    let (_action_points, is_npc) = action_infos;
 
     current_combat.current_entity = Some(entity);
     // On lui donne le composant "Turn".
@@ -246,9 +246,8 @@ fn combat_turn_next_entity(
     if is_npc.is_some() {
         commands.entity(entity).insert(CheckGoal);    
     };
-    if is_player.is_some() {
-        ev_refresh_ap.send(RefreshActionCostEvent);
-    }
+    ev_refresh_ap.send(RefreshActionCostEvent);
+
     info!("combat_turn_next_entity: finished.")
 }
 

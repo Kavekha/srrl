@@ -21,10 +21,12 @@ pub struct GraphicsPlugin;
 impl Plugin for GraphicsPlugin {
     fn build(&self, app: &mut App) {
         app    
-            .add_systems(OnEnter(GameState::Initialise), spawn_map_render)                  
-            .add_systems(OnEnter(GameState::Initialise), spawn_piece_renderer)
-            .add_systems(OnEnter(GameState::Initialise), spawn_game_cursor)     
-            .add_systems(OnEnter(GameState::Initialise), spawn_exit_render)    
+            .add_systems(OnEnter(GameState::Initialise), (
+                spawn_map_render, 
+                spawn_piece_renderer, 
+                spawn_game_cursor, 
+                spawn_exit_render
+            ))
             // La première camera.
             .add_systems(Startup, spawn_camera)    
             ;
