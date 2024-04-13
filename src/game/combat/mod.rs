@@ -196,7 +196,7 @@ fn combat_turn_start(
     if let Ok(player) = player_query.get_single() {
         queue.0.insert(0, player);
     }
-    println!("Combat turn queue has {:?} messages.", queue.0.len());
+    //info!("Combat turn queue has {:?} messages.", queue.0.len());
 
     // On lance le TurnNextEntity pour faire jouer le premier de la Queue.
     //info!("combat_turn_start send event for CombatTurnNextEntityEvent");

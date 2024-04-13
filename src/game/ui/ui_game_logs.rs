@@ -2,12 +2,12 @@ use bevy::prelude::*;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{despawn_component, gamelog::{Gamelog, LogEvent}}, 
+    game::gamelog::LogEvent, 
 };
 
 use super::{
     components::{ UiGameInterface, UiLog, UiLogLine}, 
-    INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, UI_LOG_LINE_FONT_SIZE, UI_LOG_LINE_MAX_DURATION_TIME
+    UI_LOG_LINE_FONT_SIZE, UI_LOG_LINE_MAX_DURATION_TIME
 };
 
 
@@ -23,7 +23,6 @@ pub fn update_ui_remove_old_lines(
         }  
     }
 }
-
 
 pub fn update_ui_new_lines(
     mut ev_log: EventReader<LogEvent>,

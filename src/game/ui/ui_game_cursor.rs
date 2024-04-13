@@ -77,12 +77,12 @@ pub fn update_ui_game_cursor_display_action_points(
 
 
 //https://bevyengine.org/examples/UI%20(User%20Interface)/viewport-debug/
+//https://bevyengine.org/examples/2D%20Rendering/2d-viewport-to-world/
 pub fn update_ui_game_cursor_position_action_points(
     mut ev_refresh_ui: EventReader<ReloadUiEvent>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     mut ap_cursor_style_q: Query<&mut Style, With<UiActionPointsOnCursor>>,
-    camera_q: Query<(&Camera, &GlobalTransform)>, 
-    query_game_cursor: Query<&mut Transform, With<GameCursorRender>>,
+    windows: Query<&Window>,    // 0.20e
 ){
     // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
@@ -92,39 +92,22 @@ pub fn update_ui_game_cursor_position_action_points(
     //println!("Je dois mettre à jour la position des AP à coté du curseur");
 
     for mut style in &mut ap_cursor_style_q {
-        //println!("J'ai un Style pour positionner mes AP à coté du curseur");
-        let (camera, camera_transform) = camera_q.single();
-        let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+        //let (camera, camera_transform) = camera_q.single();
+        //let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+        let Some(cursor_position) = windows.single().cursor_position() else {
+            return;
+        };
+        let left = cursor_position.x + (CHAR_SIZE as f32 / 2.0);
+        let top = cursor_position.y + (CHAR_SIZE as f32 / 2.0); 
+        let width = CHAR_SIZE as f32; 
+        let height = CHAR_SIZE as f32 / 2.0;
+        let grow = CHAR_SIZE as f32 * 2.0;
 
-        for transform in query_game_cursor.iter() {
-            //println!("J'ai un Transform de ma Query Game Cursor");
-
-            //==== On calcule à partir de la grille IG / Camera2d où placer l'UI.
-            // !!! Rassembler ce calcul avec celui utilisé dans ui_game_npc_infos pour afficher les HP enemis?
-            let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
-            //If not in screen, we don't display.
-            if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
-    
-            let left = screen_position.x + (CHAR_SIZE as f32 / 2.0);
-            let top = screen_position.y + (CHAR_SIZE as f32 / 2.0); 
-
-            let width = CHAR_SIZE as f32; 
-            let height = CHAR_SIZE as f32 / 2.0;
-
-            let grow = CHAR_SIZE as f32 * 2.0;
-
-            //println!("Before: {:?}, {:?}, {:?}, {:?}, {:?}", style.left, style.top, style.width, style.height, style.flex_grow);
-
-            style.left = Val::Px(left);
-            //right: Val::Px(right),
-            style.top = Val::Px(top);
-            //bottom: Val::Px(bottom),
-            style.width = Val::Px(width);
-            style.height = Val::Px(height);
-            style.flex_grow = grow;
-
-            //println!("After: {:?}, {:?}, {:?}, {:?}, {:?}", style.left, style.top, style.width, style.height, style.flex_grow);
-        }
+        style.left = Val::Px(left);
+        style.top = Val::Px(top);
+        style.width = Val::Px(width);
+        style.height = Val::Px(height);
+        style.flex_grow = grow;
     }
 }
 
