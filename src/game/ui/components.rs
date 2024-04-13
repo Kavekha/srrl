@@ -30,5 +30,5 @@ pub struct UiAttackIcon{
 pub struct UiMainWindow;
 
 
-#[derive(Component)]
-pub struct UiLogLine;
+#[derive(Component, Deref, DerefMut)]
+pub struct UiLogLine(pub Timer);

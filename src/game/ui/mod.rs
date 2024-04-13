@@ -85,9 +85,7 @@ const INTERFACE_HP_CHUNK_WIDTH: f32 = 8.;
 const INTERFACE_HP_CHUNK_MAX: u32 = 20;
 
 // Logs
-const UI_LOG_LINES_MAX: usize = 4;
-const UI_LOG_OLDER_LINE_DURATION_TIME: f32 = 2.0;
-const UI_LOG_LINE_MAX_DURATION_TIME: f32 = 6.0;
+const UI_LOG_LINE_MAX_DURATION_TIME: f32 = 4.0;
 
 
 pub struct UiPlugin;
