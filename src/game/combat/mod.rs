@@ -119,7 +119,6 @@ impl Plugin for CombatPlugin {
            // On prends l'entité dont c'est le tour. On passe en TurnUpdate
            .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
            // toutes les entités ont fait leur tour.   
-           //debug: .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()).before(combat_turn_start).after(combat_turn_next_entity))
            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))      
               // Check de la situation PA-wise. Mise à jour.
             .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
