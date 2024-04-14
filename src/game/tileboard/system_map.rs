@@ -37,7 +37,7 @@ pub fn create_map(world: &mut World) -> MapInfos {
         return map_infos
 }
 
-// Créer les entités necessaires à son affichage, à partir d'une map déja générée.
+// Créer les entités logiques à partir du BluePrint d'une map généré par le Builder.
 pub fn spawning_map(world:&mut World, map:&mut Map){
     println!("Let's spawn the map.");
     let mut tiles = HashMap::new();

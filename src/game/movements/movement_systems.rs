@@ -11,7 +11,7 @@ use crate::{game::{
     }, 
     movements::components::MoveTo, 
     player::{components::WantToMoveEvent, Player}, 
-    tileboard::components::BoardPosition, ui::events::ReloadUiEvent}, vectors::Vector2Int
+    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent}, vectors::Vector2Int
 };
 use crate::engine::animations::events::AnimateEvent;
 
@@ -85,6 +85,7 @@ pub fn entity_move_to(
     mut ev_interface: EventWriter<ReloadUiEvent>,
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
+    mut ev_compute_fov: EventWriter<ComputeFovEvent>,
 ){
     let mut to_remove = Vec::new();
     for (entity, movement) in move_q.iter() {
@@ -108,6 +109,7 @@ pub fn entity_move_to(
         //action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
+            ev_compute_fov.send(ComputeFovEvent);   // 0.20a
         }
 
         ev_refresh_action.send(RefreshActionCostEvent);

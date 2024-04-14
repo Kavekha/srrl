@@ -100,6 +100,7 @@ pub fn spawn_sprite_render(
             scale: Vec3::splat(1.0),  
             ..default()
         },
+        visibility: Visibility::Hidden, // Par defaut on cache tout. v0.20b
         ..default()
     }).id();
 
