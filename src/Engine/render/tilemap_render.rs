@@ -68,8 +68,12 @@ pub fn wall_corners(
 
 }
 
+// 0.20b
+fn spawn_tile_render(){}
 
-// 0.20a : v2.
+
+
+// 0.20b : v2.
 pub fn spawn_map_render(
     mut commands: Commands,
     //asset_server: Res<AssetServer>,
@@ -93,8 +97,22 @@ pub fn spawn_map_render(
         // Si x != 0, y==0 on génère le coté Sud Ouest.
         // Dans tous les autres cas, on génère systématiquement le coté Sud Est c'est à dire que x,y sera logic_x +1,logic_y +1.
         // On récupère la position dans le monde pour cette position. 
+        let new_position: Vector2Int;
+        if position.x == 0 && position.y == 0 {
+            info!("position est x {:?} = 0, y {:?} = 0", position.x, position.y);
+            new_position = Vector2Int { x: position.x, y: position.y };
+        } else if position.x == 0 && position.y != 0 {
+            info!("position est x {:?} = 0, y {:?} n'est pas 0", position.x, position.y);
+            new_position = Vector2Int { x: position.x, y: position.y + 1};
+        } else if position.x != 0 && position.y == 0 {
+            info!("position est x {:?} n'est pas 0, y {:?} = 0", position.x, position.y);
+            new_position = Vector2Int { x: position.x + 1, y: position.y };
+        } else {
+            // Dans la majorité des cas, on genere la tuile graphique Sud Est.
+            new_position = Vector2Int { x: position.x + 1, y: position.y + 1};
+        }        
 
-        let (mut world_x, mut world_y) = get_world_position(&position);
+        let (mut world_x, mut world_y) = get_world_position(&new_position);
         // On est sur la Dual Grid: Il faut un offset car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
         world_x -= (STANDARD_TILE_SIZE / 2) as f32;         
         world_y -= (STANDARD_TILE_SIZE / 2) as f32; 
@@ -108,11 +126,11 @@ pub fn spawn_map_render(
             ORDER_FLOOR,
             //MAP_FLOOR,
         );
-        dualgrid_floor.insert(position.clone(), floor_tile);    // On insert la tuile Nord Ouest de la tuile logique x,y.
+        dualgrid_floor.insert(new_position.clone(), floor_tile);    // On insert la tuile Nord Ouest de la tuile logique x,y.
         floor_tiles.push(floor_tile);
         
         // Si il y a un mur 
-        if let Some(texture) = wall_corners(&board, position.x, position.y) {
+        if let Some(texture) = wall_corners(&board, new_position.x, new_position.y) {
             // Wall
             let wall_tile = spawn_sprite_render(
                 &mut commands,
@@ -122,7 +140,7 @@ pub fn spawn_map_render(
                 ORDER_WALL,
                 //texture,
             );    
-            dualgrid_wall.insert(position.clone(), wall_tile); 
+            dualgrid_wall.insert(new_position.clone(), wall_tile); 
             wall_tiles.push(wall_tile);
         }
     }
