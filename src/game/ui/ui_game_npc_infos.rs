@@ -1,8 +1,6 @@
-use std::slice::Windows;
-
 use bevy::prelude::*;
 
-use crate::{game::{combat::combat_system::components::IsDead, despawn_component, pieces::components::{Health, Npc}, player::Player, tileboard::components::BoardPosition}, 
+use crate::{game::{combat::combat_system::components::IsDead, despawn_component, pieces::components::{Health, Npc}}, 
     globals::STANDARD_TILE_SIZE
 };
 
@@ -16,40 +14,6 @@ fn clear_ui_game_enemy_hp(
     //println!("DEBUG: Clear enemy hp ui.");    
     despawn_component(interface_query, commands);
 }
-
-pub fn update_ui_game_enemy_hp(
-    camera_q: Query<(&Camera, &GlobalTransform)>,
-    mut style_q: Query<(&mut Style, &UiHpBar)>,
-    mut npc_health_transform_q: Query<(&Transform, &Health), With<Npc>>,    
-    interface_query: Query<Entity, With<UiEnemyHp>>,
-    mut commands: Commands,
-){
-
-    let (camera, camera_transform) = camera_q.single();
-    let Some(screen_size) = camera.logical_viewport_size() else { return };  
-    
-    println!("for mut style...");
-    for ( mut style, attached) in &mut style_q {   
-        println!("A mut style.. for {:?}-----", attached.entity);
-        let Ok((transform, health)) = npc_health_transform_q.get(attached.entity) else { continue};
-        //println!("a transform & health for the entity..");
-
-        let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
-        //println!("As a screen position..");
-        //If not in screen, we don't display.   
-        println!("SCREEN POSITION is {:?} vs SCREENSIZE : {:?}..", screen_position, screen_size);
-        if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
-        println!("Is in screen position..");
-            
-        style.left = Val::Px(screen_position.x - ((STANDARD_TILE_SIZE / 2) as f32));
-        style.top =Val::Px(screen_position.y - ((STANDARD_TILE_SIZE / 2) as f32)); // REMEMBER : world = y goes from bottom to top (++)
-        style.width = Val::Px((health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0); //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
-        style.height = Val::Px(INTERFACE_HP_CHUNK_HEIGHT/ 2.0);
-        style.flex_grow = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0;   
-        //println!("Style modified!");
-    }
-}
-
 
 // Quand jouée "OnEnter", le resultat ne corresponds pas.
 // C'est parce que la camera commence en 0,0 mais que le PJ pas forcement car ca depends de la map.

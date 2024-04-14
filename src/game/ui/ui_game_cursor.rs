@@ -1,4 +1,4 @@
-use bevy::{ecs::query, prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
