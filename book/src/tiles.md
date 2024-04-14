@@ -2,6 +2,7 @@
 
 ## Documentation
 http://www.cr31.co.uk/stagecast/wang/2corn.html  
+https://web.archive.org/web/20190708144210/http://www.cr31.co.uk/stagecast/wang/2corn.html
 
 ## Infos
 0 => No wall.  
