@@ -3,7 +3,7 @@ use bevy::{ecs::world::World, log::info};
 use crate::{
     game::{clean_game_screen, combat::combat_start, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
+    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent}, map_builders::map::Map};
 
 use super::Message;
  
@@ -21,10 +21,10 @@ impl Message for StartGameMessage {
         create_exit_map(world, map_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
         world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
-        let music_name = "gamemap".to_string();
+        let music_name = "gamemap".to_string();        
         world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
-        world.send_event(MessageEvent(Box::new(GamelogClearMessage)));  
+        world.send_event(MessageEvent(Box::new(GamelogClearMessage)));
     }
 }
 

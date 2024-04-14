@@ -87,7 +87,7 @@ use self::{
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
     ia::{components::{CheckGoal, Frozen}, IaPlugin}, 
 };
-use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::events::ReloadUiEvent};
+use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent};
 
 
 pub struct CombatPlugin;
@@ -151,6 +151,7 @@ pub fn combat_start(
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
     fighters: Query<(Entity, &Health, &Stats, Option<&Player>), Without<IsDead>>,
     mut ev_tick: EventWriter<TickEvent>,
+    mut ev_compute_fov: EventWriter<ComputeFovEvent>
 ) {    
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
@@ -163,6 +164,7 @@ pub fn combat_start(
     println!("Combat start!");
     //info!("Combat Start.");
     ev_tick.send(TickEvent);
+    ev_compute_fov.send(ComputeFovEvent);
 }
 
 
