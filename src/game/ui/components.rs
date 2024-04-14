@@ -32,3 +32,8 @@ pub struct UiMainWindow;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct UiLogLine(pub Timer);
+
+#[derive(Component)]
+pub struct UiHpBar {
+    pub entity: Entity
+}

@@ -70,7 +70,7 @@ use self::{
     ui_game_cursor::{draw_ui_cursor_action_points, update_ui_game_cursor_display_action_points, update_ui_game_cursor_from_action, update_ui_game_cursor_position_action_points}, 
     ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, 
     ui_game_logs::{draw_log_ui, update_ui_new_lines, update_ui_remove_old_lines}, 
-    ui_game_npc_infos::draw_ui_game_enemy_hp
+    ui_game_npc_infos::{draw_ui_game_enemy_hp, update_ui_game_enemy_hp}
 };
 
 use super::{despawn_component, gamelog::LogEvent};
@@ -122,7 +122,11 @@ impl Plugin for UiPlugin {
                 update_ui_game_cursor_position_action_points,
                 update_ui_game_cursor_from_action
             ).run_if(on_event::<CursorMoved>()))  
+            // Draw Enemy HP
+            //.add_systems(OnEnter(GameState::Running), draw_ui_game_enemy_hp)
             .add_systems(Update, draw_ui_game_enemy_hp) 
+            //.add_systems(Update, update_ui_game_enemy_hp.run_if(on_event::<ReloadUiEvent>()))
+            //.add_systems(Update, update_ui_game_enemy_hp)
             // Log Ui                     
             .add_systems(OnEnter(GameState::Running), draw_log_ui) 
             .add_systems(Update, update_ui_new_lines.run_if(on_event::<LogEvent>()))

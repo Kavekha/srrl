@@ -94,7 +94,7 @@ pub fn update_ui_game_cursor_position_action_points(
     for mut style in &mut ap_cursor_style_q {
         //let (camera, camera_transform) = camera_q.single();
         //let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
-        let Some(cursor_position) = windows.single().cursor_position() else {
+        let Some(cursor_position) = windows.single().cursor_position() else {            
             return;
         };
         let left = cursor_position.x + (CHAR_SIZE as f32 / 2.0);

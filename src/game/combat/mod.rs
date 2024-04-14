@@ -286,7 +286,7 @@ fn combat_turn_entity_check(
             if is_npc.is_some() {
             // 0.19h: Pour le NPC, on lui redemande de CheckGoal
             commands.entity(entity).insert(CheckGoal);
-            println!("NPC {:?} : has done some action, will check their goal.", entity);
+            //println!("NPC {:?} : has done some action, will check their goal.", entity);
            }
            //info!("Combat turn entity : treated.");
         } else {
