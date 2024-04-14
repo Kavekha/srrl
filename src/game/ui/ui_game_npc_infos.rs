@@ -4,7 +4,7 @@ use crate::{game::{combat::combat_system::components::IsDead, despawn_component,
     globals::STANDARD_TILE_SIZE
 };
 
-use super::{components::{ UiEnemyHp, UiGameInterface}, INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_WIDTH};
+use super::{components::{ UiEnemyHp, UiGameInterface, UiHpBar}, INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_WIDTH};
 
 
 fn clear_ui_game_enemy_hp(
@@ -15,35 +15,32 @@ fn clear_ui_game_enemy_hp(
     despawn_component(interface_query, commands);
 }
 
-
+// Quand jouée "OnEnter", le resultat ne corresponds pas.
+// C'est parce que la camera commence en 0,0 mais que le PJ pas forcement car ca depends de la map.
+// OnEnter, il est peu probable que le personnage soit à 0,0 et donc que l'affichage soit juste. 
+// La camera se déplace rapidement pour se centrer vers le perso mais ce ne sera que dans les Update de cette fonction que le PJ sera vraiment dans le Champ de la Camera.
 pub fn draw_ui_game_enemy_hp(
     mut commands: Commands,
-    enemies_q: Query<(&Health, &Transform), (With<Npc>, Without<IsDead>)>,
+    enemies_q: Query<(Entity, &Health, &Transform), (With<Npc>, Without<IsDead>)>,
     camera_q: Query<(&Camera, &GlobalTransform)>,    
     interface_query: Query<Entity, With<UiEnemyHp>>,
 ){
     clear_ui_game_enemy_hp(&mut commands, interface_query);
 
     let (camera, camera_transform) = camera_q.single();
-    let Some(screen_size) = camera.logical_viewport_size() else { return };    // What we can see in the screen. Some(Vec2(1422.0, 800.0) So 0,1422 and 1422, 800.0 for each corner.
+    let Some(screen_size) = camera.logical_viewport_size() else { return };  
 
-    //println!("Camera physical viewport size is {:?}", screen_size);
-
-    for (health, transform) in enemies_q.iter() {
+    for (npc_entity, health, transform) in enemies_q.iter() {
         let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
         //If not in screen, we don't display.
         if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
-      
+    
         let left =screen_position.x - ((STANDARD_TILE_SIZE / 2) as f32);
         //let right =screen_size.x - screen_position.x;
         let top =screen_position.y - ((STANDARD_TILE_SIZE / 2) as f32); // REMEMBER : world = y goes from bottom to top (++)
-        //let bottom = screen_size.y - screen_position.y;
+        //let bottom = screen_size.y - screen_position.y;        
         let width = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
         let height = INTERFACE_HP_CHUNK_HEIGHT/ 2.0;
-        //println!("Character screen position is : {:?}", screen_position);
-        //println!("left : {:?}, right : {:?}, top : {:?}, bottom : {:?}, width: {:?}, height: {:?}", left ,right ,top ,bottom, width, height );
-
-
         let grow = (health.max as f32 * INTERFACE_HP_CHUNK_WIDTH) / 2.0;
 
         let chunk_container = commands.spawn(NodeBundle {
@@ -64,7 +61,10 @@ pub fn draw_ui_game_enemy_hp(
             //background_color: Color::rgba(0.0, 0.0, 1.0, 0.5 ).into(),
             ..default()
         }).id();  
-        commands.entity(chunk_container).insert(UiEnemyHp).insert(UiGameInterface);
+        commands.entity(chunk_container)
+        .insert(UiEnemyHp)
+        .insert(UiHpBar {entity: npc_entity})
+        .insert(UiGameInterface);
 
         let mut chunk_list:Vec<Entity> = Vec::new();
         for i in 1..=health.max {

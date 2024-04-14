@@ -1,6 +1,6 @@
 [package]
 name = "sr-rl"
-version = "0.20.0"
+version = "0.19.1"
 edition = "2021"
 rust-version = "1.76"
 
@@ -11,8 +11,8 @@ rustflags = ["-Ctarget-feature=+crt-static"]
 
 [dependencies]
 
-bevy-inspector-egui= "0.23.4" 
-egui ="*"
+#bevy-inspector-egui= "0.23.4" 
+#egui ="*"
 bevy = "0.13"
 #bevy            = { git = "https://github.com/bevyengine/bevy.git", branch = "main" }
 serde           = "^1"
