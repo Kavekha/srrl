@@ -22,3 +22,4 @@ pub struct BoardPosition{
 
 #[derive(Component)]
 pub struct ExitMapTile;
+

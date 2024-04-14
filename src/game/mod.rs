@@ -10,6 +10,7 @@ use self::ui::UiPlugin;
 use self::menus::MenuPlugin;
 use self::manager::ManagerPlugin;
 use self::gamelog::GameLogsPlugin;
+use self::visibility::ViewPlugin;
 
 pub mod combat;
 pub mod pieces;
@@ -19,6 +20,7 @@ pub mod ui;
 pub mod menus;
 pub mod states;
 pub mod gamelog;
+pub mod visibility;
 
 mod commons;
 mod manager;
@@ -63,6 +65,7 @@ impl Plugin for GamePlugin {
             .add_plugins(ManagerPlugin)
             .add_plugins(GameLogsPlugin)
             .add_plugins(MovementPlugin)
+            .add_plugins(ViewPlugin)
 
             .add_systems(OnEnter(GameState::Disabled), clean_game_screen)
             ;
