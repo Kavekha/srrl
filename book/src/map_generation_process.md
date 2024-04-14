@@ -53,5 +53,11 @@ Le lien Tuile Logique / Dual Grid se fait par une conversion:
 - Cela signifie qu'un "get_dualgrid_position__from_logic_position(0,0) retournerait les positions 0.0, 0.1, 1.0 et 1.1 soit (x,y), (x, y+1), (x+1,y) et (x+1, y+1).  
 - Il faudrait sans doute pouvoir donner un Vec: "get_dualgrid_postion_from_logic_positions(vec[(0,0), (0,1), 1.0]) ce qui renverrait l'ensemble sans doublon.  
 - A partir de ces informations, on peut les passer en visible ou hidden. Le problème sera la transition d'une tuile visible à non visible: la tuile graphique peut représenter à 75% une tuile invisible mais à 25% une tuile visible. On suppose que la priorité se ferait alors sur la visibilité. L'action de visibilité se ferait donc après l'action de rendre invisible. 
-
 ![image](screenshots/doc/doc_logic_vs_dualgrid.png) 
+
+## Etape 1 Refacto du spawn graphic des tiles.
+On avait déjà dans le spawning_map la logique Hashmap<Vecto2Int, Entity>.  
+A ce stade (v1), le Hashmap est inseré dans la Blueprint `.entity_tiles`. On peut donc l'interroger.  
+On peut aussi construire la dual grid en rapport.  
+On decouvre qu'on a une dual grid pour le floor et une pour le wall.  
+On pourrait associer les tuiles graphiques avec des componants RenderFloor et RenderWall, et les informations nw, ne, sw et se?  

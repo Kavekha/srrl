@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
     commons::get_world_position,
@@ -19,6 +19,7 @@ use crate::{
 /// Si x= 10,y=20 on regarde donc NorthEast: 11,19 - SouthEast: 11,21 - SouthWest: 9,21 - NorthWest: 9,19
 /// 0 = Aucun.  // 1 = NorthEast    // 2 = SouthEast    // 4 = SouthWest    // 8 = NorthWest    ==> 15 = Total Mur
 /// We check from the graphical tile perspective: We look at the crossroad of 4 logic tiles.
+/// TODO : Comment se passer du board?
 pub fn wall_corners(
     board: &Map,
     x: i32,
@@ -78,6 +79,89 @@ pub fn spawn_map_render(
 ) {
     println!("New rendering map begins...");
 
+    let mut dualgrid_floor = HashMap::new();
+    let mut dualgrid_wall = HashMap::new();
+
+    let mut floor_tiles:Vec<Entity> = Vec::new();
+    let mut wall_tiles:Vec<Entity> = Vec::new();
+
+    for (position, _entity) in board.entity_tiles.iter() {
+        // Comme on va avoir un décallage de grille, on doit gérer les angles pour ne pas generer plusieurs fois les tuiles graphiques.
+        // On ne peut pas le faire à la fin car elle ne nous est pas connue, il faut la faire au debut.
+        // Si x,y == 0,0  on genere le coté Nord Ouest de la tile 0,0. 
+        // Si x == 0, y!=0 on génère le coté Nord Est. 
+        // Si x != 0, y==0 on génère le coté Sud Ouest.
+        // Dans tous les autres cas, on génère systématiquement le coté Sud Est c'est à dire que x,y sera logic_x +1,logic_y +1.
+        // On récupère la position dans le monde pour cette position. 
+
+        let (mut world_x, mut world_y) = get_world_position(&position);
+        // On est sur la Dual Grid: Il faut un offset car le 0,0 logic est a cheval entre 0,0 - 0,1 - 1,0 - 1,1.
+        world_x -= (STANDARD_TILE_SIZE / 2) as f32;         
+        world_y -= (STANDARD_TILE_SIZE / 2) as f32; 
+
+        // On créé le sol 
+        let floor_tile = spawn_sprite_render(
+            &mut commands,
+            &assets.map_textures["floor"],
+            world_x,
+            world_y,
+            ORDER_FLOOR,
+            //MAP_FLOOR,
+        );
+        dualgrid_floor.insert(position.clone(), floor_tile);    // On insert la tuile Nord Ouest de la tuile logique x,y.
+        floor_tiles.push(floor_tile);
+        
+        // Si il y a un mur 
+        if let Some(texture) = wall_corners(&board, position.x, position.y) {
+            // Wall
+            let wall_tile = spawn_sprite_render(
+                &mut commands,
+                &assets.map_textures[texture], //&asset_server,  //&assets.textures["card"]
+                world_x,
+                world_y,
+                ORDER_WALL,
+                //texture,
+            );    
+            dualgrid_wall.insert(position.clone(), wall_tile); 
+            wall_tiles.push(wall_tile);
+        }
+    }
+    let game_map = commands
+    .spawn(Name::new("Game Map Render"))
+    .insert(GameMapRender { 
+        floor: dualgrid_floor,
+        wall: dualgrid_wall
+    })
+    .insert(SpatialBundle{
+        ..default()
+    })
+    .push_children(&wall_tiles)
+    .push_children(&floor_tiles)
+    .id();
+    
+    info!("Game_map id is {:?}", game_map);
+
+    /*
+        // Si il y a un mur 
+        if let Some(texture) = wall_corners(&board, tile_position.v.x, tile_position.v.y) {
+            // Wall
+            let wall_tile = spawn_sprite_render(
+                &mut commands,
+                &assets.map_textures[texture], //&asset_server,  //&assets.textures["card"]
+                world_x,
+                world_y,
+                ORDER_WALL,
+                //texture,
+            );
+            commands.entity(floor_tile).push_children(&[wall_tile]);      
+            graphic_tiles.push(wall_tile); 
+        }
+    }
+
+
+    
+
+
     let mut graphic_tiles:Vec<Entity> = Vec::new();
     let mut floor_tiles:Vec<Entity> = Vec::new();
 
@@ -127,6 +211,7 @@ pub fn spawn_map_render(
     })
     .push_children(&graphic_tiles)
     .push_children(&floor_tiles);
+ */
 }
 
 
@@ -181,7 +266,7 @@ pub fn spawn_map_render_old(
     
     commands
     .spawn(Name::new("Game Map Render"))
-    .insert(GameMapRender)
+    //.insert(GameMapRender)    // Commenté suite à la modif de GameMapRender pour contenir les floor.
     .insert(SpatialBundle{
         ..default()
     })

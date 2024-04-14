@@ -15,7 +15,8 @@ pub fn get_world_position(
 
 pub fn despawn_component<T: Component>(
     to_despawn: Query<Entity, With<T>>, 
-    commands: &mut Commands) {
+    commands: &mut Commands
+) {
     for entity in &to_despawn {
         commands.entity(entity).despawn_recursive();
     }
