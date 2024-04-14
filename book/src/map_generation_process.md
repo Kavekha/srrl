@@ -60,4 +60,5 @@ On avait déjà dans le spawning_map la logique Hashmap<Vecto2Int, Entity>.
 A ce stade (v1), le Hashmap est inseré dans la Blueprint `.entity_tiles`. On peut donc l'interroger.  
 On peut aussi construire la dual grid en rapport.  
 On decouvre qu'on a une dual grid pour le floor et une pour le wall.  
-On pourrait associer les tuiles graphiques avec des componants RenderFloor et RenderWall, et les informations nw, ne, sw et se?  
+> On pourrait associer les tuiles graphiques avec des componants RenderFloor et RenderWall, et les informations nw, ne, sw et se?  
+> `wall_corners()` n'est pas encore utilisable sans le blueprint car besoin du width / height de la map.  

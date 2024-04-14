@@ -68,10 +68,6 @@ pub fn wall_corners(
 
 }
 
-// 0.20b
-fn spawn_tile_render(){}
-
-
 
 // 0.20b : v2.
 pub fn spawn_map_render(
@@ -99,13 +95,10 @@ pub fn spawn_map_render(
         // On récupère la position dans le monde pour cette position. 
         let new_position: Vector2Int;
         if position.x == 0 && position.y == 0 {
-            info!("position est x {:?} = 0, y {:?} = 0", position.x, position.y);
             new_position = Vector2Int { x: position.x, y: position.y };
         } else if position.x == 0 && position.y != 0 {
-            info!("position est x {:?} = 0, y {:?} n'est pas 0", position.x, position.y);
             new_position = Vector2Int { x: position.x, y: position.y + 1};
         } else if position.x != 0 && position.y == 0 {
-            info!("position est x {:?} n'est pas 0, y {:?} = 0", position.x, position.y);
             new_position = Vector2Int { x: position.x + 1, y: position.y };
         } else {
             // Dans la majorité des cas, on genere la tuile graphique Sud Est.
