@@ -60,17 +60,13 @@ pub mod ui_game_logs;
 pub mod ui_game_npc_infos;
 pub mod ui_game_attacks;
 pub mod components;
+pub mod events;
 
 
 use crate::game::states::GameState;
 
 use self::{
-    components::{ UiGameInterface, UiMainWindow}, 
-    ui_game_attacks::{draw_ui_game_attack_icons, update_ui_game_attack_icons},
-    ui_game_cursor::{draw_ui_cursor_action_points, update_ui_game_cursor_display_action_points, update_ui_game_cursor_rendor_from_available_action, update_ui_game_cursor_position_action_points}, 
-    ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, 
-    ui_game_logs::{draw_log_ui, update_ui_new_lines, update_ui_remove_old_lines}, 
-    ui_game_npc_infos::{draw_ui_game_enemy_hp}
+    components::{ UiGameInterface, UiMainWindow}, events::ReloadUiEvent, ui_game_attacks::{draw_ui_game_attack_icons, update_ui_game_attack_icons}, ui_game_cursor::{draw_ui_cursor_action_points, update_ui_game_cursor_display_action_points, update_ui_game_cursor_position_action_points, update_ui_game_cursor_rendor_from_available_action}, ui_game_interface::{draw_ui_game_character_infos, update_ui_character_action_points, update_ui_character_health}, ui_game_logs::{draw_log_ui, update_ui_new_lines, update_ui_remove_old_lines}, ui_game_npc_infos::draw_ui_game_enemy_hp
 };
 
 use super::{despawn_component, gamelog::LogEvent};
@@ -135,8 +131,6 @@ impl Plugin for UiPlugin {
     }
 }
 
-#[derive(Event)]
-pub struct ReloadUiEvent;
 
 // TODO : Do better...
 fn windows_mouse_desactivate(

@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
 
@@ -33,6 +33,7 @@ pub fn update_action_infos(
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,
     piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>)>,
+    mut ev_interface: EventWriter<ReloadUiEvent>,
 
 ) {
     for _event in ev_refresh_action.read() {
@@ -125,7 +126,7 @@ pub fn update_action_infos(
             action_infos.cost = Some(ap_cost);
             action_infos.path = Some(path);
         };
-
+        ev_interface.send(ReloadUiEvent);
         // DEBUG: println!("Update action finale: cost: {:?}, path: {:?}, target: {:?}, entity: {:?}", action_infos.cost, action_infos.path, action_infos.target, action_infos.entity);
     }
 }
