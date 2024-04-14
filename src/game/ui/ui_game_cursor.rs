@@ -1,9 +1,9 @@
-use bevy::prelude::*;
+use bevy::{ecs::query, prelude::*};
 
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::ActionInfos, combat_system::components::AttackType}, player::Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
+        combat::{action_infos::ActionInfos, combat_system::components::AttackType, events::Turn}, player::Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
     }, 
     globals::CHAR_SIZE
 };
@@ -18,29 +18,43 @@ const UI_CURSOR_DISPLAY_AP_NOTVALID:Color = Color::RED;
 pub const CURSOR_MOVING:&str = "cursor_moving";
 const CURSOR_TARGETING:&str = "cursor_targeting";
 const CURSOR_PUNCHING:&str = "cursor_punching";
+const CURSOR_WAITING:&str = "cursor_waiting";
 //===
 
-pub fn update_ui_game_cursor_from_action(
+
+pub fn update_ui_game_cursor_rendor_from_available_action(
     mut ev_refresh_ui: EventReader<ReloadUiEvent>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     entity_cursor_q: Query<Entity, With<GameCursorRender>>,
     action_infos: Res<ActionInfos>,
     mut cursor_q: Query<&mut Handle<Image>>,
-    graph_assets: Res<GraphicsAssets>
+    graph_assets: Res<GraphicsAssets>,
+    is_turn_q: Query<&Turn>,
 ){
      // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
     for _event in cursor_moved_events.read() {should_update = true; break;}
     for _event in ev_refresh_ui.read() { should_update = true; break;}
     if !should_update { return };
+
     //println!("Je dois mettre à jour l'apparence du Curseur.");  
     let Ok(entity) = entity_cursor_q.get_single() else { return };
     if let Ok(mut cursor) = cursor_q.get_mut(entity) {
-        if action_infos.attack == Some(AttackType::RANGED) { *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
-        } else if action_infos.target.is_some() { *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
-        } else { *cursor = graph_assets.cursors[CURSOR_MOVING].clone(); }
+        // Est-ce notre tour?
+        let Some(player) = action_infos.entity else { return };
+        if let Ok(_turn) = is_turn_q.get(player) {
+            // Our turn.
+            if action_infos.attack == Some(AttackType::RANGED) { *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
+            } else if action_infos.target.is_some() { *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
+            } else { *cursor = graph_assets.cursors[CURSOR_MOVING].clone(); }
+        } else {
+            // Not our turn.
+            *cursor = graph_assets.cursors[CURSOR_WAITING].clone();
+        }
+
     }    
 }
+
 
 pub fn update_ui_game_cursor_display_action_points(
     mut ev_refresh_ui: EventReader<ReloadUiEvent>,
