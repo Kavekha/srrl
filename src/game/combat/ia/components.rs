@@ -2,7 +2,6 @@ use bevy::prelude::*;
 
 use crate::vectors::Vector2Int;
 
-
 #[derive(Debug)]
 pub enum GoalType{
     KillEntity { id: Entity },

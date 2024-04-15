@@ -7,7 +7,7 @@ v1  | 0.20a |
 
  use std::cmp;
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 
 use crate::{engine::render::components::GameMapRender, game::combat::rules::VISIBILITY_RANGE_PLAYER, map_builders::map::Map, vectors::Vector2Int};
 use self::components::{ComputeFovEvent, View};
@@ -78,13 +78,13 @@ fn get_tiles_around_range(
 
  // 0.20c visibility system with component.
 fn update_character_visibility(
-    mut player_view_q: Query<(Entity, &mut View, &BoardPosition), With<Player>>,
+    mut player_view_q: Query<(&mut View, &BoardPosition), With<Player>>,
     board: Res<Map>,
     game_map_render_q: Query<&GameMapRender>,
     mut visibility_q: Query<&mut Visibility>,
  ){
     let game_map_render = game_map_render_q.single();
-    for (entity, mut view, board_position) in player_view_q.iter_mut() {
+    for ( mut view, board_position) in player_view_q.iter_mut() {
         //info!("I'm {:?} and my view visible tiles is : {:?}", entity, view.visible_tiles);
 
         let mut view_to_treat = get_tiles_around_range(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1);
