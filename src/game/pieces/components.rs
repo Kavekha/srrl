@@ -13,7 +13,7 @@ pub struct CharacterBundle {
     pub stats: Stats,
     pub health: Health,
     pub position: BoardPosition,
-    pub occupier: Occupier,
+    pub occupier: Occupier
 }
 impl Default for CharacterBundle {
     fn default() -> Self {
@@ -29,7 +29,7 @@ impl Default for CharacterBundle {
             },
             health: Health { max: 10, current: 10 },
             position: BoardPosition { v: Vector2Int { x:0, y: 0 } },
-            occupier: Occupier
+            occupier: Occupier            
         }
     }
 }
