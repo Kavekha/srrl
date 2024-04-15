@@ -1,10 +1,10 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use rand::Rng;
 use serde::{Serialize, Deserialize};
 
 use crate::{
     game::{
-        combat::rules::NPC_CHANCE_TO_BE_RANGED, pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+        combat::rules::{NPC_CHANCE_TO_BE_RANGED, VISIBILITY_RANGE_PLAYER}, pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::View
     }, vectors::Vector2Int};
 
 use super::components::CharacterBundle;
@@ -125,12 +125,18 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
             name: Name::new("the ShadowRunner"),
             stats: stats,
             health: health,
-            occupier: Occupier,
+            ..default()
         }).id();
     //player.insert(Player);
-    world.entity_mut(player).insert(Player).insert(Melee).insert(Ranged);
-    let stats = world.entity(player).get::<Stats>().unwrap();
-    println!("Player stats are {:?}", stats);
+    world.entity_mut(player)
+    .insert(Player)
+    .insert(Melee)
+    .insert(Ranged)
+    .insert(View { 
+        visible_tiles: Vec::new(),
+        range: VISIBILITY_RANGE_PLAYER
+    })
+    ;
 }
 
 pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
