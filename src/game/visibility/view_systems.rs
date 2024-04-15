@@ -1,8 +1,8 @@
 use std::cmp;
 
-use bevy::{prelude::*, utils::HashMap};
+use bevy::{prelude::*, utils::{HashMap, HashSet}};
 
-use crate::{engine::render::components::GameMapRender, game::{player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{engine::render::components::GameMapRender, game::{pieces::components::Npc, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
 
@@ -106,6 +106,27 @@ fn get_tiles_around_range(
  }
 
  
+ pub fn update_npc_visibility_status(
+    player_view_q: Query<&View, With<Player>>,
+    npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>
+ ){
+    for view in player_view_q.iter() {
+        let mut all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
+
+        println!("My view is : {:?}", view.visible_tiles);
+        for (entity, vector) in all_npc_positions{
+            if view.visible_tiles.contains(vector) {
+                println!("Entity {:?} is in my view at {:?}", entity, vector);
+            } else {
+                println!("Entity {:?} is not in view sight, because at {:?}", entity, vector);
+            }
+
+            
+        }
+    }
+ }
+
+
  // 0.20d visibility system with component. Only works for Logic Tile.
 pub fn update_character_view(
     mut commands: Commands,
