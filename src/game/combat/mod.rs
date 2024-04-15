@@ -87,7 +87,7 @@ use self::{
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
     ia::{components::{CheckGoal, Frozen}, IaPlugin}, 
 };
-use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent};
+use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::events::ReloadUiEvent};
 
 
 pub struct CombatPlugin;
