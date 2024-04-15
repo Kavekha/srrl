@@ -7,7 +7,7 @@ v1  | 0.20a |
 
  use std::cmp;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 use crate::{engine::render::components::GameMapRender, game::combat::rules::VISIBILITY_RANGE_PLAYER, map_builders::map::Map, vectors::Vector2Int};
 use self::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, ComputeFovEvent, View};
@@ -84,8 +84,29 @@ fn get_tiles_around_range(
     }
  }
 
- // 0.20d mise à jour des tiles render.
- fn update_tile_visibility_render(
+ 
+ fn change_render_tile_visibility_status(
+    game_map_render: &GameMapRender,
+    tile_position: &Vector2Int,
+    mut visibility_q: Query<&mut Visibility>,
+    new_visibility: Visibility,
+ )
+ {
+    if let Some(entity_floor) = get_floor_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+        if let Ok(mut visibility_floor) = visibility_q.get_mut(*entity_floor){
+            *visibility_floor = new_visibility;                           
+        }    
+        if let Some(entity_wall) = get_wall_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_wall) = visibility_q.get_mut(*entity_wall){
+                * visibility_wall = new_visibility;               
+            }                    
+        }                 
+    }
+ }
+
+ // 0.20d mise à jour des tiles render. 
+ fn update_tile_visibility_render_discard(
+    board: Res<Map>,
     mut commands: Commands,
     tile_with_change_order_q: Query<(Entity, &ChangeTileVisibility, &BoardPosition), With<Tile>>,
     game_map_render_q: Query<&GameMapRender>, 
@@ -93,9 +114,126 @@ fn get_tiles_around_range(
  ){
     let game_map_render = game_map_render_q.single();
     let mut to_remove = Vec::new();
-    for (entity, new_visibility, position) in tile_with_change_order_q.iter() {
 
-        if let Some(entity_floor) = get_floor_entity_at(game_map_render, position.v.x, position.v.y ) {
+    let mut tiles_become_visible = Vec::new();
+    let mut tiles_become_hidden = Vec::new();
+    let mut tiles_become_hidden_but_known = Vec::new();
+
+    /* 
+    let mut tiles_become_visible= HashMap::new();   // On place les infos dans ce Hashmap pour eviter les doublons de vector.
+    let mut tiles_become_hidden = HashMap::new();
+    let mut tiles_become_hidden_but_known = HashMap::new();
+*/
+
+    for (entity, new_visibility, position) in tile_with_change_order_q.iter() {
+        // Une tuile logique = 25% d'une tuile graphique x 4 dû au DualGrid. La position x,y corresponds à la partie Nord Ouest de la tuile logique.
+        // Il faut donc aussi traiter x-+1,y ; x, y+1 ; x+1,y+1. On ne doit pas depasser le board non plus.
+        match new_visibility.new_status {
+            ChangeTileVisibilityStatus::Visible => {
+                //tiles_become_visible.push(Vector2Int { x: position.v.x, y: position.v.x });
+                //tiles_become_visible.push(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: cmp::min(position.v.y + 1, board.height - 1)});
+                //tiles_become_visible.push(Vector2Int { x: position.v.x, y: cmp::min(position.v.y + 1, board.height - 1)});
+                tiles_become_visible.push(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: position.v.y});
+            },
+            ChangeTileVisibilityStatus::Hidden => {
+                //tiles_become_hidden.push(Vector2Int { x: position.v.x, y: position.v.x });
+                //tiles_become_hidden.push(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: cmp::min(position.v.y + 1, board.height - 1)});
+                //tiles_become_hidden.push(Vector2Int { x: position.v.x, y: cmp::min(position.v.y + 1, board.height - 1)});
+                tiles_become_hidden.push(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: position.v.y});              
+            },
+            ChangeTileVisibilityStatus::HiddenButKnown => {
+                //tiles_become_hidden_but_known.push(Vector2Int { x: position.v.x, y: position.v.x });
+                //tiles_become_hidden_but_known.push(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: cmp::min(position.v.y + 1, board.height - 1)});
+                //tiles_become_hidden_but_known.push(Vector2Int { x: position.v.x, y: cmp::min(position.v.y + 1, board.height - 1)});
+                tiles_become_hidden_but_known.push(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: position.v.y});               
+            }
+        }
+        to_remove.push(entity);
+    }
+
+    // On élimine les duplicatas.
+    tiles_become_visible.sort();
+    tiles_become_visible.dedup();
+    tiles_become_hidden.sort();
+    tiles_become_hidden.dedup();
+    tiles_become_hidden_but_known.sort();
+    tiles_become_hidden_but_known.dedup();
+
+    // On veut aussi faire d'abord le visible puis le Hidden. On préfère que le joueur voit moins graphiquement la tile logique visible plutot qu'il voit des bouts de tiles logiques considérées comme non visibles.
+
+    for tile_position in tiles_become_visible {
+        //change_render_tile_visibility_status(game_map_render, &tile_position, visibility_q, Visibility::Visible);
+        if let Some(entity_floor) = get_floor_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_floor) = visibility_q.get_mut(*entity_floor){
+                * visibility_floor = Visibility::Visible  ;                           
+            }                    
+        }
+        if let Some(entity_wall) = get_wall_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_wall) = visibility_q.get_mut(*entity_wall){
+                * visibility_wall = Visibility::Visible;               
+            }                    
+        } 
+    }
+    // TODO : Non géré encore. Ici on deviendra visible mais avec changement Alpha des couleurs?
+    for tile_position in &tiles_become_hidden_but_known[..] {
+        if let Some(entity_floor) = get_floor_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_floor) = visibility_q.get_mut(*entity_floor){
+                * visibility_floor = Visibility::Hidden;                           
+            }                    
+        }
+        if let Some(entity_wall) = get_wall_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_wall) = visibility_q.get_mut(*entity_wall){
+                * visibility_wall = Visibility::Hidden;               
+            }                    
+        } 
+    }
+    for tile_position in &tiles_become_hidden[..] {
+        if let Some(entity_floor) = get_floor_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_floor) = visibility_q.get_mut(*entity_floor){
+                * visibility_floor = Visibility::Hidden;                           
+            }                    
+        }
+        if let Some(entity_wall) = get_wall_entity_at(game_map_render, tile_position.x, tile_position.y ) {
+            if let Ok(mut visibility_wall) = visibility_q.get_mut(*entity_wall){
+                * visibility_wall = Visibility::Hidden;               
+            }                    
+        } 
+    }       
+    for entity in to_remove {
+        commands.entity(entity).remove::<ChangeTileVisibility>();
+    }
+ }
+
+
+ // 0.20d mise à jour des tiles render.
+ fn update_tile_visibility_render(
+    board: Res<Map>,
+    mut commands: Commands,
+    tile_with_change_order_q: Query<(Entity, &ChangeTileVisibility, &BoardPosition), With<Tile>>,
+    game_map_render_q: Query<&GameMapRender>, 
+    mut visibility_q: Query<&mut Visibility>,
+ ){
+    let game_map_render = game_map_render_q.single();
+    let mut to_remove = Vec::new();
+    let mut tiles_to_change = HashMap::new();   // On place les infos dans ce Hashmap pour eviter les doublons de vector.
+
+    for (entity, new_visibility, position) in tile_with_change_order_q.iter() {
+        info!("I have to render the following tiles : {:?}", position.v);
+        // Une tuile logique = 25% d'une tuile graphique x 4 dû au DualGrid. La position x,y corresponds à la partie Nord Ouest de la tuile logique.
+        // Il faut donc aussi traiter x-+1,y ; x, y+1 ; x+1,y+1. On ne doit pas depasser le board non plus.
+        // ===> En fait seul { x: cmp::min(position.v.x + 1, board.width - 1), y: position.v.y} permets d'avoir un affichage propre et ok avec le range. 
+        // Le reste semble s'overdriver et s'écraser mutuellement.
+        
+        //tiles_to_change.insert(Vector2Int { x: position.v.x, y: position.v.x }, new_visibility);
+        //tiles_to_change.insert(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: cmp::min(position.v.y + 1, board.height - 1)}, new_visibility);
+        //tiles_to_change.insert(Vector2Int { x: position.v.x, y: cmp::min(position.v.y + 1, board.height - 1)}, new_visibility);
+        tiles_to_change.insert(Vector2Int { x: cmp::min(position.v.x + 1, board.width - 1), y: position.v.y}, new_visibility);
+
+        to_remove.push(entity);
+    }
+
+    for (tile_position, new_visibility) in tiles_to_change {
+        if let Some(entity_floor) = get_floor_entity_at(game_map_render, tile_position.x, tile_position.y ) {
             if let Ok(mut visibility_floor) = visibility_q.get_mut(*entity_floor){
                 match new_visibility.new_status {
                     ChangeTileVisibilityStatus::Visible => * visibility_floor = Visibility::Visible,
@@ -104,7 +242,7 @@ fn get_tiles_around_range(
                 }                
             }                    
         }
-        if let Some(entity_wall) = get_wall_entity_at(game_map_render, position.v.x, position.v.y ) {
+        if let Some(entity_wall) = get_wall_entity_at(game_map_render, tile_position.x, tile_position.y ) {
             if let Ok(mut visibility_wall) = visibility_q.get_mut(*entity_wall){
                 match new_visibility.new_status {
                     ChangeTileVisibilityStatus::Visible => * visibility_wall = Visibility::Visible,
@@ -113,8 +251,7 @@ fn get_tiles_around_range(
                 }                
             }                    
         }
-        to_remove.push(entity);
-    }
+    }       
     for entity in to_remove {
         commands.entity(entity).remove::<ChangeTileVisibility>();
     }
@@ -129,6 +266,7 @@ fn update_character_view(
  ){
     for ( mut view, board_position) in player_view_q.iter_mut() {
         let mut view_to_treat = get_tiles_around_range(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1);
+        info!("My view to treat is : {:?}", view_to_treat);
 
         let mut current_view: Vec<Vector2Int> = Vec::new();
         let mut to_hide: Vec<Vector2Int> = Vec::new();

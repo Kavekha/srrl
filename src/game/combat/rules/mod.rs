@@ -30,7 +30,7 @@ pub const NPC_CHANCE_TO_BE_RANGED:i32 = 25; // Percent
 pub const NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN:i32 = 50; 
 
 // View Range
-pub const VISIBILITY_RANGE_PLAYER:i32 = 10;
+pub const VISIBILITY_RANGE_PLAYER:i32 =  10;
 ///==============================================================================
 
 
