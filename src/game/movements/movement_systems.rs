@@ -109,10 +109,10 @@ pub fn entity_move_to(
         //action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
-            ev_compute_fov.send(ComputeFovEvent);   // 0.20a
         }
 
-        ev_refresh_action.send(RefreshActionCostEvent);
+        ev_refresh_action.send(RefreshActionCostEvent);        
+        ev_compute_fov.send(ComputeFovEvent);   // 0.20a
 
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
