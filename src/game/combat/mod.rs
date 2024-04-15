@@ -151,7 +151,6 @@ pub fn combat_start(
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
     fighters: Query<(Entity, &Health, &Stats, Option<&Player>), Without<IsDead>>,
     mut ev_tick: EventWriter<TickEvent>,
-    mut ev_compute_fov: EventWriter<ComputeFovEvent>
 ) {    
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
@@ -163,9 +162,7 @@ pub fn combat_start(
     ev_newturn.send(CombatTurnStartEvent);
     println!("Combat start!");
     //info!("Combat Start.");
-    ev_tick.send(TickEvent);
-    ev_compute_fov.send(ComputeFovEvent);
-}
+    ev_tick.send(TickEvent);}
 
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.

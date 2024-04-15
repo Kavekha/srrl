@@ -21,7 +21,8 @@ impl Message for StartGameMessage {
         create_exit_map(world, map_infos.exit_position);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
         world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
-        let music_name = "gamemap".to_string();        
+        let music_name = "gamemap".to_string();
+        // L'initialisation n'a pas forcement commencé, carefull.
         world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
         world.send_event(MessageEvent(Box::new(GamelogClearMessage)));
