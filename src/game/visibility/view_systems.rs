@@ -10,6 +10,8 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
 
 // 0.20c : Recupère les tuiles autour du personnage, en accord avec le range donné.
 // NOTE: Ne se préocupe pas des obstacles pour le moment.
+// BUG : Range de 10; Gauche et haut donnent bien -10 par rapport à ma position. Bas / Droite donnent seulement +9. TopLeft donne +10 les autres +9.
+// ==> OEUF CORSE. Range a...b : a inclusif, b exclusif...
 fn get_tiles_around_range(
     x: i32, 
     y: i32,
@@ -18,8 +20,8 @@ fn get_tiles_around_range(
     max_y: i32  // map height
  ) -> Vec<Vector2Int> {
     let mut tiles_around_range : Vec<Vector2Int> = Vec::new();
-    for x in (cmp::max(x - range, 0))..(cmp::min(x + range, max_x)) {
-        for y in (cmp::max(y - range, 0))..(cmp::min(y + range, max_y)) {
+    for x in (cmp::max(x - range, 0))..(cmp::min(x + range, max_x) +1) {
+        for y in (cmp::max(y - range, 0))..(cmp::min(y + range, max_y) +1) {
             tiles_around_range.push(Vector2Int {x, y} )
         }
     }
@@ -153,20 +155,20 @@ fn get_tiles_around_range(
     borders.push(Vector2Int { x: max_x, y: max_y });
     borders.push(Vector2Int { x: min_x, y: max_y });
 
-    //Rangée top  : (x entre min x et max x),  min y 
-    for border_x in (min_x+1..max_x-1) {
+    //Rangée top  : (x entre min x et max x),  min y    // On devrait faire min_x+1..max_x-1 si a..b avait b inclusif, mais b est exclusif dans un for i in a..b.
+    for border_x in min_x+1..max_x {
         borders.push(Vector2Int { x: border_x, y: min_y})
     }
     // Rangée bottom : (x entre min x et max x), max y 
-    for border_x in (min_x+1..max_x-1) {
+    for border_x in min_x+1..max_x {
         borders.push(Vector2Int { x: border_x, y: max_y})
     }
     //Rangée left : min x, (y entre min y et max y)
-    for border_y in (min_y+1..max_y-1) {
+    for border_y in min_y+1..max_y {
         borders.push(Vector2Int { x: min_x, y: border_y})
     }
     //Rangée right : max x, y entre min y et max y 
-    for border_y in (min_y+1..max_y-1) {
+    for border_y in min_y+1..max_y {
         borders.push(Vector2Int { x: max_x, y: border_y})
     }  
 
@@ -199,8 +201,9 @@ fn get_tiles_around_range_with_obstacles(
 
  ) -> Vec<Vector2Int> {
     let mut tiles_around_range : Vec<Vector2Int> = Vec::new();
-    for x in (cmp::max(x - range, 0))..(cmp::min(x + range, max_x)) {
-        for y in (cmp::max(y - range, 0))..(cmp::min(y + range, max_y)) {
+    // Rappel : for x in a..b, b est exclusif.
+    for x in (cmp::max(x - range, 0))..(cmp::min(x + range, max_x) +1) {
+        for y in (cmp::max(y - range, 0))..(cmp::min(y + range, max_y) +1) {
             if !obstacle_position_list.contains(&Vector2Int { x, y}) {
                 tiles_around_range.push(Vector2Int {x, y} )
             }  
@@ -233,7 +236,7 @@ fn get_tiles_around_range_with_obstacles(
             if view_to_treat.contains(&eval_tile) {
                 current_view.push(*eval_tile);  // Deja visible.
             } else {
-                //#to_hide.push(*eval_tile);   // A rendre invisible.
+                to_hide.push(*eval_tile);   // A rendre invisible.
             }
             treated.push(*eval_tile);   // Est ce que to_hide garde son contenu après deferencement? // TOLEARN
         }
