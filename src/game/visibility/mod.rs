@@ -8,7 +8,7 @@ v1  | 0.20a |
 use bevy::prelude::*;
 
 use crate::game::visibility::components::ComputeFovEvent;
-use self::view_systems::{update_character_view, update_npc_visibility_status, update_tile_visibility_render};
+use self::view_systems::{update_character_view, update_character_view_with_blocked, update_npc_visibility_status, update_tile_visibility_render};
 
 use super:: states::GameState;
 
@@ -24,10 +24,14 @@ mod view_systems;
             .add_event::<ComputeFovEvent>()
 
             .add_systems(OnEnter(GameState::Running), init_compute_fov)
+            .add_systems(Update, update_character_view_with_blocked.run_if(on_event::<ComputeFovEvent>()))
+            .add_systems(Update, update_tile_visibility_render.after(update_character_view_with_blocked).run_if(on_event::<ComputeFovEvent>()))
+            .add_systems(Update, update_npc_visibility_status.after(update_character_view_with_blocked).run_if(on_event::<ComputeFovEvent>()))        
+            /* 
             .add_systems(Update, update_character_view.run_if(on_event::<ComputeFovEvent>()))
             .add_systems(Update, update_tile_visibility_render.after(update_character_view).run_if(on_event::<ComputeFovEvent>()))
             .add_systems(Update, update_npc_visibility_status.after(update_character_view).run_if(on_event::<ComputeFovEvent>()))
-            //.add_systems(Update, apply_visible_tiles.run_if(on_event::<ComputeFovEvent>()))
+            */
         ;   
      }
  }
