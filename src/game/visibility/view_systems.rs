@@ -105,23 +105,25 @@ fn get_tiles_around_range(
     }
  }
 
- 
+ // 0.20e ici on modifie l'affichage. L'intelligence "Je suis pas visible" va dans les autres systèmes.
  pub fn update_npc_visibility_status(
     player_view_q: Query<&View, With<Player>>,
-    npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>
+    npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
+    mut npc_visibility_q: Query<&mut Visibility, With<Npc>>,
  ){
     for view in player_view_q.iter() {
-        let mut all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
-
+        let all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
+        
         println!("My view is : {:?}", view.visible_tiles);
-        for (entity, vector) in all_npc_positions{
-            if view.visible_tiles.contains(vector) {
-                println!("Entity {:?} is in my view at {:?}", entity, vector);
+        for (entity, position) in all_npc_positions{
+            let Ok(mut npc_visibility) = npc_visibility_q.get_mut(*entity) else { continue };
+            if view.visible_tiles.contains(position) {
+                println!("Entity {:?} is in my view at {:?}", entity, position);                
+                *npc_visibility = Visibility::Visible;
             } else {
-                println!("Entity {:?} is not in view sight, because at {:?}", entity, vector);
-            }
-
-            
+                println!("Entity {:?} is not in view sight, because at {:?}", entity, position);
+                *npc_visibility = Visibility::Hidden;
+            }            
         }
     }
  }
