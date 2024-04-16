@@ -91,14 +91,16 @@ const RENDER_SE:(i32, i32) = (1, 0);
 // 0.20h-3 
 // Cas #0 : Range 0 tile = On ne voit rien, pas même la place du joueur.
 // Cas #1 : Range 1 tile = placé sur le joueur. => On voit qq chose.
-// Cas #2 : Range 1 visibility => Est-ce que les bonnes tiles logiques sont marquées comme visibles?
+// Cas #2 : Range 1 visibility => Est-ce que les bonnes tiles logiques sont marquées comme visibles? Oui. J'en ai 9.
+// Cas #2b : Range 1 visibility => les bonnes tiles logiques sont marquées comme devant rester visibles? Oui.
+// Cas #2c : Range 1 visibility => Quand je me deplace, les cases qui ne sont plus visibles sont bien signalées comme hidden? Oui.
 
 pub fn update_tile_visibility_render(
     board: Res<Map>,
     mut commands: Commands,
     mut tile_with_change_order_q: Query<(Entity, &mut ChangeTileVisibility, &BoardPosition), With<Tile>>,
     game_map_render_q: Query<&GameMapRender>, 
-    view_q: Query<&View, With<Player>>,
+    mut view_q: Query<&mut View, With<Player>>,
     mut visibility_q: Query<&mut Visibility>,
     player_position_q: Query<&BoardPosition, With<Player>>,
  ){
@@ -107,10 +109,14 @@ pub fn update_tile_visibility_render(
     println!("Player position is at {:?}", position.v);
     // Je récupère la vue du personnage joueur 
     for view in view_q.iter() {
-        // Je regarde les Logic tiles marquées.
         println!("These logic tiles changed their visibility status.");
         for (entity, new_visibility, position) in tile_with_change_order_q.iter() {
-            println!("{:?}", position.v);
+            // Je regarde les Logic tiles marquées.
+            println!("{:?} : {:?}", position.v, new_visibility.new_status);
+        }
+        println!("My view is :");
+        for logic_tile in &view.visible_tiles[..] {
+            println!("{:?}", logic_tile.clone());
         }
     }
 
