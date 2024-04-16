@@ -8,12 +8,13 @@ v1  | 0.20a |
 use bevy::prelude::*;
 
 use crate::game::visibility::components::ComputeFovEvent;
-use self::view_systems::{update_character_view, update_character_view_with_blocked, update_npc_visibility_status, update_tile_visibility_render};
+use self::{view_systems::update_character_view_with_blocked, visibility_render::{update_npc_visibility_status, update_tile_visibility_render}};
 
 use super:: states::GameState;
 
 pub mod components;
 mod view_systems;
+mod visibility_render;
 
  pub struct ViewPlugin;
  
