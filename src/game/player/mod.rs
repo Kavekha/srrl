@@ -36,7 +36,7 @@ pub mod cursor;
 pub use components::Player;
 pub use cursor::Cursor;
 
-use self::{components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}, camera_exit::{camera_smooth_follow, exit_step_check}};
+use self::{camera_exit::{camera_smooth_follow, exit_step_check}, components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, debug_info_on_click, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}};
 
 use crate::game::states::GameState;
 
@@ -71,6 +71,9 @@ impl Plugin for PlayerPlugin{
             .add_systems(Update, exit_step_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 
             .add_systems(Update, mouse_scroll)
+
+            //DEBUG
+            .add_systems(Update, debug_info_on_click)
             ;
     }
 }

@@ -2,10 +2,64 @@ use bevy::{input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}, prelude::*}
 
 use crate::{game::{combat::{action_infos::ActionInfos, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
     manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
-    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}}, menu_builders::ScrollingList};
+    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, tileboard::components::BoardPosition, visibility::components::View}, globals::STANDARD_TILE_SIZE, menu_builders::ScrollingList, vectors::Vector2Int};
 
 use super::{components::WantToMoveEvent, Cursor, Player};
 
+
+fn get_grid_position_debug(
+    x: f32,
+    y: f32
+) -> Vector2Int {
+    let mut grid_x = x;
+    let mut grid_y= y - (y * 2.0);
+    grid_x +=  (STANDARD_TILE_SIZE / 2) as f32;
+    grid_y += (STANDARD_TILE_SIZE / 2) as f32;
+
+    grid_x = grid_x / STANDARD_TILE_SIZE as f32;
+    grid_y = grid_y / STANDARD_TILE_SIZE as f32;
+
+    Vector2Int{x:grid_x as i32, y:grid_y as i32}
+
+}
+
+pub fn debug_info_on_click (
+    mut res_cursor: ResMut<Cursor>,
+    window_query: Query<&Window>,
+    camera_q: Query<(&Camera, &GlobalTransform)>,
+    query_player_pos: Query<&BoardPosition, With<Player>>,
+    buttons: Res<ButtonInput<MouseButton>>,
+    player_view_q: Query<&View>,
+    player_q: Query<Entity, With<Player>>,
+) {
+    if buttons.just_released(MouseButton::Right) {
+        let Ok((camera, camera_transform)) = camera_q.get_single() else { return };
+        if let Some(world_position) = window_query.single().cursor_position() 
+                    .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+                    .map(|ray| ray.origin.truncate())      
+        {
+                res_cursor.world_position = Vec3 {x:world_position.x, y:world_position.y, z:0.0};
+                res_cursor.grid_position = get_grid_position_debug(world_position.x, world_position.y);
+        }
+        res_cursor.screen_position = camera.world_to_viewport(camera_transform, res_cursor.world_position);
+        let Ok(player_entity) = player_q.get_single() else { return };
+        let Ok(_player_position) = query_player_pos.get(player_entity) else { return };
+        let Ok(player_view) = player_view_q.get(player_entity) else { return };
+
+        if player_view.visible_tiles.contains(&res_cursor.grid_position) {
+            info!("Clic at {:?} : this position is visible.",res_cursor.grid_position);
+        } else {
+            info!("Clic at {:?} : this position is NOT visible.", res_cursor.grid_position);
+        }
+
+
+
+        //println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
+        //let Ok(_player_position) = query_player_pos.get_single() else { return };
+        //println!("Player Grid Position : {:?}", player_position.v);
+        //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
+    }
+}
 
 // 0.19d : Removal Abilities for now.
 pub fn player_choose_action_input(
