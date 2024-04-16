@@ -14,11 +14,12 @@ pub struct View {
 
 pub enum ChangeTileVisibilityStatus{
     Visible,
-    Hidden,
-    HiddenButKnown,
+    Hidden
 }
 
 #[derive(Component)]
 pub struct ChangeTileVisibility{
-    pub new_status: ChangeTileVisibilityStatus
+    pub new_status: ChangeTileVisibilityStatus,
+    pub visibility: i32,
+    pub hidden: i32
 }

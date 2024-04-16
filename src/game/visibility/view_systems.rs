@@ -116,7 +116,7 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
         for hiden_tile in to_hide.iter() {
             if board.entity_tiles.contains_key(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
                 if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Hidden } );
+                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Hidden, visibility: 0, hidden: 0 } );
                 }
             }
         }
@@ -134,7 +134,7 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
             //rendre visible.            
             if board.entity_tiles.contains_key(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
                 if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Visible } );
+                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Visible, visibility: 0, hidden: 0  } );
                 }
             }
         }
