@@ -12,6 +12,7 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
 // NOTE: Ne se préocupe pas des obstacles pour le moment.
 // BUG : Range de 10; Gauche et haut donnent bien -10 par rapport à ma position. Bas / Droite donnent seulement +9. TopLeft donne +10 les autres +9.
 // ==> OEUF CORSE. Range a...b : a inclusif, b exclusif...
+// Check with 0.20g => OK pour le Range respecté des deux cotés.
 fn get_tiles_around_range(
     x: i32, 
     y: i32,
@@ -147,6 +148,9 @@ fn get_tiles_around_range(
     let max_x = cmp::min(x + range, map_width);
     let min_y = cmp::max(y - range, 0);
     let max_y = cmp::min(y + range, map_height);
+
+    println!("Minx: {min_x}, maxx {max_x}, miny {min_y}, maxy {max_y}");
+    println!("center is {x}, {y}");
   
     let mut borders = Vec::new();
     // On ajoute les 4 angles d'abord.
@@ -156,7 +160,7 @@ fn get_tiles_around_range(
     borders.push(Vector2Int { x: min_x, y: max_y });
 
     //Rangée top  : (x entre min x et max x),  min y    // On devrait faire min_x+1..max_x-1 si a..b avait b inclusif, mais b est exclusif dans un for i in a..b.
-    for border_x in min_x+1..max_x {
+    for border_x in min_x+1..max_x{
         borders.push(Vector2Int { x: border_x, y: min_y})
     }
     // Rangée bottom : (x entre min x et max x), max y 
@@ -172,15 +176,28 @@ fn get_tiles_around_range(
         borders.push(Vector2Int { x: max_x, y: border_y})
     }  
 
-    //println!("VIEW BLOCKED : x {x}, y {y}");
+    // ==> On ne consulte pas le dernier point mais on regarde le premier !!!
+    // REMINDER: Une Bresenham::new le start est pris en compte mais pas la fin.
+    /* 
+    println!("DEBUG: J'ai 40,22 je fais une bresenham vers 37,19");
+    for (pos_x, pos_y) in Bresenham::new((40 as isize, 22 as isize), (37 as isize, 19 as isize)) {
+        println!("{:?},{:?}", pos_x, pos_y);
+    }
+    println!("fin");
+    ==> 
+        DEBUG: J'ai 40,22 je fais une bresenham vers 37,19
+        40,22
+        39,21
+        38,20
+        fin
+    */    
     for vector in borders {
-        //println!("On regarde la bordure {:?}", vector);
-        for (pos_x, pos_y) in Bresenham::new((x.try_into().unwrap(), y.try_into().unwrap()), (vector.x.try_into().unwrap(), vector.y.try_into().unwrap())) {
-            //println!("On intègre le vector {:?}", vector); 
+        //for (pos_x, pos_y) in Bresenham::new((x.try_into().unwrap(), y.try_into().unwrap()), (vector.x.try_into().unwrap(), vector.y.try_into().unwrap())) {      
+        for (pos_x, pos_y) in Bresenham::new((vector.x.try_into().unwrap(), vector.y.try_into().unwrap()), (x.try_into().unwrap(), y.try_into().unwrap())) {
             tiles_around_range.push(Vector2Int { x: pos_x as i32, y: pos_y as i32});
             if obstacle_position_list.contains(&Vector2Int { x: pos_x as i32, y: pos_y as i32}) {
-                break;
-            }
+                //break;
+            }           
         }
     } 
     tiles_around_range.sort();
@@ -191,6 +208,7 @@ fn get_tiles_around_range(
 
 
  // 0.20f : Rework de get_tiles_around_range, n'affiche pas les obstacles. Pas utile, methode de debug.
+ // Check with 0.20g => OK pour le Range respecté des deux cotés.
 fn get_tiles_around_range_with_obstacles(
     x: i32, 
     y: i32,
@@ -272,7 +290,7 @@ fn get_tiles_around_range_with_obstacles(
     }
  }
 
- // 0.20d visibility system with component. Only works for Logic Tile.
+ // 0.20d visibility system with component. Only works for Logic Tile.     
 pub fn update_character_view(
     mut commands: Commands,
     mut player_view_q: Query<(&mut View, &BoardPosition), With<Player>>,

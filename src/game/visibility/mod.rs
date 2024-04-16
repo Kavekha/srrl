@@ -23,16 +23,17 @@ mod view_systems;
             // 0.20a
             .add_event::<ComputeFovEvent>()
 
-            /*0.20f 
+            //0.20f 
             .add_systems(OnEnter(GameState::Running), init_compute_fov)
             .add_systems(Update, update_character_view_with_blocked.run_if(on_event::<ComputeFovEvent>()))
             .add_systems(Update, update_tile_visibility_render.after(update_character_view_with_blocked).run_if(on_event::<ComputeFovEvent>()))
             .add_systems(Update, update_npc_visibility_status.after(update_character_view_with_blocked).run_if(on_event::<ComputeFovEvent>()))        
-            */
+            
+            /* 
             .add_systems(Update, update_character_view.run_if(on_event::<ComputeFovEvent>()))
             .add_systems(Update, update_tile_visibility_render.after(update_character_view).run_if(on_event::<ComputeFovEvent>()))
             .add_systems(Update, update_npc_visibility_status.after(update_character_view).run_if(on_event::<ComputeFovEvent>()))
-            
+            */
         ;   
      }
  }
