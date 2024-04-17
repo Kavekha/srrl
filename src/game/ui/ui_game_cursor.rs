@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::ActionInfos, combat_system::components::AttackType, events::Turn}, player::Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
+        combat::{action_infos::ActionInfos, combat_system::components::AttackType, events::Turn}, player::{Cursor, Player}, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}, visibility::components::View
     }, 
     globals::CHAR_SIZE
 };
@@ -19,6 +19,7 @@ pub const CURSOR_MOVING:&str = "cursor_moving";
 const CURSOR_TARGETING:&str = "cursor_targeting";
 const CURSOR_PUNCHING:&str = "cursor_punching";
 const CURSOR_WAITING:&str = "cursor_waiting";
+const CURSOR_CANT_SEE:&str = "cursor_cant_see";
 //===
 
 
@@ -30,6 +31,8 @@ pub fn update_ui_game_cursor_rendor_from_available_action(
     mut cursor_q: Query<&mut Handle<Image>>,
     graph_assets: Res<GraphicsAssets>,
     is_turn_q: Query<&Turn>,
+    view_q: Query<&View>,
+    res_cursor: Res<Cursor>,
 ){
      // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
@@ -42,6 +45,14 @@ pub fn update_ui_game_cursor_rendor_from_available_action(
     if let Ok(mut cursor) = cursor_q.get_mut(entity) {
         // Est-ce notre tour?
         let Some(player) = action_infos.entity else { return };
+        // curseur dans une zone visible?   // 
+        //REMEMBER : Ca sera chiant pour des actions que l'on pourrait faire à l'aveugle (jeter des grenades, etc). Ca s'applique à toutes les restrictions visuelles.
+        if let Ok(view) = view_q.get(player) {
+            if !view.visible_tiles.contains(&res_cursor.grid_position) {
+                *cursor = graph_assets.cursors[CURSOR_CANT_SEE].clone(); 
+                return;
+            }
+        }
         if let Ok(_turn) = is_turn_q.get(player) {
             // Our turn.
             if action_infos.attack == Some(AttackType::RANGED) { *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();

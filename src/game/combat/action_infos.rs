@@ -7,7 +7,7 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::View}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
 use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
 
@@ -34,6 +34,7 @@ pub fn update_action_infos(
     cursor: Res<Cursor>,
     piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>)>,
     mut ev_interface: EventWriter<ReloadUiEvent>,
+    view_q: Query<&View, With<Player>>,
 
 ) {
     for _event in ev_refresh_action.read() {
@@ -55,6 +56,13 @@ pub fn update_action_infos(
         if !board.entity_tiles.contains_key(&tile_position) { 
             //println!("Create action: out of map for {:?} with position: {:?}", entity, position);
             return }
+        
+        // En visu?
+        if let Ok(view) = view_q.get(entity) {
+            if !view.visible_tiles.contains(&tile_position) {
+                return;
+            }
+        }
 
         // Il y a un fighter ici (Fighter = Health, Stats & N'est pas Mort.)
         let mut has_target = false;
