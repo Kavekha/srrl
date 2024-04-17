@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{combat::combat_system::components::IsDead, despawn_component, pieces::components::{Health, Npc}}, 
+use crate::{game::{combat::combat_system::components::IsDead, despawn_component, pieces::components::{Health, Npc}, player::Player, tileboard::components::BoardPosition, visibility::components::View}, 
     globals::STANDARD_TILE_SIZE
 };
 
@@ -24,13 +24,21 @@ pub fn draw_ui_game_enemy_hp(
     enemies_q: Query<(Entity, &Health, &Transform), (With<Npc>, Without<IsDead>)>,
     camera_q: Query<(&Camera, &GlobalTransform)>,    
     interface_query: Query<Entity, With<UiEnemyHp>>,
+    view_q: Query<&View, With<Player>>,
+    npc_position_q: Query<&BoardPosition, With<Npc>>,
 ){
     clear_ui_game_enemy_hp(&mut commands, interface_query);
 
     let (camera, camera_transform) = camera_q.single();
     let Some(screen_size) = camera.logical_viewport_size() else { return };  
 
+    let Ok(view) = view_q.get_single() else { return };
     for (npc_entity, health, transform) in enemies_q.iter() {
+        let Ok(npc_position) = npc_position_q.get(npc_entity) else { continue };
+        if !view.visible_tiles.contains(&npc_position.v) {
+            // On ne voit pas le npc.
+            continue;
+        }
         let Some(screen_position) = camera.world_to_viewport(camera_transform, transform.translation)  else { continue };
         //If not in screen, we don't display.
         if screen_position.x < 0.0 || screen_position.x > screen_size.x || screen_position.y < 0.0 || screen_position.y > screen_size.y { continue};
