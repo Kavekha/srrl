@@ -9,7 +9,7 @@ use crate::{game::{
         events::{RefreshActionCostEvent, Turn},
          rules::{consume_actionpoints, AP_COST_MELEE, AP_COST_MOVE}
     }, 
-    movements::components::MoveTo, 
+    movements::components::{MoveTo, Moved}, 
     player::{components::WantToMoveEvent, Player}, 
     tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent}, vectors::Vector2Int
 };
@@ -90,6 +90,7 @@ pub fn entity_move_to(
     let mut to_remove = Vec::new();
     for (entity, movement) in move_q.iter() {
         to_remove.push(entity);
+        commands.entity(entity).remove::<Moved>();  // On retire s'il en a deja une.
 
         //println!("{:?} : Je bouge!", entity);
         let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
@@ -101,8 +102,14 @@ pub fn entity_move_to(
         let destination = path.pop_front();
         let Some(new_position) = destination.clone() else { break };
         
+        println!("{:?} MoveTo {:?}, je suis à {:?} maintenant.", entity, board_position.v, new_position);
+        commands.entity(entity).insert(Moved { previous: board_position.v, next: new_position});
+
         board_position.v = new_position;
-        //ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: movement.target});
+        ev_refresh_action.send(RefreshActionCostEvent);        
+        ev_compute_fov.send(ComputeFovEvent);   // 0.20a
+        
+
         commands.entity(entity).insert(WantToMove { entity: entity, path: path, target: movement.target});
 
         consume_actionpoints(&mut action_points, AP_COST_MOVE);
@@ -110,10 +117,6 @@ pub fn entity_move_to(
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
         }
-
-        ev_refresh_action.send(RefreshActionCostEvent);        
-        ev_compute_fov.send(ComputeFovEvent);   // 0.20a
-
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
         ev_animate.send(AnimateEvent { entity: entity, path: path_animation });

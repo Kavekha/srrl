@@ -3,7 +3,7 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{ game::{pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{ game::{movements::components::Moved, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
 
@@ -94,6 +94,7 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
     board: Res<Map>,
     occupied_tiles_q: Query<&BoardPosition, (With<Occupier>, With<Tile>)>,
     npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
+    has_moved_q: Query<&Moved, With<Npc>>,
  ) {
     for ( mut view, board_position) in player_view_q.iter_mut() {
         println!("Calculating FoV...");
@@ -130,15 +131,30 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
         }
 
         // Voyons les NPC à présent!
+        // Marche OK quand le PJ se deplace mais pas quand c'est le NPC.
+        // C'est parce que quand le NPC se deplace, il entre dans la zone, on check s'il est dans la view actuelle - oui, il vient d'y entrer - et s'il est dans la suivante - oui, il y est evidemment.
+        // Pour eviter ça on doit passer par un component "moved" avec le previous move. 
         let all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
         for (entity, position) in all_npc_positions{
             let mut was_in_view= false;
             let mut now_in_view= false;
 
-            if view.visible_tiles.contains(&position) {
+            println!("checking for {:?}...", entity);
+
+            let previous_position:Vector2Int;
+            if let Ok(moved) = has_moved_q.get(*entity) {
+                previous_position = moved.previous;
+            } else {
+                previous_position = position.clone();
+            }
+
+            if view.visible_tiles.contains(&previous_position) {
+                println!("{:?} was in view", entity);
                 was_in_view = true;
             }
+
             if new_view.contains(&position) {
+                println!("{:?} is now in view", entity);
                 now_in_view = true;
             }
 

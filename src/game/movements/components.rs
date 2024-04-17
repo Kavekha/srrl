@@ -16,3 +16,9 @@ pub struct MoveTo{
     pub path: VecDeque<Vector2Int>,
     pub target: Option<Vector2Int>,
 }
+
+#[derive(Component)]
+pub struct Moved{
+    pub previous: Vector2Int,   // Où etait-il avant ce pas?
+    pub next: Vector2Int,       // Où s'est-il rendu?
+}
