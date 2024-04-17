@@ -10,7 +10,7 @@ use crate::{
 };
 
 
-
+// 0.20i : On ajoute revealed_tiles.
 #[derive(Resource, Clone, Default, Deserialize, Serialize, Debug)]  
 pub struct Map {
     pub tiles: Vec<TileType>,
@@ -19,7 +19,7 @@ pub struct Map {
     pub blocked: Vec<bool>,
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
-    pub entity_tiles: HashMap<Vector2Int, Entity>   
+    pub entity_tiles: HashMap<Vector2Int, Entity>
 }
 
 impl Map {
@@ -39,7 +39,7 @@ impl Map {
         let y = (idx / self.width as usize) as i32;
         let x = (idx - (y as usize * self.width as usize)) as i32;
         (x, y)
-    }*/
+    }*/ 
     pub fn is_blocked(
         &self,
         x: i32,

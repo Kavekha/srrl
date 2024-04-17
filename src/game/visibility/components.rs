@@ -12,13 +12,13 @@ pub struct View {
     pub range: i32,
 }
 
+#[derive(Debug)]
 pub enum ChangeTileVisibilityStatus{
     Visible,
-    Hidden,
-    HiddenButKnown,
+    Hidden
 }
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct ChangeTileVisibility{
     pub new_status: ChangeTileVisibilityStatus
 }
