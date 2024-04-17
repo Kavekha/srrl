@@ -1,8 +1,8 @@
-use bevy::{prelude::*, utils::{HashMap, HashSet}};
+use bevy::{prelude::*, utils::HashMap};
 
-use crate::{engine::render::components::GameMapRender, game::{pieces::components::Npc, player::Player, tileboard::components::{BoardPosition, Tile}}, vectors::Vector2Int};
+use crate::{engine::render::components::GameMapRender, game::{pieces::components::Npc, tileboard::components::{BoardPosition, Tile}}, vectors::Vector2Int};
 
-use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
+use super::components::{ChangeVisibility, ChangeVisibilityStatus};
 
 
  // RENDER_SW corresponds à 0,0.
@@ -62,7 +62,7 @@ fn get_render_tiles_wall_for_logical_tile_at(
 
 pub fn update_tile_visibility_render(
     mut commands: Commands,
-    tile_with_change_order_q: Query<(Entity, &ChangeTileVisibility, &BoardPosition), With<Tile>>,
+    tile_with_change_order_q: Query<(Entity, &ChangeVisibility, &BoardPosition), With<Tile>>,
     game_map_render_q: Query<&GameMapRender>, 
     mut sprite_q: Query<&mut Sprite>,
     mut visibility_q: Query<&mut Visibility>
@@ -78,8 +78,8 @@ pub fn update_tile_visibility_render(
           // Je recupere le nouveau statut.
         let visible_status;
          match new_visibility.new_status {
-            ChangeTileVisibilityStatus::Visible => visible_status = 1,
-            ChangeTileVisibilityStatus::Hidden => visible_status = -1,
+            ChangeVisibilityStatus::Visible => visible_status = 1,
+            ChangeVisibilityStatus::Hidden => visible_status = -1,
         }
         // Pour les 4 tuiles Render de cette tuile logique
         if let Some(render_tiles_floor) = get_render_tiles_floor_for_logical_tile_at(game_map_render, position.v.x, position.v.y) {
@@ -124,31 +124,23 @@ pub fn update_tile_visibility_render(
         }
     }
     for entity in component_to_delete {
-        commands.entity(entity).remove::<ChangeTileVisibility>();
+        commands.entity(entity).remove::<ChangeVisibility>();
     }
  }
 
 
+ // 0.20k L'ordre de se cacher vient du system view.
 // 0.20e ici on modifie l'affichage. L'intelligence "Je suis pas visible" va dans les autres systèmes.
 pub fn update_npc_visibility_status(
-    player_view_q: Query<&View, With<Player>>,
-    npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
     mut npc_visibility_q: Query<&mut Visibility, With<Npc>>,
+    npc_with_change_order_q: Query<(Entity, &ChangeVisibility), With<Npc>>,
 ){
-    for view in player_view_q.iter() {
-        let all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
-        
-        //info!("My view is : {:?}", view.visible_tiles);
-        for (entity, position) in all_npc_positions{
-            let Ok(mut npc_visibility) = npc_visibility_q.get_mut(*entity) else { continue };
-            if view.visible_tiles.contains(position) {
-                //info!("Entity {:?} is in my view at {:?}", entity, position);                
-                *npc_visibility = Visibility::Visible;
-            } else {
-                //info!("Entity {:?} is not in view sight, because at {:?}", entity, position);
-                *npc_visibility = Visibility::Hidden;
-            }            
-        }
+    for (entity, new_visibility) in npc_with_change_order_q.iter() {           
+        let Ok(mut npc_visibility) = npc_visibility_q.get_mut(entity) else { continue };
+        match new_visibility.new_status {
+            ChangeVisibilityStatus::Visible => *npc_visibility = Visibility::Visible,
+            ChangeVisibilityStatus::Hidden => *npc_visibility = Visibility::Hidden,
+        }         
     }
  }
  

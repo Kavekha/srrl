@@ -3,9 +3,9 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{ game::{pieces::components:: Occupier, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{ game::{pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
-use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
+use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
 
  
  // 0.20f
@@ -82,6 +82,7 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
  }
 
 
+
 // Note: refacto possible en passant par un HashMap plutot que X list, contenant Entity : VisibilityStatus.
  // 0.20i : On devrait gèrer le reveal_tiles qui se trouve dans Map pour le moment. Mais vu que tout est Hidden par defaut, on ne fait jamais de retour à Hidden après avoir vu logiquement.
  // v0.5 (0.20h) On simplifie la methode de traitement car faire trop subtil ne marche pas bien avec la logique des 4 1/4 de tuiles en Dual Grid.
@@ -92,9 +93,10 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
     mut player_view_q: Query<(&mut View, &BoardPosition), With<Player>>,
     board: Res<Map>,
     occupied_tiles_q: Query<&BoardPosition, (With<Occupier>, With<Tile>)>,
-    //occupied_tiles_q: Query<(&Occupier, &Tile)>,
+    npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
  ) {
     for ( mut view, board_position) in player_view_q.iter_mut() {
+        println!("Calculating FoV...");
         // La nouvelle vue.
         let all_wall_position:&HashSet< Vector2Int> = &occupied_tiles_q.iter().map(|tile_position| tile_position.v).collect();
         let view_to_treat = get_tiles_around_range_obstacles_break_view(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1, all_wall_position);
@@ -112,21 +114,49 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
         for hiden_tile in to_hide.iter() {
             if board.entity_tiles.contains_key(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
                 if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Hidden } );
+                    commands.entity(*tile_logic_entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden } );
                 }
             }
         }
-
         // Rendre visible & ajouter dans la nouvelle vue.
         let mut new_view = Vec::new();
         for visible_tile in view_to_treat.iter() {
             new_view.push(* visible_tile);
             if board.entity_tiles.contains_key(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
                 if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Visible  } );
+                    commands.entity(*tile_logic_entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible  } );
                 }
             }
         }
+
+        // Voyons les NPC à présent!
+        let all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
+        for (entity, position) in all_npc_positions{
+            let mut was_in_view= false;
+            let mut now_in_view= false;
+
+            if view.visible_tiles.contains(&position) {
+                was_in_view = true;
+            }
+            if new_view.contains(&position) {
+                now_in_view = true;
+            }
+
+            if (was_in_view && now_in_view) || (!was_in_view && !now_in_view) {
+                //println!("npc {:?} was and still is in view or never was in view", entity);
+                continue;
+            } else if was_in_view {
+                // Ne l'est plus.
+                println!("npc {:?} is not in view anymore", entity);
+                commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden});
+                // TODO : Lancer un event?
+            } else {
+                // vu pour la première fois.
+                println!("npc {:?} is now in sight!", entity);
+                commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
+            }
+        }
+
         // On mets la nouvelle view.
         view.visible_tiles = new_view;
     }
