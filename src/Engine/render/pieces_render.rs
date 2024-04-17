@@ -93,11 +93,16 @@ pub fn spawn_sprite_render(
     y: f32,
     z: f32,
 ) -> Entity {
+
     let sprite = commands.spawn(SpriteBundle {
         texture: texture.clone(), 
         transform: Transform {
             translation: Vec3::new(x, y, z),
-            scale: Vec3::splat(1.0),  
+            scale: Vec3::splat(1.0),             
+            ..default()
+        },  
+        sprite: Sprite { 
+            color: Color::rgba(1.0, 1.0, 1.0, 1.0),
             ..default()
         },
         visibility: Visibility::Hidden, // Par defaut on cache tout. v0.20b

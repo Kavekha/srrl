@@ -20,7 +20,5 @@ pub enum ChangeTileVisibilityStatus{
 
 #[derive(Component, Debug)]
 pub struct ChangeTileVisibility{
-    pub new_status: ChangeTileVisibilityStatus,
-    pub visibility: i32,
-    pub hidden: i32
+    pub new_status: ChangeTileVisibilityStatus
 }

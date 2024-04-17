@@ -82,8 +82,11 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
  }
 
 
-
- // 0.20f
+// Note: refacto possible en passant par un HashMap plutot que X list, contenant Entity : VisibilityStatus.
+ // 0.20i : On devrait gèrer le reveal_tiles qui se trouve dans Map pour le moment. Mais vu que tout est Hidden par defaut, on ne fait jamais de retour à Hidden après avoir vu logiquement.
+ // v0.5 (0.20h) On simplifie la methode de traitement car faire trop subtil ne marche pas bien avec la logique des 4 1/4 de tuiles en Dual Grid.
+ // Avant: on ne remettait pas le statut "visible" des tiles qui restaient visibles. 
+ // => C'etait bien, mais comme les tiles graphiques se chevauchent eteindre les 4 tuiles eteignaient 2 tuiles de logic tile restées visibles.
  pub fn update_character_view_with_blocked(
     mut commands: Commands,
     mut player_view_q: Query<(&mut View, &BoardPosition), With<Player>>,
@@ -92,143 +95,20 @@ use super::components::{ChangeTileVisibility, ChangeTileVisibilityStatus, View};
     //occupied_tiles_q: Query<(&Occupier, &Tile)>,
  ) {
     for ( mut view, board_position) in player_view_q.iter_mut() {
+        // La nouvelle vue.
         let all_wall_position:&HashSet< Vector2Int> = &occupied_tiles_q.iter().map(|tile_position| tile_position.v).collect();
-        let mut view_to_treat = get_tiles_around_range_obstacles_break_view(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1, all_wall_position);
-        //println!("WITH OBSTACLE : {:?}", view_to_treat);
-
-        let mut current_view: Vec<Vector2Int> = Vec::new();
+        let view_to_treat = get_tiles_around_range_obstacles_break_view(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1, all_wall_position);
         let mut to_hide: Vec<Vector2Int> = Vec::new();
-        let mut treated: Vec<Vector2Int> = Vec::new();
-
-        // On pop chaque element de view.visible_tiles et on regarde si présente dans view_to_treat.
-        // Si c'est le cas, elle reste visible, on l'ajoute à current_view et on la retire à view_to_treat. Sinon, on la hide.
-        // A la fin on prends chaque element restant dans view_to_treat et on les passe en visible, et on les ajoute à current_view.
-        for eval_tile in view.visible_tiles.iter() {
-            if view_to_treat.contains(&eval_tile) {
-                current_view.push(*eval_tile);  // Deja visible.
-            } else {
-                to_hide.push(*eval_tile);   // A rendre invisible.
-            }
-            treated.push(*eval_tile);   // Est ce que to_hide garde son contenu après deferencement? // TOLEARN
-        }
-
-        // Rendre invisible.
-        for hiden_tile in to_hide.iter() {
-            if board.entity_tiles.contains_key(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
-                if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Hidden, visibility: 0, hidden: 0 } );
-                }
-            }
-        }
-        // On retire de view to treat tous les elements déjà traités, qui etait dans la view.visible_tiles. Ces elements doivent être passé à visible.
-        view_to_treat = view_to_treat.iter().filter_map(|val|{
-            if treated.contains(val) {
-                return None
-            }
-            Some(*val)
-        }).collect();
-        //info!("Here, I have removed treated from view_to_treat. I have now in view_to_treat: {:?}", view_to_treat);
-
-        for visible_tile in view_to_treat.iter() {
-            current_view.push(*visible_tile);
-            //rendre visible.            
-            if board.entity_tiles.contains_key(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
-                if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Visible, visibility: 0, hidden: 0  } );
-                }
-            }
-        }
-        // On mets la nouvelle view.
-        view.visible_tiles = current_view;
-    }
- }
-
-
-
-// DEBUG : On affiche les tuiles autour, sans aucune contrainte.
-// 0.20c : Recupère les tuiles autour du personnage, en accord avec le range donné.
-// NOTE: Ne se préocupe pas des obstacles pour le moment.
-// BUG : Range de 10; Gauche et haut donnent bien -10 par rapport à ma position. Bas / Droite donnent seulement +9. TopLeft donne +10 les autres +9.
-// ==> OEUF CORSE. Range a...b : a inclusif, b exclusif...
-// Check with 0.20g => OK pour le Range respecté des deux cotés.
-fn get_tiles_around_range(
-    x: i32, 
-    y: i32,
-    range: i32,
-    max_x: i32, // map width
-    max_y: i32,  // map height,
-    obstacle_position_list: &HashSet< Vector2Int>       // Non utilisé.
- ) -> Vec<Vector2Int> {
-    let mut tiles_around_range : Vec<Vector2Int> = Vec::new();
-    for x in (cmp::max(x - range, 0))..(cmp::min(x + range, max_x) +1) {
-        for y in (cmp::max(y - range, 0))..(cmp::min(y + range, max_y) +1) {
-            tiles_around_range.push(Vector2Int {x, y} )
-        }
-    }
-    return tiles_around_range
- }
-
-
- // DEBUG : On cache les obstacles de la vue, mais on ne prends pas en compte la ligne de vue : ce qui est derrière est affiché.
- // 0.20f : Rework de get_tiles_around_range, n'affiche pas les obstacles. Pas utile, methode de debug.
- // Check with 0.20g => OK pour le Range respecté des deux cotés.
-fn get_tiles_around_range_with_obstacles(
-    x: i32, 
-    y: i32,
-    range: i32,
-    max_x: i32, // map width
-    max_y: i32,  // map height
-    obstacle_position_list: &HashSet< Vector2Int>
-
- ) -> Vec<Vector2Int> {
-    let mut tiles_around_range : Vec<Vector2Int> = Vec::new();
-    // Rappel : for x in a..b, b est exclusif.
-    for x in (cmp::max(x - range, 0))..(cmp::min(x + range, max_x) +1) {
-        for y in (cmp::max(y - range, 0))..(cmp::min(y + range, max_y) +1) {
-            if !obstacle_position_list.contains(&Vector2Int { x, y}) {
-                tiles_around_range.push(Vector2Int {x, y} )
-            }  
-        }
-    }
-    return tiles_around_range
- }
-
-
- // Original version. Remplacée par update_character_view_with_blocked
- // 0.20d visibility system with component. Only works for Logic Tile.     
- /* 
-pub fn update_character_view(
-    mut commands: Commands,
-    mut player_view_q: Query<(&mut View, &BoardPosition), With<Player>>,
-    board: Res<Map>,
- ){
-    // Pour utiliser get_tiles_around_range_with_obstacles, qui n'affiche pas les tiles Obstacles.
-    //let all_wall_position:&HashSet< Vector2Int> = &occupied_tiles_q.iter().map(|tile_position| tile_position.v).collect();
         
-    for ( mut view, board_position) in player_view_q.iter_mut() {
-        // Pour utiliser get_tiles_around_range_with_obstacles
-        //let mut view_to_treat = get_tiles_around_range_with_obstacles(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1, all_wall_position);
-
-        let mut view_to_treat = get_tiles_around_range(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1);
-        //info!("My view to treat is : {:?}", view_to_treat);
-
-        let mut current_view: Vec<Vector2Int> = Vec::new();
-        let mut to_hide: Vec<Vector2Int> = Vec::new();
-        let mut treated: Vec<Vector2Int> = Vec::new();
-
         // On pop chaque element de view.visible_tiles et on regarde si présente dans view_to_treat.
-        // Si c'est le cas, elle reste visible, on l'ajoute à current_view et on la retire à view_to_treat. Sinon, on la hide.
-        // A la fin on prends chaque element restant dans view_to_treat et on les passe en visible, et on les ajoute à current_view.
+        // Si c'est le cas, la tuile reste visible et elle sera traitée plus tard avec les nouvelles de view_to_treat.
+        // Si elle n'est plus présente dans la vue, c'est qu'elle etait visible et qu'elle ne doit plus l'être : on la hide.
         for eval_tile in view.visible_tiles.iter() {
-            if view_to_treat.contains(&eval_tile) {
-                current_view.push(*eval_tile);  // Deja visible.
-            } else {
-                to_hide.push(*eval_tile);   // A rendre invisible.
+            if !view_to_treat.contains(&eval_tile) {
+                to_hide.push(*eval_tile);   // A rendre invisible.               
             }
-            treated.push(*eval_tile);   // Est ce que to_hide garde son contenu après deferencement? // TOLEARN
         }
-
-        // Rendre invisible.
+        // Rendre caché.
         for hiden_tile in to_hide.iter() {
             if board.entity_tiles.contains_key(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
                 if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: hiden_tile.x, y: hiden_tile.y}) {
@@ -236,26 +116,18 @@ pub fn update_character_view(
                 }
             }
         }
-        // On retire de view to treat tous les elements déjà traités, qui etait dans la view.visible_tiles. Ces elements doivent être passé à visible.
-        view_to_treat = view_to_treat.iter().filter_map(|val|{
-            if treated.contains(val) {
-                return None
-            }
-            Some(*val)
-        }).collect();
-        //info!("Here, I have removed treated from view_to_treat. I have now in view_to_treat: {:?}", view_to_treat);
 
+        // Rendre visible & ajouter dans la nouvelle vue.
+        let mut new_view = Vec::new();
         for visible_tile in view_to_treat.iter() {
-            current_view.push(*visible_tile);
-            //rendre visible.
+            new_view.push(* visible_tile);
             if board.entity_tiles.contains_key(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
                 if let Some(tile_logic_entity) = board.entity_tiles.get(&Vector2Int {x: visible_tile.x, y: visible_tile.y}) {
-                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Visible } );
+                    commands.entity(*tile_logic_entity).insert(ChangeTileVisibility { new_status: ChangeTileVisibilityStatus::Visible  } );
                 }
             }
         }
         // On mets la nouvelle view.
-        view.visible_tiles = current_view;
+        view.visible_tiles = new_view;
     }
-}
-*/
+ }
