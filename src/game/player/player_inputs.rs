@@ -1,8 +1,7 @@
 use bevy::{input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}, prelude::*};
 
-use crate::{game::{combat::{action_infos::ActionInfos, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, 
-    manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
-    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, tileboard::components::BoardPosition, visibility::components::View}, globals::STANDARD_TILE_SIZE, menu_builders::ScrollingList, vectors::Vector2Int};
+use crate::{game::{combat::{action_infos::ActionInfos, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
+    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, player, tileboard::components::BoardPosition, visibility::components::View}, globals::STANDARD_TILE_SIZE, menu_builders::ScrollingList, vectors::Vector2Int};
 
 use super::{components::WantToMoveEvent, Cursor, Player};
 
@@ -117,6 +116,7 @@ pub fn ig_inside_menu_input(
 
 
 /// Les events du Joueur.
+/// 0.20j On s'assure que le clic soit dans la view.
 pub fn combat_input(
     mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
@@ -125,7 +125,8 @@ pub fn combat_input(
     action_infos: ResMut<ActionInfos>,  // Contient le type d'attaque utilisé..
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_want_to_hit: EventWriter<WantToHitEvent>,
-    mut ev_want_to_move: EventWriter<WantToMoveEvent>
+    mut ev_want_to_move: EventWriter<WantToMoveEvent>,
+    view_q: Query<&View>,
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
@@ -140,6 +141,12 @@ pub fn combat_input(
         let entity = result;    //result.0 autrefois
         let destination = res_cursor.grid_position;
 
+        if let Ok(view) = view_q.get(entity) {
+            if !view.visible_tiles.contains(&destination) {
+                println!("Click is not in vision.");
+                return;
+            }
+        }
         println!("Click !");
         match &action_infos.attack {
             None => {
