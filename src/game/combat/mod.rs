@@ -23,17 +23,12 @@ Si il conserve son tour & que c'est un NPC on lui donne un CheckGoal pour qu'il 
 
 => combat_turn_end, recoit l'event de CombatTurnNextEntity quand sa queue est vide.
 Relance un nouveau tour.
-TODO: Regarder si tous les enemis sont morts / game over ici?
+Regarde si tous les enemis sont morts => Game Over.
 
 => combat_end
 Se lance à la désactivation du jeu. 
 N'est pas utilisé pour le moment.
 TODO : Gerer la sortie du combat et permettre une animation de victoire / game over?
-
-=> combat_player_death
-le game over se gère ici pour le moment.
-TODO: Devrait plutot être géré dans le CombatEnd?
-
 ----
 
 => combat_input regarde les inputs du joueur.
@@ -121,7 +116,10 @@ impl Plugin for CombatPlugin {
            // toutes les entités ont fait leur tour.   
            .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))      
               // Check de la situation PA-wise. Mise à jour.
-            .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
+
+            //.add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
+            .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).in_set(CombatSet::Logic))
+            
             .add_systems(Update, tick.in_set(CombatSet::Logic))
             .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()))
             // TODO: Quitter le combat. PLACEHOLDER.
@@ -158,15 +156,12 @@ pub fn combat_start(
     }
     
     commands.insert_resource(CombatInfos {turn: 0, current_entity: None});
-    //combat_state.set(CombatState::StartTurn);
-    ev_newturn.send(CombatTurnStartEvent);
-    println!("Combat start!");
     //info!("Combat Start.");
+    ev_newturn.send(CombatTurnStartEvent);
     ev_tick.send(TickEvent);}
 
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
-/// TODO : Avec un seul NPC + PJ, un tour semble donner x2 fois "X received full ap", et parfois encore pluss! (apres un forfeit?)
 fn combat_turn_start(
     // Obligé d'avoir ses 3 queues à cause de npc_query.iter() qui ajoute les entités presentes dans npc_query dans la queue.
     mut action_query: Query<(Entity, &mut ActionPoints)>,
@@ -200,8 +195,7 @@ fn combat_turn_start(
     //info!("Combat turn queue has {:?} messages.", queue.0.len());
 
     // On lance le TurnNextEntity pour faire jouer le premier de la Queue.
-    //info!("combat_turn_start send event for CombatTurnNextEntityEvent");
-    //println!("Sending Next Entity");
+    info!("combat_turn_start send event for CombatTurnNextEntityEvent");
     ev_next.send(CombatTurnNextEntityEvent);
 }
 
@@ -218,7 +212,7 @@ fn combat_turn_next_entity(
     //info!("combat_turn_next_entity: received event <CombatTurnNextEntityEvent>");
     let Some(entity) = queue.0.pop_front() else {
         // Plus de combattant: le tour est fini.
-        //info!("combat_turn_next_entity: Plus aucun combattant pour ce tour. Fin du tour => <CombatTurnEndEvent>");
+        info!("combat_turn_next_entity: Plus aucun combattant pour ce tour. Fin du tour => <CombatTurnEndEvent>");
         ev_turn_end.send(CombatTurnEndEvent);
         return;
     };
@@ -235,8 +229,7 @@ fn combat_turn_next_entity(
         commands.entity(entity).insert(CheckGoal);    
     };
     ev_refresh_ap.send(RefreshActionCostEvent);
- 
-    //info!("combat_turn_next_entity: finished for {:?}.", entity)
+    info!("combat_turn_next_entity: finished for {:?}.", entity)
 }
 
 fn combat_turn_end(    
@@ -254,12 +247,13 @@ fn combat_turn_end(
         }
     }
     if player_dead {
+        println!("combat_turn_end:Player is dead.");
         ev_message.send(MessageEvent(Box::new(GameOverMessage)));
-        return
+        return;
     }
-    queue.0.clear();
-    ev_newturn.send(CombatTurnStartEvent);
-    //info!("Combat turn End: Send event CombatTurnStartEvent.");    
+    queue.0.clear();    
+    info!("Combat turn End: Send event CombatTurnStartEvent.");    
+    ev_newturn.send(CombatTurnStartEvent); // 
 
 }
 
@@ -280,14 +274,14 @@ fn combat_turn_entity_check(
             let (ap_entity, is_npc, is_frozen) = entity_infos;
             if ap_entity.current <= 0 || is_frozen.is_some() {
                 //info!("This entity {:?} has no AP or is Frozen: let's turn to next entity event.", entity);
-                commands.entity(entity).remove::<Turn>();
+                commands.entity(entity).remove::<Turn>();                
+                info!("combat_turn_entity_check: send event for CombatTurnNextEntityEvent");
                 ev_next.send(CombatTurnNextEntityEvent);
                 return 
             }
             if is_npc.is_some() {
             // 0.19h: Pour le NPC, on lui redemande de CheckGoal
             commands.entity(entity).insert(CheckGoal);
-            //println!("NPC {:?} : has done some action, will check their goal.", entity);
            }
            //info!("Combat turn entity : treated.");
         } else {
@@ -301,6 +295,7 @@ fn combat_turn_entity_check(
 
 /// Retire les ActionPoints, Remove CombatInfos, change State.
 /// Sera utilisable par le Manager.
+/// NOTE : On constate que quitter une partie via menu: la boucle d'event CombatTurnStartEvent continue car rien n'y mets fin.
 pub fn combat_end(
     mut commands: Commands,
     fighters: Query<(Entity, &ActionPoints)>,
@@ -310,7 +305,6 @@ pub fn combat_end(
         commands.entity(entity).remove::<ActionPoints>();
     }
     commands.remove_resource::<CombatInfos>();
-    //combat_state.set(CombatState::None);
     queue.0.clear();
     println!("Combat end!");
 }

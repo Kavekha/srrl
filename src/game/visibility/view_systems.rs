@@ -3,7 +3,7 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{ game::{gamelog::LogEvent, movements::components::MoveEvent, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{ game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
 
@@ -139,7 +139,9 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
     occupied_tiles_q: Query<&BoardPosition, (With<Occupier>, With<Tile>)>,
     npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
     mut ev_log: EventWriter<LogEvent>,
-    name_q: Query<&Name>
+    name_q: Query<&Name>,
+    mut ev_cancel_move: EventWriter<CancelMoveEvent>,
+    player_q: Query<Entity, With<Player>>,
  ) {
     for ( mut view, board_position) in player_view_q.iter_mut() {
          // La nouvelle vue.
@@ -201,7 +203,11 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
                 // vu pour la première fois.
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
                 if let Ok(name) = name_q.get(* entity) {
-                    ev_log.send(LogEvent { entry: format!("You see: {:?}", name)});
+                    ev_log.send(LogEvent { entry: format!("You see: {:?}", name)});                  
+                }
+                // Cancel move du joueur
+                if let Ok(player_entity) = player_q.get_single() {
+                    ev_cancel_move.send(CancelMoveEvent { entity: player_entity });
                 }
             }
         }
@@ -209,3 +215,6 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
         view.visible_tiles = new_view;
     }
  }
+
+
+ 

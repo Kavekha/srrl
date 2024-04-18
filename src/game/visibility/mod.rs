@@ -40,7 +40,7 @@ mod visibility_render;
      fn build(&self, app: &mut App) {
          app
             // 0.20a
-            .add_event::<ComputeFovEvent>()
+            .add_event::<ComputeFovEvent>()            
 
             //0.20f 
             .add_systems(OnEnter(GameState::Running), init_compute_fov)
@@ -58,3 +58,5 @@ mod visibility_render;
  ){
     ev_fov.send(ComputeFovEvent);
  }
+
+

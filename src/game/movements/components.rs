@@ -23,3 +23,9 @@ pub struct MoveEvent{
     pub previous: Vector2Int,   // Où etait-il avant ce pas?
     pub next: Vector2Int,       // Où s'est-il rendu?
 }
+
+// 0.20l : interrompre un deplacement du joueur s'il voit un NPC.
+#[derive(Event)]
+pub struct CancelMoveEvent{
+    pub entity: Entity
+}
