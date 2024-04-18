@@ -47,7 +47,10 @@ pub fn spawn_piece_renderer(
         let texture = assets.textures[get_texture_from_kind(piece.kind)].clone();
         let mut order_z = ORDER_NPC;
 
-        if let Some(_player) = player {
+        // 0.20k
+        let mut visibility = Visibility::Hidden;// Par defaut on cache tout. v0.20k
+        if player.is_some() {
+            visibility= Visibility::Visible;
             println!("player order layer: {:?}.", entity);
             order_z = ORDER_PLAYER;
         }
@@ -60,13 +63,13 @@ pub fn spawn_piece_renderer(
                     scale: Vec3::splat(1.0),
                     ..default()
                 },
+                visibility: visibility,
                 ..default()
             });
         
-            if let Some(_player) = player {
-                println!("player rendered.");
-            }
-        
+        if player.is_some() {
+            println!("player rendered.");
+        }        
     }
     println!("Pieces rendered.");
 }

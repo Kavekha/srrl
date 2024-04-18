@@ -13,12 +13,12 @@ pub struct View {
 }
 
 #[derive(Debug)]
-pub enum ChangeTileVisibilityStatus{
+pub enum ChangeVisibilityStatus{
     Visible,
     Hidden
 }
 
 #[derive(Component, Debug)]
-pub struct ChangeTileVisibility{
-    pub new_status: ChangeTileVisibilityStatus
+pub struct ChangeVisibility{
+    pub new_status: ChangeVisibilityStatus
 }

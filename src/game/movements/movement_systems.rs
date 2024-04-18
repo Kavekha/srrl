@@ -15,7 +15,7 @@ use crate::{game::{
 };
 use crate::engine::animations::events::AnimateEvent;
 
-use super::components::WantToMove;
+use super::components::{MoveEvent, WantToMove};
 
 
 /// 0.19b refacto
@@ -86,6 +86,7 @@ pub fn entity_move_to(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
     mut ev_compute_fov: EventWriter<ComputeFovEvent>,
+    mut ev_move_event: EventWriter<MoveEvent>
 ){
     let mut to_remove = Vec::new();
     for (entity, movement) in move_q.iter() {
@@ -101,8 +102,14 @@ pub fn entity_move_to(
         let destination = path.pop_front();
         let Some(new_position) = destination.clone() else { break };
         
+        ev_move_event.send(MoveEvent { entity: entity, previous: board_position.v, next: new_position});    // 0.20k
+
         board_position.v = new_position;
-        //ev_try_move.send(EntityTryMoveEvent {entity: entity, path: path, target: movement.target});
+        ev_refresh_action.send(RefreshActionCostEvent);
+        if is_player.is_some() {
+            ev_compute_fov.send(ComputeFovEvent);   // 0.20k => Uniquement pour le PJ, les NPC sont couverts par le MoveEvent.
+        }      
+        
         commands.entity(entity).insert(WantToMove { entity: entity, path: path, target: movement.target});
 
         consume_actionpoints(&mut action_points, AP_COST_MOVE);
@@ -110,10 +117,6 @@ pub fn entity_move_to(
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
         }
-
-        ev_refresh_action.send(RefreshActionCostEvent);        
-        ev_compute_fov.send(ComputeFovEvent);   // 0.20a
-
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
         ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
