@@ -38,7 +38,7 @@ pub fn update_action_infos(
 
 ) {
     for _event in ev_refresh_action.read() {
-        //println!("Updating ActionInfos ");
+        //info!("Updating ActionInfos ");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;
@@ -46,7 +46,7 @@ pub fn update_action_infos(
         action_infos.entity = None;
 
         let Ok(player_infos) = query_character_turn.get_single() else { 
-            //println!("action infos: No player info");
+            //info!("action infos: No player info");
             return };
         let (entity, action_points) = player_infos;
         action_infos.entity = Some(entity);
@@ -54,7 +54,7 @@ pub fn update_action_infos(
 
         let tile_position = cursor.grid_position;
         if !board.entity_tiles.contains_key(&tile_position) { 
-            //println!("Create action: out of map for {:?} with position: {:?}", entity, position);
+            //info!("Create action: out of map for {:?} with position: {:?}", entity, position);
             return }
         
         // En visu?

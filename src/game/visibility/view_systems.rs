@@ -246,19 +246,21 @@ pub fn remove_markers_when_seen(
     }
 }
 
-
-
 pub fn remove_markers_when_marked_is_seen(
     mut commands: Commands,
     mut ev_has_been_seen: EventReader<HasBeenSeenEvent>,
-    marked_q : Query<&Marked>,   
+    marked_q : Query<&Marked>,  
+    marker_q: Query<&Marker> 
 ) {
     info!("remove markers: a HasBeenSeenEvent has been received.");
     for event in ev_has_been_seen.read() {
         info!("{:?} has been seen by {:?}", event.entity, event.saw_by);
         if let Ok(marked) = marked_q.get(event.entity) {
             info!("{:?} is marked with marker {:?}.", event.entity, marked.marker_id);
-          commands.entity(marked.marker_id).despawn_recursive();    // On efface le Marker.
+            if let Ok(_marker_still_exist) = marker_q.get(marked.marker_id) {
+                // Des cas existent où le marker est déjà detruit, ce qui provoque un panic.
+                commands.entity(marked.marker_id).despawn_recursive();    // On efface le Marker.
+            }  
         } else { continue };        
     }
 }
