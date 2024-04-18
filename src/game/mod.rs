@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
 use self::movements::MovementPlugin;
-use self::pieces::components::Npc;
+use self::pieces::components::{GameElement, Npc};
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
@@ -73,6 +73,7 @@ impl Plugin for GamePlugin {
 }
  
  
+
 fn clean_game_screen(
     mut commands: Commands,
     despawn_npc: Query<Entity, With<Npc>>,    
@@ -81,6 +82,7 @@ fn clean_game_screen(
     despawn_player: Query<Entity, With<Player>>,
     despawn_gamecursor: Query<Entity, With<GameCursorRender>>,
     despawn_exit: Query<Entity, With<ExitMapTile>>,
+    despawn_game_thingies: Query<Entity, With<GameElement>>,
     
 ) {
     println!("Cleaning Game Screen now.");
@@ -92,5 +94,7 @@ fn clean_game_screen(
     despawn_component(despawn_player, &mut commands);
     despawn_component(despawn_gamecursor, &mut commands);
     despawn_component(despawn_exit, &mut commands);
+    println!("Despawn non-specific game elements.");
+    despawn_component(despawn_game_thingies, &mut commands);
 }
 

@@ -6,7 +6,7 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::{
     commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, 
     asset_loaders::GraphicsAssets, render::components::GameCursorRender}, 
-    game::{player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, BASE_TIME_FRAME_EFFECT, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals::{ ORDER_CURSOR, ORDER_EFFECT}};
+    game::{pieces::components::GameElement, player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, BASE_TIME_FRAME_EFFECT, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals::{ ORDER_CURSOR, ORDER_EFFECT}};
 
 use super::events::{AnimateEvent, EffectEvent, GraphicsWaitEvent, PathAnimator};
 
@@ -43,6 +43,7 @@ pub fn spawn_hit_effect(
             },
             animation_indices,
             AnimationTimer(Timer::from_seconds(BASE_TIME_FRAME_EFFECT, TimerMode::Repeating)), // Repeating car on passe par autant d'etapes que d'images.
+            GameElement
         ));
     }
 }
