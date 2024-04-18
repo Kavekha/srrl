@@ -38,7 +38,7 @@ pub fn update_action_infos(
 
 ) {
     for _event in ev_refresh_action.read() {
-        //println!("Updating ActionInfos ");
+        //info!("Updating ActionInfos ");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;

@@ -174,10 +174,8 @@ fn combat_turn_start(
 ) {
     //info!("Event received: CombatTurnStartEvent");
     // On redonne les PA à tout le monde.
-    let mut step = 0;
     for (entity, mut action_points) in action_query.iter_mut() {
-        step += 1;
-        println!("{:?} Entity {:?} received full ap.", step, entity);
+         //info!("Entity {:?} received full ap.", entity);
         action_points.current = action_points.max;
     }
     // On mets à jour l'interface pour les AP du joueur.
@@ -224,6 +222,7 @@ fn combat_turn_next_entity(
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);   
     // v0.19h : On doit donner aux NPC le component CheckGoal pour qu'il planifie.
+    info!("It's {:?} turn now.", entity);
 
     if is_npc.is_some() {
         commands.entity(entity).insert(CheckGoal);    
