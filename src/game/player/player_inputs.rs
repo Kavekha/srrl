@@ -1,7 +1,7 @@
 use bevy::{input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}, prelude::*};
 
 use crate::{game::{combat::{action_infos::ActionInfos, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
-    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, tileboard::components::BoardPosition, visibility::components::View}, globals::STANDARD_TILE_SIZE, menu_builders::ScrollingList, vectors::Vector2Int};
+    menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, tileboard::components::BoardPosition}, globals::STANDARD_TILE_SIZE, map_builders::map::Map, menu_builders::ScrollingList, vectors::Vector2Int};
 
 use super::{components::WantToMoveEvent, Cursor, Player};
 
@@ -28,8 +28,9 @@ pub fn debug_info_on_click (
     camera_q: Query<(&Camera, &GlobalTransform)>,
     query_player_pos: Query<&BoardPosition, With<Player>>,
     buttons: Res<ButtonInput<MouseButton>>,
-    player_view_q: Query<&View>,
+    //player_view_q: Query<&View>,
     player_q: Query<Entity, With<Player>>,
+    board: Res<Map>,
 ) {
     if buttons.just_released(MouseButton::Right) {
         let Ok((camera, camera_transform)) = camera_q.get_single() else { return };
@@ -43,12 +44,15 @@ pub fn debug_info_on_click (
         res_cursor.screen_position = camera.world_to_viewport(camera_transform, res_cursor.world_position);
         let Ok(player_entity) = player_q.get_single() else { return };
         let Ok(_player_position) = query_player_pos.get(player_entity) else { return };
-        let Ok(player_view) = player_view_q.get(player_entity) else { return };
+        //let Ok(player_view) = player_view_q.get(player_entity) else { return };
 
-        if player_view.visible_tiles.contains(&res_cursor.grid_position) {
-            info!("Clic at {:?} : this position is visible.",res_cursor.grid_position);
+        // 0.20n : Si on connait, on peut cliquer.
+        // !! TOCHECK : a voir ce qui se passe si on clique à un endroit où se trouve un npc mais que l'endroit n'est pas visible mais seulement connu.
+        if board.is_revealed(res_cursor.grid_position.x, res_cursor.grid_position.y) {
+        //if player_view.visible_tiles.contains(&res_cursor.grid_position) {
+            info!("Clic at {:?} : this position is known and maybe visible.",res_cursor.grid_position);
         } else {
-            info!("Clic at {:?} : this position is NOT visible.", res_cursor.grid_position);
+            info!("Clic at {:?} : this position is NOT known, so NOT visible.", res_cursor.grid_position);
         }
 
 
@@ -126,7 +130,8 @@ pub fn combat_input(
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_want_to_hit: EventWriter<WantToHitEvent>,
     mut ev_want_to_move: EventWriter<WantToMoveEvent>,
-    view_q: Query<&View>,
+    //view_q: Query<&View>,
+    board: Res<Map>,
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
@@ -141,11 +146,12 @@ pub fn combat_input(
         let entity = result;    //result.0 autrefois
         let destination = res_cursor.grid_position;
 
-        if let Ok(view) = view_q.get(entity) {
-            if !view.visible_tiles.contains(&destination) {
+        if !board.is_revealed(destination.x, destination.y) {
+        //if let Ok(view) = view_q.get(entity) {
+          // if !view.visible_tiles.contains(&destination) {
                 println!("Click is not in vision.");
                 return;
-            }
+            //}
         }
         println!("Click !");
         match &action_infos.attack {
