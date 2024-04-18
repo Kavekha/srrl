@@ -3,7 +3,13 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, pieces::{components::{GameElement, Npc, Occupier}, spawners::spawn_npc_marker}, player::Player, tileboard::components::{BoardPosition, Tile}, visibility::components::Marked}, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{
+    engine::asset_loaders::GraphicsAssets, 
+    game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, 
+    pieces::{components::{Npc, Occupier}, spawners::spawn_npc_marker}, 
+    player::Player, 
+    tileboard::components::{BoardPosition, Tile}, visibility::components::Marked}, 
+    map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, HasBeenSeenEvent, Marker, OutOfSightEvent, View};
 
@@ -138,7 +144,7 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, HasBeenSeenEve
  pub fn update_character_view_with_blocked(
     mut commands: Commands,
     mut player_view_q: Query<(&mut View, &BoardPosition), With<Player>>,
-    board: Res<Map>,
+    mut board: ResMut<Map>,
     occupied_tiles_q: Query<&BoardPosition, (With<Occupier>, With<Tile>)>,
     npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
     mut ev_log: EventWriter<LogEvent>,
@@ -178,6 +184,7 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, HasBeenSeenEve
                     commands.entity(*tile_logic_entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible  } );
                 }
             }
+            board.revealing_tile(visible_tile.x, visible_tile.y);
         }
 
         // Voyons les NPC à présent!

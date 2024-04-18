@@ -19,7 +19,8 @@ pub struct Map {
     pub blocked: Vec<bool>,
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
-    pub entity_tiles: HashMap<Vector2Int, Entity>
+    pub entity_tiles: HashMap<Vector2Int, Entity>,
+    pub revealed_tiles: Vec<bool>,  // 0.20n
 }
 
 impl Map {
@@ -48,12 +49,29 @@ impl Map {
         let idx = self.xy_idx(x, y);
         self.blocked[idx]   
     }
+    pub fn is_revealed(
+        &self,
+        x: i32,
+        y: i32
+    ) -> bool {
+        let idx = self.xy_idx(x, y);
+        self.revealed_tiles[idx]   
+    }
     pub fn out_of_bounds(
         &self,
         x: i32,
         y: i32
     ) -> bool {
         if x < 0 || x > self.width -1 || y < 0 || y > self.height -1 { return true; } else { return false; };
+    }
+    // 0.20n
+    pub fn revealing_tile(
+        &mut self,
+        x: i32,
+        y: i32
+    ) {
+        let idx = self.xy_idx(x, y);
+        self.revealed_tiles[idx] = true;
     }
 
     /// Default map.
@@ -64,7 +82,8 @@ impl Map {
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
             blocked: vec![false; MAPCOUNT],
-            entity_tiles: HashMap::new()
+            entity_tiles: HashMap::new(),
+            revealed_tiles: vec![false; MAPCOUNT],
         }
     }   
 

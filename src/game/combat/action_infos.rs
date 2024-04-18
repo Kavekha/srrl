@@ -7,9 +7,9 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{ commons::is_in_sight, pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::View}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{ pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::View}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}};
+use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
 
 
 
@@ -58,26 +58,35 @@ pub fn update_action_infos(
             return }
         
         // En visu?
-        if let Ok(view) = view_q.get(entity) {
-            if !view.visible_tiles.contains(&tile_position) {
-                return;
+        let mut position_is_seen = true;
+        if !board.is_revealed(tile_position.x, tile_position.y) {
+            if let Ok(view) = view_q.get(entity) {
+                if !view.visible_tiles.contains(&tile_position) {
+                    return;
+                }
             }
-        }
+            position_is_seen = false;
+        }        
 
         // Il y a un fighter ici (Fighter = Health, Stats & N'est pas Mort.)
         let mut has_target = false;
-        if piece_position.iter().any(|board_position| board_position.v == tile_position) {
-            has_target = true;
-            action_infos.target = Some(tile_position);
+        if position_is_seen {
+            if piece_position.iter().any(|board_position| board_position.v == tile_position) {
+                has_target = true;
+                action_infos.target = Some(tile_position);
+            }
         }
 
         // 0.19e : Visuel 
+        // 0.20n : Si dans la vue, alors attaquable. Pas de "in sight" pour le joueur. On verra plus tard si arme a du range.
+        /* 
         if has_target {
             let Ok(_in_los) = is_in_sight(&board, &position.v, &action_infos.target.unwrap(), RANGED_ATTACK_RANGE_MAX) else {
                 println!("Has target, not in view");
                 continue;
             };
-        }          
+        }  
+        */        
 
         // On calcule un trajet jusqu'à la cible. si Cible, on ne verifie pas si on peut marcher sur la dernière case (car on ne pourrait pas: elle est utilisée par la Target)
         let path_to_destination = find_path(

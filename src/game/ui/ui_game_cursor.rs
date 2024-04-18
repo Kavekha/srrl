@@ -5,7 +5,7 @@ use crate::{
     game::{
         combat::{action_infos::ActionInfos, combat_system::components::AttackType, events::Turn}, player::{Cursor, Player}, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}, visibility::components::View
     }, 
-    globals::CHAR_SIZE
+    globals::CHAR_SIZE, map_builders::map::Map
 };
 
 use super::{components::UiActionPointsOnCursor, ReloadUiEvent};
@@ -33,6 +33,7 @@ pub fn update_ui_game_cursor_rendor_from_available_action(
     is_turn_q: Query<&Turn>,
     view_q: Query<&View>,
     res_cursor: Res<Cursor>,
+    board: Res<Map>,
 ){
      // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
     let mut should_update = false;
@@ -47,22 +48,31 @@ pub fn update_ui_game_cursor_rendor_from_available_action(
         let Some(player) = action_infos.entity else { return };
         // curseur dans une zone visible?   // 
         //REMEMBER : Ca sera chiant pour des actions que l'on pourrait faire à l'aveugle (jeter des grenades, etc). Ca s'applique à toutes les restrictions visuelles.
+        // Normalement si pas revealed alors pas visible.
+        let mut position_is_seen = true;
+        if !board.is_revealed(res_cursor.grid_position.x, res_cursor.grid_position.y) { return };
+
         if let Ok(view) = view_q.get(player) {
             if !view.visible_tiles.contains(&res_cursor.grid_position) {
                 *cursor = graph_assets.cursors[CURSOR_CANT_SEE].clone(); 
-                return;
+                position_is_seen = false;
+                //return; On poursuit car c'est le fait de connaitre la tile qui decide de la suite.
             }
         }
         if let Ok(_turn) = is_turn_q.get(player) {
             // Our turn.
-            if action_infos.attack == Some(AttackType::RANGED) { *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
-            } else if action_infos.target.is_some() { *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
-            } else { *cursor = graph_assets.cursors[CURSOR_MOVING].clone(); }
+            if action_infos.attack == Some(AttackType::RANGED) && position_is_seen {   
+                *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
+            }
+            else if action_infos.target.is_some() &&  position_is_seen { 
+                *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
+            } 
+            else { *cursor = graph_assets.cursors[CURSOR_MOVING].clone(); 
+            }
         } else {
             // Not our turn.
             *cursor = graph_assets.cursors[CURSOR_WAITING].clone();
         }
-
     }    
 }
 
