@@ -15,8 +15,21 @@ use crate::{game::{
 };
 use crate::engine::animations::events::AnimateEvent;
 
-use super::components::{MoveEvent, WantToMove};
+use super::components::{CancelMoveEvent, MoveEvent, WantToMove};
 
+
+// 0.20l Pouvoir annuler un deplacement en cours de PJ.
+pub fn interrupting_movement(
+    mut commands:Commands,
+    mut ev_cancel_move: EventReader<CancelMoveEvent>,
+ ) {
+    for event in ev_cancel_move.read() {
+        commands.entity(event.entity).remove::<WantToMove>();
+        commands.entity(event.entity).remove::<MoveTo>();
+        println!("Event Cancel Move!");
+    }    
+ }
+ 
 
 /// 0.19b refacto
 pub fn on_want_to_move_event(

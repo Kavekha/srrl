@@ -15,7 +15,7 @@ mod movement_systems;
 pub mod components;
 
 
-use self::{components::MoveEvent, movement_systems::{entity_move_to, entity_want_to_move, on_want_to_move_event}};
+use self::{components::{CancelMoveEvent, MoveEvent}, movement_systems::{entity_move_to, entity_want_to_move, interrupting_movement, on_want_to_move_event}};
 
 use super::combat::ActionSet;
 
@@ -26,13 +26,17 @@ impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_event::<MoveEvent>()
+            .add_event::<CancelMoveEvent>() // 0.20l
+
+            // 0.20l
+            .add_systems(Update, interrupting_movement.run_if(on_event::<CancelMoveEvent>()))
              // 0.19b     
             .add_systems(Update, (
                 on_want_to_move_event, 
                 entity_want_to_move,
                 entity_move_to
-            ).chain().in_set(ActionSet::Execute)
-        );   
+            ).chain().in_set(ActionSet::Execute))           
+        ;   
     }
 }
 
