@@ -28,7 +28,7 @@ use bevy::prelude::*;
 use crate::game::visibility::components::ComputeFovEvent;
 use self::{view_systems::{update_character_view_on_npc_action, update_character_view_with_blocked}, visibility_render::{update_npc_visibility_status, update_tile_visibility_render}};
 
-use super::{combat::CombatSet, movements::components::MoveEvent, states::GameState};
+use super::{combat::CombatSet, states::GameState};
 
 pub mod components;
 mod view_systems;

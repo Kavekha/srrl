@@ -93,17 +93,17 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
     name_q: Query<&Name>
  ) {
     for event in ev_move_event.read() {
-        println!("{:?} MoveTo {:?}, je suis à {:?} maintenant.", event.entity, event.previous, event.next);
+        //println!("{:?} MoveTo {:?}, je suis à {:?} maintenant.", event.entity, event.previous, event.next);
         for view in view_q.iter() {
             let mut was_in_view= false;
             let mut now_in_view= false;
 
             if view.visible_tiles.contains(&event.previous) {
-                println!("{:?} was in view", event.entity);
+                //println!("{:?} was in view", event.entity);
                 was_in_view = true;
             }
             if view.visible_tiles.contains(&event.next) {
-                println!("{:?} is now in view", event.entity);
+                //println!("{:?} is now in view", event.entity);
                 now_in_view = true;
             }
 
@@ -112,11 +112,11 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
                 continue;
             } else if was_in_view {
                 // Ne l'est plus.
-                println!("npc {:?} is not in view anymore", event.entity);
+                //println!("npc {:?} is not in view anymore", event.entity);
                 commands.entity(event.entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden});
             } else {
                 // vu pour la première fois.
-                println!("npc {:?} is now in sight!", event.entity);
+                //println!("npc {:?} is now in sight!", event.entity);
                 commands.entity(event.entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
                 if let Ok(name) = name_q.get(event.entity) {
                     ev_log.send(LogEvent { entry: format!("{:?} enters your line of view!", name)});

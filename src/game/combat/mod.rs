@@ -177,10 +177,12 @@ fn combat_turn_start(
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,  
 ) {
-    //info!("Event received: CombatTurnStartEvent");
+    info!("Event received: CombatTurnStartEvent");
     // On redonne les PA à tout le monde.
+    let mut step = 0;
     for (entity, mut action_points) in action_query.iter_mut() {
-        println!("Entity {:?} received full ap.", entity);
+        step += 1;
+        println!("{:?} Entity {:?} received full ap.", step, entity);
         action_points.current = action_points.max;
     }
     // On mets à jour l'interface pour les AP du joueur.

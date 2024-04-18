@@ -67,7 +67,7 @@ pub fn update_tile_visibility_render(
     mut sprite_q: Query<&mut Sprite>,
     mut visibility_q: Query<&mut Visibility>
  ){
-    let game_map_render = game_map_render_q.single();
+    let Ok(game_map_render) = game_map_render_q.get_single() else { return; };
     
     let mut component_to_delete = Vec::new();
     let mut entity_change_status = HashMap::new();
