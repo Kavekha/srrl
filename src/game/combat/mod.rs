@@ -223,6 +223,7 @@ fn combat_turn_next_entity(
     current_combat.current_entity = Some(entity);
     // On lui donne le composant "Turn".
     commands.entity(entity).insert(Turn);   
+    info!("It's {:?} turn now.", entity);
     // v0.19h : On doit donner aux NPC le component CheckGoal pour qu'il planifie.
 
     if is_npc.is_some() {
