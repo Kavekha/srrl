@@ -17,8 +17,9 @@ pub struct MoveTo{
     pub target: Option<Vector2Int>,
 }
 
-#[derive(Component)]
-pub struct Moved{
+#[derive(Event)]
+pub struct MoveEvent{
+    pub entity: Entity,
     pub previous: Vector2Int,   // Où etait-il avant ce pas?
     pub next: Vector2Int,       // Où s'est-il rendu?
 }

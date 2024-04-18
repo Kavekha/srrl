@@ -155,8 +155,8 @@ pub fn combat_start(
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
         commands.entity(fighter_id).insert(ActionPoints {max: 10, current: 0});
-        //println!("Action points added for {:?}", fighter_id);
     }
+    
     commands.insert_resource(CombatInfos {turn: 0, current_entity: None});
     //combat_state.set(CombatState::StartTurn);
     ev_newturn.send(CombatTurnStartEvent);
@@ -166,6 +166,7 @@ pub fn combat_start(
 
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
+/// TODO : Avec un seul NPC + PJ, un tour semble donner x2 fois "X received full ap", et parfois encore pluss! (apres un forfeit?)
 fn combat_turn_start(
     // Obligé d'avoir ses 3 queues à cause de npc_query.iter() qui ajoute les entités presentes dans npc_query dans la queue.
     mut action_query: Query<(Entity, &mut ActionPoints)>,

@@ -26,9 +26,9 @@ v1  | 0.20a |
 use bevy::prelude::*;
 
 use crate::game::visibility::components::ComputeFovEvent;
-use self::{view_systems::update_character_view_with_blocked, visibility_render::{update_npc_visibility_status, update_tile_visibility_render}};
+use self::{view_systems::{update_character_view_on_npc_action, update_character_view_with_blocked}, visibility_render::{update_npc_visibility_status, update_tile_visibility_render}};
 
-use super:: states::GameState;
+use super::{combat::CombatSet, movements::components::MoveEvent, states::GameState};
 
 pub mod components;
 mod view_systems;
@@ -44,15 +44,10 @@ mod visibility_render;
 
             //0.20f 
             .add_systems(OnEnter(GameState::Running), init_compute_fov)
-            .add_systems(Update, update_character_view_with_blocked.run_if(on_event::<ComputeFovEvent>()))
-            .add_systems(Update, update_tile_visibility_render.after(update_character_view_with_blocked).run_if(on_event::<ComputeFovEvent>()))
-            .add_systems(Update, update_npc_visibility_status.after(update_character_view_with_blocked).run_if(on_event::<ComputeFovEvent>()))        
-            
-            /* 
-            .add_systems(Update, update_character_view.run_if(on_event::<ComputeFovEvent>()))
-            .add_systems(Update, update_tile_visibility_render.after(update_character_view).run_if(on_event::<ComputeFovEvent>()))
-            .add_systems(Update, update_npc_visibility_status.after(update_character_view).run_if(on_event::<ComputeFovEvent>()))
-            */
+            .add_systems(Update, update_character_view_with_blocked.run_if(on_event::<ComputeFovEvent>()).in_set(CombatSet::Logic))
+            .add_systems(Update, update_character_view_on_npc_action.in_set(CombatSet::Logic))
+            .add_systems(Update, update_npc_visibility_status.in_set(CombatSet::Animation))  
+            .add_systems(Update, update_tile_visibility_render.in_set(CombatSet::Animation))    // PERFS : Tourne en boucle.
         ;   
      }
  }

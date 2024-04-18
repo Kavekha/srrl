@@ -3,7 +3,7 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{ game::{movements::components::Moved, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{ game::{gamelog::LogEvent, movements::components::MoveEvent, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
 
@@ -82,6 +82,50 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
  }
 
 
+ // 0.20i "Si un NPC entre dans mon champ de vision, je suis informé." => Couvert par la fonction principale quand je me deplace, mais pas quand les NPC se deplacent.
+ // Celle-ci réponds à ce besoin. 
+ // On part d'un "on move event"
+ pub fn update_character_view_on_npc_action(
+    mut commands: Commands,
+    mut ev_move_event: EventReader<MoveEvent>,
+    view_q: Query<&View, With<Player>>,
+    mut ev_log: EventWriter<LogEvent>,
+    name_q: Query<&Name>
+ ) {
+    for event in ev_move_event.read() {
+        println!("{:?} MoveTo {:?}, je suis à {:?} maintenant.", event.entity, event.previous, event.next);
+        for view in view_q.iter() {
+            let mut was_in_view= false;
+            let mut now_in_view= false;
+
+            if view.visible_tiles.contains(&event.previous) {
+                println!("{:?} was in view", event.entity);
+                was_in_view = true;
+            }
+            if view.visible_tiles.contains(&event.next) {
+                println!("{:?} is now in view", event.entity);
+                now_in_view = true;
+            }
+
+            if (was_in_view && now_in_view) || (!was_in_view && !now_in_view) {
+                //println!("npc {:?} was and still is in view or never was in view", entity);
+                continue;
+            } else if was_in_view {
+                // Ne l'est plus.
+                println!("npc {:?} is not in view anymore", event.entity);
+                commands.entity(event.entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden});
+            } else {
+                // vu pour la première fois.
+                println!("npc {:?} is now in sight!", event.entity);
+                commands.entity(event.entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
+                if let Ok(name) = name_q.get(event.entity) {
+                    ev_log.send(LogEvent { entry: format!("{:?} enters your line of view!", name)});
+                }
+            }
+        }
+    }
+ }
+
 
 // Note: refacto possible en passant par un HashMap plutot que X list, contenant Entity : VisibilityStatus.
  // 0.20i : On devrait gèrer le reveal_tiles qui se trouve dans Map pour le moment. Mais vu que tout est Hidden par defaut, on ne fait jamais de retour à Hidden après avoir vu logiquement.
@@ -94,11 +138,11 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
     board: Res<Map>,
     occupied_tiles_q: Query<&BoardPosition, (With<Occupier>, With<Tile>)>,
     npc_position_q: Query<(Entity, &BoardPosition), With <Npc>>,
-    has_moved_q: Query<&Moved, With<Npc>>,
+    mut ev_log: EventWriter<LogEvent>,
+    name_q: Query<&Name>
  ) {
     for ( mut view, board_position) in player_view_q.iter_mut() {
-        println!("Calculating FoV...");
-        // La nouvelle vue.
+         // La nouvelle vue.
         let all_wall_position:&HashSet< Vector2Int> = &occupied_tiles_q.iter().map(|tile_position| tile_position.v).collect();
         let view_to_treat = get_tiles_around_range_obstacles_break_view(board_position.v.x, board_position.v.y, view.range, board.width -1, board.height -1, all_wall_position);
         let mut to_hide: Vec<Vector2Int> = Vec::new();
@@ -133,46 +177,34 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
         // Voyons les NPC à présent!
         // Marche OK quand le PJ se deplace mais pas quand c'est le NPC.
         // C'est parce que quand le NPC se deplace, il entre dans la zone, on check s'il est dans la view actuelle - oui, il vient d'y entrer - et s'il est dans la suivante - oui, il y est evidemment.
-        // Pour eviter ça on doit passer par un component "moved" avec le previous move. 
+        // Un autre systeme doit gerer ça.
         let all_npc_positions:&HashSet<(Entity, Vector2Int)> = &npc_position_q.iter().map(|(npc_entity, npc_position)| (npc_entity, npc_position.v)).collect();
         for (entity, position) in all_npc_positions{
             let mut was_in_view= false;
             let mut now_in_view= false;
 
-            println!("checking for {:?}...", entity);
-
-            let previous_position:Vector2Int;
-            if let Ok(moved) = has_moved_q.get(*entity) {
-                previous_position = moved.previous;
-            } else {
-                previous_position = position.clone();
-            }
-
-            if view.visible_tiles.contains(&previous_position) {
-                println!("{:?} was in view", entity);
+            if view.visible_tiles.contains(&position) {
                 was_in_view = true;
             }
-
             if new_view.contains(&position) {
-                println!("{:?} is now in view", entity);
                 now_in_view = true;
             }
 
             if (was_in_view && now_in_view) || (!was_in_view && !now_in_view) {
-                //println!("npc {:?} was and still is in view or never was in view", entity);
                 continue;
             } else if was_in_view {
                 // Ne l'est plus.
-                println!("npc {:?} is not in view anymore", entity);
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden});
+                
                 // TODO : Lancer un event?
             } else {
                 // vu pour la première fois.
-                println!("npc {:?} is now in sight!", entity);
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
+                if let Ok(name) = name_q.get(* entity) {
+                    ev_log.send(LogEvent { entry: format!("You see: {:?}", name)});
+                }
             }
         }
-
         // On mets la nouvelle view.
         view.visible_tiles = new_view;
     }

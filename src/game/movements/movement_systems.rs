@@ -9,13 +9,13 @@ use crate::{game::{
         events::{RefreshActionCostEvent, Turn},
          rules::{consume_actionpoints, AP_COST_MELEE, AP_COST_MOVE}
     }, 
-    movements::components::{MoveTo, Moved}, 
+    movements::components::MoveTo, 
     player::{components::WantToMoveEvent, Player}, 
     tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent}, vectors::Vector2Int
 };
 use crate::engine::animations::events::AnimateEvent;
 
-use super::components::WantToMove;
+use super::components::{MoveEvent, WantToMove};
 
 
 /// 0.19b refacto
@@ -86,11 +86,11 @@ pub fn entity_move_to(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
     mut ev_compute_fov: EventWriter<ComputeFovEvent>,
+    mut ev_move_event: EventWriter<MoveEvent>
 ){
     let mut to_remove = Vec::new();
     for (entity, movement) in move_q.iter() {
         to_remove.push(entity);
-        commands.entity(entity).remove::<Moved>();  // On retire s'il en a deja une.
 
         //println!("{:?} : Je bouge!", entity);
         let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
@@ -102,14 +102,14 @@ pub fn entity_move_to(
         let destination = path.pop_front();
         let Some(new_position) = destination.clone() else { break };
         
-        println!("{:?} MoveTo {:?}, je suis à {:?} maintenant.", entity, board_position.v, new_position);
-        commands.entity(entity).insert(Moved { previous: board_position.v, next: new_position});
+        ev_move_event.send(MoveEvent { entity: entity, previous: board_position.v, next: new_position});    // 0.20k
 
         board_position.v = new_position;
-        ev_refresh_action.send(RefreshActionCostEvent);        
-        ev_compute_fov.send(ComputeFovEvent);   // 0.20a
+        ev_refresh_action.send(RefreshActionCostEvent);
+        if is_player.is_some() {
+            ev_compute_fov.send(ComputeFovEvent);   // 0.20k => Uniquement pour le PJ, les NPC sont couverts par le MoveEvent.
+        }      
         
-
         commands.entity(entity).insert(WantToMove { entity: entity, path: path, target: movement.target});
 
         consume_actionpoints(&mut action_points, AP_COST_MOVE);

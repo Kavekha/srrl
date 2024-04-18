@@ -15,7 +15,7 @@ mod movement_systems;
 pub mod components;
 
 
-use self::movement_systems::{entity_move_to, entity_want_to_move, on_want_to_move_event};
+use self::{components::MoveEvent, movement_systems::{entity_move_to, entity_want_to_move, on_want_to_move_event}};
 
 use super::combat::ActionSet;
 
@@ -25,6 +25,7 @@ pub struct MovementPlugin;
 impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_event::<MoveEvent>()
              // 0.19b     
             .add_systems(Update, (
                 on_want_to_move_event, 
