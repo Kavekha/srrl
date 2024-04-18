@@ -3,7 +3,7 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{ game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{ engine::asset_loaders::GraphicsAssets, game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
 
@@ -197,8 +197,6 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
             } else if was_in_view {
                 // Ne l'est plus.
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden});
-                
-                // TODO : Lancer un event?
             } else {
                 // vu pour la première fois.
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
@@ -217,4 +215,60 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
  }
 
 
- 
+
+#[derive(Event)]
+
+pub struct OutOfSightEvent{
+    pub entity: Entity
+}
+
+pub fn put_markers_for_out_of_sight(
+    mut commands: Commands,
+    mut ev_out_of_sight: EventReader<OutOfSightEvent>,   
+) {
+    for event in ev_out_of_sight.read() {
+        println!("{:?} is out of sight : Leave a Marker.", event.entity)
+    }
+}
+
+
+/*
+
+ pub fn spawn_npc_marker(
+ mut commands: Commands,
+ mut ev_out_of_sight: EventReader<OutOfSightEvent>,
+
+ graph_assets: ResMut<GraphicsAssets>,
+ mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+) {
+ for event in ev_out_of_sight.read() {
+
+
+
+     //println!("Creating effect");
+     let texture = graph_assets.effects[event.id.as_str()].clone();
+     let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 3, 1, None, None);
+     let texture_atlas_layout = texture_atlas_layouts.add(layout);
+     // Use only the subset of sprites in the sheet that make up the run animation
+     let animation_indices = AnimationIndices { first: 0, last: 2 };
+     commands.spawn((
+         SpriteBundle {
+             //transform: Transform::from_scale(Vec3::splat(1.0)),
+             transform: Transform {
+                 translation: Vec3::new(event.x, event.y, ORDER_EFFECT),
+                 scale: Vec3::splat(1.0),
+                 ..default()
+             },
+             texture,
+             ..default()
+         },
+         TextureAtlas {
+             layout: texture_atlas_layout,
+             index: animation_indices.first,
+         },
+         animation_indices,
+         AnimationTimer(Timer::from_seconds(BASE_TIME_FRAME_EFFECT, TimerMode::Repeating)), // Repeating car on passe par autant d'etapes que d'images.
+     ));
+ }
+}
+ */

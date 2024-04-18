@@ -203,3 +203,6 @@ pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){
     .insert(ExitMapTile)
     .insert(BoardPosition{ v:exit_position});
 }
+
+
+pub fn spawn_npc_marker(){}
