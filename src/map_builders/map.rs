@@ -4,9 +4,7 @@ use serde::{Deserialize, Serialize};
 use::bevy::prelude::*;
 
 use crate::{
-    map_builders::{commons::TileType, MAPCOUNT, MAPHEIGHT, MAPWIDTH},
-    //globals::{MAPCOUNT, MAPHEIGHT, MAPWIDTH}, 
-    vectors::Vector2Int
+    map_builders::{commons::TileType, MAPCOUNT, MAPHEIGHT, MAPWIDTH}, spatial::SPATIAL_MAP, vectors::Vector2Int
 };
 
 
@@ -16,7 +14,7 @@ pub struct Map {
     pub tiles: Vec<TileType>,
     pub width: i32,
     pub height: i32,
-    pub blocked: Vec<bool>,
+    //pub blocked: Vec<bool>,
     #[serde(skip_serializing)]
     #[serde(skip_deserializing)]
     pub entity_tiles: HashMap<Vector2Int, Entity>,
@@ -47,7 +45,8 @@ impl Map {
         y: i32
     ) -> bool {
         let idx = self.xy_idx(x, y);
-        self.blocked[idx]   
+        //self.blocked[idx]   
+        SPATIAL_MAP.lock().unwrap().blocked[idx]
     }
     pub fn is_revealed(
         &self,
@@ -84,7 +83,7 @@ impl Map {
             tiles: vec![TileType::Wall; map_tile_count],  
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
-            blocked: vec![false; map_tile_count],
+            //blocked: vec![false; map_tile_count],
             entity_tiles: HashMap::new(),
             revealed_tiles: vec![false; map_tile_count],
         }

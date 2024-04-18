@@ -68,7 +68,8 @@ pub fn debug_info_on_click (
 pub fn player_choose_action_input(
     mut action_infos: ResMut<ActionInfos>,
     keys: Res<ButtonInput<KeyCode>>,
-    mut ev_log: EventWriter<LogEvent>,
+    mut ev_log: EventWriter<LogEvent>,    
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ) {
     if keys.just_pressed(KeyCode::Digit1) {
         action_infos.attack = Some(AttackType::MELEE);
@@ -78,6 +79,7 @@ pub fn player_choose_action_input(
         action_infos.attack = Some(AttackType::RANGED);
         ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});       
     }
+    ev_refresh_action.send(RefreshActionCostEvent);
 }
 
 
@@ -131,7 +133,8 @@ pub fn combat_input(
     mut ev_want_to_hit: EventWriter<WantToHitEvent>,
     mut ev_want_to_move: EventWriter<WantToMoveEvent>,
     //view_q: Query<&View>,
-    board: Res<Map>,
+    board: Res<Map>,    
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
@@ -170,6 +173,7 @@ pub fn combat_input(
             },
             //_ => println!("Not combat_input.")
         };
+        ev_refresh_action.send(RefreshActionCostEvent);
     }
 }
 

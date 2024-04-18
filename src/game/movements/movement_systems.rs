@@ -118,7 +118,6 @@ pub fn entity_move_to(
         ev_move_event.send(MoveEvent { entity: entity, previous: board_position.v, next: new_position});    // 0.20k
 
         board_position.v = new_position;
-        ev_refresh_action.send(RefreshActionCostEvent);
         if is_player.is_some() {
             ev_compute_fov.send(ComputeFovEvent);   // 0.20k => Uniquement pour le PJ, les NPC sont couverts par le MoveEvent.
         }      
@@ -132,7 +131,8 @@ pub fn entity_move_to(
         }
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
-        ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
+        ev_animate.send(AnimateEvent { entity: entity, path: path_animation });        
+        ev_refresh_action.send(RefreshActionCostEvent);
     }
     for entity in to_remove {        
         commands.entity(entity).remove::<MoveTo>();

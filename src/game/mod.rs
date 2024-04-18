@@ -32,6 +32,7 @@ use crate::game::tileboard::components::ExitMapTile;
 use crate::game::states::GameState;
 use crate::engine::render::components::{GameMapRender, GameCursorRender};
 use crate::map_builders::map::Map;
+use crate::map_builders::{MAPHEIGHT, MAPWIDTH};
 
 
 //--
@@ -55,7 +56,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app
-            .insert_resource(Map::new())
+            .insert_resource(Map::new(MAPWIDTH, MAPHEIGHT, "Underground"))
 
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)

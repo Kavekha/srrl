@@ -46,9 +46,9 @@ pub fn entity_want_forfeit(
         
         if is_player.is_some() {
             ev_interface.send(ReloadUiEvent);
-            ev_refresh_action.send(RefreshActionCostEvent);
             ev_log.send(LogEvent{entry:format!("You forfeit your turn.")});  //LOG
-        }
+        }        
+        ev_refresh_action.send(RefreshActionCostEvent);
     }
     for entity in to_remove {
         commands.entity(entity).remove::<WantToForfeit>();
@@ -122,9 +122,9 @@ pub fn entity_want_hit(
                 //_ => println!("Want to Hit AP Cost non géré pour ce cas là.")
             };
             if is_player.is_some() {
-                ev_interface.send(ReloadUiEvent); 
-                ev_refresh_action.send(RefreshActionCostEvent);
+                ev_interface.send(ReloadUiEvent);                 
             }
+            ev_refresh_action.send(RefreshActionCostEvent);
         }
     }
     for entity in to_remove {

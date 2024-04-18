@@ -4,9 +4,9 @@ use lazy_static::lazy_static;
 
 use crate::map_builders::{map::Map, TileType};
 
-struct SpatialMap {
-    blocked : Vec<bool>,
-    tile_content : Vec<Vec<Entity>>
+pub struct SpatialMap {
+    pub blocked : Vec<bool>,
+    pub tile_content : Vec<Vec<Entity>>
 }
 
 impl SpatialMap {
@@ -19,7 +19,7 @@ impl SpatialMap {
 }
 
 lazy_static! {
-    static ref SPATIAL_MAP : Mutex<SpatialMap> = Mutex::new(SpatialMap::new());
+    pub static ref SPATIAL_MAP : Mutex<SpatialMap> = Mutex::new(SpatialMap::new());
 }
 
 pub fn set_size(map_tile_count: usize) {
