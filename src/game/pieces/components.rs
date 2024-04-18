@@ -84,3 +84,7 @@ pub struct Stats {
     pub melee:u32,
     pub firearms:u32
 } 
+
+
+#[derive(Component)]
+pub struct GameElement;

@@ -3,9 +3,9 @@ use bresenham::Bresenham;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{ engine::asset_loaders::GraphicsAssets, game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, pieces::components::{Npc,  Occupier}, player::Player, tileboard::components::{BoardPosition, Tile}}, map_builders::map::Map, vectors::Vector2Int};
+use crate::{engine::asset_loaders::GraphicsAssets, game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, pieces::{components::{GameElement, Npc, Occupier}, spawners::spawn_npc_marker}, player::Player, tileboard::components::{BoardPosition, Tile}, visibility::components::Marked}, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, map_builders::map::Map, vectors::Vector2Int};
 
-use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
+use super::components::{ChangeVisibility, ChangeVisibilityStatus, HasBeenSeenEvent, Marker, OutOfSightEvent, View};
 
  
  // 0.20f
@@ -88,13 +88,14 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
  pub fn update_character_view_on_npc_action(
     mut commands: Commands,
     mut ev_move_event: EventReader<MoveEvent>,
-    view_q: Query<&View, With<Player>>,
+    view_q: Query<(Entity, &View), With<Player>>,
     mut ev_log: EventWriter<LogEvent>,
-    name_q: Query<&Name>
+    name_q: Query<&Name>,
+    mut ev_has_been_seen: EventWriter<HasBeenSeenEvent>,
  ) {
     for event in ev_move_event.read() {
         //println!("{:?} MoveTo {:?}, je suis à {:?} maintenant.", event.entity, event.previous, event.next);
-        for view in view_q.iter() {
+        for (view_entity, view) in view_q.iter() {
             let mut was_in_view= false;
             let mut now_in_view= false;
 
@@ -120,6 +121,8 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
                 commands.entity(event.entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
                 if let Ok(name) = name_q.get(event.entity) {
                     ev_log.send(LogEvent { entry: format!("{:?} enters your line of view!", name)});
+                    ev_has_been_seen.send(HasBeenSeenEvent { entity: event.entity, saw_by : view_entity});
+
                 }
             }
         }
@@ -142,6 +145,7 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
     name_q: Query<&Name>,
     mut ev_cancel_move: EventWriter<CancelMoveEvent>,
     player_q: Query<Entity, With<Player>>,
+    mut ev_out_of_sight: EventWriter<OutOfSightEvent>,   
  ) {
     for ( mut view, board_position) in player_view_q.iter_mut() {
          // La nouvelle vue.
@@ -197,6 +201,7 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
             } else if was_in_view {
                 // Ne l'est plus.
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Hidden});
+                ev_out_of_sight.send(OutOfSightEvent { entity: *entity});
             } else {
                 // vu pour la première fois.
                 commands.entity(*entity).insert(ChangeVisibility { new_status: ChangeVisibilityStatus::Visible});
@@ -215,60 +220,59 @@ use super::components::{ChangeVisibility, ChangeVisibilityStatus, View};
  }
 
 
-
-#[derive(Event)]
-
-pub struct OutOfSightEvent{
-    pub entity: Entity
-}
-
-pub fn put_markers_for_out_of_sight(
+pub fn remove_markers_when_seen(
     mut commands: Commands,
-    mut ev_out_of_sight: EventReader<OutOfSightEvent>,   
-) {
-    for event in ev_out_of_sight.read() {
-        println!("{:?} is out of sight : Leave a Marker.", event.entity)
+    view_q: Query<&View>,
+    marker_position_q: Query<(Entity, &BoardPosition, &Marker)>,
+){
+    let Ok(view) = view_q.get_single() else { return };
+    let mut to_remove = Vec::new();
+    for (entity, marker_position, marker) in marker_position_q.iter() {
+        if view.visible_tiles.contains(&marker_position.v) {
+            commands.entity(marker.marked_id).remove::<Marked>();   //("Can't found a marked entity for this marker.");
+            to_remove.push(entity);
+            println!("Un marqueur est retiré.");
+        }
+    }
+    for entity in to_remove {
+        commands.entity(entity).despawn_recursive();    // Petite entité n'a plus de raison d'exister.
     }
 }
 
 
-/*
 
- pub fn spawn_npc_marker(
- mut commands: Commands,
- mut ev_out_of_sight: EventReader<OutOfSightEvent>,
-
- graph_assets: ResMut<GraphicsAssets>,
- mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+pub fn remove_markers_when_marked_is_seen(
+    mut commands: Commands,
+    mut ev_has_been_seen: EventReader<HasBeenSeenEvent>,
+    marked_q : Query<&Marked>,   
 ) {
- for event in ev_out_of_sight.read() {
-
-
-
-     //println!("Creating effect");
-     let texture = graph_assets.effects[event.id.as_str()].clone();
-     let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 3, 1, None, None);
-     let texture_atlas_layout = texture_atlas_layouts.add(layout);
-     // Use only the subset of sprites in the sheet that make up the run animation
-     let animation_indices = AnimationIndices { first: 0, last: 2 };
-     commands.spawn((
-         SpriteBundle {
-             //transform: Transform::from_scale(Vec3::splat(1.0)),
-             transform: Transform {
-                 translation: Vec3::new(event.x, event.y, ORDER_EFFECT),
-                 scale: Vec3::splat(1.0),
-                 ..default()
-             },
-             texture,
-             ..default()
-         },
-         TextureAtlas {
-             layout: texture_atlas_layout,
-             index: animation_indices.first,
-         },
-         animation_indices,
-         AnimationTimer(Timer::from_seconds(BASE_TIME_FRAME_EFFECT, TimerMode::Repeating)), // Repeating car on passe par autant d'etapes que d'images.
-     ));
- }
+    info!("remove markers: a HasBeenSeenEvent has been received.");
+    for event in ev_has_been_seen.read() {
+        info!("{:?} has been seen by {:?}", event.entity, event.saw_by);
+        if let Ok(marked) = marked_q.get(event.entity) {
+            info!("{:?} is marked with marker {:?}.", event.entity, marked.marker_id);
+          commands.entity(marked.marker_id).despawn_recursive();    // On efface le Marker.
+        } else { continue };        
+    }
 }
- */
+
+pub fn put_markers_when_out_of_sight(
+    mut commands: Commands,
+    mut ev_out_of_sight: EventReader<OutOfSightEvent>,  
+    position_q: Query<&BoardPosition>,
+    graph_assets: ResMut<GraphicsAssets>,
+) {
+    for event in ev_out_of_sight.read() {
+        println!("{:?} is out of sight : Leave a Marker.", event.entity);
+        if let Ok(position) = position_q.get(event.entity) {
+            let marker = spawn_npc_marker(&mut commands, &graph_assets, event.entity, position.v);
+            commands.entity(event.entity).insert(Marked { marker_id : marker });
+        }        
+    }
+}
+
+
+
+
+
+

@@ -3,11 +3,11 @@ use rand::Rng;
 use serde::{Serialize, Deserialize};
 
 use crate::{
-    game::{
-        combat::rules::{NPC_CHANCE_TO_BE_RANGED, VISIBILITY_RANGE_PLAYER}, pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::View
-    }, vectors::Vector2Int};
+    commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
+        combat::rules::{NPC_CHANCE_TO_BE_RANGED, VISIBILITY_RANGE_PLAYER}, pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::{Marker, View}
+    }, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, vectors::Vector2Int};
 
-use super::components::CharacterBundle;
+use super::components::{CharacterBundle, GameElement};
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -205,4 +205,41 @@ pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){
 }
 
 
-pub fn spawn_npc_marker(){}
+pub fn spawn_npc_marker(
+    commands: &mut Commands,
+    //mut ev_spawn_marker: EventReader<SpawnMarkerEvent>,
+    graph_assets: &GraphicsAssets,
+    //mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    entity: Entity,
+    position: Vector2Int
+) -> Entity {
+ //for event in ev_spawn_marker.read() {
+    let texture = graph_assets.textures[SPRITE_PLAYER_HUMAN].clone();
+    let translation= get_world_position(&position); 
+    let order_z = ORDER_MARKER;
+    let visibility = Visibility::Visible;
+    let sprite = Sprite {
+        color: Color::Rgba { red:0.5, green:0.5, blue:0.5, alpha:0.5 },
+        ..default()
+    };
+
+    let marker = commands.spawn((
+         SpriteBundle {
+             transform: Transform {
+                 translation: Vec3::new(translation.0, translation.1, order_z),
+                 scale: Vec3::splat(1.0),
+                 ..default()
+             },
+             texture,
+             sprite: sprite,
+             visibility: visibility,
+             ..default()
+         },
+         Marker { marked_id: entity },
+         GameElement,
+     )).id();
+    
+    commands.entity(marker).insert(BoardPosition {v: position});
+
+    return marker
+ }

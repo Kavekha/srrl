@@ -23,13 +23,14 @@ pub const STANDARD_TILE_SIZE:i32 = 32;  //64;
 
 // RENDERING ORDER
 pub const ORDER_FLOOR: f32 = 0.0;
-pub const ORDER_CORPSE: f32 = 1.0;
-pub const ORDER_WALL: f32 = 5.0;
-pub const ORDER_NPC: f32 = 8.0;
-pub const ORDER_EXIT: f32 = 9.0;
-pub const ORDER_PLAYER: f32 = 10.0;
-pub const ORDER_EFFECT: f32 = 15.0;
-pub const ORDER_CURSOR: f32 = 20.0;
+pub const ORDER_CORPSE: f32 = 5.0;
+pub const ORDER_WALL: f32 = 10.0;
+pub const ORDER_NPC: f32 = 15.0;
+pub const ORDER_EXIT: f32 = 20.0;
+pub const ORDER_PLAYER: f32 = 25.0;
+pub const ORDER_EFFECT: f32 = 30.0;
+pub const ORDER_MARKER: f32 = 35.0;
+pub const ORDER_CURSOR: f32 = 40.0;
 
 // Tiles    //TEMPORARY : TODO : Loader.
 pub const MAP_EXIT: &str = "exit";
