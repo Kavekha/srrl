@@ -10,6 +10,7 @@ mod globals;
 mod vectors;
 mod menu_builders;
 mod commons;
+mod spatial;
 
 use game::GamePlugin;
 use engine::EnginePlugin;

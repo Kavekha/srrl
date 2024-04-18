@@ -75,21 +75,31 @@ impl Map {
     }
 
     /// Default map.
-    pub fn new() -> Map {
+    pub fn new<S : ToString>(width: i32, height: i32, name: S) -> Map {
         println!("Je fais un map::new(). La première vient de l'insertion de la Resource.");
+        let map_tile_count = (width*height) as usize;
+        crate::spatial::set_size(map_tile_count);
+
         Map{
-            tiles: vec![TileType::Wall; MAPCOUNT],  
+            tiles: vec![TileType::Wall; map_tile_count],  
             width: MAPWIDTH as i32,
             height: MAPHEIGHT as i32,
-            blocked: vec![false; MAPCOUNT],
+            blocked: vec![false; map_tile_count],
             entity_tiles: HashMap::new(),
-            revealed_tiles: vec![false; MAPCOUNT],
+            revealed_tiles: vec![false; map_tile_count],
         }
     }   
 
     pub fn populate_blocked(&mut self) {
+        crate::spatial::populate_blocked_from_map(self);    // 0.20n
+        /*
         for (i,tile) in self.tiles.iter_mut().enumerate() {
             self.blocked[i] = *tile == TileType::Wall;  //self.blocked[i] = le resultat de tile == TileType::Wall = true!
         }
+        */
+    }
+
+    pub fn clear_content_index(&mut self) {
+        crate::spatial::clear();
     }
 }

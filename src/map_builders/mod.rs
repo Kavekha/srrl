@@ -34,9 +34,9 @@ use self::builders::{
 pub const SHOW_MAPGEN_VISUALIZER : bool = false;    //DEBUG     //BROKEN
 #[allow(dead_code)]
 pub const FIXED_MAPGEN_NEW_SNAPSHOT: f32 = 10.0;    // Doesn't look like 1 update / 10 secs, but let's go with it for now.
-pub const MAPWIDTH : usize = 80;
-pub const MAPHEIGHT : usize = 50;
-pub const MAPCOUNT : usize = MAPHEIGHT * MAPWIDTH;
+pub const MAPWIDTH : i32 = 80;
+pub const MAPHEIGHT : i32 = 50;
+pub const MAPCOUNT : i32 = MAPHEIGHT * MAPWIDTH;
 
 
 #[derive(Clone)]
@@ -72,7 +72,7 @@ impl BuilderChain {
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(),
+                map: Map::new(MAPWIDTH, MAPHEIGHT, "Underground"),
                 starting_position: None,
                 rooms: None,
                 history: Vec::new(),

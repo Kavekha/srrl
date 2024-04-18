@@ -19,6 +19,7 @@ serde           = "^1"
 serde_json      = "1"
 rand            = "0.8.0" 
 bresenham = "0.1.0"
+lazy_static = "1.4.0"
 
 [workspace]
 resolver = "2" # Important! wgpu/Bevy needs this!
