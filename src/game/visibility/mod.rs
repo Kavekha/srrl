@@ -26,7 +26,7 @@ v1  | 0.20a |
 use bevy::prelude::*;
 
 use crate::game::visibility::components::ComputeFovEvent;
-use self::{components::{HasBeenSeenEvent, OutOfSightEvent}, view_systems::{put_markers_when_out_of_sight, remove_markers_when_marked_is_seen, remove_markers_when_seen, update_character_view_on_npc_action, update_character_view_with_blocked}, visibility_render::{update_npc_visibility_status, update_tile_visibility_render}};
+use self::{components::{HasBeenSeenEvent, OutOfSightEvent}, view_systems::{put_markers_when_out_of_sight, remove_markers_when_marked_is_seen, remove_markers_when_seen, update_character_view_on_npc_action, update_character_view_with_blocked}, visibility_render::{update_convert_logic_tile_visibility_to_render, update_npc_visibility_status, update_tile_visibility_render}};
 
 use super::{combat::CombatSet, states::GameState};
 
@@ -47,6 +47,7 @@ mod visibility_render;
             //0.20f 
             .add_systems(OnEnter(GameState::Running), init_compute_fov)
             .add_systems(Update, update_character_view_with_blocked.run_if(on_event::<ComputeFovEvent>()).in_set(CombatSet::Logic))
+            .add_systems(Update, update_convert_logic_tile_visibility_to_render.after(update_character_view_with_blocked).in_set(CombatSet::Logic)) // 0.20n
             .add_systems(Update, update_character_view_on_npc_action.in_set(CombatSet::Logic))
 
             .add_systems(Update, put_markers_when_out_of_sight.run_if(on_event::<OutOfSightEvent>()).in_set(CombatSet::Logic))// 0.20m
