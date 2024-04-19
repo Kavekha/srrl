@@ -44,3 +44,8 @@ pub struct HasBeenSeenEvent {
     pub entity : Entity,
     pub saw_by : Entity
 }
+
+#[derive(Component)]
+pub struct RenderVisibilityTile {
+    pub visibility_score: i32
+}

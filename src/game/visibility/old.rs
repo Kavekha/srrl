@@ -1,4 +1,69 @@
 
+
+// Cette fonction prends les tuiles logiques dont la visibilité doit changer, et fait les calculs pour determiner quelles tuiles render sont concernées.
+// DISCARD : Provoque d'importants ralentissements!!!
+pub fn update_convert_logic_tile_visibility_to_render_v2_discard(
+    mut commands: Commands,
+    tile_with_change_order_q: Query<(Entity, &ChangeVisibility, &BoardPosition), With<Tile>>,
+    game_map_render_q: Query<&GameMapRender>, 
+    view_q: Query<&View>,
+) {
+    let Ok(game_map_render) = game_map_render_q.get_single() else { return; };
+    
+    let mut component_to_delete = Vec::new();
+        
+    // Je recupère les entités logiques
+    for (entity, new_visibility, position) in tile_with_change_order_q.iter() {
+        component_to_delete.push(entity);
+        // Je recupere le nouveau statut.
+        let mut visible_status;
+        match new_visibility.new_status {
+            ChangeVisibilityStatus::Visible => visible_status = 1,
+            ChangeVisibilityStatus::Hidden => visible_status = -1,
+        }
+
+        let view = view_q.single();
+        // Si visible, on regarde pour chaque Tuile graphique si les autres tuiles logiques qu'elles couvrent sont visibles.
+        // Sinon, on a le comportement habituel.
+        for render_cover in [RENDER_SW_COVER, RENDER_NW_COVER, RENDER_NE_COVER, RENDER_SE_COVER] {
+            if visible_status > 0 {
+                let mut score = 0;
+                for logic_tile_around in render_cover {
+                    if view.visible_tiles.contains(&Vector2Int {x:position.v.x + logic_tile_around.0, y:position.v.y + logic_tile_around.1 } ) {
+                         score += 1;
+                        break;
+                    }
+                }
+                if score == 0 {
+                    visible_status = -1;    // Elle sera "dans l'obscurité".
+                }
+            }
+            let rendering_corner :(i32, i32);
+            println!("Render cover is {:?}", render_cover);
+            match render_cover {
+                RENDER_SW_COVER => rendering_corner = RENDER_SW,
+                RENDER_NW_COVER => rendering_corner = RENDER_NW,
+                RENDER_NE_COVER => rendering_corner = RENDER_NE,
+                RENDER_SE_COVER => rendering_corner = RENDER_SE,
+                _ => rendering_corner = RENDER_SW, // Should not happen.
+            };
+            println!("Rendering corner {:?}", rendering_corner);
+            
+            if let Some(render_tile_floor_entity) = game_map_render.floor.get(&Vector2Int { x:position.v.x + rendering_corner.0, y:position.v.y + rendering_corner.1 }) {
+                commands.entity(* render_tile_floor_entity).insert(RenderVisibilityTile { visibility_score : visible_status });
+            }
+            if let Some(render_tile_wall_entity) = game_map_render.wall.get(&Vector2Int { x:position.v.x + rendering_corner.0, y:position.v.y + rendering_corner.1 }) {
+                commands.entity(* render_tile_wall_entity).insert(RenderVisibilityTile { visibility_score : visible_status });
+            } 
+        }      
+    }
+    for entity in component_to_delete {
+        commands.entity(entity).remove::<ChangeVisibility>();
+    }
+}
+
+
+
 // 0.20h Donne les 4 render tiles FLOOR d'une tile logic.
 fn get_render_tiles_floor_for_logical_tile_at(
     game_map_render:&GameMapRender,
