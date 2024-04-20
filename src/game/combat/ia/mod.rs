@@ -80,29 +80,31 @@ impl Plugin for IaPlugin {
 
 fn ignore_npc_out_of_game_range(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<Turn>, With<CheckGoal>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, Option<&Frozen>), (With<Npc>, With<CheckGoal>, Without<IsDead>)>,
     position_q: Query<&BoardPosition>, 
     player_q: Query<Entity, With<Player>>,
-    //mut ev_endturn: EventWriter<EntityEndTurnEvent>,    //TODO : Remplacer le EndTurn event par un Forfeit component?
 ){
     let Ok(player_entity) = player_q.get_single() else { return };
     let Ok(player_position) = position_q.get(player_entity) else { return };
-    let mut to_remove = Vec::new();
+    let mut to_remove_frozen = Vec::new();
+    let mut to_remove_goal = Vec::new();
 
     for (npc_entity, npc_position, is_frozen) in npc_entity_fighter_q.iter() {
         if (player_position.v.x - npc_position.v.x).abs() > NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN 
         || (player_position.v.y - npc_position.v.y).abs() > NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN {
-            println!("NPC {:?} at {:?} is too far from player ({:?})", npc_entity, npc_position, player_position);
+            //info!("NPC {:?} at {:?} is too far from player ({:?})", npc_entity, npc_position, player_position);
             commands.entity(npc_entity).insert(Frozen);
-            //turn_to_remove.push(npc_entity)
+            to_remove_goal.push(npc_entity);
         } else if is_frozen.is_some() {
-            to_remove.push(Frozen)
+            //info!("npc_entity {:?} is frozen.", npc_entity);
+            to_remove_frozen.push(npc_entity)
         };
     };
-    /* 
-    for entity in turn_to_remove {
-        commands.entity(entity).remove::<Turn>();
-        ev_endturn.send(EntityEndTurnEvent {entity : entity});  // FIX un peu cheum où on s'assure qu'il ne reste pas bloqué en boucle dans combat_turn_entity_check 0.19j
+    for entity in to_remove_frozen {
+        //info!("Frozen status on {:?} is removed.", entity);
+        commands.entity(entity).remove::<Frozen>();        
     }
-    */
+    for entity in to_remove_goal {
+        commands.entity(entity).remove::<CheckGoal>();        
+    }
 }

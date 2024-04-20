@@ -54,13 +54,6 @@ pub fn debug_info_on_click (
         } else {
             info!("Clic at {:?} : this position is NOT known, so NOT visible.", res_cursor.grid_position);
         }
-
-
-
-        //println!("Cursor: World position is : {:?}, Grid position is : {:?}", res_cursor.world_position, res_cursor.grid_position);
-        //let Ok(_player_position) = query_player_pos.get_single() else { return };
-        //println!("Player Grid Position : {:?}", player_position.v);
-        //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
     }
 }
 

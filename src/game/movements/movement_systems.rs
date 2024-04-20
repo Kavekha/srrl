@@ -11,7 +11,7 @@ use crate::{game::{
     }, 
     movements::components::MoveTo, 
     player::{components::WantToMoveEvent, Player}, 
-    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::{ComputeFovEvent, View}, BASE_SPEED_PATH_ANIMATOR_UPDATE}, vectors::Vector2Int
+    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::{ComputeFovEvent, View}}, vectors::Vector2Int
 };
 use crate::engine::animations::events::AnimateEvent;
 
