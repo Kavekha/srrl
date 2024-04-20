@@ -3,6 +3,9 @@ FEAR pour la logique de Squat,
 Left For Dead pour la logique "MJ" d'un combat,  
 Alien Isolation pour la logique de traque & poursuite,
 Thief pour la logique infiltration.    
+https://www.youtube.com/watch?v=dB7ZSz890cw
+
+
 
 # Hide & Seek  
 ## Status des NPC

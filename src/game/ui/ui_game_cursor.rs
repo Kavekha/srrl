@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::ActionInfos, combat_system::components::AttackType, events::Turn}, player::{Cursor, Player}, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}, visibility::components::View
+        combat::{action_infos::{ActionInfos, CharacterAction}, combat_system::components::AttackType, events::Turn}, player::{Cursor, Player}, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}, visibility::components::View
     }, 
     globals::CHAR_SIZE, map_builders::map::Map
 };
@@ -23,7 +23,39 @@ const CURSOR_CANT_SEE:&str = "cursor_cant_see";
 //===
 
 
+
+// v2 (0.20n) On laisse à ActionInfos la récuperation de l'info, on se contente d'afficher ce qui est attendu.
 pub fn update_ui_game_cursor_rendor_from_available_action(
+    mut ev_refresh_ui: EventReader<ReloadUiEvent>,
+    mut cursor_moved_events: EventReader<CursorMoved>,
+    entity_cursor_q: Query<Entity, With<GameCursorRender>>,
+    action_infos: Res<ActionInfos>,
+    mut cursor_q: Query<&mut Handle<Image>>,
+    graph_assets: Res<GraphicsAssets>,
+){
+     // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
+    let mut should_update = false;
+    for _event in cursor_moved_events.read() {should_update = true; break;}
+    for _event in ev_refresh_ui.read() { should_update = true; break;}
+    if !should_update { return };
+
+    //println!("Je dois mettre à jour l'apparence du Curseur.");  
+    let Ok(entity) = entity_cursor_q.get_single() else { return };
+    if let Ok(mut cursor) = cursor_q.get_mut(entity) {
+        match action_infos.available_action {
+            CharacterAction::NONE => *cursor = graph_assets.cursors[CURSOR_MOVING].clone(), // Si rien, alors à la transition "Their turn / my turn" on reste sur waiting.
+            CharacterAction::WAITING => *cursor = graph_assets.cursors[CURSOR_WAITING].clone(),
+            CharacterAction::CANTSEE => *cursor = graph_assets.cursors[CURSOR_CANT_SEE].clone(),
+            CharacterAction::MOVING =>  *cursor = graph_assets.cursors[CURSOR_MOVING].clone(),
+            CharacterAction::TARGETING => *cursor = graph_assets.cursors[CURSOR_TARGETING].clone(),
+            CharacterAction::PUNCHING => *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone(),
+        }
+    }  
+}
+
+
+// v1
+pub fn update_ui_game_cursor_rendor_from_available_action_v1(
     mut ev_refresh_ui: EventReader<ReloadUiEvent>,
     mut cursor_moved_events: EventReader<CursorMoved>,
     entity_cursor_q: Query<Entity, With<GameCursorRender>>,
