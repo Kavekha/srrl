@@ -24,7 +24,7 @@ use bevy::prelude::*;
 
 use crate::{game::{ pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::View}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, events::{RefreshActionCostEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
+use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, components::CombatInfos, events::{RefreshActionCostEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
 
 
 
@@ -56,7 +56,7 @@ pub fn update_action_infos(
     mut ev_interface: EventWriter<ReloadUiEvent>,
     mut ev_refresh_action: EventReader<RefreshActionCostEvent>,
     entity_player_q: Query<Entity,With<Player>>,
-    turn_q: Query<&Turn>,
+    //turn_q: Query<&Turn>,
     view_q: Query<&View, With<Player>>,
     piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>, Without<Player>)>,
     board: Res<Map>,
@@ -64,9 +64,10 @@ pub fn update_action_infos(
     cursor: Res<Cursor>,
     position_q: Query<&BoardPosition>,
     action_points_q: Query<&ActionPoints>,
+    combat_infos: Res<CombatInfos>,
 ) {
     for _event in ev_refresh_action.read() {
-        info!("Event RefreshActionCostEvent received.");
+        //info!("Event RefreshActionCostEvent received.");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;
@@ -81,18 +82,22 @@ pub fn update_action_infos(
             return };
         action_infos.entity = Some(entity);
 
-        let Ok(_is_turn) = turn_q.get(entity) else { 
+        // On ne peut pas récuperer vraiment le Turn au bon moment sans cumuler les checks (CombatTurnCheck). Mieux vaut regarder le current_entity de CombatInfos.
+        //let Ok(_is_turn) = turn_q.get(entity) else {         
+        if combat_infos.current_entity != action_infos.entity {     // Si ce n'est pas le joueur....
             action_infos.available_action = CharacterAction::WAITING; 
-            info!("ActionInfos: Not player turn.");
+            info!("ActionInfos: Not player turn. Current is {:?} vs action is {:?}", combat_infos.current_entity, action_infos.entity);
             ev_interface.send(ReloadUiEvent);
             return 
         };
+        info!("ActionInfos: Player turn.");
 
         let Ok(view) = view_q.get(entity) else { return };
         let tile_position = cursor.grid_position;      
 
         // Tile jamais vue.
         if !board.is_revealed(tile_position.x, tile_position.y) {
+            info!("ActionInfos: tile not revealed");
             action_infos.available_action = CharacterAction::CANTSEE;
             ev_interface.send(ReloadUiEvent);
             return 
@@ -102,7 +107,7 @@ pub fn update_action_infos(
             ev_interface.send(ReloadUiEvent);
         } else {
             // Je vois la destination. Y a-t-il une cible?
-            info!("Action info: Je vois la destination. ");
+            //info!("Action info: Je vois la destination. ");
             if piece_position.iter().any(|board_position| board_position.v == tile_position) {
                 action_infos.target = Some(tile_position);
                 match &action_infos.attack {
@@ -113,10 +118,11 @@ pub fn update_action_infos(
             } else {
                 action_infos.available_action = CharacterAction::MOVING;
             }
+            ev_interface.send(ReloadUiEvent);
         }
 
         // ---- A ce stade on ne peut avoir que : MOVING, PUNCHING, SHOOTING.
-        info!("Action info: Moving, Punching, Shooting is available.");
+        //info!("Action info: Moving, Punching, Shooting is available.");
 
         // On calcule un trajet jusqu'à la cible. si Cible, on ne verifie pas si on peut marcher sur la dernière case (car on ne pourrait pas: elle est utilisée par la Target)
         let Ok(position) = position_q.get(entity) else {
@@ -135,7 +141,7 @@ pub fn update_action_infos(
             return };
         
         // On remonte le cout en AP de l'action en cours.
-        info!("Action info: Calculate AP : attack is {:?}", action_infos.attack);
+       // info!("Action info: Calculate AP : attack is {:?}", action_infos.attack);
         let mut ap_cost: u32;
         match &action_infos.attack {
             None => {
@@ -163,6 +169,7 @@ pub fn update_action_infos(
                         if action_infos.target.is_some() {
                             ap_cost = AP_COST_RANGED;
                         } else {
+                            ev_interface.send(ReloadUiEvent);
                             return  // Cost sera a None, car on ne peut rien faire si pas de vraie cible.
                         }
                     }
@@ -176,7 +183,7 @@ pub fn update_action_infos(
             action_infos.path = Some(path);
         };
         ev_interface.send(ReloadUiEvent);
-        info!("Action Infos finished.");
+        //info!("Action Infos finished.");
     }
 }
 

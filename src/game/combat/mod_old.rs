@@ -72,8 +72,8 @@ mod ia;
 
 
 use crate::{engine::animations::events::GraphicsWaitEvent, game::{
-        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, states::GameState 
-    }, menu_builders::Action};
+        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::game_messages::GameOverMessage, states::GameState 
+    }};
 
 use self::{
     action_infos::{update_action_infos, ActionInfos, CharacterAction}, 
@@ -87,7 +87,6 @@ use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, pla
 
 pub struct CombatPlugin;
 
-// 0.20o Rework pour répondre au bug du TurnStart relancé en boucle.
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
@@ -105,20 +104,29 @@ impl Plugin for CombatPlugin {
             .add_event::<TickEvent>()                           // De retour en 0.19j : Donne le rythme en recheckant où en sont les acteurs du combat.
             .add_event::<CombatEndEvent>()              // 0.20o demande la fin du combat.
   
-            
+            // 0.20c : refacto configure sets. Logic => Calcul, Animation => Affiche, Tick => Relance la machine. NOTE: Si OnEvent + in_set c'est ignoré. WHY?
             .configure_sets(Update, (CombatSet::Logic, CombatSet::Animation, CombatSet::Tick).chain().run_if(in_state(GameState::Running)))
             .configure_sets(Update, (ActionSet::Planning, ActionSet::Execute).chain().in_set(CombatSet::Logic))
 
-            // Note: On entre en combat avec le STARTCOMBATMESSAGE
-            .add_systems(Update, tick.in_set(CombatSet::Tick))      // Si pas d'anim en cours, passe à la suite du process (Consommation AP -> Changement Entité -> Changement Tour)
-            .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()))
-            .add_systems(Update, combat_turn_start.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnStartEvent>()))
-            .add_systems(Update, combat_turn_next_entity.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnNextEntityEvent>()))
-            .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
-            .add_systems(Update, combat_turn_end.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnEndEvent>()))
-            .add_systems(Update, combat_end.run_if(on_event::<CombatEndEvent>()))
+            // Init Combat.
+            //USE STARTCOMBATMESSAGE 0.15.4      // On lance le Combat dés l'arrivée en jeu. //TODO : Gestion de l'entrée / sortie en combat.
+           // Le tour commence. 0.20c
+           .add_systems(Update, combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()))
+           // On prends l'entité dont c'est le tour. On passe en TurnUpdate
+           .add_systems(Update, combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()))
+           // toutes les entités ont fait leur tour.   
+           .add_systems(Update, combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()))      
+              // Check de la situation PA-wise. Mise à jour.
 
-            .add_systems(OnEnter(GameState::Disabled), quit_current_game) 
+            //.add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
+            .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).in_set(CombatSet::Logic))
+            
+            .add_systems(Update, tick.in_set(CombatSet::Logic))
+            .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()))
+
+            .add_systems(Update, combat_end.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatEndEvent>()))
+            // TODO: Quitter le combat. PLACEHOLDER.
+            //.add_systems(OnEnter(GameState::Disabled), combat_end) 
             ;
     }
 }
@@ -132,7 +140,7 @@ fn tick(
     mut ev_tick: EventWriter<TickEvent>
 ) {
     if ev_wait.read().len() == 0 {
-        //info!("tick: send tick event.");
+        ////info!("tick: send tick event.");
         ev_tick.send(TickEvent);
     }
 }
@@ -143,19 +151,18 @@ pub fn combat_start(
     mut commands: Commands,
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
     fighters: Query<(Entity, &Health, &Stats, Option<&Player>), Without<IsDead>>,
-    mut action_infos: ResMut<ActionInfos>,
+    mut ev_tick: EventWriter<TickEvent>,
 ) {    
     // TODO: Adds this by default?
     for (fighter_id, _fighter_health, _fighter_stat, _fighter_player) in fighters.iter() {
         commands.entity(fighter_id).insert(ActionPoints {max: 10, current: 0});
     }
-    action_infos.attack = Some(AttackType::MELEE);
     
     commands.insert_resource(CombatInfos {turn: 0, current_entity: None});
-    //info!("Combat Start.");
+    ////info!("Combat Start.");
     ev_newturn.send(CombatTurnStartEvent);
-    //ev_tick.send(TickEvent);}
-}
+    ev_tick.send(TickEvent);}
+
 
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
 fn combat_turn_start(
@@ -176,9 +183,9 @@ fn combat_turn_start(
         //println!("{:?} Entity {:?} received full ap.", step, entity);
         action_points.current = action_points.max;
     }
-    info!("Turn {:?} : AP have been reset.", combat_infos.turn);
+    println!("Turn {:?} : AP have been reset.", combat_infos.turn);
     // On mets à jour le calcul des AP, ce qui rafraichira l'UI.
-    //ev_refresh_ap.send(RefreshActionCostEvent);
+    ev_refresh_ap.send(RefreshActionCostEvent);
 
     // On mets les gens dans la CombatTurnQueue pour ce tour.
     // Npc d'abord
@@ -194,7 +201,6 @@ fn combat_turn_start(
     // On lance le TurnNextEntity pour faire jouer le premier de la Queue.
     //info!("combat_turn_start send event for CombatTurnNextEntityEvent");
     ev_next.send(CombatTurnNextEntityEvent);
-    ev_refresh_ap.send(RefreshActionCostEvent);
 }
 
 
@@ -226,9 +232,8 @@ fn combat_turn_next_entity(
 
     if is_npc.is_some() {
         commands.entity(entity).insert(CheckGoal);    
-    } else {
-        ev_refresh_ap.send(RefreshActionCostEvent);
-    }   
+    };    
+    ev_refresh_ap.send(RefreshActionCostEvent);
     //info!("combat_turn_next_entity: finished for {:?}.", entity)    
 }
 
@@ -266,7 +271,7 @@ fn combat_turn_entity_check(
     current_combat: ResMut<CombatInfos>,
     query_action_points: Query<(&ActionPoints, Option<&Npc>, Option<&Frozen>)>,  // Frozen => entité qu'on ne veut pas utiliser car non active.
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,  
-    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>,
+    //mut ev_tick: EventReader<TickEvent>
 ) {
     ////info!("Combat turn entity: starting.");
     // On recupere l'entité de CombatInfos.
@@ -284,10 +289,14 @@ fn combat_turn_entity_check(
             // 0.19h: Pour le NPC, on lui redemande de CheckGoal
             commands.entity(entity).insert(CheckGoal);
            } else {
-                ev_refresh_ap.send(RefreshActionCostEvent);
            }
+           ////info!("Combat turn entity : treated.");
+        } else {
+            ////info!("!!! Combat turn entity: current_entity n'a pas de points d'Actions.");
         }
         ////info!("Combat turn entity : Entity checked was {:?}.", entity);
+    } else {
+        ////info!("!!! Combat turn entity : Pas d'entité disponible dans current_combat.current_entity");
     }
 }
 
@@ -309,14 +318,3 @@ pub fn combat_end(
     ev_message.send(MessageEvent(Box::new(GameOverMessage)));
 }
 
-// v0.20o : A terme, a deplacer ailleurs.
-pub fn quit_current_game(
-    mut commands: Commands,
-    mut queue: ResMut<CombatTurnQueue>,
-    mut ev_message: EventWriter<MessageEvent>,
-){    
-    commands.remove_resource::<CombatInfos>();
-    queue.0.clear();
-    info!("Quit current game");
-    ev_message.send(MessageEvent(Box::new(QuitGameMessage)));
-}

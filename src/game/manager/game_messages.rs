@@ -1,9 +1,9 @@
 use bevy::{ecs::world::World, log::info};
 
 use crate::{
-    game::{clean_game_screen, combat::combat_start, gamelog::Gamelog, manager::{
+    game::{clean_game_screen, combat::{combat_start, events::RefreshActionCostEvent}, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
+    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, player::camera_center_on_player, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
 
 use super::Message;
  
@@ -87,11 +87,22 @@ pub struct StartCombatMessage;
 impl Message for StartCombatMessage {
     fn execute(&self, world: &mut World) {
         info!("StartCombatMessage executed");
+        world.send_event(MessageEvent(Box::new(CameraCenterPlayerMessage)));  
         let start_combat = world.register_system(combat_start);
         let _result = world.run_system(start_combat);
-        //world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"combat".to_string()})));  
+        //world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"combat".to_string()})));          
     }
 }
+
+pub struct CameraCenterPlayerMessage;
+impl Message for CameraCenterPlayerMessage {
+    fn execute(&self, world: &mut World) {
+        info!("CameraCenterPlayerMessage executed");
+        let camera_center = world.register_system(camera_center_on_player);
+        let _result = world.run_system(camera_center);        
+    }
+}
+
 
 pub struct ReloadUiMessage;
 impl Message for ReloadUiMessage {

@@ -32,7 +32,7 @@ mod player_inputs;
 pub mod components;
 pub mod cursor;
 
-
+pub use camera_exit::camera_center_on_player;
 pub use components::Player;
 pub use cursor::Cursor;
 
@@ -66,7 +66,7 @@ impl Plugin for PlayerPlugin{
             .add_systems(Update, ig_call_menu_input.run_if(in_state(GameState::Running)))   // Appeler IG Menu si In Game.            
             .add_systems(Update, ig_inside_menu_input.run_if(in_state(GameState::Unavailable)))     // TODO : Put the game In Unavailable quand Menu Open 
             
-            //.add_systems(Update, camera_follow.run_if(in_state(GameState::Running)))
+            //.add_systems(Update, camera_center_on_player.run_if(in_state(GameState::Running)))
             .add_systems(Update, camera_smooth_follow.run_if(in_state(GameState::Running)))            
             .add_systems(Update, exit_step_check.run_if(in_state(GameState::Running)).in_set(CombatSet::Tick))
 

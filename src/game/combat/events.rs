@@ -42,3 +42,7 @@ pub struct WantToHitEvent {
 
 #[derive(Event)]
 pub struct TickEvent;
+
+
+#[derive(Event)]
+pub struct CombatEndEvent;
