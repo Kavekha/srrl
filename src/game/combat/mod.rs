@@ -214,7 +214,6 @@ fn combat_turn_next_entity(
         // Plus de combattant: le tour est fini.
         //info!("combat_turn_next_entity: Plus aucun combattant pour ce tour. Fin du tour => <CombatTurnEndEvent>");
         ev_turn_end.send(CombatTurnEndEvent);
-        ev_refresh_ap.send(RefreshActionCostEvent);
         return;
     };
     // On récupère les informations de l'entité a tjrs des AP et existe tjrs sinon crash.
@@ -267,6 +266,7 @@ fn combat_turn_entity_check(
     current_combat: ResMut<CombatInfos>,
     query_action_points: Query<(&ActionPoints, Option<&Npc>, Option<&Frozen>)>,  // Frozen => entité qu'on ne veut pas utiliser car non active.
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,  
+    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>, 
     //mut ev_tick: EventReader<TickEvent>
 ) {
     ////info!("Combat turn entity: starting.");
@@ -284,6 +284,8 @@ fn combat_turn_entity_check(
             if is_npc.is_some() {
             // 0.19h: Pour le NPC, on lui redemande de CheckGoal
             commands.entity(entity).insert(CheckGoal);
+           } else {
+            ev_refresh_ap.send(RefreshActionCostEvent);
            }
            ////info!("Combat turn entity : treated.");
         } else {

@@ -66,6 +66,7 @@ pub fn update_action_infos(
     action_points_q: Query<&ActionPoints>,
 ) {
     for _event in ev_refresh_action.read() {
+        info!("Event RefreshActionCostEvent received.");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;
@@ -75,12 +76,14 @@ pub fn update_action_infos(
         // Determiner l'action disponible.
         action_infos.available_action = CharacterAction::NONE;
         let Ok(entity) = entity_player_q.get_single() else {
+            info!("ActionInfos: No player.");
             ev_interface.send(ReloadUiEvent);
             return };
         action_infos.entity = Some(entity);
 
         let Ok(_is_turn) = turn_q.get(entity) else { 
             action_infos.available_action = CharacterAction::WAITING; 
+            info!("ActionInfos: Not player turn.");
             ev_interface.send(ReloadUiEvent);
             return 
         };
@@ -88,7 +91,7 @@ pub fn update_action_infos(
         let Ok(view) = view_q.get(entity) else { return };
         let tile_position = cursor.grid_position;      
 
-        // Jamais vu
+        // Tile jamais vue.
         if !board.is_revealed(tile_position.x, tile_position.y) {
             action_infos.available_action = CharacterAction::CANTSEE;
             ev_interface.send(ReloadUiEvent);
