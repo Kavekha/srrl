@@ -76,7 +76,7 @@ use crate::{engine::animations::events::GraphicsWaitEvent, game::{
     }};
 
 use self::{
-    action_infos::{update_action_infos, ActionInfos}, 
+    action_infos::{update_action_infos, ActionInfos, CharacterAction}, 
     combat_system::{components::IsDead, CombatSystemPlugin}, 
     components::CurrentEntityTurnQueue, 
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
@@ -95,7 +95,7 @@ impl Plugin for CombatPlugin {
 
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
-            .insert_resource(ActionInfos { cost:None, path: None, target: None, entity: None, attack: None })
+            .insert_resource(ActionInfos { available_action: CharacterAction::NONE, cost:None, path: None, target: None, attack: None, entity: None })
 
             .add_event::<CombatTurnStartEvent>()        // Lance le tour.
             .add_event::<CombatTurnNextEntityEvent>()   // Envoyé pour prendre le nouvel acteur.

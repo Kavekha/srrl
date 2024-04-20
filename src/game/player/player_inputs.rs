@@ -1,6 +1,6 @@
 use bevy::{input::mouse::{MouseMotion, MouseScrollUnit, MouseWheel}, prelude::*};
 
-use crate::{game::{combat::{action_infos::ActionInfos, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
+use crate::{game::{combat::{action_infos::{ActionInfos, CharacterAction}, combat_system::components::{AttackType, WantToForfeit}, events::{RefreshActionCostEvent, WantToHitEvent}}, gamelog::LogEvent, manager::{change_state_messages::{ChangeGameStateRunningMessage, ChangeGameStateUnavailableMessage}, 
     menu_messages::{CloseMenuMessage, OpenInGameMenuOpenMessage}, MessageEvent}, tileboard::components::BoardPosition}, globals::STANDARD_TILE_SIZE, map_builders::map::Map, menu_builders::ScrollingList, vectors::Vector2Int};
 
 use super::{components::WantToMoveEvent, Cursor, Player};
@@ -119,9 +119,53 @@ pub fn ig_inside_menu_input(
 }
 
 
+
 /// Les events du Joueur.
 /// 0.20j On s'assure que le clic soit dans la view.
+/// 0.20n On retire l'intelligence qui se trouve desormais dans ActionInfos.
 pub fn combat_input(
+    mut commands: Commands,
+    keys: Res<ButtonInput<KeyCode>>,
+    player_query: Query<Entity, With<Player>>,
+    buttons: Res<ButtonInput<MouseButton>>,
+    action_infos: ResMut<ActionInfos>,  // Contient le type d'attaque utilisé..
+    res_cursor: Res<Cursor>,    //TODO : On click event?
+    mut ev_want_to_hit: EventWriter<WantToHitEvent>,
+    mut ev_want_to_move: EventWriter<WantToMoveEvent>,
+    //view_q: Query<&View>,
+    board: Res<Map>,
+){
+    //println!("Checking if combat input...!");
+    if keys.just_pressed(KeyCode::KeyT) {
+        let Ok(result) = player_query.get_single() else { return };     // TODO si on conserve action_infos, utiliser l'entité de ActionInfos?
+        let entity = result;    //result.0 autrefois
+        commands.entity(entity).insert(WantToForfeit);
+        //ev_endturn.send(EntityEndTurnEvent {entity});
+        println!("Player asked for End of round for {:?}.", entity);
+    }
+    if buttons.just_released(MouseButton::Left) {
+        let Ok(result) = player_query.get_single() else { return };
+        let entity = result;    //result.0 autrefois
+        let destination = res_cursor.grid_position;
+
+        info!("Click ! {:?}", action_infos.available_action); 
+        match &action_infos.available_action {
+            CharacterAction::NONE => {},
+            CharacterAction::WAITING => {},
+            CharacterAction::CANTSEE => {},
+            CharacterAction::MOVING => { 
+                ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination}); 
+            },
+            CharacterAction::TARGETING => { ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination}); },
+            CharacterAction::PUNCHING => { ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination}); },
+        };
+    }
+}
+
+
+/// Les events du Joueur.
+/// 0.20j On s'assure que le clic soit dans la view.
+pub fn combat_input_v1(
     mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
     player_query: Query<Entity, With<Player>>,

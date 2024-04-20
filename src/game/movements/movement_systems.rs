@@ -38,7 +38,7 @@ pub fn on_want_to_move_event(
     action_infos: Res<ActionInfos>,
 ){
     for event in ev_want_to_move.read() {
-        //println!("Move Event recu");
+        info!("Move Event recu");
         let path = action_infos.path.clone();
         let Some(entity) = action_infos.entity else { continue };
         let Some(path) = path else { continue };
