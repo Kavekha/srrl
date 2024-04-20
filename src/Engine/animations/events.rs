@@ -8,7 +8,8 @@ use crate::vectors::Vector2Int;
 pub struct AnimateEvent {
     //anim_type?
     pub entity: Entity,
-    pub path: VecDeque<Vector2Int>
+    pub path: VecDeque<Vector2Int>,
+    pub wait_anim: bool
 }
  
 #[derive(Event)]

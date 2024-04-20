@@ -112,11 +112,24 @@ impl Plugin for CombatPlugin {
             // Note: On entre en combat avec le STARTCOMBATMESSAGE
             .add_systems(Update, tick.in_set(CombatSet::Tick))      // Si pas d'anim en cours, passe à la suite du process (Consommation AP -> Changement Entité -> Changement Tour)
             .add_systems(Update, update_action_infos.run_if(resource_exists::<CombatInfos>).run_if(on_event::<RefreshActionCostEvent>()))
-            .add_systems(Update, combat_turn_start.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnStartEvent>()))
-            .add_systems(Update, combat_turn_next_entity.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnNextEntityEvent>()))
-            .add_systems(Update, combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>())) 
-            .add_systems(Update, combat_turn_end.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnEndEvent>()))
-            .add_systems(Update, combat_end.run_if(on_event::<CombatEndEvent>()))
+            // 0.20p
+            .add_systems(Update,(
+                combat_turn_start.run_if(on_event::<CombatTurnStartEvent>()),
+                combat_turn_next_entity.run_if(on_event::<CombatTurnNextEntityEvent>()),
+                combat_turn_entity_check.run_if(on_event::<TickEvent>()),
+                combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()),
+                combat_end.run_if(on_event::<CombatEndEvent>())
+            ).chain().run_if(resource_exists::<CombatInfos>))
+            /* 
+            .add_systems(Update,(
+                combat_turn_start.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnStartEvent>()),
+                combat_turn_next_entity.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnNextEntityEvent>()),
+                combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>()),
+                combat_turn_end.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnEndEvent>()),
+                combat_end.run_if(on_event::<CombatEndEvent>())
+            ).chain())
+*/
+            
 
             .add_systems(OnEnter(GameState::Disabled), quit_current_game) 
             ;
@@ -134,6 +147,8 @@ fn tick(
     if ev_wait.read().len() == 0 {
         //info!("tick: send tick event.");
         ev_tick.send(TickEvent);
+    } else {
+        info!("Graphic event, waiting...");
     }
 }
 
