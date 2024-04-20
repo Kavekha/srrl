@@ -77,7 +77,7 @@ pub fn update_action_infos(
         // Determiner l'action disponible.
         action_infos.available_action = CharacterAction::NONE;
         let Ok(entity) = entity_player_q.get_single() else {
-            info!("ActionInfos: No player.");
+            //info!("ActionInfos: No player.");
             ev_interface.send(ReloadUiEvent);
             return };
         action_infos.entity = Some(entity);
@@ -86,11 +86,11 @@ pub fn update_action_infos(
         //let Ok(_is_turn) = turn_q.get(entity) else {         
         if combat_infos.current_entity != action_infos.entity {     // Si ce n'est pas le joueur....
             action_infos.available_action = CharacterAction::WAITING; 
-            info!("ActionInfos: Not player turn. Current is {:?} vs action is {:?}", combat_infos.current_entity, action_infos.entity);
+            //info!("ActionInfos: Not player turn. Current is {:?} vs action is {:?}", combat_infos.current_entity, action_infos.entity);
             ev_interface.send(ReloadUiEvent);
             return 
         };
-        info!("ActionInfos: Player turn.");
+        //info!("ActionInfos: Player turn.");
 
         let Ok(view) = view_q.get(entity) else { return };
         let tile_position = cursor.grid_position;      

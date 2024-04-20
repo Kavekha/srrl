@@ -26,14 +26,14 @@ pub struct Cursor {
     pub screen_position: Option<Vec2>,      // OptionVec2.
 }
 
-fn cursor_position(
-    mut cursor_moved_events: EventReader<CursorMoved>,
+pub fn cursor_position(
+    //mut cursor_moved_events: EventReader<CursorMoved>,
     mut res_cursor: ResMut<Cursor>,
     window_query: Query<&Window>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
     query_player_pos: Query<&BoardPosition, With<Player>>,
 ) {
-    for _event in cursor_moved_events.read() {
+    //for _event in cursor_moved_events.read() {
         let Ok((camera, camera_transform)) = camera_q.get_single() else { return };
 
         if let Some(world_position) = window_query.single().cursor_position() 
@@ -48,7 +48,7 @@ fn cursor_position(
         let Ok(_player_position) = query_player_pos.get_single() else { return };
         //println!("Player Grid Position : {:?}", player_position.v);
         //println!("Cursor: Sanity check: get world position is: {:?}", get_world_position(& res_cursor.grid_position));
-    }
+    //}
 }
 
 ///map.x = (screen.x / TILE_WIDTH_HALF + screen.y / TILE_HEIGHT_HALF) /2;

@@ -145,7 +145,7 @@ pub fn combat_input(
         //ev_endturn.send(EntityEndTurnEvent {entity});
         println!("Player asked for End of round for {:?}.", entity);
     }
-    if buttons.just_released(MouseButton::Left) {
+    if buttons.just_pressed(MouseButton::Left) {           //just_released before 0.20o
         let Ok(result) = player_query.get_single() else { return };
         let entity = result;    //result.0 autrefois
         let destination = res_cursor.grid_position;

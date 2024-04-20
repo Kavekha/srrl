@@ -3,7 +3,7 @@ use bevy::{ecs::world::World, log::info};
 use crate::{
     game::{clean_game_screen, combat::{combat_start, events::RefreshActionCostEvent}, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, player::camera_center_on_player, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
+    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, player::{camera_center_on_player, cursor_position}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent}, map_builders::map::Map};
 
 use super::Message;
  
@@ -99,9 +99,20 @@ impl Message for CameraCenterPlayerMessage {
     fn execute(&self, world: &mut World) {
         info!("CameraCenterPlayerMessage executed");
         let camera_center = world.register_system(camera_center_on_player);
-        let _result = world.run_system(camera_center);        
+        let _result = world.run_system(camera_center); 
+        world.send_event(MessageEvent(Box::new(ForceCursorUpdateMessage)));      
     }
 }
+
+pub struct ForceCursorUpdateMessage;
+impl Message for ForceCursorUpdateMessage {
+    fn execute(&self, world: &mut World) {
+        info!("ForceCursorUpdateMessage executed");
+        let cursor_update = world.register_system(cursor_position);
+        let _result = world.run_system(cursor_update);        
+    }
+}
+
 
 
 pub struct ReloadUiMessage;
