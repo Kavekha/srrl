@@ -76,40 +76,34 @@ pub fn update_action_infos(
     action_points_q: Query<&ActionPoints>,
 ) {
     for _event in ev_refresh_action.read() {
-        info!("Event ActionInfos update received.");
         //Reset:
         action_infos.cost = None;
         action_infos.path = None;
         action_infos.target = None; //Some(cursor.grid_position);
         action_infos.entity = None;
-        info!("Reset Action Infos.");
 
         // Determiner l'action disponible.
         action_infos.available_action = CharacterAction::NONE;
         let Ok(entity) = entity_player_q.get_single() else {
-            info!("Action Infos: No Entity player.");
             return };
         action_infos.entity = Some(entity);
 
         let Ok(_is_turn) = turn_q.get(entity) else { 
             action_infos.available_action = CharacterAction::WAITING; 
-            info!("Action infos: Not your turn.");
             return 
         };
 
         let Ok(view) = view_q.get(entity) else { return };
         let tile_position = cursor.grid_position;      
 
-        // TO CHECK : Si je ne vois pas je ne peux rien faire, mais si je suis en reveal je peux bouger => Jamais je ne check le visible....ca peut pas marcher.  
-        if !view.visible_tiles.contains(&tile_position) {
-            action_infos.available_action = CharacterAction::CANTSEE;            ; 
-            info!("Action info : Can't see this position.");
+        // Jamais vu
+        if !board.is_revealed(tile_position.x, tile_position.y) {
+            action_infos.available_action = CharacterAction::CANTSEE;
             return 
         } 
-        if board.is_revealed(tile_position.x, tile_position.y) {
+        if !view.visible_tiles.contains(&tile_position) {
             action_infos.available_action = CharacterAction::MOVING;
-            info!("Action info: This place is revealed. You can move to it.")
-        } else {    // TO CHECK : Idem c'est debile. Si pas revelé c'est en Hidden, donc je peux rien faire.
+        } else {
             // Je vois la destination. Y a-t-il une cible?
             info!("Action info: Je vois la destination. ");
             if piece_position.iter().any(|board_position| board_position.v == tile_position) {
@@ -129,7 +123,6 @@ pub fn update_action_infos(
 
         // On calcule un trajet jusqu'à la cible. si Cible, on ne verifie pas si on peut marcher sur la dernière case (car on ne pourrait pas: elle est utilisée par la Target)
         let Ok(position) = position_q.get(entity) else {
-            info!("Action Info: pas de position pour le joueur.");
              return };
 
         let path_to_destination = find_path(
@@ -145,6 +138,7 @@ pub fn update_action_infos(
             return };
         
         // On remonte le cout en AP de l'action en cours.
+        info!("Action info: Calculate AP : attack is {:?}", action_infos.attack);
         let mut ap_cost: u32;
         match &action_infos.attack {
             None => {

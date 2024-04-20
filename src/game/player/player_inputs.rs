@@ -156,8 +156,8 @@ pub fn combat_input(
             CharacterAction::MOVING => { 
                 ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination}); 
             },
-            CharacterAction::TARGETING => { ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination}); },
-            CharacterAction::PUNCHING => { ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination}); },
+            CharacterAction::PUNCHING => { ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination}); },
+            CharacterAction::TARGETING => { ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination}); },
         };
     }
 }
