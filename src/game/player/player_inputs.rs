@@ -69,14 +69,18 @@ pub fn player_choose_action_input(
     mut action_infos: ResMut<ActionInfos>,
     keys: Res<ButtonInput<KeyCode>>,
     mut ev_log: EventWriter<LogEvent>,
+    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
 ) {
     if keys.just_pressed(KeyCode::Digit1) {
         action_infos.attack = Some(AttackType::MELEE);
         ev_log.send(LogEvent {entry: format!("Now in Melee mode.")});  
+        ev_refresh_action.send(RefreshActionCostEvent);
+        
     }
     if keys.just_pressed(KeyCode::Digit2) {
         action_infos.attack = Some(AttackType::RANGED);
-        ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});       
+        ev_log.send(LogEvent {entry: format!("Now in Targeting mode.")});    
+        ev_refresh_action.send(RefreshActionCostEvent);   
     }
 }
 
@@ -132,8 +136,6 @@ pub fn combat_input(
     res_cursor: Res<Cursor>,    //TODO : On click event?
     mut ev_want_to_hit: EventWriter<WantToHitEvent>,
     mut ev_want_to_move: EventWriter<WantToMoveEvent>,
-    //view_q: Query<&View>,
-    board: Res<Map>,
 ){
     //println!("Checking if combat input...!");
     if keys.just_pressed(KeyCode::KeyT) {
@@ -162,60 +164,6 @@ pub fn combat_input(
     }
 }
 
-
-/// Les events du Joueur.
-/// 0.20j On s'assure que le clic soit dans la view.
-pub fn combat_input_v1(
-    mut commands: Commands,
-    keys: Res<ButtonInput<KeyCode>>,
-    player_query: Query<Entity, With<Player>>,
-    buttons: Res<ButtonInput<MouseButton>>,
-    action_infos: ResMut<ActionInfos>,  // Contient le type d'attaque utilisé..
-    res_cursor: Res<Cursor>,    //TODO : On click event?
-    mut ev_want_to_hit: EventWriter<WantToHitEvent>,
-    mut ev_want_to_move: EventWriter<WantToMoveEvent>,
-    //view_q: Query<&View>,
-    board: Res<Map>,
-){
-    //println!("Checking if combat input...!");
-    if keys.just_pressed(KeyCode::KeyT) {
-        let Ok(result) = player_query.get_single() else { return };     // TODO si on conserve action_infos, utiliser l'entité de ActionInfos?
-        let entity = result;    //result.0 autrefois
-        commands.entity(entity).insert(WantToForfeit);
-        //ev_endturn.send(EntityEndTurnEvent {entity});
-        println!("Player asked for End of round for {:?}.", entity);
-    }
-    if buttons.just_released(MouseButton::Left) {
-        let Ok(result) = player_query.get_single() else { return };
-        let entity = result;    //result.0 autrefois
-        let destination = res_cursor.grid_position;
-
-        if !board.is_revealed(destination.x, destination.y) {
-        //if let Ok(view) = view_q.get(entity) {
-          // if !view.visible_tiles.contains(&destination) {
-                println!("Click is not in vision.");
-                return;
-            //}
-        }
-        println!("Click !");
-        match &action_infos.attack {
-            None => {
-                ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination});
-            },
-            Some(attack_type) => {
-                match attack_type {
-                    AttackType::MELEE => {
-                        ev_want_to_move.send(WantToMoveEvent { entity: entity, tile: destination});
-                    },
-                    AttackType::RANGED => {
-                        ev_want_to_hit.send(WantToHitEvent { source: entity, target: destination});
-                    }
-                };
-            },
-            //_ => println!("Not combat_input.")
-        };
-    }
-}
 
 
 // 0.16.1

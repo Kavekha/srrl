@@ -43,7 +43,7 @@ pub fn update_ui_game_cursor_rendor_from_available_action(
     let Ok(entity) = entity_cursor_q.get_single() else { return };
     if let Ok(mut cursor) = cursor_q.get_mut(entity) {
         match action_infos.available_action {
-            CharacterAction::NONE => {},
+            CharacterAction::NONE => *cursor = graph_assets.cursors[CURSOR_MOVING].clone(), // Si rien, alors à la transition "Their turn / my turn" on reste sur waiting.
             CharacterAction::WAITING => *cursor = graph_assets.cursors[CURSOR_WAITING].clone(),
             CharacterAction::CANTSEE => *cursor = graph_assets.cursors[CURSOR_CANT_SEE].clone(),
             CharacterAction::MOVING =>  *cursor = graph_assets.cursors[CURSOR_MOVING].clone(),

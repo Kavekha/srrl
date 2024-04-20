@@ -77,7 +77,7 @@ use crate::{engine::animations::events::GraphicsWaitEvent, game::{
 
 use self::{
     action_infos::{update_action_infos, ActionInfos, CharacterAction}, 
-    combat_system::{components::IsDead, CombatSystemPlugin}, 
+    combat_system::{components::{AttackType, IsDead}, CombatSystemPlugin}, 
     components::CurrentEntityTurnQueue, 
     events::{CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
     ia::{components::{CheckGoal, Frozen}, IaPlugin}, 
@@ -95,7 +95,7 @@ impl Plugin for CombatPlugin {
 
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
             .init_resource::<CurrentEntityTurnQueue>()      // L'entité dont les actions vont être résolus pour ce tour.
-            .insert_resource(ActionInfos { available_action: CharacterAction::NONE, cost:None, path: None, target: None, attack: None, entity: None })
+            .insert_resource(ActionInfos { available_action: CharacterAction::NONE, cost:None, path: None, target: None, attack: Some(AttackType::MELEE), entity: None })
 
             .add_event::<CombatTurnStartEvent>()        // Lance le tour.
             .add_event::<CombatTurnNextEntityEvent>()   // Envoyé pour prendre le nouvel acteur.
@@ -170,7 +170,7 @@ fn combat_turn_start(
  
     mut queue: ResMut<CombatTurnQueue>,
     mut ev_next: EventWriter<CombatTurnNextEntityEvent>,    
-    mut ev_interface: EventWriter<ReloadUiEvent>,  
+    mut ev_refresh_ap: EventWriter<RefreshActionCostEvent>, 
 ) {
     //info!("Event received: CombatTurnStartEvent");
     // On redonne les PA à tout le monde.
@@ -180,8 +180,8 @@ fn combat_turn_start(
         println!("{:?} Entity {:?} received full ap.", step, entity);
         action_points.current = action_points.max;
     }
-    // On mets à jour l'interface pour les AP du joueur.
-    ev_interface.send(ReloadUiEvent);
+    // On mets à jour le calcul des AP, ce qui rafraichira l'UI.
+    ev_refresh_ap.send(RefreshActionCostEvent);
 
     // On mets les gens dans la CombatTurnQueue pour ce tour.
     // Npc d'abord
@@ -214,6 +214,7 @@ fn combat_turn_next_entity(
         // Plus de combattant: le tour est fini.
         //info!("combat_turn_next_entity: Plus aucun combattant pour ce tour. Fin du tour => <CombatTurnEndEvent>");
         ev_turn_end.send(CombatTurnEndEvent);
+        ev_refresh_ap.send(RefreshActionCostEvent);
         return;
     };
     // On récupère les informations de l'entité a tjrs des AP et existe tjrs sinon crash.
@@ -230,7 +231,7 @@ fn combat_turn_next_entity(
         commands.entity(entity).insert(CheckGoal);    
     };
     ev_refresh_ap.send(RefreshActionCostEvent);
-    //info!("combat_turn_next_entity: finished for {:?}.", entity)
+    //info!("combat_turn_next_entity: finished for {:?}.", entity)    
 }
 
 fn combat_turn_end(    

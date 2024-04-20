@@ -40,16 +40,6 @@ pub struct ActionInfos {
     
 }
 
-
-#[derive(Resource)]
-pub struct ActionInfos_old {
-    pub cost: Option<u32>,          // Combien coutera l'action en AP.
-    pub path: Option<VecDeque<Vector2Int>>, //Si accessible, on a quelque chose ici: le trajet pour se rendre à la destination (Non enregistrée)
-    pub target: Option<Vector2Int>,     // Il y a un fighter a cette position là (Position, Health, Stats, not isDead)
-    pub entity: Option<Entity>,     // C'est le joueur. // CAREFUL : Un jour on aura plus de un personnage.
-    pub attack: Option<AttackType>  // 0.19.c      
-}
-
 #[derive(Debug)]
 pub enum CharacterAction{
     NONE,
@@ -85,11 +75,13 @@ pub fn update_action_infos(
         // Determiner l'action disponible.
         action_infos.available_action = CharacterAction::NONE;
         let Ok(entity) = entity_player_q.get_single() else {
+            ev_interface.send(ReloadUiEvent);
             return };
         action_infos.entity = Some(entity);
 
         let Ok(_is_turn) = turn_q.get(entity) else { 
             action_infos.available_action = CharacterAction::WAITING; 
+            ev_interface.send(ReloadUiEvent);
             return 
         };
 
@@ -99,10 +91,12 @@ pub fn update_action_infos(
         // Jamais vu
         if !board.is_revealed(tile_position.x, tile_position.y) {
             action_infos.available_action = CharacterAction::CANTSEE;
+            ev_interface.send(ReloadUiEvent);
             return 
         } 
         if !view.visible_tiles.contains(&tile_position) {
             action_infos.available_action = CharacterAction::MOVING;
+            ev_interface.send(ReloadUiEvent);
         } else {
             // Je vois la destination. Y a-t-il une cible?
             info!("Action info: Je vois la destination. ");
@@ -180,7 +174,6 @@ pub fn update_action_infos(
         };
         ev_interface.send(ReloadUiEvent);
         info!("Action Infos finished.");
-        //info!("{:?} {:?} {:?} {:?} {:?}")
     }
 }
 
