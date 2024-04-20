@@ -11,7 +11,7 @@ use crate::{game::{
     }, 
     movements::components::MoveTo, 
     player::{components::WantToMoveEvent, Player}, 
-    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::ComputeFovEvent}, vectors::Vector2Int
+    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::{ComputeFovEvent, View}, BASE_SPEED_PATH_ANIMATOR_UPDATE}, vectors::Vector2Int
 };
 use crate::engine::animations::events::AnimateEvent;
 
@@ -38,7 +38,7 @@ pub fn on_want_to_move_event(
     action_infos: Res<ActionInfos>,
 ){
     for event in ev_want_to_move.read() {
-        info!("Move Event recu");
+        //info!("Move Event recu");
         let path = action_infos.path.clone();
         let Some(entity) = action_infos.entity else { continue };
         let Some(path) = path else { continue };
@@ -99,9 +99,17 @@ pub fn entity_move_to(
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,
     mut ev_compute_fov: EventWriter<ComputeFovEvent>,
-    mut ev_move_event: EventWriter<MoveEvent>
+    mut ev_move_event: EventWriter<MoveEvent>,
+    view_q:Query<&View>,
+    entity_player_q:Query<Entity, With<Player>>
 ){
     let mut to_remove = Vec::new();
+    let mut player_view = None;
+    if let Ok(entity_player) = entity_player_q.get_single() {
+        if let Ok(view) = view_q.get(entity_player) {
+            player_view = Some(view);   
+        }        
+    }
     for (entity, movement) in move_q.iter() {
         to_remove.push(entity);
 
@@ -127,12 +135,24 @@ pub fn entity_move_to(
 
         consume_actionpoints(&mut action_points, AP_COST_MOVE);
         //action_points.current = action_points.current.saturating_sub(AP_COST_MOVE);
+
+        let mut wait_anim = false;
+        match player_view {
+            Some(p_view) => {
+                if p_view.visible_tiles.contains(&new_position) {
+                    wait_anim = true;
+                }
+            },
+            None => {},
+        } 
+        
         if is_player.is_some() {
-            ev_interface.send(ReloadUiEvent);
-        }
+            ev_interface.send(ReloadUiEvent);                
+        }            
+        
         let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
         path_animation.push_back(new_position);
-        ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
+        ev_animate.send(AnimateEvent { entity: entity, path: path_animation, wait_anim: wait_anim });
     }
     for entity in to_remove {        
         commands.entity(entity).remove::<MoveTo>();

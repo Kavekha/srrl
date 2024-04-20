@@ -192,7 +192,7 @@ pub fn entity_try_hit(
                     let mut path_animation: VecDeque<Vector2Int> = VecDeque::new();
                     path_animation.push_back(target_position.v);            
                     path_animation.push_back(entity_position.v);
-                    ev_animate.send(AnimateEvent { entity: entity, path: path_animation });
+                    ev_animate.send(AnimateEvent { entity: entity, path: path_animation, wait_anim: true });
                 }
             },
             AttackType::RANGED => { 

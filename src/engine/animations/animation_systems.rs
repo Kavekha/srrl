@@ -56,6 +56,7 @@ pub fn walk_animation(
 ) {
     let mut to_add = HashMap::new();
     for ev in ev_animate.read() {
+        println!("---- Anim with wait : {:?}", ev.wait_anim);
         let mut path = ev.path.clone();
 
         let mut path_animation: VecDeque<Vec3> = VecDeque::new();
@@ -66,7 +67,7 @@ pub fn walk_animation(
             let target = Vec3::new(world_position.0, world_position.1, 2.0);
             path_animation.push_back(target);
         }
-        let path_animator = PathAnimator{path:VecDeque::from(path_animation), wait_anim: true};
+        let path_animator = PathAnimator{path:VecDeque::from(path_animation), wait_anim: ev.wait_anim};
         //println!("PathAnimator created");
         to_add.insert(ev.entity, path_animator);
         //commands.entity(ev.entity).insert(PathAnimator{path:VecDeque::from(path_animation), wait_anim: true});        

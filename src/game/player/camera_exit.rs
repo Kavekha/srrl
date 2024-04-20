@@ -8,7 +8,7 @@ use crate::game::{
 use super::components::Player;
 
 
-pub fn _camera_follow(
+pub fn camera_center_on_player(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
 ) {
@@ -16,6 +16,7 @@ pub fn _camera_follow(
     let mut camera_transform = camera_query.single_mut();
     camera_transform.translation.x = player_transform.translation.x;
     camera_transform.translation.y = player_transform.translation.y;
+    info!("Camera centered on player.");
 }
 
 
