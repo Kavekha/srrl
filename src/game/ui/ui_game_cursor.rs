@@ -3,9 +3,9 @@ use bevy::prelude::*;
 use crate::{
     engine::{asset_loaders::GraphicsAssets, render::components::GameCursorRender},
     game::{
-        combat::{action_infos::{ActionInfos, CharacterAction}, combat_system::components::AttackType, events::Turn}, player::{Cursor, Player}, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}, visibility::components::View
+        combat::action_infos::{ActionInfos, CharacterAction}, player:: Player, ui::{components::UiGameInterface, INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE}
     }, 
-    globals::CHAR_SIZE, map_builders::map::Map
+    globals::CHAR_SIZE,
 };
 
 use super::{components::UiActionPointsOnCursor, ReloadUiEvent};
@@ -51,61 +51,6 @@ pub fn update_ui_game_cursor_rendor_from_available_action(
             CharacterAction::PUNCHING => *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone(),
         }
     }  
-}
-
-
-// v1
-pub fn update_ui_game_cursor_rendor_from_available_action_v1(
-    mut ev_refresh_ui: EventReader<ReloadUiEvent>,
-    mut cursor_moved_events: EventReader<CursorMoved>,
-    entity_cursor_q: Query<Entity, With<GameCursorRender>>,
-    action_infos: Res<ActionInfos>,
-    mut cursor_q: Query<&mut Handle<Image>>,
-    graph_assets: Res<GraphicsAssets>,
-    is_turn_q: Query<&Turn>,
-    view_q: Query<&View>,
-    res_cursor: Res<Cursor>,
-    board: Res<Map>,
-){
-     // On peut être rafraichi de deux facons: Mouvement Mouse, ou Request de refresh.
-    let mut should_update = false;
-    for _event in cursor_moved_events.read() {should_update = true; break;}
-    for _event in ev_refresh_ui.read() { should_update = true; break;}
-    if !should_update { return };
-
-    //println!("Je dois mettre à jour l'apparence du Curseur.");  
-    let Ok(entity) = entity_cursor_q.get_single() else { return };
-    if let Ok(mut cursor) = cursor_q.get_mut(entity) {
-        // Est-ce notre tour?
-        let Some(player) = action_infos.entity else { return };
-        // curseur dans une zone visible?   // 
-        //REMEMBER : Ca sera chiant pour des actions que l'on pourrait faire à l'aveugle (jeter des grenades, etc). Ca s'applique à toutes les restrictions visuelles.
-        // Normalement si pas revealed alors pas visible.
-        let mut position_is_seen = true;
-        if !board.is_revealed(res_cursor.grid_position.x, res_cursor.grid_position.y) { return };
-
-        if let Ok(view) = view_q.get(player) {
-            if !view.visible_tiles.contains(&res_cursor.grid_position) {
-                *cursor = graph_assets.cursors[CURSOR_CANT_SEE].clone(); 
-                position_is_seen = false;
-                //return; On poursuit car c'est le fait de connaitre la tile qui decide de la suite.
-            }
-        }
-        if let Ok(_turn) = is_turn_q.get(player) {
-            // Our turn.
-            if action_infos.attack == Some(AttackType::RANGED) && position_is_seen {   
-                *cursor = graph_assets.cursors[CURSOR_TARGETING].clone();
-            }
-            else if action_infos.target.is_some() &&  position_is_seen { 
-                *cursor = graph_assets.cursors[CURSOR_PUNCHING].clone();
-            } 
-            else { *cursor = graph_assets.cursors[CURSOR_MOVING].clone(); 
-            }
-        } else {
-            // Not our turn.
-            *cursor = graph_assets.cursors[CURSOR_WAITING].clone();
-        }
-    }    
 }
 
 

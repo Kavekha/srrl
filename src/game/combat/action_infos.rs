@@ -24,7 +24,7 @@ use bevy::prelude::*;
 
 use crate::{game::{ pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::View}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, components::CombatInfos, events::{RefreshActionCostEvent, Turn}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
+use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, components::CombatInfos, events::{RefreshActionCostEvent}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
 
 
 
@@ -97,7 +97,7 @@ pub fn update_action_infos(
 
         // Tile jamais vue.
         if !board.is_revealed(tile_position.x, tile_position.y) {
-            info!("ActionInfos: tile not revealed");
+            //info!("ActionInfos: tile not revealed");
             action_infos.available_action = CharacterAction::CANTSEE;
             ev_interface.send(ReloadUiEvent);
             return 

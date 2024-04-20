@@ -73,7 +73,7 @@ mod ia;
 
 use crate::{engine::animations::events::GraphicsWaitEvent, game::{
         combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, states::GameState 
-    }, menu_builders::Action};
+    }};
 
 use self::{
     action_infos::{update_action_infos, ActionInfos, CharacterAction}, 
@@ -82,7 +82,7 @@ use self::{
     events::{CombatEndEvent, CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
     ia::{components::{CheckGoal, Frozen}, IaPlugin}, 
 };
-use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player, ui::events::ReloadUiEvent};
+use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player};
 
 
 pub struct CombatPlugin;
