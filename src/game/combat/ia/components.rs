@@ -4,8 +4,6 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct CheckGoal;
 
-#[derive(Component)]
-pub struct Goal;
 
 // Pas vraiment dans l'IA.
 // Sert à ignorer un NPC qui n'a pas de raison d'être actif & voler du cpu pour prendre des decisions ou etre joué.

@@ -54,8 +54,9 @@ impl Map {
         x: i32,
         y: i32
     ) -> bool {
+        if self.out_of_bounds(x, y) { return false }    // TODO : Better fix : "index out of bounds: the len is 4000 but the index is 4045" quand cursor hors map je suppose.
         let idx = self.xy_idx(x, y);
-        self.revealed_tiles[idx]   
+        self.revealed_tiles[idx]
     }
     pub fn out_of_bounds(
         &self,

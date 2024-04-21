@@ -31,6 +31,10 @@ pub const NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN:i32 = 30;
 
 // View Range
 pub const VISIBILITY_RANGE_PLAYER:i32 =  10; //10;
+pub const VISIBILITY_RANGE_NPC:i32 = 10;
+
+// Low HP Threshold
+pub const LOW_HP_THRESHOLD:u32 = 4;
 ///==============================================================================
 
 
