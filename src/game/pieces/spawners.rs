@@ -143,6 +143,7 @@ pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
     for entity_position in entities_pos {
         println!("NPC: Starting position = {:?}", entity_position);
         spawn_npc(world, entity_position);
+        break;  //DEBUG
     }
 }
 
