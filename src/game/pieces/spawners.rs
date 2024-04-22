@@ -203,6 +203,7 @@ pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){
     .insert(Name::new(format!("Exit")))
     .insert(ExitMapTile)
     .insert(BoardPosition{ v:exit_position});
+info!("Exit map created");
 }
 
 

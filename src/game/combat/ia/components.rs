@@ -16,3 +16,8 @@ pub struct Frozen;
 pub struct PlanMove {
     pub destination: Vector2Int
 }
+
+#[derive(Component)]
+pub struct PlanFlee {
+    pub away_from: Vector2Int
+}

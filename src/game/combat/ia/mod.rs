@@ -16,7 +16,7 @@ mod plan_systems;
 
 use crate::game::{pieces::components::Npc, player::Player, tileboard::components::BoardPosition};
 
-use self::{components::{CheckGoal, Frozen}, plan_systems::{npc_ia_plan_approaching, planning_adjacent_enemy, planning_can_do_melee_attack, planning_can_do_ranged_attack, planning_can_move, planning_enemy_in_sight, planning_evaluate_actions, planning_evaluate_goals, planning_has_allies_nearby, planning_has_low_life}};
+use self::{components::{CheckGoal, Frozen}, plan_systems::{planning_adjacent_enemy, planning_approaching, planning_can_do_melee_attack, planning_can_do_ranged_attack, planning_can_move, planning_enemy_in_sight, planning_evaluate_actions, planning_evaluate_goals, planning_fleeing, planning_has_allies_nearby, planning_has_low_life}};
 
 use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
 
@@ -39,7 +39,8 @@ impl Plugin for IaPlugin {
             planning_has_allies_nearby,
             planning_can_move,
             planning_evaluate_actions,
-            npc_ia_plan_approaching
+            planning_approaching,
+            planning_fleeing
             
         )
         .chain()

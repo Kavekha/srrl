@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{game::{
-    combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, events::Turn, ia::components::PlanMove, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Health, Melee, Npc, Occupier, Ranged, Walk}, player::Player, tileboard::components::BoardPosition},
+    combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, events::Turn, ia::components::{PlanFlee, PlanMove}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Health, Melee, Npc, Occupier, Ranged, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}},
     map_builders::map::Map, vectors::find_path
 };
 
@@ -208,10 +208,10 @@ pub fn planning_evaluate_actions(
                 to_remove.push(entity);  
                 continue
             }
-            // Si je ne peux pas, qu'est ce que je fais?
+            // Si je ne peux pas taper: je m'eloigne
             if planning.can_move {
                 info!("{:?} va s'éloigner", entity);
-                commands.entity(entity).insert(PlanMove { destination: target_position.v}); 
+                commands.entity(entity).insert(PlanFlee { away_from: target_position.v}); 
                 to_remove.push(entity);  
                 continue
             }          
@@ -237,13 +237,12 @@ pub fn planning_evaluate_actions(
 
 
 // Old version, a adapter => si echec on ne sort pas de la boucle.
-pub fn npc_ia_plan_approaching( 
+pub fn planning_approaching( 
     mut commands: Commands,
     npc_entity_fighter_q: Query<(Entity, &BoardPosition, &PlanMove), (With<Npc>, With<Turn>, Without<IsDead>, With<Walk>)>,   
     board: Res<Map>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
 ) {
-    let mut to_remove_planning = Vec::new();
     let mut to_remove_plan_move = Vec::new();
     for (npc_entity, npc_position, npc_plan) in npc_entity_fighter_q.iter() {
         // Pas de Goal, on a déjà determiné cela avant.
@@ -259,17 +258,60 @@ pub fn npc_ia_plan_approaching(
         if let Some(path) = path_to_destination {
             //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
             commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(npc_plan.destination)});    
-            to_remove_planning.push(npc_entity);
         } else {
             //println!("Pas de chemin pour moi.");
+            commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
         }
         // Retrait du PlanMove sinon on ne refait plus le check View.   // REMINDER: C'etait très cool !
         to_remove_plan_move.push(npc_entity);
     }
-    for entity in to_remove_planning {
-        commands.entity(entity).remove::<Planning>();   
-    }
     for entity in to_remove_plan_move {
         commands.entity(entity).remove::<PlanMove>();   
+    }
+}
+
+
+pub fn planning_fleeing( 
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &PlanFlee), (With<Npc>, With<Turn>, Without<IsDead>, With<Walk>)>,   
+    board: Res<Map>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
+    exit_position_q: Query<&BoardPosition, With<ExitMapTile>>,
+) {
+    let mut to_remove_plan_move = Vec::new();
+    if let Ok(exit_position) = exit_position_q.get_single() {
+        for (npc_entity, npc_position, _) in npc_entity_fighter_q.iter() {
+            info!("Plan flee: exit found. have I a path to it?");
+            to_remove_plan_move.push(npc_entity);            
+            // Je m'eloigne de ma destination vers la sortie.
+            let path_to_destination = find_path(
+                npc_position.v,
+                exit_position.v.clone(), 
+                &board.entity_tiles.keys().cloned().collect(), 
+                &query_occupied.iter().map(|p| p.v).collect(),
+                true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
+            );
+            
+            if let Some(path) = path_to_destination {
+                let next_position = path.get(0).copied();
+                info!("I am {:?}, i'm at {:?} and my target is {:?}", npc_entity, npc_position.v, next_position);
+                //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
+                info!("Plan flee: path to exit found.");
+                commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: next_position});    
+            } else {
+                //println!("Pas de chemin pour moi.");
+                info!("Plan flee: No path to exit found, forfeit.");
+                commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
+            }
+        }
+    } else {
+        info!("Plan flee: No exit found, forfeit.");
+        for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
+            to_remove_plan_move.push(npc_entity);
+            commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
+        }
+    }
+    for entity in to_remove_plan_move {
+        commands.entity(entity).remove::<PlanFlee>();   
     }
 }
