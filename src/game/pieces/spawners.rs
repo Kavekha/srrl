@@ -143,7 +143,6 @@ pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
     for entity_position in entities_pos {
         println!("NPC: Starting position = {:?}", entity_position);
         spawn_npc(world, entity_position);
-        break;  //DEBUG
     }
 }
 
@@ -183,7 +182,6 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
         occupier: Occupier,
     });
 
-    // TODO: Clean up sur les Components non utilisés.
     npc
     .insert(Npc)
     .insert(Walk)
