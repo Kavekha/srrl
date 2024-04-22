@@ -46,20 +46,33 @@ impl Planning {
 pub fn planning_evaluate_goals(
     mut commands: Commands,
     mut entity_npc_q: Query<(Entity, Option<&mut Planning>), (With<Npc>, With<Turn>, With<CheckGoal>, Without<IsDead>)>,
+    player_q: Query<(Entity, Option<&IsDead>), With<Player>>,
 ){
     let mut to_remove = Vec::new();
-    for (entity, planning) in entity_npc_q.iter_mut() {
-        info!("Npc {:?} reflechit à ses objectifs.--------------", entity);
-        match planning {
-            Some(mut has_planing) => { 
-                info!("{:?} a déjà un planning. Reset.", entity);
-                has_planing.reset(); 
-            },
-            None => { 
-                info!("{:?} n'a pas de planning. Donnons lui-en un.", entity);
-                commands.entity(entity).insert(Planning::new()); },
-        };    
-        to_remove.push(entity);
+
+    for (_, is_dead) in player_q.iter() {
+        if is_dead.is_some() {
+            for (entity, _) in entity_npc_q.iter_mut() {
+                commands.entity(entity).insert(WantToForfeit);
+                to_remove.push(entity);
+            }
+        } else {        
+            for (entity, planning) in entity_npc_q.iter_mut() {
+                info!("Npc {:?} reflechit à ses objectifs.--------------", entity);
+                match planning {
+                    Some(mut has_planing) => { 
+                        info!("{:?} a déjà un planning. Reset.", entity);
+                        has_planing.reset(); 
+                    },
+                    None => { 
+                        info!("{:?} n'a pas de planning. Donnons lui-en un.", entity);
+                        commands.entity(entity).insert(Planning::new()); },
+                };    
+                to_remove.push(entity);
+            }
+        }
+        break;  // DEGUEU, mais on est pas sensé avoir plus d'un perso et on veut pas que ca tourne plus d'une fois.
+                // REMEMBEr : ca sera a refacto quand on aura plusieurs personnages....
     }
     for entity in to_remove {
         commands.entity(entity).remove::<CheckGoal>();
@@ -255,9 +268,10 @@ pub fn planning_approaching(
             true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
         );
         
-        if let Some(path) = path_to_destination {
+        if let Some(mut path) = path_to_destination {
             //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
-            commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(npc_plan.destination)});    
+            let _remove_last_destination = path.pop_back(); // On fait ça sinon le perso se deplacera sur sa cible sans l'attaquer. 
+            commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None}); //On ne veut pas attaquer.  Some(npc_plan.destination)});    
         } else {
             //println!("Pas de chemin pour moi.");
             commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
@@ -297,7 +311,7 @@ pub fn planning_fleeing(
                 info!("I am {:?}, i'm at {:?} and my target is {:?}", npc_entity, npc_position.v, next_position);
                 //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
                 info!("Plan flee: path to exit found.");
-                commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: next_position});    
+                commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None});    
             } else {
                 //println!("Pas de chemin pour moi.");
                 info!("Plan flee: No path to exit found, forfeit.");
