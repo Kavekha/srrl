@@ -12,11 +12,14 @@ STIMULUS:
 use bevy::prelude::*;
 
 pub mod components;
-mod plan_systems;
+mod ia_evaluate;
+mod ia_planning;
 
 use crate::game::{pieces::components::Npc, player::Player, tileboard::components::BoardPosition};
 
-use self::{components::{CheckGoal, Frozen}, plan_systems::{planning_adjacent_enemy, planning_approaching, planning_can_do_melee_attack, planning_can_do_ranged_attack, planning_can_move, planning_check_target_knowledge, planning_enemy_in_sight, planning_evaluate_actions, planning_evaluate_goals, planning_fleeing, planning_has_allies_nearby, planning_has_low_life, planning_know_target_position, planning_searching}};
+use self::{
+    components::{CheckGoal, Frozen}, 
+    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, planning_actions}, ia_planning::{planning_approaching, planning_fleeing, planning_searching}};
 
 use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
 
@@ -30,17 +33,17 @@ impl Plugin for IaPlugin {
         .add_systems(Update, ignore_npc_out_of_game_range.in_set(ActionSet::Planning))
         .add_systems(Update,
             (
-            planning_evaluate_goals,
-            planning_check_target_knowledge,
-            planning_enemy_in_sight,
-            planning_know_target_position,
-            planning_can_do_ranged_attack,
-            planning_adjacent_enemy,
-            planning_can_do_melee_attack,
-            planning_has_low_life,
-            planning_has_allies_nearby,
-            planning_can_move,
-            planning_evaluate_actions,
+                ia_evaluate_goals,
+                ia_evaluate_check_target_knowledge,
+                ia_evaluate_enemy_in_sight,
+                ia_evaluate_know_target_position,
+                ia_evaluate_can_do_ranged_attack,
+                ia_evaluate_adjacent_enemy,
+                ia_evaluate_can_do_melee_attack,
+                ia_evaluate_has_low_life,
+                ia_evaluate_allies_nearby,
+                ia_evaluate_can_move,
+            planning_actions,
             planning_approaching,
             planning_fleeing,
             planning_searching            
