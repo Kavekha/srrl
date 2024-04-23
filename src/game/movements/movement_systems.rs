@@ -52,9 +52,7 @@ pub fn entity_want_to_move(
     mut commands: Commands,
     want_move_q: Query<(Entity, &WantToMove)>,
     actions_q: Query<&ActionPoints>,    
-    //mut ev_try_attack: EventWriter<EntityHitTryEvent>,
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    //mut ev_move: EventWriter<EntityMoveEvent>,
 ){
     let mut to_remove = Vec::new();
     for (entity, want_move) in want_move_q.iter() {

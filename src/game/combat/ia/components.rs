@@ -21,3 +21,6 @@ pub struct PlanMove {
 pub struct PlanFlee {
     pub away_from: Vector2Int
 }
+
+#[derive(Component)]
+pub struct PlanSearch;

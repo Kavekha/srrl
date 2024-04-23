@@ -13,7 +13,8 @@ use crate::{
 pub struct MapInfos{
     pub starting_position: Vector2Int,
     pub spawn_list: Vec<Vector2Int>,
-    pub exit_position: Vector2Int
+    pub exit_position: Vector2Int,
+    pub rooms: Option<Vec<Vector2Int>>
 }    
 
 // Créer une Map via le Builder. Retourne les elements necessaires au placement des NPC & etc.
@@ -24,10 +25,12 @@ pub fn create_map(world: &mut World) -> MapInfos {
         builder.build_map();        
         builder.build_data.map.populate_blocked(); 
 
-        let mut map_infos = MapInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new(), exit_position:Vector2Int{x:0, y:0}};
+        let mut map_infos = MapInfos{starting_position:Vector2Int{x:0, y:0}, spawn_list:Vec::new(), exit_position:Vector2Int{x:0, y:0}, rooms: None};
         map_infos.starting_position = builder.get_starting_position();
         map_infos.spawn_list = builder.spawn_entities();
         map_infos.exit_position = builder.get_exit_position();
+        map_infos.rooms = builder.get_rooms();
+        info!("Map info rooms is {:?}", map_infos.rooms);
         println!("Generating Map: Player starting position will be {:?}", map_infos.starting_position);
 
         world.insert_resource(builder.build_data.map.clone());

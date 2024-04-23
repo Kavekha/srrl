@@ -3,7 +3,7 @@ use bevy::{ecs::world::World, log::info};
 use crate::{
     game::{clean_game_screen, combat::combat_start, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, pieces::spawners::{create_exit_map, create_player, spawn_npcs}, player::{camera_center_on_player, cursor_position}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
+    }, pieces::spawners::{create_exit_map, create_nodes, create_player, spawn_npcs}, player::{camera_center_on_player, cursor_position}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
 
 use super::Message;
  
@@ -19,6 +19,7 @@ impl Message for StartGameMessage {
         create_player(world, map_infos.starting_position);
         spawn_npcs(world, map_infos.spawn_list);
         create_exit_map(world, map_infos.exit_position);
+        create_nodes(world, map_infos.rooms);
         world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
         world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
         let music_name = "gamemap".to_string();

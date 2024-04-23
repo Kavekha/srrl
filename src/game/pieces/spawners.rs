@@ -4,10 +4,11 @@ use serde::{Serialize, Deserialize};
 
 use crate::{
     commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
-        combat::rules::{NPC_CHANCE_TO_BE_RANGED, VISIBILITY_RANGE_PLAYER}, pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::{Marker, View}
+        combat::rules::{NPC_CHANCE_TO_BE_RANGED, VISIBILITY_RANGE_PLAYER}, 
+        pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::{Marker, View}
     }, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, vectors::Vector2Int};
 
-use super::components::{CharacterBundle, GameElement};
+use super::components::{CharacterBundle, GameElement, NavigationNode};
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -242,4 +243,20 @@ pub fn spawn_npc_marker(
     commands.entity(marker).insert(BoardPosition {v: position});
 
     return marker
+ }
+
+ pub fn create_nodes(
+    world: &mut World, 
+    nodes_list: Option<Vec<Vector2Int>>,
+ ) {
+    match nodes_list {
+        Some(nodes) => {
+            for node in nodes {        
+                let mut nod = world.spawn_empty();
+                nod.insert(NavigationNode);
+                nod.insert(BoardPosition { v: node });
+            }
+        },
+        None => {},
+    }
  }

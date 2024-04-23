@@ -23,7 +23,7 @@ pub const RANGED_ATTACK_RANGE_MAX: i32 = 10;
 
 /// NPC 
 /// pub const NPC_VISION_RANGE_MAX: i32 = 25;
-pub const NPC_RANGED_ATTACK_RANGE_MAX: i32 = 10;
+//pub const NPC_RANGED_ATTACK_RANGE_MAX: i32 = 10;
 pub const NPC_CHANCE_TO_BE_RANGED:i32 = 25; // Percent
 
 /// Si NPC depasse cette distance du PJ, on ignore son tour / lui retire.

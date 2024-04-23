@@ -88,3 +88,6 @@ pub struct Stats {
 
 #[derive(Component)]
 pub struct GameElement;
+
+#[derive(Component)]
+pub struct NavigationNode;
