@@ -24,3 +24,9 @@ pub struct PlanFlee {
 
 #[derive(Component)]
 pub struct PlanSearch;
+
+#[derive(Component)]
+pub struct Knowledge {
+    pub player_last_seen : Option<Vector2Int>,
+    pub last_visited_nodes: Vec<Vector2Int>
+}

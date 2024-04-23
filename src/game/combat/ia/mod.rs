@@ -16,7 +16,7 @@ mod plan_systems;
 
 use crate::game::{pieces::components::Npc, player::Player, tileboard::components::BoardPosition};
 
-use self::{components::{CheckGoal, Frozen}, plan_systems::{planning_adjacent_enemy, planning_approaching, planning_can_do_melee_attack, planning_can_do_ranged_attack, planning_can_move, planning_enemy_in_sight, planning_evaluate_actions, planning_evaluate_goals, planning_fleeing, planning_has_allies_nearby, planning_has_low_life, planning_searching}};
+use self::{components::{CheckGoal, Frozen}, plan_systems::{planning_adjacent_enemy, planning_approaching, planning_can_do_melee_attack, planning_can_do_ranged_attack, planning_can_move, planning_check_target_knowledge, planning_enemy_in_sight, planning_evaluate_actions, planning_evaluate_goals, planning_fleeing, planning_has_allies_nearby, planning_has_low_life, planning_know_target_position, planning_searching}};
 
 use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
 
@@ -31,7 +31,9 @@ impl Plugin for IaPlugin {
         .add_systems(Update,
             (
             planning_evaluate_goals,
+            planning_check_target_knowledge,
             planning_enemy_in_sight,
+            planning_know_target_position,
             planning_can_do_ranged_attack,
             planning_adjacent_enemy,
             planning_can_do_melee_attack,
