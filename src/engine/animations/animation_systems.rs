@@ -56,7 +56,7 @@ pub fn walk_animation(
 ) {
     let mut to_add = HashMap::new();
     for ev in ev_animate.read() {
-        println!("---- Anim with wait : {:?}", ev.wait_anim);
+        //println!("---- Anim with wait : {:?}", ev.wait_anim);
         let mut path = ev.path.clone();
 
         let mut path_animation: VecDeque<Vec3> = VecDeque::new();

@@ -9,7 +9,7 @@ impl MetaMapBuilder for RoomDrawer {
         self.build(build_data);
     }
 }
-
+ 
 impl RoomDrawer {
     #[allow(dead_code)]
     pub fn new() -> Box<RoomDrawer> {

@@ -102,23 +102,36 @@ impl BuilderChain {
             metabuilder.build_map(&mut self.build_data);
         }
     }
-    pub fn spawn_entities(&mut self) -> Vec<Vector2Int> {
+    pub fn spawn_entities(&self) -> Vec<Vector2Int> {
         let spawn_list = self.build_data.spawn_list.clone();
         spawn_list
     }
-    pub fn get_starting_position(&mut self) -> Vector2Int {
+    pub fn get_starting_position(&self) -> Vector2Int {
         if let Some(starting_position) = self.build_data.starting_position {
             starting_position
         } else {
             panic!("Pas de position de depart")
         }
     }
-    pub fn get_exit_position(&mut self) -> Vector2Int {
+    pub fn get_exit_position(&self) -> Vector2Int {
         if let Some(exit_position) = self.build_data.exit_position {
             exit_position
         } else {
             panic!("Pas de position de depart")
         }
+    }
+    pub fn get_rooms(&self) -> Option<Vec<Vector2Int>> {
+        let mut vec_rooms: Option<Vec<Vector2Int>> = None;
+        if let Some(rooms)  = &self.build_data.rooms {
+            let mut list_rooms= Vec::new();
+            for room in rooms {
+                let rec_center = room.center().clone();
+                let room_center = Vector2Int { x:rec_center.0, y:rec_center.1};
+                list_rooms.push(room_center);
+            }
+            vec_rooms = Some(list_rooms);
+        }
+        vec_rooms
     }
 }
 

@@ -119,17 +119,7 @@ impl Plugin for CombatPlugin {
                 combat_turn_entity_check.run_if(on_event::<TickEvent>()),
                 combat_turn_end.run_if(on_event::<CombatTurnEndEvent>()),
                 combat_end.run_if(on_event::<CombatEndEvent>())
-            ).chain().run_if(resource_exists::<CombatInfos>))
-            /* 
-            .add_systems(Update,(
-                combat_turn_start.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnStartEvent>()),
-                combat_turn_next_entity.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnNextEntityEvent>()),
-                combat_turn_entity_check.run_if(resource_exists::<CombatInfos>).run_if(on_event::<TickEvent>()),
-                combat_turn_end.run_if(resource_exists::<CombatInfos>).run_if(on_event::<CombatTurnEndEvent>()),
-                combat_end.run_if(on_event::<CombatEndEvent>())
-            ).chain())
-*/
-            
+            ).chain().run_if(resource_exists::<CombatInfos>))                    
 
             .add_systems(OnEnter(GameState::Disabled), quit_current_game) 
             ;
@@ -148,7 +138,7 @@ fn tick(
         //info!("tick: send tick event.");
         ev_tick.send(TickEvent);
     } else {
-        info!("Graphic event, waiting...");
+        //info!("Graphic event, waiting...");
     }
 }
 
@@ -293,6 +283,9 @@ fn combat_turn_entity_check(
                 commands.entity(entity).remove::<Turn>();                
                 //info!("combat_turn_entity_check: send event for CombatTurnNextEntityEvent");
                 ev_next.send(CombatTurnNextEntityEvent);
+                if is_frozen.is_some() {
+                    commands.entity(entity).insert(CheckGoal);  // 0.20q : on mets ça pour reverifier s'il est Frozen. Pas forcement logique.
+                }
                 return 
             }
             if is_npc.is_some() {

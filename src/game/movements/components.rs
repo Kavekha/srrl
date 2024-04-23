@@ -8,7 +8,7 @@ use crate::vectors::Vector2Int;
 pub struct WantToMove {
     pub entity: Entity,
     pub path: VecDeque<Vector2Int>,
-    pub target: Option<Vector2Int>,
+    pub target: Option<Vector2Int>,     // If Some, essaye d'attaquer ce qui se trouve à cette position.
 }
 
 #[derive(Component)]

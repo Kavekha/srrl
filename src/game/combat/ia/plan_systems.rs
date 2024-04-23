@@ -1,156 +1,295 @@
 use bevy::prelude::*;
 
-use crate::{game::
-    {combat::{ 
-        combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, events::Turn, ia::components::PlanMove, rules::{AP_COST_MELEE, AP_COST_RANGED, NPC_RANGED_ATTACK_RANGE_MAX} 
-    }, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Melee, Npc, Occupier, Ranged, Walk}, tileboard::components::BoardPosition 
-    },
-    map_builders::map::Map, 
-    vectors::find_path
-    };
+use crate::{game::{
+    combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, movements::components::WantToMove, pieces::components::{Health, Melee, NavigationNode, Npc, Occupier, Ranged, Walk}, player::Player, tileboard::components::BoardPosition},
+    map_builders::map::Map, vectors::find_path
+};
 
-use super::components::{Goal, GoalType, Planning};
+use super::components::{CheckGoal, Knowledge};
 
 
-
-
-// IA verifie si elle est physiquement à coté d'un personnage, 
-// Puis on regarde si on veut faire une action selon notre goal: taper pour le moment.
-pub fn npc_ia_plan_when_adjacent(
-    mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, With<Melee>, Without<IsDead>)>,
-    position_q: Query<&BoardPosition>,    
-) {
-    let mut to_remove = Vec::new();
-    for (npc_entity, npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-        // A moyen terme, faudra changer ce fonctionnement de regarder objectif par objectif, car l'info peut être utile pour plein de raison.
-        match npc_goal.id {
-            GoalType::KillEntity{id} => {
-                let mut is_melee_position = false;
-                let Ok(target_position) = position_q.get(id) else { continue; };
-                if (target_position.v.x - npc_position.v.x).abs() < 2 && (target_position.v.y - npc_position.v.y).abs() < 2 {
-                    //println!("NPC {:?} est coté de sa cible.", npc_entity);
-                    is_melee_position = true;
-                } 
-                // Ici on check si on veut taper ou non.
-                if is_melee_position {
-                    if npc_ap.current >= AP_COST_MELEE {
-                        commands.entity(npc_entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
-                        //println!("NPC {:?} is at position {:?} and their target is at {:?}. AP are OK so they wan't to HIT in MELEE.", npc_entity, npc_position.v, target_position.v);
-                        to_remove.push(npc_entity); // On retire puisque le choix est OK.
-                    } else {
-                        //println!("NPC {:?} n'a pas les AP pour attaquer sa cible.", npc_entity);
-                    }
-                }
-            },
-            _ => {}
-        };
+#[derive(Component, Debug)]
+pub struct Planning {
+    pub in_sight: bool,
+    know_target_position: bool,
+    pub ap_for_range: bool,
+    pub melee_range: bool,
+    pub ap_for_melee: bool,
+    pub low_health: bool,
+    pub has_allies_nearby: bool,
+    pub can_move: bool,
+}
+impl Planning {
+    pub fn new() -> Planning {
+        Planning {
+            in_sight: false,
+            know_target_position: false,
+            ap_for_range: false,
+            melee_range: false,
+            ap_for_melee: false,
+            low_health: false,
+            has_allies_nearby: false,
+            can_move: false,
+        }
     }
-    // On retire le Planning à toutes les entités. // REMINDER : Hors de la boucle pour eviter les erreurs. TODO ailleurs.
-    for entity in to_remove {
-        commands.entity(entity).remove::<Planning>();   
+    pub fn reset(&mut self) {
+        self.in_sight= false;
+        self.ap_for_range= false;
+        self.melee_range= false;
+        self.ap_for_melee= false;
+        self.low_health= false;
+        self.has_allies_nearby= false;
+        self.can_move= false;
     }
 }
 
 
-pub fn npc_ia_plan_when_in_range(
+// 0.20r : v1.1 : Les protections si on ne peut pas bouger sont dans les PlanMove pour le moment. C'est pas ouf.
+// 0.20q : v1 : NOTE : On est très vulnerable à un problème entre l'estimation et la résolution, qui bloquera le jeu.
+// TODO : Prevoir les actions, les jouer une à une jusqu'à ce qu'il n'y en ai plus.
+pub fn planning_evaluate_actions(
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, With<Ranged>, Without<IsDead>)>,
-    position_q: Query<&BoardPosition>,  
-    board: Res<Map>,  
-){
-    let mut to_remove = Vec::new();
-    for (npc_entity, npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-        //println!("NPC {:?} reflechit s'il doit ou peut utiliser une attaque Ranged.", npc_entity);
-        match npc_goal.id {
-            GoalType::KillEntity { id } => {
-                if npc_ap.current < AP_COST_RANGED {  //AP_COST_MOVE {
-                    //println!("NPC {:?} n'a pas les AP tirer.", npc_entity);
-                    continue;
-                };
+    npc_entity_fighter_q: Query<(Entity, &Planning, &Knowledge), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    entity_player_q: Query<Entity, With<Player>>,
+    position_q: Query<&BoardPosition>,
 
-                // In view?
-                let Ok(target_position) = position_q.get(id) else { 
-                    //println!("No position found for player. NPC can't check for target.");
-                    continue;
-                }; 
-                if let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_RANGED_ATTACK_RANGE_MAX) {
-                    //println!("NPC {:?} peut tirer sur sa victime {:?}.", npc_entity, id);
-                    commands.entity(npc_entity).insert(WantToHit { mode: AttackType::RANGED, target: target_position.v });
-                    to_remove.push(npc_entity);
-                };
-                //println!("NPC {:?} a fini de reflechir à Ranged Attack et passe à autre chose.", npc_entity);
-            },
-            GoalType::None => {},
-        };
-    };
+) {     
+    let Ok(target) = entity_player_q.get_single() else { return };
+    let Ok(target_position) = position_q.get(target) else { return };
+    let mut to_remove = Vec::new();
+
+    for (entity, planning, knowledge) in npc_entity_fighter_q.iter() {
+        info!("{:?} is planning -----------------", entity);
+        info!("{:?}", planning);
+        
+                // Attaque à distance
+        if planning.in_sight && planning.ap_for_range {
+            info!("{:?} va attaquer sa cible à distance.", entity);
+            commands.entity(entity).insert(WantToHit { mode: AttackType::RANGED, target: target_position.v });
+        }
+        // Melee 
+        if planning.in_sight && planning.ap_for_melee && planning.melee_range {
+            info!("{:?} va attaquer sa cible en melee.", entity);
+            commands.entity(entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
+        }
+        // Trop loin de la cible mais peut taper.
+        if planning.in_sight && planning.ap_for_melee && planning.can_move {
+            // TODO : Doit verifier s'il peut porter un coup ce tour.
+            info!("{:?} va se rapprocher de sa cible pour l'attaquer en melee!", entity);
+            commands.entity(entity).insert(PlanMove { destination: target_position.v}); 
+        }
+        // En vue, mais ne peut pas taper.
+        if planning.in_sight && !planning.ap_for_melee && !planning.ap_for_range && planning.can_move {
+            //s'eloigne
+            info!("{:?} va s'éloigner", entity);
+            commands.entity(entity).insert(PlanFlee { away_from: target_position.v}); 
+        }
+        // Connait une position possible de sa cible, et s'y rends.
+        if planning.know_target_position && planning.can_move {
+            commands.entity(entity).insert(PlanMove { destination: knowledge.player_last_seen.expect("Checked in known_target_position") }); 
+        }
+        // Ne voit pas la cible : la cherche.
+        if !planning.in_sight && planning.can_move {
+            info!("{:?} recherche sa cible.", entity);
+            commands.entity(entity).insert(PlanSearch ); 
+        } 
+        to_remove.push(entity);  
+    }
     for entity in to_remove {
         commands.entity(entity).remove::<Planning>(); 
     }
 }
 
 
-// IA regarde autour d'elle et prends une decision a partir de ce qu'elle voit ou ne voit pas.
-pub fn npc_ia_plan_on_view(
+
+// 0.20q : PLACEHOLDER : On place pour le moment un component Goal. Les NPC avec ce Component commenceront à planifier leurs actions.
+pub fn planning_evaluate_goals(
     mut commands: Commands,
-    //npc_entity_fighter_q: Query<(Entity, &BoardPosition, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    npc_entity_fighter_q: Query<(Entity, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
-    position_q: Query<&BoardPosition>,     
-    //board: Res<Map>,
-) {    
-    // Pas besoin de remove aussi: On pose un PlanSomething si c'est OK. Le PlanSomething sera géré à l'etape suivante.     // TODO : Ca reste assez vulnerable lors d'ajout ou changement.
-    //for (npc_entity, _npc_position, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-    for (npc_entity, npc_ap, npc_goal) in npc_entity_fighter_q.iter() {
-        match npc_goal.id {
-            GoalType::KillEntity{id} => {   
-                // Pas les AP.
-                // !! WARNING: On est obligé de mettre du AP COST MELEE pour le moment CAR:
-                //  1. J'ai 2 AP. J'ai le droit de me deplacer.
-                //  2. La case où je veux me deplacer est celle de ma cible. Aller sur cette case pour le taper coute 3 PA.
-                //  3. => Je n'ai pas 3 PA, je ne peux pas taper mais j'ai 1-2 PA, je peux bouger mais je ne peux pas bouger ou je veux car je n'ai pas 3 PA etc.
-                // => TOFIX : 
-                //      - Séparer Move / Taper.
-                //      - Avoir un retour dans les WantTo pour sortir le NPC en cas de galere?
-                //      - Pouvoir avoir le pathfinding sans aller sur la dernière case. Remove de la derniere etape à chaque fois?
-                if npc_ap.current < AP_COST_MELEE {  //AP_COST_MOVE {
-                    //println!("NPC {:?} n'a pas les AP pour se deplacer.", npc_entity);
-                    continue;
-                };
+    mut entity_npc_q: Query<(Entity, Option<&mut Planning>, Option<&mut Knowledge>), (With<Npc>, With<Turn>, With<CheckGoal>, Without<IsDead>)>,
+    player_q: Query<(Entity, Option<&IsDead>), With<Player>>,
+){
+    let mut to_remove = Vec::new();
 
-                let Ok(target_position) = position_q.get(id) else { 
-                    //println!("No position found for player. NPC can't check for target.");
-                    continue;
-                }; 
-
-                /* TODO : On fera ca en 0.20 
-                println!("Npc {:?} a position {:?} verifie sa ligne de vue vers {:?}.", npc_entity, npc_position.v, target_position.v);
-                let Ok(_in_los) = is_in_sight(&board, &npc_position.v, &target_position.v, NPC_VISION_RANGE_MAX) else {
-                    println!("NPC {:?}: target {:?} is not in view.", npc_entity, id);
-                    // TODO : Search for target.
-                    continue;
-                };
-                println!("NPC {:?}: saw their target {:?}!", npc_entity, id);
-                */
-                
-                // TODO : Ici on ne retire pas le planning par facilité. 
-                // => PlanMove fait aller dans npc_ia_plan_approaching, qui verifie aussi le planning et le retirera si necessaire.
-                // => En gros on voit : On va approaching, on voit pas, on ignore approaching et on va a la suite (forfeit)
-                commands.entity(npc_entity).insert(PlanMove { destination: target_position.v});  
+    for (_, is_dead) in player_q.iter() {
+        if is_dead.is_some() {
+            for (entity, _, _) in entity_npc_q.iter_mut() {
+                commands.entity(entity).insert(WantToForfeit);
+                to_remove.push(entity);
             }
-            GoalType::None => {}
+        } else {        
+            for (entity, planning, knowledge) in entity_npc_q.iter_mut() {
+                info!("Npc {:?} reflechit à ses objectifs.--------------", entity);
+                match planning {
+                    Some(mut has_planing) => { 
+                        info!("{:?} a déjà un planning. Reset.", entity);
+                        has_planing.reset(); 
+                    },
+                    None => { 
+                        info!("{:?} n'a pas de planning. Donnons lui-en un.", entity);
+                        commands.entity(entity).insert(Planning::new()); },
+                };
+                match knowledge {
+                    Some(_has_knowledge) => { },
+                    None => {
+                        commands.entity(entity).insert(Knowledge { player_last_seen: None, last_visited_nodes: Vec::new() });
+                    }
+                }
+                to_remove.push(entity);
+            }
+        }
+        break;  // DEGUEU, mais on est pas sensé avoir plus d'un perso et on veut pas que ca tourne plus d'une fois.
+                // REMEMBEr : ca sera a refacto quand on aura plusieurs personnages....
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<CheckGoal>();
+    }
+}
+
+// 0.20r : Est ce que je vois tjrs la dernière position connue de ma cible?
+pub fn planning_check_target_knowledge(
+    player_position_q: Query<&BoardPosition, With<Player>>,
+    mut npc_entity_fighter_q: Query<(&BoardPosition, &mut Planning, &mut Knowledge), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    board: Res<Map>,
+){
+    let Ok(target_position) = player_position_q.get_single() else { return };
+    for (position,  _, mut knowledge) in npc_entity_fighter_q.iter_mut() {
+        match knowledge.player_last_seen {
+            None => { continue },
+            Some(last_known_position) => {
+                if let Ok(_) = is_in_sight(&board, &position.v, &last_known_position, VISIBILITY_RANGE_NPC) {
+                    info!("Je vois l'endroit où est ma cible.");
+                    if target_position.v != last_known_position {
+                        info!("Ma cible n'est pas là où je le pensais.");
+                        knowledge.player_last_seen = None;
+                    }
+                }
+            }
         };
     }
 }
 
-// IA veut approcher physiquement de la cible / tuile.
-// Une partie des verifications sont faites dans npc_ia_plan_on_view: ia_plan_approaching est une sorte de sous-etape.
-pub fn npc_ia_plan_approaching( 
+// 0.20q : Est-ce que l'enemi est en vue?
+pub fn planning_enemy_in_sight(
+    player_position_q: Query<&BoardPosition, With<Player>>,
+    mut npc_entity_fighter_q: Query<(Entity, &BoardPosition, &mut Planning, &mut Knowledge), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    board: Res<Map>,
+){
+    let Ok(target_position) = player_position_q.get_single() else { return };
+     for (entity, position, mut planning, mut knowledge) in npc_entity_fighter_q.iter_mut() {
+        if let Ok(_) = is_in_sight(&board, &position.v, &target_position.v, VISIBILITY_RANGE_NPC) {
+            info!("Npc {:?} voit sa cible.", entity);
+            planning.in_sight = true;
+            knowledge.player_last_seen = Some(target_position.v.clone());
+        } else {
+            info!("Npc {:?} n'a pas de cible.", entity);
+        }   
+    }
+}
+
+// 0.20r 
+pub fn planning_know_target_position(
+    mut npc_entity_fighter_q: Query<(&mut Planning, &mut Knowledge), (With<Npc>, With<Turn>, Without<IsDead>)>,
+){
+    for (mut planning, knowledge) in npc_entity_fighter_q.iter_mut() {
+        match knowledge.player_last_seen {
+            Some(_) => {planning.know_target_position= true;},
+            None => {}
+        }
+    }
+}
+
+pub fn planning_can_do_ranged_attack(
+    mut npc_entity_fighter_q: Query<(Entity, &ActionPoints, &mut Planning), (With<Npc>, With<Turn>, With<Ranged>, Without<IsDead>)>, 
+){
+    for (entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
+        if action_points.current >= AP_COST_RANGED {
+            info!("Npc {:?} peut utiliser une attaque à distance.", entity);
+            planning.ap_for_range = true;
+        } else {
+            info!("Npc {:?} n'a pas assez de PA pour une attaque à distance : {:?}", entity, action_points.current);
+        }
+    }
+}
+
+pub fn planning_adjacent_enemy(
+    player_position_q: Query<&BoardPosition, With<Player>>,
+    mut npc_entity_fighter_q: Query<(Entity, &BoardPosition, &mut Planning), (With<Npc>, With<Turn>, Without<IsDead>)>,
+) {
+    let Ok(target_position) = player_position_q.get_single() else { return };
+    for (entity, position, mut planning) in npc_entity_fighter_q.iter_mut() {
+        if (target_position.v.x - position.v.x).abs() < 2 && (target_position.v.y - position.v.y).abs() < 2 {
+            info!("Npc {:?} est a coté de sa cible.", entity);
+            planning.melee_range = true;
+        } else {
+            info!("Npc {:?} est éloigné de sa cible.", entity);
+        }
+    }
+}
+
+pub fn planning_can_do_melee_attack(
+    mut npc_entity_fighter_q: Query<(Entity, &ActionPoints, &mut Planning), (With<Npc>, With<Turn>, With<Melee>, Without<IsDead>)>, 
+){
+    for (entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
+        if action_points.current >= AP_COST_MELEE {
+            info!("Npc {:?} peut utiliser une attaque de Melee.", entity);
+            planning.ap_for_melee = true;
+        } else {
+            info!("Npc {:?} n'a pas assez de PA pour une attaque de Melee: {:?}.", entity, action_points.current);
+        }        
+    }
+}
+
+pub fn planning_has_low_life(
+    mut npc_entity_fighter_q: Query<(Entity, &Health, &mut Planning), (With<Npc>, With<Turn>, Without<IsDead>)>,
+) {
+    for (entity, health, mut planning) in npc_entity_fighter_q.iter_mut() {
+        if health.current < health.max / LOW_HP_THRESHOLD {
+            info!("Npc {:?} est faible en vie", entity);
+            planning.low_health = true;
+        } else {
+            info!("Npc {:?} estime être en bonne santé.", entity);
+        }
+    } 
+}
+
+pub fn planning_has_allies_nearby(
+    mut npc_entity_fighter_q: Query<(Entity, &BoardPosition, &mut Planning), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    npc_position_q: Query<&BoardPosition, With<Npc>>,
+    board: Res<Map>,
+){
+    for (entity, position, mut planning) in npc_entity_fighter_q.iter_mut() {
+        for npc_position in npc_position_q.iter() {
+            // TODO : Enregistrer les alliés proches?
+            if let Ok(_) = is_in_sight(&board, &position.v, &npc_position.v, VISIBILITY_RANGE_NPC) {
+                info!("Npc {:?} a des alliés proches.", entity);
+                planning.has_allies_nearby = true;
+                break;
+            }
+        }
+    }
+}
+
+pub fn planning_can_move( 
+    mut npc_entity_fighter_q: Query<(Entity, &ActionPoints, &mut Planning), (With<Npc>, With<Turn>, With<Walk>, Without<IsDead>)>, 
+) {
+    for (entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
+        if action_points.current >= AP_COST_MOVE {
+            info!("Npc {:?} peut se deplacer.", entity);
+            planning.can_move = true;
+        } else {
+            info!("Npc {:?} n'a pas assez de PA pour se deplacer", entity);
+        }        
+    }
+}
+
+
+// Old version, a adapter => si echec on ne sort pas de la boucle.
+pub fn planning_approaching( 
     mut commands: Commands,
     npc_entity_fighter_q: Query<(Entity, &BoardPosition, &PlanMove), (With<Npc>, With<Turn>, Without<IsDead>, With<Walk>)>,   
     board: Res<Map>,
     query_occupied: Query<&BoardPosition, With<Occupier>>,
 ) {
-    let mut to_remove_planning = Vec::new();
     let mut to_remove_plan_move = Vec::new();
     for (npc_entity, npc_position, npc_plan) in npc_entity_fighter_q.iter() {
         // Pas de Goal, on a déjà determiné cela avant.
@@ -163,18 +302,16 @@ pub fn npc_ia_plan_approaching(
             true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
         );
         
-        if let Some(path) = path_to_destination {
+        if let Some(mut path) = path_to_destination {
             //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
-            commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: Some(npc_plan.destination)});    
-            to_remove_planning.push(npc_entity);
+            let _remove_last_destination = path.pop_back(); // On fait ça sinon le perso se deplacera sur sa cible sans l'attaquer. 
+            commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None}); //On ne veut pas attaquer.  Some(npc_plan.destination)});    
         } else {
             //println!("Pas de chemin pour moi.");
+            commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
         }
         // Retrait du PlanMove sinon on ne refait plus le check View.   // REMINDER: C'etait très cool !
         to_remove_plan_move.push(npc_entity);
-    }
-    for entity in to_remove_planning {
-        commands.entity(entity).remove::<Planning>();   
     }
     for entity in to_remove_plan_move {
         commands.entity(entity).remove::<PlanMove>();   
@@ -182,17 +319,124 @@ pub fn npc_ia_plan_approaching(
 }
 
 
-pub fn npc_ai_plan_forfeit(
+pub fn planning_fleeing( 
     mut commands: Commands,
-    npc_entity_fighter_q: Query<(Entity, &ActionPoints, &Goal), (With<Npc>, With<Turn>, With<Planning>, Without<IsDead>)>,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &PlanFlee), (With<Npc>, With<Turn>, Without<IsDead>, With<Walk>)>,   
+    board: Res<Map>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
+    exit_position_q: Query<&BoardPosition, With<NavigationNode>>,
 ) {
-    let mut to_remove = Vec::new();
-    for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
-        to_remove.push(npc_entity);
-        //println!("NPC {:?} n'a rien a faire.", npc_entity);
-        commands.entity(npc_entity).insert(WantToForfeit);
+    let mut to_remove_plan_move = Vec::new();
+    for (npc_entity, npc_position, _) in npc_entity_fighter_q.iter() {
+        info!("Plan flee: exit found. have I a path to it?");
+        to_remove_plan_move.push(npc_entity);        
+
+        // Utilisé dans room_based_exits. 
+        let mut farest_distance = 0;
+        let mut farest_destination= npc_position.v;
+        for room in exit_position_q.iter() {
+            let distance = npc_position.v.clone().manhattan(room.v);
+            if distance > farest_distance {
+                farest_distance = distance;
+                farest_destination = room.v; 
+            }
+        }
+
+        if farest_destination != npc_position.v {
+            // Je m'eloigne de ma destination vers la sortie.
+            let path_to_destination = find_path(
+                npc_position.v,
+                farest_destination, 
+                &board.entity_tiles.keys().cloned().collect(), 
+                &query_occupied.iter().map(|p| p.v).collect(),
+                true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
+            );
+            
+            if let Some(path) = path_to_destination {
+                let next_position = path.get(0).copied();
+                info!("I am {:?}, i'm at {:?} and my target is {:?}", npc_entity, npc_position.v, next_position);
+                //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
+                info!("Plan flee: path to exit found.");
+                commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None});    
+            } else {
+                //println!("Pas de chemin pour moi.");
+                info!("Plan flee: No path to exit found, forfeit.");
+                commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
+            }
+        } else {
+            info!("Plan flee: No exit found, forfeit.");
+            for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
+                commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
+            }
+        }
     }
-    for entity in to_remove {
-        commands.entity(entity).remove::<Planning>();
+    for entity in to_remove_plan_move {
+        commands.entity(entity).remove::<PlanFlee>();   
+    }
+}
+
+
+pub fn planning_searching( 
+    mut commands: Commands,
+    mut npc_entity_fighter_q: Query<(Entity, &BoardPosition, &PlanSearch, &mut Knowledge), (With<Npc>, With<Turn>, Without<IsDead>, With<Walk>)>,   
+    board: Res<Map>,
+    query_occupied: Query<&BoardPosition, With<Occupier>>,
+    exit_position_q: Query<&BoardPosition, With<NavigationNode>>,
+) {
+    let mut to_remove_plan_move = Vec::new();
+
+    for (npc_entity, npc_position, _, mut knowledge) in npc_entity_fighter_q.iter_mut() {
+        info!("Plan flee: exit found. have I a path to it?");
+        to_remove_plan_move.push(npc_entity);        
+
+        if knowledge.last_visited_nodes.len() > 4 {
+            knowledge.last_visited_nodes = Vec::new();
+        }
+        // Utilisé dans room_based_exits. 
+        let mut nearest_distance = 0;
+        let mut nearest_destination= npc_position.v;
+        for room in exit_position_q.iter() {
+            let distance = npc_position.v.clone().manhattan(room.v);
+            if knowledge.last_visited_nodes.contains(&room.v) {
+                info!("Npc {:?} a déjà visité le node {:?}", npc_entity, room);
+                continue 
+            } else {
+                if distance > nearest_distance {
+                    nearest_distance = distance;
+                    nearest_destination = room.v; 
+                }
+            }
+        }
+
+        // Similaire à Flee et Exit de MapBuilder.
+        if nearest_destination != npc_position.v {
+            if nearest_distance < 5 {   // Min distance pour considerer qu'on ne reverifiera pas.
+                knowledge.last_visited_nodes.push(nearest_destination); // Je me souviens de la destination.
+            }            
+            // Je m'eloigne de ma destination vers la sortie.
+            let path_to_destination = find_path(
+                npc_position.v,
+                nearest_destination, 
+                &board.entity_tiles.keys().cloned().collect(), 
+                &query_occupied.iter().map(|p| p.v).collect(),
+                true,  // Obligé de l'avoir en true, sinon on considère que pas de route pour s'y rendre.
+            );
+            
+            if let Some(path) = path_to_destination {
+                let next_position = path.get(0).copied();
+                info!("I am {:?}, i'm at {:?} and I want to search to {:?}", npc_entity, npc_position.v, next_position);
+                commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None});    
+            } else {
+                //println!("Pas de chemin pour moi.");
+                info!("Plan Search: No Node found, forfeit.");
+                commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
+            }
+        } else {
+            info!("Plan Search: No Node found, forfeit.");
+            commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
+        }
+    }
+    for entity in to_remove_plan_move {
+        commands.entity(entity).remove::<PlanSearch>();   
     }
 }

@@ -11,7 +11,7 @@ use crate::{game::{
     }, 
     movements::components::MoveTo, 
     player::{components::WantToMoveEvent, Player}, 
-    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::{ComputeFovEvent, View}, BASE_SPEED_PATH_ANIMATOR_UPDATE}, vectors::Vector2Int
+    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::{ComputeFovEvent, View}}, vectors::Vector2Int
 };
 use crate::engine::animations::events::AnimateEvent;
 
@@ -52,26 +52,27 @@ pub fn entity_want_to_move(
     mut commands: Commands,
     want_move_q: Query<(Entity, &WantToMove)>,
     actions_q: Query<&ActionPoints>,    
-    //mut ev_try_attack: EventWriter<EntityHitTryEvent>,
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    //mut ev_move: EventWriter<EntityMoveEvent>,
 ){
     let mut to_remove = Vec::new();
     for (entity, want_move) in want_move_q.iter() {
-        //println!("{:?} Want To Move.", entity);
+        info!("{:?} Want To Move.", entity);
         to_remove.push(entity);
 
         let Ok(action_points) = actions_q.get(entity) else { continue };
         if action_points.current < AP_COST_MOVE {
-            //println!("NPC {:?} wanted to move but doesnt have the AP.", entity);
+            info!("NPC {:?} wanted to move but doesnt have the AP.", entity);
              continue };
 
         // Target check
-        let Some(destination) = want_move.path.get(0) else { continue };
+        let Some(destination) = want_move.path.get(0) else { 
+            info!("NPC {:?} doesnt have destination / want move path get 0.", entity);
+            continue };
         if let Some(current_target) = want_move.target {
+            info!("NPC {:?} want to hit target.", entity);
             if current_target == * destination {
                 if action_points.current < AP_COST_MELEE { continue };
-                //println!("J'attaque ma cible!!!");
+                info!("J'attaque ma cible!!!");
                 //ev_try_attack.send( EntityHitTryEvent {entity: want_move.entity, target: current_target});
                 commands.entity(want_move.entity).insert(WantToHit { mode: AttackType::MELEE, target: destination.clone() });
                 continue
@@ -82,6 +83,7 @@ pub fn entity_want_to_move(
         let path = want_move.path.clone();
         //ev_move.send(EntityMoveEvent {entity: want_move.entity, path: path, target: want_move.target});
         commands.entity(want_move.entity).insert(MoveTo { path: path, target: want_move.target});   //TODO: Normalement on a plus de "Some()" à ce moment là, hors on est en Option.
+        info!("{:?} now really move.", entity);
     }
     for entity in to_remove {        
         commands.entity(entity).remove::<WantToMove>();
@@ -113,7 +115,7 @@ pub fn entity_move_to(
     for (entity, movement) in move_q.iter() {
         to_remove.push(entity);
 
-        //println!("{:?} : Je bouge!", entity);
+        info!("{:?} : Je bouge!", entity);
         let Ok(entity_infos) = query_character_turn.get_mut(entity) else { 
             //println!("ActionMove: Je n'ai pas les infos Entité");   // TODO : Quand Action_entity_try_move pose le component MovePath, le Query action_entity_move ne le recupere pas pour le moment (asynchrone?)
             continue };
