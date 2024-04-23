@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{game::{
+use rand::Rng;
+
+use crate::{engine::animations::display_text::TextEvent, game::{
     combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
-    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, 
-    commons::is_in_sight, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition},
-    map_builders::map::Map
+    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
 };
 
 use super::components::{CheckGoal, Knowledge};
@@ -102,7 +102,52 @@ pub fn planning_actions(
     }
 }
 
+/* 
+in_sight: false,
+know_target_position: false,
+ap_for_range: false,
+melee_range: false,
+ap_for_melee: false,
+low_health: false,
+has_allies_nearby: false,
+can_move: false,
+*/
+pub fn ia_quipping_actions(
+    npc_entity_fighter_q: Query<(Entity, &Planning, &Name), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    mut ev_log: EventWriter<LogEvent>,
+    mut ev_box: EventWriter<TextEvent>,
+){
+    for (_, planning, name) in npc_entity_fighter_q.iter() {
+        let mut rng = rand::thread_rng();
+        let rand = rng.gen_range(0..500);
+        println!("----------------RAND IS {:?}", rand);
 
+        let mut text="";
+        match rand {
+            0|1|2 => { if planning.in_sight { text = "Come over here!";} },
+            3|4|5 => { if planning.ap_for_range { text = "got him in my crosshair!";} },
+            6|7|8|9 => { if !planning.know_target_position { text = "Where is he?!";} },
+            10|11|12 => { if planning.ap_for_melee { text = "Time to gutt you.";}},
+            13|14|15|16|17|18 => { if planning.low_health { text = "Doesn't feel good....";};},
+            19|20|21 => { if planning.has_allies_nearby { text = "Let's go guys!!!";};},
+            _ => { text = "Report!";}
+        };
+
+        let mut quip = Some(text);
+        if rand > 25 || text == "" {
+            quip = None;
+        }
+        match quip {
+            Some(final_entry) => {
+                info!("ENTRY IS {:?}", quip);
+                ev_log.send(LogEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
+                ev_box.send(TextEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
+            },
+            None => {info!("NO ENTRY {:?}", quip);}
+        }        
+    }
+    
+}
 
 // 0.20q : PLACEHOLDER : On place pour le moment un component Goal. Les NPC avec ce Component commenceront à planifier leurs actions.
 pub fn ia_evaluate_goals(

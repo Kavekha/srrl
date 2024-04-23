@@ -19,7 +19,7 @@ use crate::game::{pieces::components::Npc, player::Player, tileboard::components
 
 use self::{
     components::{CheckGoal, Frozen}, 
-    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, planning_actions}, ia_planning::{planning_approaching, planning_fleeing, planning_searching}};
+    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, ia_quipping_actions, planning_actions}, ia_planning::{planning_approaching, planning_fleeing, planning_searching}};
 
 use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
 
@@ -43,6 +43,7 @@ impl Plugin for IaPlugin {
                 ia_evaluate_has_low_life,
                 ia_evaluate_allies_nearby,
                 ia_evaluate_can_move,
+                ia_quipping_actions,
             planning_actions,
             planning_approaching,
             planning_fleeing,

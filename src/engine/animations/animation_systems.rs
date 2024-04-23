@@ -53,18 +53,20 @@ pub fn spawn_hit_effect(
 pub fn walk_animation(    
     mut commands: Commands,
     mut ev_animate: EventReader<AnimateEvent>,
+    transform_q: Query<&Transform>
 ) {
     let mut to_add = HashMap::new();
     for ev in ev_animate.read() {
         //println!("---- Anim with wait : {:?}", ev.wait_anim);
         let mut path = ev.path.clone();
 
+        let Ok(transform) = transform_q.get(ev.entity) else { return };
         let mut path_animation: VecDeque<Vec3> = VecDeque::new();
         while !ev.path.is_empty() {
             let step = path.pop_front();
             let Some(current_step) = step else { break };
             let world_position = get_world_position(&current_step); 
-            let target = Vec3::new(world_position.0, world_position.1, 2.0);
+            let target = Vec3::new(world_position.0, world_position.1, transform.translation.z);
             path_animation.push_back(target);
         }
         let path_animator = PathAnimator{path:VecDeque::from(path_animation), wait_anim: ev.wait_anim};
