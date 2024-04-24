@@ -1,49 +1,13 @@
 use bevy::prelude::*;
 
-use rand::Rng;
-
 use crate::{game::{
     combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
-    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition, ui::display_text::TextEvent}, map_builders::map::Map
+    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}},
+    commons::is_in_sight, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
 };
 
-use super::components::{CheckGoal, Knowledge};
+use super::{components::{CheckGoal, Knowledge}, Planning};
 
-
-#[derive(Component, Debug)]
-pub struct Planning {
-    pub in_sight: bool,
-    know_target_position: bool,
-    pub ap_for_range: bool,
-    pub melee_range: bool,
-    pub ap_for_melee: bool,
-    pub low_health: bool,
-    pub has_allies_nearby: bool,
-    pub can_move: bool,
-}
-impl Planning {
-    pub fn new() -> Planning {
-        Planning {
-            in_sight: false,
-            know_target_position: false,
-            ap_for_range: false,
-            melee_range: false,
-            ap_for_melee: false,
-            low_health: false,
-            has_allies_nearby: false,
-            can_move: false,
-        }
-    }
-    pub fn reset(&mut self) {
-        self.in_sight= false;
-        self.ap_for_range= false;
-        self.melee_range= false;
-        self.ap_for_melee= false;
-        self.low_health= false;
-        self.has_allies_nearby= false;
-        self.can_move= false;
-    }
-}
  
 
 // 0.20r : v1.1 : Les protections si on ne peut pas bouger sont dans les PlanMove pour le moment. C'est pas ouf.
@@ -102,52 +66,6 @@ pub fn planning_actions(
     }
 }
 
-/* 
-in_sight: false,
-know_target_position: false,
-ap_for_range: false,
-melee_range: false,
-ap_for_melee: false,
-low_health: false,
-has_allies_nearby: false,
-can_move: false,
-*/
-pub fn ia_quipping_actions(
-    npc_entity_fighter_q: Query<(Entity, &Planning, &Name), (With<Npc>, With<Turn>, Without<IsDead>)>,
-    mut ev_log: EventWriter<LogEvent>,
-    mut ev_box: EventWriter<TextEvent>,
-){
-    for (entity, planning, name) in npc_entity_fighter_q.iter() {
-        if planning.in_sight {
-            let mut rng = rand::thread_rng();
-            let rand = rng.gen_range(0..25);
-            println!("----------------RAND IS {:?}", rand);
-
-            let mut text="";
-            match rand {
-                0|1|2 => { text = "Come over here!" },
-                3|4|5 => { if planning.ap_for_range { text = "got him in my crosshair!";} },
-                6|7|8|9 => { if !planning.know_target_position { text = "Where is he?!";} },
-                10|11|12 => { if planning.ap_for_melee { text = "Time to gutt you.";}},
-                13|14|15|16|17|18 => { if planning.low_health { text = "Doesn't feel good....";};},
-                19|20|21 => { if planning.has_allies_nearby { text = "Let's go guys!!!";};},
-                _ => { text = "Report!";}
-            };
-            let mut quip = Some(text);
-            if text == "" {
-                quip = None;
-            }
-            match quip {
-                Some(final_entry) => {
-                    //info!!("ENTRY IS {:?}", quip);
-                    ev_log.send(LogEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
-                    ev_box.send(TextEvent { entry: format!("{}", final_entry), entity: entity });
-                },
-                None => {}//info!!("NO ENTRY {:?}", quip);}
-            }
-        }
-    }
-}
 
 // 0.20q : PLACEHOLDER : On place pour le moment un component Goal. Les NPC avec ce Component commenceront à planifier leurs actions.
 pub fn ia_evaluate_goals(
@@ -199,15 +117,20 @@ pub fn ia_evaluate_check_target_knowledge(
     board: Res<Map>,
 ){
     let Ok(target_position) = player_position_q.get_single() else { return };
-    for (position,  _, mut knowledge) in npc_entity_fighter_q.iter_mut() {
+    for (position,  mut planning, mut knowledge) in npc_entity_fighter_q.iter_mut() {
         match knowledge.player_last_seen {
-            None => { continue },
+            None => { 
+                planning.know_target_position = false;
+                continue },
             Some(last_known_position) => {
                 if let Ok(_) = is_in_sight(&board, &position.v, &last_known_position, VISIBILITY_RANGE_NPC) {
                     //info!!("Je vois l'endroit où est ma cible.");
                     if target_position.v != last_known_position {
                         //info!!("Ma cible n'est pas là où je le pensais.");
                         knowledge.player_last_seen = None;
+                        planning.know_target_position = false;
+                    } else {
+                        planning.know_target_position = true;
                     }
                 }
             }

@@ -30,3 +30,7 @@ pub struct Knowledge {
     pub player_last_seen : Option<Vector2Int>,
     pub last_visited_nodes: Vec<Vector2Int>
 }
+
+
+#[derive(Component)]
+pub struct HasTalked;

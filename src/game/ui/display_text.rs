@@ -4,7 +4,7 @@ use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
         combat::combat_system::components::IsDead, pieces::components::Npc, 
-        ui::components:: UiGameInterface}, globals::STANDARD_TILE_SIZE};
+        ui::components:: UiGameInterface}};
 
 use super::components::UiLogLine;
 
@@ -23,7 +23,7 @@ pub struct UiTextPosition {
     pub entity_related: Entity
 }
 
-const UI_TEXT_MAX_DURATION_TIME: f32 = 8.0;
+const UI_TEXT_MAX_DURATION_TIME: f32 = 2.0;
 const UI_TEXT_FONT_SIZE: f32 = 10.0;
 const UI_TEXT_COLOR:Color = Color::ANTIQUE_WHITE;
 const UI_TEXT_HIGH: f32 = 30.0;
@@ -54,8 +54,8 @@ pub fn update_ui_text_position(
         //let right =screen_size.x - screen_position.x;
         let top =screen_position.y - UI_TEXT_HIGH; // REMEMBER : world = y goes from bottom to top (++)
         //let bottom = screen_size.y - screen_position.y;        
-        let width = UI_TEXT_WIDTH; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
-        let height = UI_TEXT_HIGH;
+        let width = UI_TEXT_WIDTH / 2.0; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
+        let height = UI_TEXT_HIGH / 2.0;
         let grow = 100.0;
 
         style.left = Val::Px(left);

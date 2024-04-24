@@ -14,12 +14,14 @@ use bevy::prelude::*;
 pub mod components;
 mod ia_evaluate;
 mod ia_planning;
+mod ia_quipping;
 
 use crate::game::{pieces::components::Npc, player::Player, tileboard::components::BoardPosition};
 
 use self::{
     components::{CheckGoal, Frozen}, 
-    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, ia_quipping_actions, planning_actions}, ia_planning::{planning_approaching, planning_fleeing, planning_searching}};
+    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, planning_actions}, 
+    ia_planning::{planning_approaching, planning_fleeing, planning_searching}, ia_quipping::{cleaning_has_talked_status, ia_quipping_actions}};
 
 use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
 
@@ -34,7 +36,7 @@ impl Plugin for IaPlugin {
         .add_systems(Update,
             (
                 ia_evaluate_goals,
-                ia_evaluate_check_target_knowledge,
+                ia_evaluate_check_target_knowledge,                              
                 ia_evaluate_enemy_in_sight,
                 ia_evaluate_know_target_position,
                 ia_evaluate_can_do_ranged_attack,
@@ -43,11 +45,12 @@ impl Plugin for IaPlugin {
                 ia_evaluate_has_low_life,
                 ia_evaluate_allies_nearby,
                 ia_evaluate_can_move,
-                ia_quipping_actions,
+                ia_quipping_actions,        // Necessite Planning pour savoir quoi dire et d'etre à la fin de l'evaluation pour avoir de quoi parler.
             planning_actions,
             planning_approaching,
             planning_fleeing,
-            planning_searching            
+            planning_searching,
+            cleaning_has_talked_status
         )
         .chain()
         .in_set(ActionSet::Planning))
@@ -55,6 +58,43 @@ impl Plugin for IaPlugin {
     }
 }
 
+
+
+
+#[derive(Component, Debug)]
+pub struct Planning {
+    pub in_sight: bool,
+    know_target_position: bool,
+    pub ap_for_range: bool,
+    pub melee_range: bool,
+    pub ap_for_melee: bool,
+    pub low_health: bool,
+    pub has_allies_nearby: bool,
+    pub can_move: bool,
+}
+impl Planning {
+    pub fn new() -> Planning {
+        Planning {
+            in_sight: false,
+            know_target_position: false,
+            ap_for_range: false,
+            melee_range: false,
+            ap_for_melee: false,
+            low_health: false,
+            has_allies_nearby: false,
+            can_move: false,
+        }
+    }
+    pub fn reset(&mut self) {
+        self.in_sight= false;
+        self.ap_for_range= false;
+        self.melee_range= false;
+        self.ap_for_melee= false;
+        self.low_health= false;
+        self.has_allies_nearby= false;
+        self.can_move= false;
+    }
+}
 
 fn ignore_npc_out_of_game_range(
     mut commands: Commands,
