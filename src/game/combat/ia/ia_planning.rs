@@ -51,7 +51,7 @@ pub fn planning_fleeing(
 ) {
     let mut to_remove_plan_move = Vec::new();
     for (npc_entity, npc_position, _) in npc_entity_fighter_q.iter() {
-        info!("Plan flee: exit found. have I a path to it?");
+        //info!("Plan flee: exit found. have I a path to it?");
         to_remove_plan_move.push(npc_entity);        
 
         // Utilisé dans room_based_exits. 
@@ -77,9 +77,9 @@ pub fn planning_fleeing(
             
             if let Some(path) = path_to_destination {
                 let next_position = path.get(0).copied();
-                info!("I am {:?}, i'm at {:?} and my target is {:?}", npc_entity, npc_position.v, next_position);
+                //info!("I am {:?}, i'm at {:?} and my target is {:?}", npc_entity, npc_position.v, next_position);
                 //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
-                info!("Plan flee: path to exit found.");
+                //info!("Plan flee: path to exit found.");
                 commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None});    
             } else {
                 //println!("Pas de chemin pour moi.");

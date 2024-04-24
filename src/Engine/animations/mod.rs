@@ -15,12 +15,10 @@ use crate::{
 };
 
 use self::animation_systems::{path_animator_update, spawn_hit_effect, update_game_cursor, walk_animation};
-use self::display_text::{display_text_box, TextEvent};
 
 
 pub mod events;
 pub mod animation_systems;
-pub mod display_text;
 
 
 pub struct AnimationsPlugin;
@@ -31,7 +29,6 @@ impl Plugin for AnimationsPlugin {
             .add_event::<AnimateEvent>() 
             .add_event::<GraphicsWaitEvent>() 
             .add_event::<EffectEvent>()
-            .add_event::<TextEvent>()
 
             .add_systems(Update, walk_animation)
             .add_systems(Update, path_animator_update.in_set(CombatSet::Animation))   // 3 fois le system => 3 fois plus vite. lol.
@@ -40,7 +37,6 @@ impl Plugin for AnimationsPlugin {
             .add_systems(Update, animate_sprite.in_set(CombatSet::Animation))
             .add_systems(Update, spawn_hit_effect.run_if(on_event::<EffectEvent>()))
             .add_systems(Update, clean_animations)
-            .add_systems(Update, display_text_box)
             ;
     }
 }

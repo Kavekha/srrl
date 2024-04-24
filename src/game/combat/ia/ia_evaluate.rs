@@ -2,9 +2,9 @@ use bevy::prelude::*;
 
 use rand::Rng;
 
-use crate::{engine::animations::display_text::TextEvent, game::{
+use crate::{game::{
     combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
-    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
+    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition, ui::display_text::TextEvent}, map_builders::map::Map
 };
 
 use super::components::{CheckGoal, Knowledge};
@@ -61,29 +61,29 @@ pub fn planning_actions(
     let mut to_remove = Vec::new();
 
     for (entity, planning, knowledge) in npc_entity_fighter_q.iter() {
-        info!("{:?} is planning -----------------", entity);
-        info!("{:?}", planning);
+        //info!!("{:?} is planning -----------------", entity);
+        //info!!("{:?}", planning);
         
                 // Attaque à distance
         if planning.in_sight && planning.ap_for_range {
-            info!("{:?} va attaquer sa cible à distance.", entity);
+            //info!!("{:?} va attaquer sa cible à distance.", entity);
             commands.entity(entity).insert(WantToHit { mode: AttackType::RANGED, target: target_position.v });
         }
         // Melee 
         if planning.in_sight && planning.ap_for_melee && planning.melee_range {
-            info!("{:?} va attaquer sa cible en melee.", entity);
+            //info!!("{:?} va attaquer sa cible en melee.", entity);
             commands.entity(entity).insert(WantToHit { mode: AttackType::MELEE, target: target_position.v });
         }
         // Trop loin de la cible mais peut taper.
         if planning.in_sight && planning.ap_for_melee && planning.can_move {
             // TODO : Doit verifier s'il peut porter un coup ce tour.
-            info!("{:?} va se rapprocher de sa cible pour l'attaquer en melee!", entity);
+            //info!!("{:?} va se rapprocher de sa cible pour l'attaquer en melee!", entity);
             commands.entity(entity).insert(PlanMove { destination: target_position.v}); 
         }
         // En vue, mais ne peut pas taper.
         if planning.in_sight && !planning.ap_for_melee && !planning.ap_for_range && planning.can_move {
             //s'eloigne
-            info!("{:?} va s'éloigner", entity);
+            //info!!("{:?} va s'éloigner", entity);
             commands.entity(entity).insert(PlanFlee { away_from: target_position.v}); 
         }
         // Connait une position possible de sa cible, et s'y rends.
@@ -92,7 +92,7 @@ pub fn planning_actions(
         }
         // Ne voit pas la cible : la cherche.
         if !planning.in_sight && planning.can_move {
-            info!("{:?} recherche sa cible.", entity);
+            //info!!("{:?} recherche sa cible.", entity);
             commands.entity(entity).insert(PlanSearch ); 
         } 
         to_remove.push(entity);  
@@ -117,7 +117,7 @@ pub fn ia_quipping_actions(
     mut ev_log: EventWriter<LogEvent>,
     mut ev_box: EventWriter<TextEvent>,
 ){
-    for (_, planning, name) in npc_entity_fighter_q.iter() {
+    for (entity, planning, name) in npc_entity_fighter_q.iter() {
         let mut rng = rand::thread_rng();
         let rand = rng.gen_range(0..500);
         println!("----------------RAND IS {:?}", rand);
@@ -139,11 +139,11 @@ pub fn ia_quipping_actions(
         }
         match quip {
             Some(final_entry) => {
-                info!("ENTRY IS {:?}", quip);
+                //info!!("ENTRY IS {:?}", quip);
                 ev_log.send(LogEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
-                ev_box.send(TextEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
+                ev_box.send(TextEvent { entry: format!("{}", final_entry), entity: entity });
             },
-            None => {info!("NO ENTRY {:?}", quip);}
+            None => {}//info!!("NO ENTRY {:?}", quip);}
         }        
     }
     
@@ -165,14 +165,14 @@ pub fn ia_evaluate_goals(
             }
         } else {        
             for (entity, planning, knowledge) in entity_npc_q.iter_mut() {
-                info!("Npc {:?} reflechit à ses objectifs.--------------", entity);
+                //info!!("Npc {:?} reflechit à ses objectifs.--------------", entity);
                 match planning {
                     Some(mut has_planing) => { 
-                        info!("{:?} a déjà un planning. Reset.", entity);
+                        //info!!("{:?} a déjà un planning. Reset.", entity);
                         has_planing.reset(); 
                     },
                     None => { 
-                        info!("{:?} n'a pas de planning. Donnons lui-en un.", entity);
+                        //info!!("{:?} n'a pas de planning. Donnons lui-en un.", entity);
                         commands.entity(entity).insert(Planning::new()); },
                 };
                 match knowledge {
@@ -204,9 +204,9 @@ pub fn ia_evaluate_check_target_knowledge(
             None => { continue },
             Some(last_known_position) => {
                 if let Ok(_) = is_in_sight(&board, &position.v, &last_known_position, VISIBILITY_RANGE_NPC) {
-                    info!("Je vois l'endroit où est ma cible.");
+                    //info!!("Je vois l'endroit où est ma cible.");
                     if target_position.v != last_known_position {
-                        info!("Ma cible n'est pas là où je le pensais.");
+                        //info!!("Ma cible n'est pas là où je le pensais.");
                         knowledge.player_last_seen = None;
                     }
                 }
@@ -222,13 +222,13 @@ pub fn ia_evaluate_enemy_in_sight(
     board: Res<Map>,
 ){
     let Ok(target_position) = player_position_q.get_single() else { return };
-     for (entity, position, mut planning, mut knowledge) in npc_entity_fighter_q.iter_mut() {
+     for (_entity, position, mut planning, mut knowledge) in npc_entity_fighter_q.iter_mut() {
         if let Ok(_) = is_in_sight(&board, &position.v, &target_position.v, VISIBILITY_RANGE_NPC) {
-            info!("Npc {:?} voit sa cible.", entity);
+            //info!!("Npc {:?} voit sa cible.", entity);
             planning.in_sight = true;
             knowledge.player_last_seen = Some(target_position.v.clone());
         } else {
-            info!("Npc {:?} n'a pas de cible.", entity);
+            //info!!("Npc {:?} n'a pas de cible.", entity);
         }   
     }
 }
@@ -248,12 +248,12 @@ pub fn ia_evaluate_know_target_position(
 pub fn ia_evaluate_can_do_ranged_attack(
     mut npc_entity_fighter_q: Query<(Entity, &ActionPoints, &mut Planning), (With<Npc>, With<Turn>, With<Ranged>, Without<IsDead>)>, 
 ){
-    for (entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
+    for (_entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
         if action_points.current >= AP_COST_RANGED {
-            info!("Npc {:?} peut utiliser une attaque à distance.", entity);
+            //info!!("Npc {:?} peut utiliser une attaque à distance.", entity);
             planning.ap_for_range = true;
         } else {
-            info!("Npc {:?} n'a pas assez de PA pour une attaque à distance : {:?}", entity, action_points.current);
+            //info!!("Npc {:?} n'a pas assez de PA pour une attaque à distance : {:?}", entity, action_points.current);
         }
     }
 }
@@ -263,12 +263,12 @@ pub fn ia_evaluate_adjacent_enemy(
     mut npc_entity_fighter_q: Query<(Entity, &BoardPosition, &mut Planning), (With<Npc>, With<Turn>, Without<IsDead>)>,
 ) {
     let Ok(target_position) = player_position_q.get_single() else { return };
-    for (entity, position, mut planning) in npc_entity_fighter_q.iter_mut() {
+    for (_entity, position, mut planning) in npc_entity_fighter_q.iter_mut() {
         if (target_position.v.x - position.v.x).abs() < 2 && (target_position.v.y - position.v.y).abs() < 2 {
-            info!("Npc {:?} est a coté de sa cible.", entity);
+            //info!!("Npc {:?} est a coté de sa cible.", entity);
             planning.melee_range = true;
         } else {
-            info!("Npc {:?} est éloigné de sa cible.", entity);
+            //info!!("Npc {:?} est éloigné de sa cible.", entity);
         }
     }
 }
@@ -276,12 +276,12 @@ pub fn ia_evaluate_adjacent_enemy(
 pub fn ia_evaluate_can_do_melee_attack(
     mut npc_entity_fighter_q: Query<(Entity, &ActionPoints, &mut Planning), (With<Npc>, With<Turn>, With<Melee>, Without<IsDead>)>, 
 ){
-    for (entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
+    for (_entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
         if action_points.current >= AP_COST_MELEE {
-            info!("Npc {:?} peut utiliser une attaque de Melee.", entity);
+            //info!!("Npc {:?} peut utiliser une attaque de Melee.", entity);
             planning.ap_for_melee = true;
         } else {
-            info!("Npc {:?} n'a pas assez de PA pour une attaque de Melee: {:?}.", entity, action_points.current);
+            //info!!("Npc {:?} n'a pas assez de PA pour une attaque de Melee: {:?}.", entity, action_points.current);
         }        
     }
 }
@@ -289,12 +289,12 @@ pub fn ia_evaluate_can_do_melee_attack(
 pub fn ia_evaluate_has_low_life(
     mut npc_entity_fighter_q: Query<(Entity, &Health, &mut Planning), (With<Npc>, With<Turn>, Without<IsDead>)>,
 ) {
-    for (entity, health, mut planning) in npc_entity_fighter_q.iter_mut() {
+    for (_entity, health, mut planning) in npc_entity_fighter_q.iter_mut() {
         if health.current < health.max / LOW_HP_THRESHOLD {
-            info!("Npc {:?} est faible en vie", entity);
+            //info!!("Npc {:?} est faible en vie", entity);
             planning.low_health = true;
         } else {
-            info!("Npc {:?} estime être en bonne santé.", entity);
+            //info!!("Npc {:?} estime être en bonne santé.", entity);
         }
     } 
 }
@@ -304,11 +304,11 @@ pub fn ia_evaluate_allies_nearby(
     npc_position_q: Query<&BoardPosition, With<Npc>>,
     board: Res<Map>,
 ){
-    for (entity, position, mut planning) in npc_entity_fighter_q.iter_mut() {
+    for (_entity, position, mut planning) in npc_entity_fighter_q.iter_mut() {
         for npc_position in npc_position_q.iter() {
             // TODO : Enregistrer les alliés proches?
             if let Ok(_) = is_in_sight(&board, &position.v, &npc_position.v, VISIBILITY_RANGE_NPC) {
-                info!("Npc {:?} a des alliés proches.", entity);
+                //info!!("Npc {:?} a des alliés proches.", entity);
                 planning.has_allies_nearby = true;
                 break;
             }
@@ -319,12 +319,12 @@ pub fn ia_evaluate_allies_nearby(
 pub fn ia_evaluate_can_move( 
     mut npc_entity_fighter_q: Query<(Entity, &ActionPoints, &mut Planning), (With<Npc>, With<Turn>, With<Walk>, Without<IsDead>)>, 
 ) {
-    for (entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
+    for (_entity, action_points, mut planning) in npc_entity_fighter_q.iter_mut() {
         if action_points.current >= AP_COST_MOVE {
-            info!("Npc {:?} peut se deplacer.", entity);
+            //info!!("Npc {:?} peut se deplacer.", entity);
             planning.can_move = true;
         } else {
-            info!("Npc {:?} n'a pas assez de PA pour se deplacer", entity);
+            //info!!("Npc {:?} n'a pas assez de PA pour se deplacer", entity);
         }        
     }
 }
