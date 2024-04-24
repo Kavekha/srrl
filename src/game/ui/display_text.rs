@@ -119,7 +119,9 @@ pub fn draw_and_update_ui_text(
                 align_items: AlignItems::FlexEnd,            
                 flex_direction: FlexDirection::Column,
                 bottom: Val::Px(0.),
-                ..default()},
+                border: UiRect::all(Val::Px(2.)), 
+                ..default()},                
+                border_color: Color::rgba(0.5, 0.5, 0.0, 0.0).into(),
             ..default()
         }).insert(UiGameInterface).insert(UiText).insert(UiTextPosition{entity_related: event.entity}).id()
         ;

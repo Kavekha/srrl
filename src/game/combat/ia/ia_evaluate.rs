@@ -118,35 +118,35 @@ pub fn ia_quipping_actions(
     mut ev_box: EventWriter<TextEvent>,
 ){
     for (entity, planning, name) in npc_entity_fighter_q.iter() {
-        let mut rng = rand::thread_rng();
-        let rand = rng.gen_range(0..500);
-        println!("----------------RAND IS {:?}", rand);
+        if planning.in_sight {
+            let mut rng = rand::thread_rng();
+            let rand = rng.gen_range(0..25);
+            println!("----------------RAND IS {:?}", rand);
 
-        let mut text="";
-        match rand {
-            0|1|2 => { if planning.in_sight { text = "Come over here!";} },
-            3|4|5 => { if planning.ap_for_range { text = "got him in my crosshair!";} },
-            6|7|8|9 => { if !planning.know_target_position { text = "Where is he?!";} },
-            10|11|12 => { if planning.ap_for_melee { text = "Time to gutt you.";}},
-            13|14|15|16|17|18 => { if planning.low_health { text = "Doesn't feel good....";};},
-            19|20|21 => { if planning.has_allies_nearby { text = "Let's go guys!!!";};},
-            _ => { text = "Report!";}
-        };
-
-        let mut quip = Some(text);
-        if rand > 25 || text == "" {
-            quip = None;
+            let mut text="";
+            match rand {
+                0|1|2 => { text = "Come over here!" },
+                3|4|5 => { if planning.ap_for_range { text = "got him in my crosshair!";} },
+                6|7|8|9 => { if !planning.know_target_position { text = "Where is he?!";} },
+                10|11|12 => { if planning.ap_for_melee { text = "Time to gutt you.";}},
+                13|14|15|16|17|18 => { if planning.low_health { text = "Doesn't feel good....";};},
+                19|20|21 => { if planning.has_allies_nearby { text = "Let's go guys!!!";};},
+                _ => { text = "Report!";}
+            };
+            let mut quip = Some(text);
+            if text == "" {
+                quip = None;
+            }
+            match quip {
+                Some(final_entry) => {
+                    //info!!("ENTRY IS {:?}", quip);
+                    ev_log.send(LogEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
+                    ev_box.send(TextEvent { entry: format!("{}", final_entry), entity: entity });
+                },
+                None => {}//info!!("NO ENTRY {:?}", quip);}
+            }
         }
-        match quip {
-            Some(final_entry) => {
-                //info!!("ENTRY IS {:?}", quip);
-                ev_log.send(LogEvent { entry: format!("{:?} says: {:?}", name, final_entry) });
-                ev_box.send(TextEvent { entry: format!("{}", final_entry), entity: entity });
-            },
-            None => {}//info!!("NO ENTRY {:?}", quip);}
-        }        
     }
-    
 }
 
 // 0.20q : PLACEHOLDER : On place pour le moment un component Goal. Les NPC avec ce Component commenceront à planifier leurs actions.
