@@ -130,14 +130,9 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Running), draw_log_ui) 
             .add_systems(Update, update_ui_new_lines.run_if(on_event::<LogEvent>()))
             .add_systems(Update, update_ui_remove_old_lines)   
-            // 
-            //.add_systems(OnEnter(GameState::Running), draw_text_ui)
-            //.add_systems(Update, update_ui_text.run_if(on_event::<TextEvent>()))
+            // Text UI
             .add_systems(Update, draw_and_update_ui_text.run_if(on_event::<TextEvent>()))
-            .add_systems(Update, update_ui_text_position.run_if(on_event::<TextEvent>()))
-            
-            
-
+            .add_systems(Update, update_ui_text_position)   //.run_if(on_event::<ReloadUiEvent>()))
 
             .add_systems(OnEnter(GameState::Disabled), clear_all_game_interface)
             .add_systems(OnEnter(GameState::Unavailable), clear_all_game_interface)
