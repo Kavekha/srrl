@@ -73,5 +73,4 @@ pub fn draw_log_ui(
             ..default()},
         ..default()
     }).insert(UiGameInterface).insert(UiLog);
-
 }
