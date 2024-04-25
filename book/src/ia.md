@@ -1,8 +1,11 @@
+last update: 0.20  
+
 # inspiration
 FEAR pour la logique de Squat,  
 Left For Dead pour la logique "MJ" d'un combat,  
 Alien Isolation pour la logique de traque & poursuite,
 Thief pour la logique infiltration.    
+Très séduit aussi par Infinite Axis / Utility IA plus "logique" pour de l'ECS.
 https://www.youtube.com/watch?v=dB7ZSz890cw
 
 
@@ -15,7 +18,7 @@ Les NPC ont plusieurs status:
 - Tracking: Ils savent qu'il y a quelqu'un, et le cherchent.  
 - Hunting: Leur cible est en visu, et ils veulent la tuer. 
 Ils peuvent revenir de Suspicious à Unaware, de Hunting à Tracking, mais jamais ne reviennent à Suscpicious / Unaware s'ils ont atteint le Hunting / Tracking.  
->> MVP 0 : Dans un premier temps, on est toujours en Hunting ou Tracking.  
+>> MVP 0 : Dans un premier temps, on serait toujours en Hunting ou Tracking.  
 
 ## Traque
 Quand un NPC est Tracking, il cherche activement sa cible.  

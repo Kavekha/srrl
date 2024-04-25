@@ -27,7 +27,7 @@ const UI_TEXT_MAX_DURATION_TIME: f32 = 2.0;
 const UI_TEXT_FONT_SIZE: f32 = 10.0;
 const UI_TEXT_COLOR:Color = Color::ANTIQUE_WHITE;
 const UI_TEXT_HIGH: f32 = 30.0;
-const UI_TEXT_WIDTH: f32 = 120.0;
+const UI_TEXT_WIDTH: f32 = 180.0;
 
 
 pub fn update_ui_text_position(
@@ -50,12 +50,12 @@ pub fn update_ui_text_position(
         if screen_position.y > screen_size.x { screen_position.y = screen_size.y }
 
 
-        let left =screen_position.x - UI_TEXT_WIDTH;
+        let left =screen_position.x - UI_TEXT_WIDTH / 2.0;
         //let right =screen_size.x - screen_position.x;
-        let top =screen_position.y - UI_TEXT_HIGH; // REMEMBER : world = y goes from bottom to top (++)
+        let top =screen_position.y - UI_TEXT_HIGH * 2.0; // REMEMBER : world = y goes from bottom to top (++)
         //let bottom = screen_size.y - screen_position.y;        
-        let width = UI_TEXT_WIDTH / 2.0; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
-        let height = UI_TEXT_HIGH / 2.0;
+        let width = UI_TEXT_WIDTH; //INTERFACE_HP_CHUNK_WIDTH * (health.max as f32) / 2.0;
+        let height = UI_TEXT_HIGH;
         let grow = 100.0;
 
         style.left = Val::Px(left);

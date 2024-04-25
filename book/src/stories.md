@@ -1,3 +1,5 @@
+Last update: 0.18
+
 # Generation de missions.
 
 ## Long terme
@@ -83,9 +85,6 @@ Nouvel Adversaire (FanBoy, Dwarf, Veteran, Negociator, Underground), Chanteur (F
 Ils sont éligibles, si toujours vivants, à être des élements d'une autre mission en tant que Client, Adversaire ou Antagoniste.
 
 ### Donner de la personnalité aux missions.
-
-
-
 
 
 # Generation de lieux.
