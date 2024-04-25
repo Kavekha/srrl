@@ -29,3 +29,10 @@ pub struct MoveEvent{
 pub struct CancelMoveEvent{
     pub entity: Entity
 }
+
+
+// 0.20t : Indique les pas faits pendant le tour.
+#[derive(Component)]
+pub struct HasMoved{
+    pub visited_tiles: Vec<Vector2Int>,
+}

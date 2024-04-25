@@ -2,11 +2,10 @@ use bevy::prelude::*;
 
 use crate::{game::{
     combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
-    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}},
-    commons::is_in_sight, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
+    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, movements::components::HasMoved, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
 };
 
-use super::{components::{CheckGoal, Knowledge}, Planning};
+use super::{components::{CheckGoal, HasShareInfos, Knowledge, PlanInformAllies}, Planning};
 
  
 
@@ -44,6 +43,13 @@ pub fn planning_actions(
             //info!!("{:?} va se rapprocher de sa cible pour l'attaquer en melee!", entity);
             commands.entity(entity).insert(PlanMove { destination: target_position.v}); 
         }
+        // Sait / pense savoir ou il est, && a des alliés proches: les informe, sauf si deja fait.
+        if planning.has_allies_nearby && planning.know_target_position && !planning.has_shared_infos {
+            if let Some(known_position) = knowledge.player_last_seen {
+                commands.entity(entity).insert(PlanInformAllies { target_position: known_position });
+            }            
+        }
+
         // En vue, mais ne peut pas taper.
         if planning.in_sight && !planning.ap_for_melee && !planning.ap_for_range && planning.can_move {
             //s'eloigne
@@ -110,25 +116,54 @@ pub fn ia_evaluate_goals(
     }
 }
 
+// 0.20t : On regarde s'il a deja share Knowledge, pour ne pas rester bloquer. HasShareInfos est retiré au debut du tour de l'Entité. TODO : Pas fou.
+pub fn ia_has_shared_knowledge(
+    mut npc_entity_fighter_q: Query<&mut Planning, (With<Npc>, With<Turn>, Without<IsDead>, With<HasShareInfos>)>,
+) {
+    for mut planning in npc_entity_fighter_q.iter_mut() {
+        planning.has_shared_infos = true;
+    }
+}
+
 // 0.20r : Est ce que je vois tjrs la dernière position connue de ma cible?
 pub fn ia_evaluate_check_target_knowledge(
+    mut commands: Commands,
     player_position_q: Query<&BoardPosition, With<Player>>,
-    mut npc_entity_fighter_q: Query<(&BoardPosition, &mut Planning, &mut Knowledge), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    player_moved_q: Query<&HasMoved, With<Player>>,
+    player_entity_q: Query<Entity, With<Player>>,
+    mut npc_entity_fighter_q: Query<(Entity, &BoardPosition, &mut Planning, &mut Knowledge), (With<Npc>, With<Turn>, Without<IsDead>)>,
     board: Res<Map>,
 ){
-    let Ok(target_position) = player_position_q.get_single() else { return };
-    for (position,  mut planning, mut knowledge) in npc_entity_fighter_q.iter_mut() {
+    let Ok (player_entity) = player_entity_q.get_single() else { return };
+    let Ok (target_position) = player_position_q.get(player_entity) else { return };
+    for (entity, position,  mut planning, mut knowledge) in npc_entity_fighter_q.iter_mut() {
         match knowledge.player_last_seen {
             None => { 
-                planning.know_target_position = false;
+                planning.know_target_position = false;                
+                commands.entity(entity).remove::<HasShareInfos>();  // 0.20t : necessaire pour qu'il puisse partager de nouveau info.
+                //info!("N'a pas vu le PJ recemment.");
                 continue },
             Some(last_known_position) => {
                 if let Ok(_) = is_in_sight(&board, &position.v, &last_known_position, VISIBILITY_RANGE_NPC) {
-                    //info!!("Je vois l'endroit où est ma cible.");
+                    //info!("Je vois l'endroit où est ma cible.");
                     if target_position.v != last_known_position {
-                        //info!!("Ma cible n'est pas là où je le pensais.");
+                        //info!("Ma cible n'est pas là où je le pensais.");
+                        // Je regarde si je l'ai vu se deplacer.
                         knowledge.player_last_seen = None;
-                        planning.know_target_position = false;
+                        planning.know_target_position = false;                        
+                        commands.entity(entity).remove::<HasShareInfos>();  // 0.20t : necessaire pour qu'il puisse partager de nouveau info quand il l'aura.
+                        if let Ok(has_moved) = player_moved_q.get(player_entity) {
+                            //info!("Il s'est déplacé! Est ce que je l'ai vu faire?");                         
+                            // 0.20t : Ajout de Moved avec le contenu du trajet fait après un deplacement. On regarde si on a vu le PJ se deplacer. Ca reste bof.
+                            for &visited_tile in &has_moved.visited_tiles[..] {
+                                if let Ok(_) = is_in_sight(&board, &position.v, &visited_tile, VISIBILITY_RANGE_NPC) {
+                                    //info!("Mais je l'ai vu partir par là!");
+                                    knowledge.player_last_seen = Some(visited_tile.clone());
+                                    planning.know_target_position = true;
+                                    break;
+                                }
+                            }
+                        }
                     } else {
                         planning.know_target_position = true;
                     }

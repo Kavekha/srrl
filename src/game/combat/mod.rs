@@ -72,7 +72,7 @@ mod ia;
 
 
 use crate::{engine::animations::events::GraphicsWaitEvent, game::{
-        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, states::GameState 
+        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, movements::components::HasMoved, states::GameState 
     }};
 
 use self::{
@@ -165,6 +165,7 @@ pub fn combat_start(
 /// Ajoute les Participants du Turn au Combat dans la queue CombatTurnQueue.
 fn combat_turn_start(
     // Obligé d'avoir ses 3 queues à cause de npc_query.iter() qui ajoute les entités presentes dans npc_query dans la queue.
+    mut commands: Commands,
     mut action_query: Query<(Entity, &mut ActionPoints)>,
     npc_query: Query<Entity, (With<ActionPoints>, Without<Player>)>,
     player_query: Query<Entity, (With<ActionPoints>, With<Player>)>, 
@@ -177,9 +178,12 @@ fn combat_turn_start(
     
     combat_infos.turn += 1;
     // On redonne les PA à tout le monde.
-    for (_entity, mut action_points) in action_query.iter_mut() {
+    for (entity, mut action_points) in action_query.iter_mut() {
         //println!("{:?} Entity {:?} received full ap.", step, entity);
         action_points.current = action_points.max;
+
+        // On retire les HasMoved.
+        commands.entity(entity).remove::<HasMoved>();
     }
     info!("Turn {:?} : AP have been reset.", combat_infos.turn);
     // On mets à jour le calcul des AP, ce qui rafraichira l'UI.
@@ -230,7 +234,7 @@ fn combat_turn_next_entity(
     // v0.19h : On doit donner aux NPC le component CheckGoal pour qu'il planifie.
 
     if is_npc.is_some() {
-        commands.entity(entity).insert(CheckGoal);    
+        commands.entity(entity).insert(CheckGoal);            
     } else {
         ev_refresh_ap.send(RefreshActionCostEvent);
     }   

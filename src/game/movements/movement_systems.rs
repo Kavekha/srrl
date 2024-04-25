@@ -15,7 +15,7 @@ use crate::{game::{
 };
 use crate::engine::animations::events::AnimateEvent;
 
-use super::components::{CancelMoveEvent, MoveEvent, WantToMove};
+use super::components::{CancelMoveEvent, HasMoved, MoveEvent, WantToMove};
 
 
 // 0.20l Pouvoir annuler un deplacement en cours de PJ.
@@ -91,7 +91,6 @@ pub fn entity_want_to_move(
 }
 
 
-
 // 0.19b
 pub fn entity_move_to(
     mut commands: Commands,
@@ -103,7 +102,8 @@ pub fn entity_move_to(
     mut ev_compute_fov: EventWriter<ComputeFovEvent>,
     mut ev_move_event: EventWriter<MoveEvent>,
     view_q:Query<&View>,
-    entity_player_q:Query<Entity, With<Player>>
+    entity_player_q:Query<Entity, With<Player>>,
+    mut has_moved_q: Query<&mut HasMoved, With<Turn>>
 ){
     let mut to_remove = Vec::new();
     let mut player_view = None;
@@ -126,6 +126,11 @@ pub fn entity_move_to(
         let Some(new_position) = destination.clone() else { break };
         
         ev_move_event.send(MoveEvent { entity: entity, previous: board_position.v, next: new_position});    // 0.20k
+        if let Ok(mut has_moved) = has_moved_q.get_mut(entity) {
+            has_moved.visited_tiles.push(board_position.v)
+        } else {
+            commands.entity(entity).insert(HasMoved { visited_tiles : vec![board_position.v]});
+        }        
 
         board_position.v = new_position;
         ev_refresh_action.send(RefreshActionCostEvent);
