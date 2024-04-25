@@ -52,6 +52,7 @@ pub fn ia_quipping_actions(
             if planning.melee_range { available_texts.push("Cut cut cut!") }
             if planning.low_health { available_texts.push("Doesn't feel good....")}
             if planning.has_allies_nearby { available_texts.push("Let's go guys!!!")}
+            if planning.know_target_position && planning.has_allies_nearby { available_texts.push("They are here, go get them!!!")};
             available_texts.push("Report!");
 
             let index = rng.gen_range(0..(available_texts.len()-1));

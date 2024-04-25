@@ -20,8 +20,8 @@ use crate::game::{pieces::components::Npc, player::Player, tileboard::components
 
 use self::{
     components::{CheckGoal, Frozen}, 
-    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, planning_actions}, 
-    ia_planning::{planning_approaching, planning_fleeing, planning_searching}, ia_quipping::{cleaning_has_talked_status, ia_quipping_actions}};
+    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, ia_has_shared_knowledge, planning_actions}, 
+    ia_planning::{planning_approaching, planning_fleeing, planning_inform_allies, planning_searching}, ia_quipping::{cleaning_has_talked_status, ia_quipping_actions}};
 
 use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
 
@@ -46,7 +46,9 @@ impl Plugin for IaPlugin {
                 ia_evaluate_allies_nearby,
                 ia_evaluate_can_move,
                 ia_quipping_actions,        // Necessite Planning pour savoir quoi dire et d'etre à la fin de l'evaluation pour avoir de quoi parler.
-            planning_actions,
+                ia_has_shared_knowledge,
+            planning_actions,   // Doit être joué en premier planning, car decide de l'action à faire.            
+            planning_inform_allies,
             planning_approaching,
             planning_fleeing,
             planning_searching,
@@ -64,13 +66,14 @@ impl Plugin for IaPlugin {
 #[derive(Component, Debug)]
 pub struct Planning {
     pub in_sight: bool,
-    know_target_position: bool,
+    pub know_target_position: bool,
     pub ap_for_range: bool,
     pub melee_range: bool,
     pub ap_for_melee: bool,
     pub low_health: bool,
     pub has_allies_nearby: bool,
     pub can_move: bool,
+    pub has_shared_infos: bool,
 }
 impl Planning {
     pub fn new() -> Planning {
@@ -83,6 +86,7 @@ impl Planning {
             low_health: false,
             has_allies_nearby: false,
             can_move: false,
+            has_shared_infos: false,
         }
     }
     pub fn reset(&mut self) {

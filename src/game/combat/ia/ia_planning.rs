@@ -1,10 +1,35 @@
 use bevy::prelude::*;
 
-use crate::{game::{combat::{combat_system::components::{IsDead, WantToForfeit}, events::Turn}, movements::components::WantToMove, pieces::components::{NavigationNode, Npc, Occupier, Walk}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::find_path};
+use crate::{game::{combat::{combat_system::components::{IsDead, WantToForfeit}, events::Turn, rules::VISIBILITY_RANGE_NPC}, commons::is_in_sight, movements::components::WantToMove, pieces::components::{NavigationNode, Npc, Occupier, Walk}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::find_path};
 
-use super::components::{Knowledge, PlanFlee, PlanMove, PlanSearch};
+use super::components::{HasShareInfos, Knowledge, PlanFlee, PlanInformAllies, PlanMove, PlanSearch};
 
 
+pub fn planning_inform_allies(
+    mut commands: Commands,
+    npc_entity_fighter_q: Query<(Entity, &BoardPosition, &PlanInformAllies), (With<Npc>, With<Turn>, Without<IsDead>)>,
+    mut npc_position_q: Query<(Entity, &BoardPosition, &mut Knowledge), With<Npc>>,
+    board: Res<Map>,
+){
+    for (entity, position, inform) in npc_entity_fighter_q.iter() {
+        for (npc_entity, npc_position, mut npc_knowledge) in npc_position_q.iter_mut() {
+            // TODO : Enregistrer les alliés proches?
+            if let Ok(_) = is_in_sight(&board, &position.v, &npc_position.v, VISIBILITY_RANGE_NPC) {
+                match npc_knowledge.player_last_seen {
+                    Some(_) => {
+                        info!("Npc already has this information.");
+                    },
+                    None => { 
+                        info!("Npc share info with nearest allies");
+                        npc_knowledge.player_last_seen = Some(inform.target_position.clone());
+                        commands.entity(npc_entity).insert(HasShareInfos);
+                    }                       
+                }                
+            }
+        }
+        commands.entity(entity).insert(HasShareInfos);
+    }
+}
 
 // Old version, a adapter => si echec on ne sort pas de la boucle.
 pub fn planning_approaching( 

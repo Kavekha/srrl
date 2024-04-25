@@ -31,6 +31,13 @@ pub struct Knowledge {
     pub last_visited_nodes: Vec<Vector2Int>
 }
 
-
 #[derive(Component)]
 pub struct HasTalked;
+
+#[derive(Component)]
+pub struct PlanInformAllies{
+    pub target_position: Vector2Int
+}
+
+#[derive(Component)]
+pub struct HasShareInfos;
