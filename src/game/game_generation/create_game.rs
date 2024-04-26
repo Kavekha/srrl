@@ -18,7 +18,7 @@ pub fn create_new_game(
     create_nodes(world, map_infos.rooms);
 
     for spawn in map_infos.spawn_list {
-        spawn_named_kind(&RAWS.lock().unwrap(), world, "kind_human", spawn);
+        spawn_named_kind(&RAWS.lock().unwrap(), world, "kind_ghoul", spawn);
     }
     
 

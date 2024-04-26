@@ -9,9 +9,9 @@ mod raw_master;
 pub use raw_master::*;
 use std::sync::Mutex;
 
-use crate::{game::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, spawners::Kind}, tileboard::components::BoardPosition}, raws::item_structs::{KindRaw, Raws}, vectors::Vector2Int};
+use crate::{game::{pieces::{components::{Health, Melee, NewPiece, Npc, Occupier, Piece, Ranged, Stats, Walk}, spawners::Kind}, tileboard::components::BoardPosition}, raws::item_structs::Raws, vectors::Vector2Int};
 
-use self::item_structs::StatRaw;
+use self::item_structs::{RawKind, RawModel, RawSkill, RawStat};
 
 lazy_static! {
     pub static ref RAWS : Mutex<RawMaster> = Mutex::new(RawMaster::empty());
@@ -38,6 +38,11 @@ fn read_convert_all_raws() -> Result<Raws, Vec<Box<dyn Error>>> {
     let mut raws = Raws::new();
     let mut errors = Vec::new();
 
+    match read_convert_model_raw() {
+        Err(err) => { errors.push(err); },
+        Ok(success) => {raws.models = success;}
+    }
+
     match read_convert_kind_raw() {
         Err(err) => { errors.push(err); },
         Ok(success) => {raws.kinds = success;}
@@ -55,25 +60,40 @@ fn read_convert_all_raws() -> Result<Raws, Vec<Box<dyn Error>>> {
 }
 
 
-fn read_convert_kind_raw() -> Result<Vec<KindRaw>, Box<dyn Error>> {
+fn read_convert_model_raw() -> Result<Vec<RawModel>, Box<dyn Error>> {
     let mut rdr = csv::ReaderBuilder::new()
         .delimiter(b';')
-        .from_path("./raws/kind.csv")?;
+        .from_path("./raws/models.csv")?;
     let mut raws = Vec::new();
     for result in rdr.deserialize() {
-        let record: KindRaw = result?;
+        let record: RawModel = result?;
+        println!("record for model : {:?}", record);
         raws.push(record);
     }
     Ok(raws)
 }
 
-fn read_convert_stat_raw() -> Result<Vec<StatRaw>, Box<dyn Error>> {
+
+fn read_convert_kind_raw() -> Result<Vec<RawKind>, Box<dyn Error>> {
+    let mut rdr = csv::ReaderBuilder::new()
+        .delimiter(b';')
+        .from_path("./raws/kind.csv")?;
+    let mut raws = Vec::new();
+    for result in rdr.deserialize() {
+        let record: RawKind = result?;
+        println!("record for kind : {:?}", record);
+        raws.push(record);
+    }
+    Ok(raws)
+}
+
+fn read_convert_stat_raw() -> Result<Vec<RawStat>, Box<dyn Error>> {
     let mut rdr = csv::ReaderBuilder::new()
         .delimiter(b';')
         .from_path("./raws/stats.csv")?;
     let mut raws = Vec::new();
     for result in rdr.deserialize() {
-        let record: StatRaw = result?;
+        let record: RawStat = result?;
         println!("record for stat : {:?}", record);
         raws.push(record);        
     }
@@ -84,11 +104,11 @@ fn read_convert_stat_raw() -> Result<Vec<StatRaw>, Box<dyn Error>> {
 
 pub fn spawn_named_kind(
     raws: &RawMaster,
-    mut world: &mut World, 
+    world: &mut World, 
     key: &str,
     position: Vector2Int,
 ){
-    println!(">>> SPAWNING ");
+    println!(">>> SPAWNING key {:?} ", key);
     if raws.kind_index.contains_key(key) {
         let kind_template = &raws.raws.kinds[raws.kind_index[key]];
         println!("spawn_named_kind: Kind template : {:?}", kind_template);
@@ -107,11 +127,14 @@ pub fn spawn_named_kind(
         if kind_template.can_walk {
             world.entity_mut(entity).insert(Walk);
         }
-
-        // TO CHANGE : on prends le renderable maintenant.
-        world.entity_mut(entity).insert(Piece { kind: Kind::Human});
-
-
+ 
+        if raws.model_index.contains_key(&kind_template.model) {
+            let new_piece = NewPiece { model: raws.raws.models[raws.model_index[&kind_template.model]].name.clone()};
+            println!("Model is {:?}", new_piece.model.clone());
+            world.entity_mut(entity).insert(new_piece);           
+        }        
+        world.entity_mut(entity).insert(Piece { kind: Kind::Human});        // TOCHANGE : le temps de la transition au nouveau fonctionnement.
+        
         if raws.stat_index.contains_key(&kind_template.stats) {
             let stats_template = &raws.raws.stats[raws.stat_index[&kind_template.stats]];
             println!("spawn_named_kind: Stat template : {:?}", stats_template);

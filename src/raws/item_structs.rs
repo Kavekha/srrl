@@ -3,14 +3,16 @@ use serde::Deserialize;
 
 #[derive(Debug)]
 pub struct Raws {
-    pub kinds : Vec<KindRaw>,
-    pub stats: Vec<StatRaw>
+    pub kinds : Vec<RawKind>,
+    pub stats: Vec<RawStat>,
+    pub models: Vec<RawModel>,
 }
 impl Raws{
     pub fn new() -> Raws {
         Raws {
             kinds: Vec::new(),
             stats: Vec::new(),
+            models: Vec::new()
         }
     }
 }
@@ -19,7 +21,7 @@ impl Raws{
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 
-pub struct KindRaw {
+pub struct RawKind {
     pub name: String,
     pub stats: String,
     pub playable: bool,
@@ -28,13 +30,14 @@ pub struct KindRaw {
     pub can_walk: bool,
     pub range_view: u32,
     pub rendering: String,
+    pub model: String,
 }
 
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 
-pub struct StatRaw {
+pub struct RawStat {
     pub name: String,
     pub strength: u32,
     pub agility: u32,
@@ -44,10 +47,17 @@ pub struct StatRaw {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 
-pub struct SkillsRaw {
+pub struct RawSkill {
     pub name: String,
     pub firearms: u32,
     pub melee: u32,
 }
 
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+
+pub struct RawModel {
+    pub name: String,
+    pub asset_type: String,
+}

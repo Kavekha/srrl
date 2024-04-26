@@ -40,6 +40,12 @@ pub struct Piece {
     pub kind: Kind
 }
 
+// 0.21a
+#[derive(Component, Debug, Serialize, Deserialize, Clone, )]
+pub struct NewPiece {
+    pub model: String,
+}
+
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
 
