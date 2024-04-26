@@ -13,11 +13,14 @@ pub fn create_new_game(
     let map_infos = create_map(world);
 
     create_player(world, map_infos.starting_position);
-    spawn_npcs(world, map_infos.spawn_list);
+    //spawn_npcs(world, map_infos.spawn_list);
     create_exit_map(world, map_infos.exit_position);
     create_nodes(world, map_infos.rooms);
 
-    spawn_named_kind(&RAWS.lock().unwrap(), "kind_human");
+    for spawn in map_infos.spawn_list {
+        spawn_named_kind(&RAWS.lock().unwrap(), world, "kind_human", spawn);
+    }
+    
 
     return true
 }
