@@ -101,7 +101,7 @@ pub fn planning_fleeing(
             );
             
             if let Some(path) = path_to_destination {
-                let next_position = path.get(0).copied();
+                //let next_position = path.get(0).copied();
                 //info!("I am {:?}, i'm at {:?} and my target is {:?}", npc_entity, npc_position.v, next_position);
                 //println!("NPC {:?} J'ai planifié un chemin pour moi.", npc_entity);
                 //info!("Plan flee: path to exit found.");

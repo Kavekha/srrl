@@ -1,0 +1,6 @@
+name;stats;playable;can_melee;can_ranged;can_walk;range_view
+kind_human;stats_human;true;true;true;true;10
+kind_dwarf;stats_dwarf;true;true;true;true;10
+kind_elf;stats_elf;true;true;true;true;12
+kind_orc;stats_orc;true;true;true;true;10
+kind_troll;stats_troll;true;true;true;true;10

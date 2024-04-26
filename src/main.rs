@@ -3,6 +3,9 @@
 use bevy::{prelude::*, window::PresentMode::Fifo   //, render::camera::ScalingMode
 };
 
+#[macro_use]
+extern crate lazy_static;
+
 mod engine;
 mod map_builders;
 mod game;           
@@ -10,6 +13,7 @@ mod globals;
 mod vectors;
 mod menu_builders;
 mod commons;
+mod raws;
 
 use game::GamePlugin;
 use engine::EnginePlugin;
