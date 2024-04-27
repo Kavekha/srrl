@@ -21,7 +21,7 @@ use std::sync::Mutex;
 
 use crate::{game::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, spawners::Kind}, tileboard::components::BoardPosition}, raws::item_structs::Raws, vectors::Vector2Int};
 
-use self::item_structs::{RawKind, RawModel, RawSkill};
+use self::item_structs::{RawKind, RawSkill};
 
 lazy_static! {
     pub static ref RAWS : Mutex<RawMaster> = Mutex::new(RawMaster::empty());
@@ -48,11 +48,6 @@ fn read_convert_all_raws() -> Result<Raws, Vec<Box<dyn Error>>> {
     let mut raws = Raws::new();
     let mut errors = Vec::new();
 
-    match read_convert_model_raw() {
-        Err(err) => { errors.push(err); },
-        Ok(success) => {raws.models = success;}
-    }
-
     match read_convert_kind_raw() {
         Err(err) => { errors.push(err); },
         Ok(success) => {raws.kinds = success;}
@@ -64,21 +59,6 @@ fn read_convert_all_raws() -> Result<Raws, Vec<Box<dyn Error>>> {
         Err(errors)
     }
 }
-
-
-fn read_convert_model_raw() -> Result<Vec<RawModel>, Box<dyn Error>> {
-    let mut rdr = csv::ReaderBuilder::new()
-        .delimiter(b';')
-        .from_path("./raws/models.csv")?;
-    let mut raws = Vec::new();
-    for result in rdr.deserialize() {
-        let record: RawModel = result?;
-        println!("record for model : {:?}", record);
-        raws.push(record);
-    }
-    Ok(raws)
-}
-
 
 fn read_convert_kind_raw() -> Result<Vec<RawKind>, Box<dyn Error>> {
     let mut rdr = csv::ReaderBuilder::new()
@@ -120,17 +100,14 @@ pub fn spawn_named_kind(
             world.entity_mut(entity).insert(Walk);
         }
  
-        // Recup des Modeles.
-        if raws.model_index.contains_key(&kind_template.model) {
-            let new_piece = Piece { 
-                kind: Kind::Human,
-                model: raws.raws.models[raws.model_index[&kind_template.model]].name.clone()
-            };
-            println!("Model is {:?}", new_piece.model.clone());
-            world.entity_mut(entity).insert(new_piece);    
-        } else {
-            world.entity_mut(entity).insert(Piece { kind: Kind::Human, model: format!("")});        // TOCHANGE : le temps de la transition au nouveau fonctionnement.
-        }  
+               
+        let piece = Piece { 
+               kind: Kind::Human,
+               model: kind_template.model.clone(),
+        };
+        println!("Model is {:?}", piece.model.clone());
+        world.entity_mut(entity).insert(piece);    
+
          
         let stats = Stats {
             strength: kind_template.strength,

@@ -46,11 +46,6 @@ pub struct Piece {
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
 
-/* 
-#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct Monster;
-*/
-
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 // movement behaviour for non-player pieces
 pub struct Walk; 

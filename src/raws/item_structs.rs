@@ -4,16 +4,34 @@ use serde::Deserialize;
 #[derive(Debug)]
 pub struct Raws {
     pub kinds : Vec<RawKind>,
-    pub models: Vec<RawModel>,
 }
 impl Raws{
     pub fn new() -> Raws {
         Raws {
             kinds: Vec::new(),
-            models: Vec::new()
         }
     }
 }
+
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
+
+pub struct Raw {
+    pub name: String,
+    pub playable: Option<bool>,
+    pub can_melee: Option<bool>,
+    pub can_ranged: Option<bool>, 
+    pub can_walk: Option<bool>,
+    pub range_view: Option<bool>,
+    pub model: Option<String>,
+    pub strength: Option<u32>,
+    pub agility: Option<u32>,
+    pub logic: Option<u32>,
+}
+
+
+
 
 
 #[derive(Debug, Deserialize)]
@@ -43,11 +61,3 @@ pub struct RawSkill {
     pub melee: u32,
 }
 
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "snake_case")]
-
-pub struct RawModel {
-    pub name: String,
-    pub asset_type: String,
-}
