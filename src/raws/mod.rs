@@ -1,3 +1,13 @@
+
+// => 0.21a : DOCUMENTATION
+/*
+Dans item_structs RawS, ajouter l'entrée de la nouvelle liste des données.
+Faire une struct Raw (sans s).
+
+
+
+ */
+
 use std::error::Error;
 use csv::{Reader, StringRecord};
 
@@ -11,7 +21,7 @@ use std::sync::Mutex;
 
 use crate::{game::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, spawners::Kind}, tileboard::components::BoardPosition}, raws::item_structs::Raws, vectors::Vector2Int};
 
-use self::item_structs::{RawKind, RawModel, RawSkill, RawStat};
+use self::item_structs::{RawKind, RawModel, RawSkill};
 
 lazy_static! {
     pub static ref RAWS : Mutex<RawMaster> = Mutex::new(RawMaster::empty());
@@ -46,11 +56,7 @@ fn read_convert_all_raws() -> Result<Raws, Vec<Box<dyn Error>>> {
     match read_convert_kind_raw() {
         Err(err) => { errors.push(err); },
         Ok(success) => {raws.kinds = success;}
-    }   
-    match read_convert_stat_raw() {
-        Err(err) => { errors.push(err); },
-        Ok(success) => {raws.stats = success;}
-    }   
+    }    
 
     if errors.is_empty() {
         Ok(raws)        
@@ -87,20 +93,6 @@ fn read_convert_kind_raw() -> Result<Vec<RawKind>, Box<dyn Error>> {
     Ok(raws)
 }
 
-fn read_convert_stat_raw() -> Result<Vec<RawStat>, Box<dyn Error>> {
-    let mut rdr = csv::ReaderBuilder::new()
-        .delimiter(b';')
-        .from_path("./raws/stats.csv")?;
-    let mut raws = Vec::new();
-    for result in rdr.deserialize() {
-        let record: RawStat = result?;
-        println!("record for stat : {:?}", record);
-        raws.push(record);        
-    }
-    Ok(raws)
-}
-
-
 
 pub fn spawn_named_kind(
     raws: &RawMaster,
@@ -128,6 +120,7 @@ pub fn spawn_named_kind(
             world.entity_mut(entity).insert(Walk);
         }
  
+        // Recup des Modeles.
         if raws.model_index.contains_key(&kind_template.model) {
             let new_piece = Piece { 
                 kind: Kind::Human,
@@ -139,35 +132,28 @@ pub fn spawn_named_kind(
             world.entity_mut(entity).insert(Piece { kind: Kind::Human, model: format!("")});        // TOCHANGE : le temps de la transition au nouveau fonctionnement.
         }  
          
-        
-        
-        if raws.stat_index.contains_key(&kind_template.stats) {
-            let stats_template = &raws.raws.stats[raws.stat_index[&kind_template.stats]];
-            println!("spawn_named_kind: Stat template : {:?}", stats_template);
-            let stats = Stats {
-                strength: stats_template.strength,
-                agility: stats_template.agility,
-                logic: stats_template.logic,
-                melee: 0,
-                firearms: 0,
-            };
-            let health_points = get_health(stats);
-            let health = Health {
-                max: health_points,
-                current: health_points,
-            };
-            world.entity_mut(entity).insert( stats );
-            world.entity_mut(entity).insert(health);            
-        }  else {
-            println!("Rawmaster: No Stats template.");
-            return None
-        } 
+        let stats = Stats {
+            strength: kind_template.strength,
+            agility: kind_template.agility,
+            logic: kind_template.logic,
+            melee: 0,
+            firearms: 0,
+        };
+        let health_points = get_health(stats);
+        let health = Health {
+            max: health_points,
+            current: health_points,
+        };
+        world.entity_mut(entity).insert( stats );
+        world.entity_mut(entity).insert(health);            
+
         return Some(entity)
     } else {
         info!("rawmaster: Kind template for {:?} non présent.", key);
         return None
     }
 }
+
 
 // A deplacer dans Rules.
 fn get_health(stats: Stats) -> u32 {
