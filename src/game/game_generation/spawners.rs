@@ -10,8 +10,9 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     //let kind = get_random_kind();    
     
     let playable_entity = spawn_named_kind(&RAWS.lock().unwrap(), world, "human", player_starting_position);
+    /*
     match playable_entity {
-        None => { panic!("Can't create player.")},
+        None => { panic!("Can't create player.")},         
         Some(player_entity) => {
 
             let piece = Piece{model: format!("human"), kind: Kind::Human };
@@ -24,13 +25,15 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
                 range: VISIBILITY_RANGE_PLAYER
             })
             ;
-        }        
-    }
+        }   
+            
+    }*/ 
 }
 
 pub fn create_npc(world: &mut World, npc_spawning_position: Vector2Int){
     
     let npc_entity = spawn_named_kind(&RAWS.lock().unwrap(), world, "ghoul", npc_spawning_position);
+    /* 
     match npc_entity {
         None => { info!("Can't create npc.")},
         Some(entity) => {
@@ -43,4 +46,5 @@ pub fn create_npc(world: &mut World, npc_spawning_position: Vector2Int){
             ;
         }        
     }
+    */
 }
