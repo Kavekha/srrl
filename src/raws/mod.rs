@@ -9,7 +9,7 @@ mod raw_master;
 pub use raw_master::*;
 use std::sync::Mutex;
 
-use crate::{game::{pieces::{components::{Health, Melee, NewPiece, Npc, Occupier, Piece, Ranged, Stats, Walk}, spawners::Kind}, tileboard::components::BoardPosition}, raws::item_structs::Raws, vectors::Vector2Int};
+use crate::{game::{pieces::{components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, spawners::Kind}, tileboard::components::BoardPosition}, raws::item_structs::Raws, vectors::Vector2Int};
 
 use self::item_structs::{RawKind, RawModel, RawSkill, RawStat};
 
@@ -107,16 +107,16 @@ pub fn spawn_named_kind(
     world: &mut World, 
     key: &str,
     position: Vector2Int,
-){
+) -> Option<Entity> {
     println!(">>> SPAWNING key {:?} ", key);
     if raws.kind_index.contains_key(key) {
         let kind_template = &raws.raws.kinds[raws.kind_index[key]];
         println!("spawn_named_kind: Kind template : {:?}", kind_template);
 
         let entity = world.spawn_empty().id();
-        world.entity_mut(entity).insert(Npc);
+        //world.entity_mut(entity).insert(Npc);
         world.entity_mut(entity).insert(BoardPosition { v: position });
-        world.entity_mut(entity).insert(Occupier);
+        //world.entity_mut(entity).insert(Occupier);
 
         if kind_template.can_melee {
             world.entity_mut(entity).insert(Melee);
@@ -129,11 +129,17 @@ pub fn spawn_named_kind(
         }
  
         if raws.model_index.contains_key(&kind_template.model) {
-            let new_piece = NewPiece { model: raws.raws.models[raws.model_index[&kind_template.model]].name.clone()};
+            let new_piece = Piece { 
+                kind: Kind::Human,
+                model: raws.raws.models[raws.model_index[&kind_template.model]].name.clone()
+            };
             println!("Model is {:?}", new_piece.model.clone());
-            world.entity_mut(entity).insert(new_piece);           
-        }        
-        world.entity_mut(entity).insert(Piece { kind: Kind::Human});        // TOCHANGE : le temps de la transition au nouveau fonctionnement.
+            world.entity_mut(entity).insert(new_piece);    
+        } else {
+            world.entity_mut(entity).insert(Piece { kind: Kind::Human, model: format!("")});        // TOCHANGE : le temps de la transition au nouveau fonctionnement.
+        }  
+         
+        
         
         if raws.stat_index.contains_key(&kind_template.stats) {
             let stats_template = &raws.raws.stats[raws.stat_index[&kind_template.stats]];
@@ -151,12 +157,15 @@ pub fn spawn_named_kind(
                 current: health_points,
             };
             world.entity_mut(entity).insert( stats );
-            world.entity_mut(entity).insert(health);
+            world.entity_mut(entity).insert(health);            
         }  else {
             println!("Rawmaster: No Stats template.");
-        }  
+            return None
+        } 
+        return Some(entity)
     } else {
         info!("rawmaster: Kind template for {:?} non présent.", key);
+        return None
     }
 }
 
