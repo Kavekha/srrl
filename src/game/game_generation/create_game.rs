@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{game_generation::spawners::{create_npc, create_player}, pieces::spawners::{create_exit_map, create_nodes}, tileboard::system_map::create_map}, raws::{load_raws, spawn_named_kind, RAWS}};
+use crate::{game::{game_generation::spawners::{create_npc, create_player}, pieces::spawners::{create_exit_map, create_nodes}, tileboard::system_map::create_map}, raws::load_raws};
 
 
 // Return true après avoir réussi.    // Return OK TODO

@@ -14,19 +14,6 @@ impl Raws{
 }
 
 
-#[derive(Debug)]
-pub struct RawsOld {
-    pub kinds : Vec<RawKind>,
-}
-impl RawsOld{
-    pub fn new() -> RawsOld {
-        RawsOld {
-            kinds: Vec::new(),
-        }
-    }
-}
-
-
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
 
@@ -37,7 +24,7 @@ pub struct Raw {
     pub can_melee: Option<bool>,
     pub can_ranged: Option<bool>, 
     pub can_walk: Option<bool>,
-    pub range_view: Option<bool>,
+    pub range_view: Option<u32>,
     // render
     pub model: Option<String>,
     //stats

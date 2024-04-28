@@ -1,11 +1,9 @@
 use bevy::prelude::*;
-use rand::Rng;
 use serde::{Serialize, Deserialize};
 
 use crate::{
     commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
-        combat::rules::{NPC_CHANCE_TO_BE_RANGED, VISIBILITY_RANGE_PLAYER}, 
-        pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::{Marker, View}
+        tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::Marker
     }, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, vectors::Vector2Int};
 
 use super::components::{GameElement, NavigationNode};
@@ -22,20 +20,6 @@ pub enum Kind {
     GhoulRanged
 }
 
-/// TEMP : Renvoie infos rendus pour les differentes races jouables par le PJ.
-fn get_random_kind(
-) -> Kind {
-    let mut rng = rand::thread_rng();
-    let rand = rng.gen_range(0..4);
-    match rand {
-        0 => { return Kind::Dwarf; }
-        1 => { return Kind::Elf; }
-        2 => { return Kind::Orc; }
-        3 => { return Kind::Troll; }
-        4 => { return Kind::Human; }
-        _ => { return Kind::Human; }
-    }
-}
 
 
 /* Move in game_generation 0.21
