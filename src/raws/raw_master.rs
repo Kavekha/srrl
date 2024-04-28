@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use super::item_structs::Raws;
+use super::kind_structs::Raws;
+
 
 pub struct RawMaster {
     pub raws : Raws,
