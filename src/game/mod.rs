@@ -25,6 +25,7 @@ pub mod visibility;
 mod commons;
 mod manager;
 mod movements;
+mod game_generation;
  
 
 use crate::commons::despawn_component;

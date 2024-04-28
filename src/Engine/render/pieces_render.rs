@@ -44,7 +44,8 @@ pub fn spawn_piece_renderer(
     // On ajoute aux entités de nouveaux components.
     for (entity, position, piece, player) in query.iter() {
         let translation= get_world_position(&position.v);   //TODO : get world position retourne un Vector2Int
-        let texture = assets.textures[get_texture_from_kind(piece.kind)].clone();
+        //let texture = assets.textures[get_texture_from_kind(piece.kind)].clone();
+        let texture = assets.textures[piece.model.as_str()].clone();
         let mut order_z = ORDER_NPC;
 
         // 0.20k

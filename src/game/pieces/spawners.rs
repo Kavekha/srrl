@@ -8,7 +8,7 @@ use crate::{
         pieces::components::{Health, Melee, Npc, Occupier, Piece, Ranged, Stats, Walk}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::{Marker, View}
     }, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, vectors::Vector2Int};
 
-use super::components::{CharacterBundle, GameElement, NavigationNode};
+use super::components::{GameElement, NavigationNode};
 
 
 #[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
@@ -37,6 +37,8 @@ fn get_random_kind(
     }
 }
 
+
+/* Move in game_generation 0.21
 // 0.19 adds Abilities there.
 pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     println!("Player: Starting position = {:?}", player_starting_position);
@@ -139,6 +141,10 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     })
     ;
 }
+*/
+
+
+/* 
 
 pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
     for entity_position in entities_pos {
@@ -194,6 +200,7 @@ fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
 
     println!("Npc created");
 }
+*/
 
 
 pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){

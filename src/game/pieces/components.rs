@@ -6,6 +6,7 @@ use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
 use super::spawners::Kind;
 
 
+/* 
 #[derive(Bundle)]
 pub struct CharacterBundle {    
     pub piece: Piece,
@@ -33,20 +34,17 @@ impl Default for CharacterBundle {
         }
     }
 }
+*/
 
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone, Copy)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Piece {
-    pub kind: Kind
+    pub kind: Kind,
+    pub model: String,
 }
+
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
-
-/* 
-#[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct Monster;
-*/
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 // movement behaviour for non-player pieces

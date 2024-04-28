@@ -1,9 +1,9 @@
 use bevy::{ecs::world::World, log::info};
 
 use crate::{
-    game::{clean_game_screen, combat::combat_start, gamelog::Gamelog, manager::{
+    game::{clean_game_screen, combat::combat_start, game_generation::create_game::create_new_game, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, pieces::spawners::{create_exit_map, create_nodes, create_player, spawn_npcs}, player::{camera_center_on_player, cursor_position}, tileboard::system_map::{create_map, spawning_map}, ui::events::ReloadUiEvent}, map_builders::map::Map};
+    }, player::{camera_center_on_player, cursor_position}, tileboard::system_map::spawning_map, ui::events::ReloadUiEvent}, map_builders::map::Map};
 
 use super::Message;
  
@@ -14,19 +14,25 @@ pub struct StartGameMessage;
 impl Message for StartGameMessage {
     fn execute(&self, world: &mut World) {
         info!("==== START GAME ===");
-        println!("==== START GAME ===");
+        let new_game_created = create_new_game(world);
+        /* 
         let map_infos = create_map(world);
         create_player(world, map_infos.starting_position);
         spawn_npcs(world, map_infos.spawn_list);
         create_exit_map(world, map_infos.exit_position);
         create_nodes(world, map_infos.rooms);
-        world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
-        world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
-        let music_name = "gamemap".to_string();
-        // L'initialisation n'a pas forcement commencé, carefull.
-        world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
-        world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
-        world.send_event(MessageEvent(Box::new(GamelogClearMessage)));
+        */
+        if new_game_created {
+            world.send_event(MessageEvent(Box::new(SpawnMapMessage)));
+            world.send_event(MessageEvent(Box::new(ChangeGameStateInitialiseRequestMessage)));      
+            let music_name = "gamemap".to_string();
+            // L'initialisation n'a pas forcement commencé, carefull.
+            world.send_event(MessageEvent(Box::new(StartCombatMessage)));   
+            world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:music_name})));  
+            world.send_event(MessageEvent(Box::new(GamelogClearMessage)));
+        } else {
+            panic!("Create new game has failed.");
+        }
     }
 }
 

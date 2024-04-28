@@ -62,10 +62,11 @@ impl Message for LoadGameMessage {
             if let Some(stats) = entity.stats {
                 e.insert(stats);
             }
+            /* 
             if let Some(piece) = entity.piece {
                 e.insert(piece);
                 //e.insert(Actor::default()); // Actor component can't be save, so we have to add it there if NPC or Player.    // No Actor?
-            }
+            }*/
             if let Some(position) = entity.position {
                 println!("Load: Position of {:?} is now : {:?}", entity, position);
                 e.insert(position);
