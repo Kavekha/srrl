@@ -51,14 +51,7 @@ pub const MAP_WALL_14: &str = "wall_14";
 pub const MAP_WALL_15: &str = "wall_15";
 
 // sprite
-//pub const SPRITE_PLAYER: &str = "temp_tiles/Gentera.png";
-pub const SPRITE_GHOUL: &str = "ghoul";
-pub const SPRITE_PLAYER_DWARF: &str = "human";
 pub const SPRITE_PLAYER_HUMAN: &str = "human";
-pub const SPRITE_PLAYER_ORC: &str = "human";
-pub const SPRITE_PLAYER_ELF: &str = "human";
-pub const SPRITE_PLAYER_TROLL: &str = "human";
-pub const SPRITE_GHOUL_RANGED: &str = "ghoul_ranged";
 
 
 //SAVE

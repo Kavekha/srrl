@@ -2,9 +2,9 @@ use bevy::prelude::*;
 
 use crate::{
         commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
-        pieces::{components::Piece, spawners::Kind}, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+        pieces::components::Piece, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, globals::{
-        MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER, SPRITE_GHOUL, SPRITE_GHOUL_RANGED, SPRITE_PLAYER_DWARF, SPRITE_PLAYER_ELF, SPRITE_PLAYER_HUMAN, SPRITE_PLAYER_ORC, SPRITE_PLAYER_TROLL}
+        MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER}
 };
 
 
@@ -75,20 +75,6 @@ pub fn spawn_piece_renderer(
     println!("Pieces rendered.");
 }
 
-pub fn get_texture_from_kind(
-    kind: Kind
-) -> &'static str {
-    match kind {
-        Kind::Dwarf => { SPRITE_PLAYER_DWARF }
-        Kind::Elf => { SPRITE_PLAYER_ELF }
-        Kind::Human => { SPRITE_PLAYER_HUMAN }
-        Kind::Orc => { SPRITE_PLAYER_ORC }
-        Kind::Troll => { SPRITE_PLAYER_TROLL }
-        Kind::Ghoul => { SPRITE_GHOUL }
-        Kind::GhoulRanged => { SPRITE_GHOUL_RANGED }
-        //_ => { SPRITE_PLAYER }
-    }
-}
 
 pub fn spawn_sprite_render(
     commands: &mut Commands,

@@ -19,10 +19,11 @@ impl RawMaster {
 
     pub fn load(&mut self, raws : Raws) {
         //println!("rawmaster: Raws {:?}", raws);
+        println!("Rawmaster: load...");
         self.raws = raws;
         self.kind_index = HashMap::new();
         for (i,kind) in self.raws.kinds.iter().enumerate() {
-            //println!("rawmaster: {}, {:?}", i, kind);
+            println!("rawmaster: {}, {:?}", i, kind);
             self.kind_index.insert(kind.name.clone(), i);
         }
     }    
