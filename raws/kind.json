@@ -39,6 +39,26 @@
                 "agility": 3,
                 "logic": 1
             }
+        },
+        {
+            "reference":"elf",
+            "name":"elf",
+            "renderable":{
+                "model":"elf"
+            },            
+            "is_playable": true,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 10
+            },            
+            "stats": {
+                "strength": 3,
+                "agility": 3,
+                "logic": 3
+            }
         }
     ]
 }

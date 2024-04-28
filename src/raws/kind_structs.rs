@@ -1,9 +1,22 @@
-use serde::{Deserialize};
+use serde::Deserialize;
+
+use super::spawn_table_structs::SpawnTable;
 
 #[derive(Deserialize, Debug)]
 pub struct Raws {
-    pub kinds : Vec<Kind>
+    pub kinds : Vec<Kind>,
+    pub spawn_tables: Vec<SpawnTable>
 }
+impl Raws {
+    pub fn new() -> Raws {
+        Raws {
+            kinds: Vec::new(),
+            spawn_tables: Vec::new()
+        }
+    }
+}
+
+
 
 #[derive(Deserialize, Debug)]
 pub struct Kind {
