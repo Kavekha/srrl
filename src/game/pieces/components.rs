@@ -7,7 +7,6 @@ pub struct Piece {
     pub model: String,
 }
 
-
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
 

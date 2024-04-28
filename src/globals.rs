@@ -1,13 +1,13 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.21.a";
+pub const VERSION: &str = "0.21.b";
 pub const RELEASE: &str = "R0.5";
 
 // Min - Max VOLUME
 pub const MIN_VOLUME: f32 = 0.0;
 pub const MAX_VOLUME: f32 = 5.0;
-pub const DEFAULT_VOLUME: f32 = 1.0;
+pub const DEFAULT_VOLUME: f32 = 0.8;
 
 // WINDOWS
 pub const CLEAR: Color = Color::rgb(0.1, 0.1, 0.1);
@@ -51,7 +51,7 @@ pub const MAP_WALL_14: &str = "wall_14";
 pub const MAP_WALL_15: &str = "wall_15";
 
 // sprite
-pub const SPRITE_PLAYER_HUMAN: &str = "human";
+pub const SPRITE_MARKER: &str = "human";        // Temp: TODO : Affiche l'image du npc perdu de vue 
 
 
 //SAVE

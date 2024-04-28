@@ -14,7 +14,11 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     match playable_entity {
         None => { panic!("Can't create player.")},         
         Some(player_entity) => {
-
+            // Surcharge du Nom.
+            let mut entity_ref = world.entity_mut(player_entity);
+            let mut name = entity_ref.get_mut::<Name>().unwrap();       // REMEMBER : C'est comme ca qu'on GET un component depuis WORLD.
+            name.set("The Shadowrunner");
+ 
             world.entity_mut(player_entity)
             .insert(Player)
             .insert(View { 
@@ -22,8 +26,7 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
                 range: VISIBILITY_RANGE_PLAYER
             })
             ;
-        }   
-            
+        }               
     }
 }
 
