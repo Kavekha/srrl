@@ -5,6 +5,10 @@
             "spawn": [
                 {
                     "reference":"ghoul",
+                    "weight":30
+                },
+                {
+                    "reference":"ghoul_ranged",
                     "weight":10
                 }
             ]

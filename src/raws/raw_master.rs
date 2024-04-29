@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::game::game_generation::spawners::RandomTable;
+use crate::game::game_generation::random_table::RandomTable;
 
-use super::{kind_structs::Raws, spawn_table_structs::SpawnTableEntry};
+use super::kind_structs::Raws;
 
 
 pub struct RawMaster {

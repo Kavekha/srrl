@@ -41,23 +41,23 @@
             }
         },
         {
-            "reference":"elf",
-            "name":"elf",
+            "reference":"ghoul_ranged",
+            "name":"ghoul",
             "renderable":{
-                "model":"elf"
+                "model":"ghoul_ranged"
             },            
-            "is_playable": true,
+            "is_playable": false,
             "can_melee": true,
             "can_ranged": true,
             "can_walk": true,
             "is_occupier": true,
             "vision": {
-                "range_view": 10
+                "range_view": 8
             },            
             "stats": {
-                "strength": 3,
+                "strength": 1,
                 "agility": 3,
-                "logic": 3
+                "logic": 2
             }
         }
     ]
