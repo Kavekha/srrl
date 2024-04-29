@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use bevy::utils::HashSet;
+
 use crate::game::game_generation::random_table::RandomTable;
 
 use super::kind_structs::Raws;
@@ -29,13 +31,22 @@ impl RawMaster {
         self.raws = raws;
         self.kind_index = HashMap::new();
         self.spawn_table_index = HashMap::new();
+
+        let mut used_references : HashSet<String> = HashSet::new();
+        
         for (i,kind) in self.raws.kinds.iter().enumerate() {
-            println!("rawmaster: {}, {:?}", i, kind);
+            if used_references.contains(&kind.reference) {
+                println!("WARNING : duplicate kind reference in raw [{}]", kind.reference);
+            }
             self.kind_index.insert(kind.reference.clone(), i);
+            used_references.insert(kind.reference.clone());
         }
         for (i,spawn_table) in self.raws.spawn_tables.iter().enumerate() {
-            println!("rawmaster: {}, {:?}", i, spawn_table);
+            if used_references.contains(&spawn_table.reference) {
+                println!("WARNING : duplicate kind reference in raw [{}]", spawn_table.reference);
+            }
             self.spawn_table_index.insert(spawn_table.reference.clone(), i);
+            used_references.insert(spawn_table.reference.clone());
         }
     }    
 }
