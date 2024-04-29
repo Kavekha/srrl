@@ -1,8 +1,13 @@
 
+use std::cmp::{max, min};
+
 use bevy::{prelude::*, utils::{HashMap, HashSet}};
 use serde::Deserialize;
 
-use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{
+    engine::render::components::Renderable, 
+    game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, 
+    random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
 use super::{base_attributes_structs::BaseAttributes, jobs_structs::RawJobs, kind_structs::{Kind, RawRenderable}, spawn_table_structs::SpawnTable};
 
@@ -149,21 +154,6 @@ fn spawn_referenced_kind(
         let health = (strength / 2) + 8;
         world.entity_mut(entity).insert( Health { current: health, max: health});
 
-        // Skills 0.21d : moved to Jobs.
-        /* 
-        let mut skills = Skills{ skills: HashMap::new() }; 
-        if let Some(rawskills) = &kind_template.skills {
-            for skill in rawskills.iter() {
-                match skill.0.as_str() { 
-                    "UnarmedCombat" => { skills.skills.insert(Skill::UnarmedCombat, *skill.1); },
-                    "FireArms" => { skills.skills.insert(Skill::FireArms, *skill.1); },
-                    _ => { println!("WARNING : Unkwnown skill referenced : [{}]", skill.0)}
-                }
-            }
-        }
-        world.entity_mut(entity).insert( skills);
-        */
-
     return Some(entity)
     } else {
         info!("No reference for key {:?}", key);
@@ -190,4 +180,51 @@ pub fn get_spawn_table(raws: &RawMaster, key: &str) -> RandomTable {
         }
     }
     random_table
+}
+
+pub fn apply_referenced_job(
+    raws: &RawMaster,
+    world: &mut World, 
+    key: &str,
+    entity: Entity
+){
+    println!("apply referenced job : {:?}", key);
+    if raws.job_index.contains_key(key) {
+        let job_template =  &raws.raws.jobs[raws.job_index[key]];
+        let mut entity_ref = world.entity_mut(entity);
+        let mut attributes = entity_ref.get_mut::<Attributes>().unwrap();
+
+        // Attributes modifiers
+        if let Some(strength) = job_template.strength { 
+            attributes.strength.base += strength;
+            attributes.strength.base = min(max(0, attributes.strength.base), attributes.strength.max);
+        }
+        if let Some(agility) = job_template.agility { 
+            attributes.agility.base += agility;
+            attributes.agility.base = min(max(0, attributes.agility.base), attributes.agility.max);
+        }
+        if let Some(logic) = job_template.logic { 
+            attributes.logic.base += logic;
+            attributes.logic.base = min(max(0, attributes.logic.base), attributes.logic.max);
+        }
+        // Skills.
+        let mut skills = Skills{ skills: HashMap::new() }; 
+        if let Some(rawskills) = &job_template.skills {
+            for skill in rawskills.iter() {
+                match skill.0.as_str() { 
+                    "UnarmedCombat" => { skills.skills.insert(Skill::UnarmedCombat, *skill.1); },
+                    "FireArms" => { skills.skills.insert(Skill::FireArms, *skill.1); },
+                    _ => { println!("WARNING : Unkwnown skill referenced : [{}]", skill.0)}
+                }
+            }
+        }
+        println!("Apply job. Attributes are now {:?}.", attributes);
+        
+        world.entity_mut(entity).insert( skills);
+
+        
+    } else {
+        println!("WARNING: No job for key {}", key);
+    }
+
 }

@@ -23,10 +23,10 @@ pub fn planning_inform_allies(
             if let Ok(_) = is_in_sight(&board, &position.v, &npc_position.v, VISIBILITY_RANGE_NPC) {
                 match npc_knowledge.player_last_seen {
                     Some(_) => {
-                        info!("Npc already has this information.");
+                        //info!("Npc already has this information.");
                     },
                     None => { 
-                        info!("Npc share info with nearest allies");
+                        //info!("Npc share info with nearest allies");
                         npc_knowledge.player_last_seen = Some(inform.target_position.clone());
                         commands.entity(npc_entity).insert(HasShareInfos);
                     }                       

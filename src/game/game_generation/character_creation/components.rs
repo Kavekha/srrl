@@ -50,14 +50,14 @@ pub struct Vision {
 pub struct GameElement;
 
 
-#[derive(Component)]
+#[derive(Debug, Component)]
 pub struct Attribute {
     pub base: i32,
     pub modifiers: i32,
     pub max: i32
 }
 
-#[derive(Component)]
+#[derive(Debug, Component)]
 pub struct Attributes {
     pub strength: Attribute,
     pub agility: Attribute,

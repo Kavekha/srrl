@@ -1,12 +1,6 @@
 {
     "base_attributes": [
         {
-            "reference":"player",
-            "strength": 1,
-            "agility": 1,
-            "logic": 1
-        },
-        {
             "reference":"human",
             "strength": 2,
             "agility": 2,
