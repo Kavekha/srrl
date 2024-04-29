@@ -11,12 +11,14 @@ use bevy::prelude::*;
 //pub struct SaveLoadPlugin;
 
 
-use crate::game::game_generation::character_creation::components::{Health, Melee, Npc, Occupier, Piece, Stats, Walk};
+use crate::game::game_generation::character_creation::components::{Health, Melee, Npc, Occupier, Stats, Walk};
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;
 use crate::map_builders::map::Map;
 use crate::game::gamelog::Gamelog;
+
+use super::render::components::Renderable;
 
 
 pub fn has_save_file() -> bool {
@@ -38,7 +40,7 @@ pub struct SaveEntity {
     pub player: bool, 
     pub stats: Option<Stats>,
     pub npc: bool, 
-    pub piece: Option<Piece>,
+    pub piece: Option<Renderable>,
     pub position: Option<BoardPosition>,
     pub health: Option<Health>,
     //actor: Option<Actor>, //actor can't be added there. Need to be put back on load with some logic..
@@ -86,7 +88,7 @@ impl SaveState {
                 if world.get::<Player>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Npc>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Stats>(world.entity(*current_entity).id()).is_some()
-                || world.get::<Piece>(world.entity(*current_entity).id()).is_some()
+                || world.get::<Renderable>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Walk>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Health>(world.entity(*current_entity).id()).is_some()
                 || world.get::<Melee>(world.entity(*current_entity).id()).is_some()
@@ -121,7 +123,7 @@ impl SaveState {
                         player: world.get::<Player>(*current_entity).is_some(),
                         npc: world.get::<Npc>(*current_entity).is_some(),
                         stats: world.get::<Stats>(*current_entity).cloned(),
-                        piece: world.get::<Piece>(*current_entity).cloned(),
+                        piece: world.get::<Renderable>(*current_entity).cloned(),
                         position: world.get::<BoardPosition>(*current_entity).cloned(),
                         walk: world.get::<Walk>(*current_entity).is_some(),
                         health: world.get::<Health>(*current_entity).cloned(),

@@ -10,7 +10,8 @@ use rand::prelude::*;
 
 use crate::game::game_generation::character_creation::components::Stats;
 
-use super::combat_system::components::{ActionPoints, AttackType};
+use super::combat::combat_system::components::{ActionPoints, AttackType};
+
 
 /// ============================================================================
 /// Action Point COST

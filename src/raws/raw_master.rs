@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{game::{game_generation::{character_creation::components::{Health, Melee, Occupier, Piece, Ranged, Stats, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Health, Melee, Occupier, Ranged, Stats, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
 use super::kind_structs::{RawRenderable, Raws};
 
@@ -111,8 +111,8 @@ fn spawn_referenced_kind(
 
 fn get_renderable_component(
     renderable: &RawRenderable
-) -> Piece {
-    Piece {
+) -> Renderable {
+    Renderable {
         model: renderable.model.clone()
     }
 }

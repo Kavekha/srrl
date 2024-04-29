@@ -11,20 +11,28 @@ STIMULUS:
 
 use bevy::prelude::*;
 
-pub mod components;
-mod ia_evaluate;
-mod ia_planning;
-mod ia_quipping;
-
-use crate::game::{game_generation::character_creation::components::Npc, player::Player, tileboard::components::BoardPosition};
-
 use self::{
     components::{CheckGoal, Frozen}, 
-    ia_evaluate::{ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move, ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, ia_has_shared_knowledge, planning_actions}, 
-    ia_planning::{planning_approaching, planning_fleeing, planning_inform_allies, planning_searching}, ia_quipping::{cleaning_has_talked_status, ia_quipping_actions}};
+    ia_evaluate::{
+        ia_evaluate_adjacent_enemy, ia_evaluate_allies_nearby, ia_evaluate_can_do_melee_attack, ia_evaluate_can_do_ranged_attack, ia_evaluate_can_move,
+         ia_evaluate_check_target_knowledge, ia_evaluate_enemy_in_sight, ia_evaluate_goals, ia_evaluate_has_low_life, ia_evaluate_know_target_position, 
+         ia_has_shared_knowledge, planning_actions
+    }, 
+    ia_planning::{planning_approaching, planning_fleeing, planning_inform_allies, planning_searching }, 
+    ia_quipping::{cleaning_has_talked_status, ia_quipping_actions}
+    };
 
-use super::{combat_system::components::IsDead, rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN, ActionSet};
+use super::{
+    combat::{combat_system::components::IsDead, ActionSet}, 
+    rules::NPC_MAX_DISTANCE_RANGE_FROM_PLAYER_FOR_TURN,
+    game_generation::character_creation::components::Npc, player::Player, tileboard::components::BoardPosition
+};
 
+pub mod components;
+pub mod create_nodes;
+pub mod ia_evaluate;
+pub mod ia_planning;
+pub mod ia_quipping;
 
 
 pub struct IaPlugin;

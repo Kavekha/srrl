@@ -26,13 +26,17 @@ v1  | 0.20a |
 use bevy::prelude::*;
 
 use crate::game::visibility::components::ComputeFovEvent;
-use self::{components::{HasBeenSeenEvent, OutOfSightEvent}, view_systems::{put_markers_when_out_of_sight, remove_markers_when_marked_is_seen, remove_markers_when_seen, update_character_view_on_npc_action, update_character_view_with_blocked}, visibility_render::{update_convert_logic_tile_visibility_to_render, update_npc_visibility_status, update_tile_visibility_render}};
+use self::{
+    components::{HasBeenSeenEvent, OutOfSightEvent}, 
+    view_systems::{update_character_view_on_npc_action, update_character_view_with_blocked}, 
+    visibility_render::{update_convert_logic_tile_visibility_to_render, update_npc_visibility_status, update_tile_visibility_render}, vision_markers::{put_markers_when_out_of_sight, remove_markers_when_marked_is_seen, remove_markers_when_seen}};
 
 use super::{combat::CombatSet, states::GameState};
 
 pub mod components;
 mod view_systems;
 mod visibility_render;
+mod vision_markers;
 
  pub struct ViewPlugin;
  

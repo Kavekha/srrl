@@ -1,8 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{game::{tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
 
-use super::character_creation::components::NavigationNode;
+use super::components::NavigationNode;
+
+
 
 pub fn create_nodes(
     world: &mut World, 

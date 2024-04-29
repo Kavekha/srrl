@@ -2,10 +2,6 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Piece {
-    pub model: String,
-}
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
@@ -34,11 +30,6 @@ pub struct Ranged;
 //TODO : Adapter à Shadowrun: Skill & Ability.
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Stats {
-    //pub power: u32,         
-    //pub attack: u32,
-    //pub dodge: u32,
-    //pub resilience: u32
-    //Stats
     pub strength: u32,  // melee dmg & resistance. HP = Str / 2 + 8.
     pub agility: u32,   // accuracy
     pub logic: u32,     // Logic + agility = dodge
@@ -47,15 +38,14 @@ pub struct Stats {
     pub firearms:u32
 } 
 
-
-#[derive(Component)]
-pub struct GameElement;
-
-#[derive(Component)]
-pub struct NavigationNode;
-
-
 #[derive(Component)]
 pub struct Vision {
     pub range_view: u32
 }
+
+
+#[derive(Component)]
+pub struct GameElement;
+
+
+

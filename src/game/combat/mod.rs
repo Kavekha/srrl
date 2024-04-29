@@ -64,15 +64,12 @@ use bevy::prelude::*;
 pub mod components;
 pub mod events;
 pub mod action_infos;
-pub mod rules;
 pub mod combat_system;
-mod ia;
-
 
 
 
 use crate::{engine::animations::events::GraphicsWaitEvent, game::{
-        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, movements::components::HasMoved, states::GameState 
+        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, ia::components::CheckGoal, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, movements::components::HasMoved, states::GameState 
     }};
 
 use self::{
@@ -80,9 +77,8 @@ use self::{
     combat_system::{components::{AttackType, IsDead}, CombatSystemPlugin}, 
     components::CurrentEntityTurnQueue, 
     events::{CombatEndEvent, CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
-    ia::{components::{CheckGoal, Frozen}, IaPlugin}, 
 };
-use super::{game_generation::character_creation::components::{Health, Npc, Stats}, manager::MessageEvent, player::Player};
+use super::{game_generation::character_creation::components::{Health, Npc, Stats}, ia::components::Frozen, manager::MessageEvent, player::Player};
 
 
 pub struct CombatPlugin;
@@ -91,7 +87,6 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_plugins(IaPlugin)
             .add_plugins(CombatSystemPlugin)
 
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.

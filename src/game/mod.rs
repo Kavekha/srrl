@@ -11,6 +11,7 @@ use self::menus::MenuPlugin;
 use self::manager::ManagerPlugin;
 use self::gamelog::GameLogsPlugin;
 use self::visibility::ViewPlugin;
+use self::ia::IaPlugin;
 
 pub mod combat;
 pub mod pieces;
@@ -22,7 +23,9 @@ pub mod states;
 pub mod gamelog;
 pub mod visibility;
 pub mod game_generation;
+pub mod ia;
 
+mod rules;
 mod commons;
 mod manager;
 mod movements;
@@ -58,6 +61,7 @@ impl Plugin for GamePlugin {
         app
             .insert_resource(Map::new())
 
+            .add_plugins(IaPlugin)
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)
             .add_plugins(MenuPlugin)
