@@ -13,11 +13,12 @@ use std::fs;
 mod spawn_table_structs;
 mod raw_master;
 mod kind_structs;
+mod base_attributes_structs;
 
 pub use raw_master::*;
 use std::sync::Mutex;
 
-use crate::raws::kind_structs::Raws;
+
 
 
 lazy_static! {

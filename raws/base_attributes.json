@@ -1,0 +1,52 @@
+{
+    "base_attributes": [
+        {
+            "reference":"player",
+            "strength": 1,
+            "agility": 1,
+            "logic": 1
+        },
+        {
+            "reference":"human",
+            "strength": 2,
+            "agility": 2,
+            "logic": 2
+        },
+        {
+            "reference":"elf",
+            "strength": 1,
+            "agility": 3,
+            "logic": 2
+        },
+        {
+            "reference":"dwarf",
+            "strength": 3,
+            "agility": 2,
+            "logic": 1
+        },
+        {
+            "reference":"orc",
+            "strength": 4,
+            "agility": 1,
+            "logic": 1
+        },
+        {
+            "reference":"troll",
+            "strength": 6,
+            "agility": 0,
+            "logic": 0
+        },
+        {
+            "reference":"ghoul",
+            "strength": 2,
+            "agility": 1,
+            "logic": 0
+        },
+        {
+            "reference":"ghoul_ranged",
+            "strength": 0,
+            "agility": 3,
+            "logic": 0
+        }
+    ]
+}
