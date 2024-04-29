@@ -114,11 +114,11 @@ pub fn planning_fleeing(
                 commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None});    
             } else {
                 //println!("Pas de chemin pour moi.");
-                info!("Plan flee: No path to exit found, forfeit.");
+                //info!("Plan flee: No path to exit found, forfeit.");
                 commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
             }
         } else {
-            info!("Plan flee: No exit found, forfeit.");
+            //info!("Plan flee: No exit found, forfeit.");
             for (npc_entity, _, _) in npc_entity_fighter_q.iter() {
                 commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
             }
@@ -140,7 +140,7 @@ pub fn planning_searching(
     let mut to_remove_plan_move = Vec::new();
 
     for (npc_entity, npc_position, _, mut knowledge) in npc_entity_fighter_q.iter_mut() {
-        info!("Plan flee: exit found. have I a path to it?");
+        //info!("Plan flee: exit found. have I a path to it?");
         to_remove_plan_move.push(npc_entity);        
 
         if knowledge.last_visited_nodes.len() > 4 {
@@ -177,16 +177,16 @@ pub fn planning_searching(
             );
             
             if let Some(path) = path_to_destination {
-                let next_position = path.get(0).copied();
-                info!("I am {:?}, i'm at {:?} and I want to search to {:?}", npc_entity, npc_position.v, next_position);
+                let _next_position = path.get(0).copied();
+                //info!("I am {:?}, i'm at {:?} and I want to search to {:?}", npc_entity, npc_position.v, next_position);
                 commands.entity(npc_entity).insert(WantToMove { entity: npc_entity, path: path, target: None});    
             } else {
                 //println!("Pas de chemin pour moi.");
-                info!("Plan Search: No Node found, forfeit.");
+                //info!("Plan Search: No Node found, forfeit.");
                 commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
             }
         } else {
-            info!("Plan Search: No Node found, forfeit.");
+            //info!("Plan Search: No Node found, forfeit.");
             commands.entity(npc_entity).insert(WantToForfeit);  // Securité pour ne pas rester bloqué.
         }
     }
