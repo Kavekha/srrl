@@ -7,10 +7,11 @@ mod builders;
 mod maps; 
 
 pub use commons::TileType;
+pub use rectangle::Rectangle;
+
 
 use crate::{
     map_builders::{
-        rectangle::Rectangle,
         builders::{
             room_based_exits::RoomBasedExits,
             room_based_spawner::RoomBasedSpawner,

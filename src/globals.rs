@@ -53,6 +53,10 @@ pub const MAP_WALL_15: &str = "wall_15";
 // sprite
 pub const SPRITE_MARKER: &str = "human";        // Temp: TODO : Affiche l'image du npc perdu de vue 
 
+// Spawning rules 0.21 
+pub const SPAWN_MAX_ELEMENTS: i32 = 5;
+pub const SPAWN_SUBSTRACT_ELEMENT: i32 = -3;    // On fait 1 to MAX, et on retire SUBSTRACT ca permets d'avoir un retour à 0- pour ne generer aucun element au spawn.
+
 
 //SAVE
 pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";

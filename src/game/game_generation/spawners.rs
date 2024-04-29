@@ -1,45 +1,118 @@
-use bevy::prelude::*;
 
-use crate::{game::{combat::rules::VISIBILITY_RANGE_PLAYER, pieces::components::Npc, player::Player, visibility::components::View}, raws::{spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+use bevy::{ecs::world::World, utils::HashMap};
+use rand::Rng;
+
+use crate::{globals::{SPAWN_MAX_ELEMENTS, SPAWN_SUBSTRACT_ELEMENT}, map_builders::{map::Map, Rectangle, TileType, MAPWIDTH}, raws::{get_spawn_table, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
 
 
 
-pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
-    println!("Player: Starting position = {:?}", player_starting_position);
+pub struct RandomEntry {
+    reference : String,
+    weight : i32
+}
 
-    //let kind = get_random_kind();    
-    
-    let playable_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, "human", player_starting_position);
-    
-    match playable_entity {
-        None => { panic!("Can't create player.")},         
-        Some(player_entity) => {
-            // Surcharge du Nom.
-            let mut entity_ref = world.entity_mut(player_entity);
-            let mut name = entity_ref.get_mut::<Name>().unwrap();       // REMEMBER : C'est comme ca qu'on GET un component depuis WORLD.
-            name.set("The Shadowrunner");
- 
-            world.entity_mut(player_entity)
-            .insert(Player)
-            .insert(View { 
-                visible_tiles: Vec::new(),
-                range: VISIBILITY_RANGE_PLAYER
-            })
-            ;
-        }               
+impl RandomEntry {
+    pub fn new<S:ToString>(reference: S, weight: i32) -> RandomEntry {
+        RandomEntry{ reference: reference.to_string(), weight }
     }
 }
 
-pub fn create_npc(world: &mut World, npc_spawning_position: Vector2Int){
-    
-    let npc_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, "ghoul", npc_spawning_position);
-    match npc_entity {
-        None => { info!("Can't create npc.")},
-        Some(entity) => {
 
-            world.entity_mut(entity)
-            .insert(Npc)         
-            ;
-        }        
+#[derive(Default)]
+pub struct RandomTable {
+    entries : Vec<RandomEntry>,
+    total_weight : i32
+}
+impl RandomTable {
+    pub fn new() -> RandomTable {
+        RandomTable{ entries: Vec::new(), total_weight: 0 }
+    }
+
+    pub fn add<S:ToString>(mut self, reference : S, weight: i32) -> RandomTable {
+        self.total_weight += weight;
+        self.entries.push(RandomEntry::new(reference.to_string(), weight));
+        self
+    }
+
+    pub fn roll(&self) -> String {
+        let mut rng = rand::thread_rng();
+
+        if self.total_weight == 0 { return "None".to_string(); }
+        let mut roll = rng.gen_range(1..self.total_weight-1);
+        let mut index : usize = 0;
+
+        while roll > 0 {
+            if roll < self.entries[index].weight {
+                return self.entries[index].reference.clone();
+            }
+
+            roll -= self.entries[index].weight;
+            index += 1;
+        }
+
+        "None".to_string()
     }
 }
+
+
+// TODO : C'est ici qu'on pourra peupler plus specifiquement une map.
+fn get_room_table(key: &str) -> RandomTable {
+    get_spawn_table(&RAWS.lock().unwrap(), key)
+}
+
+
+
+
+#[allow(clippy::map_entry)]
+pub fn spawn_room(world: &mut World, room : &Rectangle) {
+    let mut possible_targets = Vec::new();
+    let has_map = world.get_resource::<Map>();
+    if let Some(map) = has_map {
+        for y in room.y1 + 1 .. room.y2 {
+            for x in room.x1 + 1 .. room.x2 {
+                let idx = map.xy_idx(x, y);
+                if map.tiles[idx] == TileType::Floor {
+                    possible_targets.push(Vector2Int { x:x, y : y});
+                }
+            }
+        }
+        spawn_region(world, &possible_targets);
+    } 
+}
+
+pub fn spawn_region(world: &mut World, area : &[Vector2Int]) {
+    let spawn_table = get_room_table("spawn_ghoul");        // TODO : C'est Hardcoded. Devrait être changé avec les Missions.
+    let mut spawn_points : HashMap<Vector2Int, String> = HashMap::new();
+    let mut areas : Vec<Vector2Int> = Vec::from(area);
+
+    // Scope to keep the borrow checker happy
+    {
+        let mut rng = rand::thread_rng();
+        let num_spawns = i32::min(areas.len() as i32, rng.gen_range(1..SPAWN_MAX_ELEMENTS) - SPAWN_SUBSTRACT_ELEMENT);  
+        if num_spawns == 0 { return; }
+
+        for _i in 0 .. num_spawns {
+            let array_index = if areas.len() == 1 { 0usize } else { (rng.gen_range(1..areas.len() as i32)-1) as usize };
+            let position = areas[array_index];
+            spawn_points.insert(position, spawn_table.roll());
+            areas.remove(array_index);
+        }
+    }
+
+    // Actually spawn the monsters
+    for spawn in spawn_points.iter() {
+        spawn_entity(world, &spawn);
+    }
+}
+
+
+fn spawn_entity(
+    world: &mut World, 
+    spawn : &(&Vector2Int, &String),
+
+) {
+    let npc_result = spawn_referenced_entity(&RAWS.lock().unwrap(), world, spawn.1, *spawn.0);
+    if npc_result.is_some() {
+        return;
+    }
+} 

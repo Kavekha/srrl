@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use super::kind_structs::Raws;
+use crate::game::game_generation::spawners::RandomTable;
+
+use super::{kind_structs::Raws, spawn_table_structs::SpawnTableEntry};
 
 
 pub struct RawMaster {
@@ -36,4 +38,17 @@ impl RawMaster {
             self.spawn_table_index.insert(spawn_table.reference.clone(), i);
         }
     }    
+}
+
+
+pub fn get_spawn_table(raws: &RawMaster, key: &str) -> RandomTable {
+    let mut random_table = RandomTable::new();
+    if raws.spawn_table_index.contains_key(key) {
+        let st_template = &raws.raws.spawn_tables[raws.spawn_table_index[key]].spawn;  
+
+        for entry in st_template {
+            random_table = random_table.add(entry.reference.clone(), entry.weight);
+        }
+    }
+    random_table
 }

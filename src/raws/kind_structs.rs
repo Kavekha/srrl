@@ -7,15 +7,6 @@ pub struct Raws {
     pub kinds : Vec<Kind>,
     pub spawn_tables: Vec<SpawnTable>
 }
-impl Raws {
-    pub fn new() -> Raws {
-        Raws {
-            kinds: Vec::new(),
-            spawn_tables: Vec::new()
-        }
-    }
-}
-
 
 
 #[derive(Deserialize, Debug)]
