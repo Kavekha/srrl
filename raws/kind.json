@@ -18,6 +18,10 @@
                 "strength_max": 6,
                 "agility_max": 6,
                 "logic_max": 6
+            },
+            "skills": {
+                "UnarmedCombat": 1,
+                "FireArms": 1
             }
         },
         {

@@ -5,10 +5,7 @@ use bevy::prelude::*;
 use crate::{
     commons::get_world_position, engine::{animations::events::{AnimateEvent, EffectEvent}, 
     asset_loaders::GraphicsAssets, audios::SoundEvent}, 
-    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}},
-    rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, 
-    commons::is_in_sight, game_generation::character_creation::components::{Health, Occupier, Attributes},
-    gamelog::LogEvent, player::Player, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
+    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}}, commons::is_in_sight, game_generation::character_creation::components::{Attributes, Health, Occupier, Skills}, gamelog::LogEvent, player::Player, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
     globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ActionPoints, AttackType, Die, IsDead, TryHit, WantToForfeit, WantToHit};
@@ -137,7 +134,7 @@ pub fn entity_want_hit(
 pub fn entity_try_hit(
     mut commands: Commands,
     try_hit_q: Query<(Entity, &TryHit), Without<IsDead>>,
-    stats_q: Query<&Attributes>,       
+    attributes_n_skills_q: Query<(&Attributes, &Skills)>,       
     //mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,      
@@ -150,10 +147,10 @@ pub fn entity_try_hit(
         println!("{:?} try to attack {:?}.", entity, attack.defender);
         //done.
   
-        let Ok(attacker_stats) = stats_q.get(entity) else { 
+        let Ok(attacker_infos) = attributes_n_skills_q.get(entity) else { 
             // DEBUG: println!("Pas de stats pour l'attaquant");
             continue };   
-        let Ok(defender_stats) = stats_q.get(attack.defender) else { 
+        let Ok(defender_infos) = attributes_n_skills_q.get(attack.defender) else { 
             // DEBUG: println!("Pas de stats pour le defender");
             continue };     
 
@@ -163,10 +160,10 @@ pub fn entity_try_hit(
         //let dmg:u32;
         match attack.mode {
             AttackType::MELEE => {
-                combat_result = combat_test(&AttackType::MELEE, attacker_stats, defender_stats);
+                combat_result = combat_test(&AttackType::MELEE, attacker_infos, defender_infos);
             },
             AttackType::RANGED => {
-                combat_result = combat_test(&AttackType::RANGED, attacker_stats, defender_stats);
+                combat_result = combat_test(&AttackType::RANGED, attacker_infos, defender_infos);
             }
         }
 

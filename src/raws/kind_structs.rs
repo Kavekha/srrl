@@ -1,3 +1,4 @@
+use bevy::utils::HashMap;
 use serde::Deserialize;
 
 use super::spawn_table_structs::SpawnTable;
@@ -21,7 +22,7 @@ pub struct Kind {
     pub is_occupier: bool,
     pub vision: RawVision,
     pub attributes: RawAttributes,
-
+    pub skills: Option<HashMap<String, i32>>,  // Test
 }
 
 #[derive(Deserialize, Debug)]

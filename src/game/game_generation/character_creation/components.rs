@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use serde::{Deserialize, Serialize};
 
 
@@ -62,4 +62,15 @@ pub struct Attributes {
     pub strength: Attribute,
     pub agility: Attribute,
     pub logic: Attribute 
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum Skill {
+    UnarmedCombat,
+    FireArms,
+}
+
+#[derive(Component)]
+pub struct Skills {
+    pub skills: HashMap<Skill, i32>
 }

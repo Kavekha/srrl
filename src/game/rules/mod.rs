@@ -10,7 +10,7 @@ use rand::prelude::*;
 
 use crate::game::game_generation::character_creation::components::Attributes;
 
-use super::combat::combat_system::components::{ActionPoints, AttackType};
+use super::{combat::combat_system::components::{ActionPoints, AttackType}, game_generation::character_creation::components::{Skill, Skills}};
 
 
 /// ============================================================================
@@ -65,17 +65,26 @@ pub fn dmg_resist_test(
 
 pub fn combat_test(
     attack_type:&AttackType, 
-    attacker_attributes: &Attributes,
-    defender_attributes: &Attributes
+    attacker_infos: (&Attributes, &Skills),
+    defender_infos: (&Attributes, &Skills),
 ) -> RuleCombatResult {
     let dice_roll:DiceRollResult;
     let mut dmg=0;
     let success:bool;
     let nb_success:i32;
+
+    let (attacker_attributes, attacker_skills) = attacker_infos;
+    let (defender_attributes, _defender_skills) = defender_infos;
+
     match attack_type {
         AttackType::MELEE => {
+            // TODO : fonction generique?
+            let mut attacker_unarmed_skill = -1;
+            if attacker_skills.skills.contains_key(&Skill::UnarmedCombat) {
+                attacker_unarmed_skill = attacker_skills.skills[&Skill::UnarmedCombat];
+            }
             //dice_roll = roll_dices_against(defender_attributes.agility.base + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
-            dice_roll = roll_dices_against(attacker_attributes.agility.base, defender_attributes.logic.base + defender_attributes.agility.base);  
+            dice_roll = roll_dices_against(attacker_attributes.agility.base + attacker_unarmed_skill, defender_attributes.logic.base + defender_attributes.agility.base);  
             (success, nb_success) = dice_roll.result();
             if success {
                 //dmg = nb_success.saturating_add(attacker_attributes.strength.base);
@@ -83,8 +92,12 @@ pub fn combat_test(
             }            
         },
         AttackType::RANGED => {
+            let mut attacker_firearms_skill = -1;
+            if attacker_skills.skills.contains_key(&Skill::FireArms) {
+                attacker_firearms_skill = attacker_skills.skills[&Skill::FireArms];
+            }
             //dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);
-            dice_roll = roll_dices_against(attacker_attributes.agility.base, defender_attributes.logic.base + defender_attributes.agility.base);     
+            dice_roll = roll_dices_against(attacker_attributes.agility.base + attacker_firearms_skill, defender_attributes.logic.base + defender_attributes.agility.base);     
             (success, nb_success) = dice_roll.result();
             if success {
                 //dmg = nb_success.saturating_add(attacker_attributes.logic.base);

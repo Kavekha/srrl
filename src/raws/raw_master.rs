@@ -1,8 +1,7 @@
-use std::collections::HashMap;
 
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{prelude::*, utils::{HashMap, HashSet}};
 
-use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
 use super::kind_structs::{RawRenderable, Raws};
 
@@ -90,15 +89,6 @@ fn spawn_referenced_kind(
 
         world.entity_mut(entity).insert(Vision { range_view : kind_template.vision.range_view} );
 
-        /* 
-        world.entity_mut(entity).insert( Stats {
-            strength: kind_template.stats.strength,
-            agility: kind_template.stats.agility,
-            logic: kind_template.stats.logic,
-            melee: 0,
-            firearms: 0,
-        });
-        */
         let base_str = kind_template.attributes.strength_max / 3;
         world.entity_mut(entity).insert( Attributes {
             strength: Attribute {
@@ -120,6 +110,19 @@ fn spawn_referenced_kind(
 
         let health = (base_str / 2) + 8;
         world.entity_mut(entity).insert( Health { current: health, max: health});
+
+        // Skills 0.21c, TEMP
+        let mut skills = Skills{ skills: HashMap::new() }; 
+        if let Some(rawskills) = &kind_template.skills {
+            for skill in rawskills.iter() {
+                match skill.0.as_str() { 
+                    "UnarmedCombat" => { skills.skills.insert(Skill::UnarmedCombat, *skill.1); },
+                    "FireArms" => { skills.skills.insert(Skill::FireArms, *skill.1); },
+                    _ => { println!("WARNING : Unkwnown skill referenced : [{}]", skill.0)}
+                }
+            }
+        }
+        world.entity_mut(entity).insert( skills);
 
 
     return Some(entity)
