@@ -2,8 +2,8 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
+use self::game_generation::character_creation::components::{GameElement, Npc};
 use self::movements::MovementPlugin;
-use self::pieces::components::{GameElement, Npc};
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;

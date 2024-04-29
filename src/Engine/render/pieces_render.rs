@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
         commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
-        pieces::components::Piece, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+        game_generation::character_creation::components::Piece, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, globals::{
         MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER}
 };

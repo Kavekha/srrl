@@ -16,7 +16,7 @@ mod ia_evaluate;
 mod ia_planning;
 mod ia_quipping;
 
-use crate::game::{pieces::components::Npc, player::Player, tileboard::components::BoardPosition};
+use crate::game::{game_generation::character_creation::components::Npc, player::Player, tileboard::components::BoardPosition};
 
 use self::{
     components::{CheckGoal, Frozen}, 

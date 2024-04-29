@@ -1,8 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{game::{
-    game_generation::{create_player::create_player, spawners::spawn_room}, 
-    pieces::spawners::{create_exit_map, create_nodes}, 
+    game_generation::{character_creation::create_player::create_player, create_exit_map::create_exit_map, create_nodes::create_nodes, spawners::spawn_room},  
     tileboard::system_map::create_map}, 
     map_builders::{Rectangle, MAPHEIGHT, MAPWIDTH}, raws::load_raws};
 

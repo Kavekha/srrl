@@ -3,8 +3,7 @@ use bevy::prelude::*;
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
     game::{
-        combat::combat_system::components::IsDead, pieces::components::Npc, 
-        ui::components:: UiGameInterface}};
+        combat::combat_system::components::IsDead, game_generation::character_creation::components::Npc, ui::components:: UiGameInterface}};
 
 use super::components::UiLogLine;
 

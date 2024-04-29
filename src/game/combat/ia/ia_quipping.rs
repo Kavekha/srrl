@@ -13,7 +13,7 @@ A repenser pour un vrai systeme, lorsque les choses seront plus modulables.
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::game::{combat::{combat_system::components::IsDead, events::Turn}, pieces::components::Npc, ui::display_text::TextEvent};
+use crate::game::{combat::{combat_system::components::IsDead, events::Turn}, game_generation::character_creation::components::Npc, ui::display_text::TextEvent};
 
 use super::{components::HasTalked, Planning};
 

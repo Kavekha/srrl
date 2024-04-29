@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{combat::combat_system::components::ActionPoints, pieces::components::Health, player::Player, ui::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_MAX, INTERFACE_HP_CHUNK_WIDTH}}, 
+    game::{combat::combat_system::components::ActionPoints, game_generation::character_creation::components::Health, player::Player, ui::{INTERFACE_GLOBAL_PLAYER_NAME_FONT_SIZE, INTERFACE_HP_CHUNK_HEIGHT, INTERFACE_HP_CHUNK_MAX, INTERFACE_HP_CHUNK_WIDTH}}, 
 };
 
 use super::{components::{UiCharacterInfos, UiGameInterface, UiMainWindow}, ReloadUiEvent};

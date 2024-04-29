@@ -1,36 +1,11 @@
 use bevy::prelude::*;
-use serde::{Serialize, Deserialize};
 
 use crate::{
-    commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
-        tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::Marker
-    }, globals::{ORDER_MARKER, SPRITE_MARKER}, vectors::Vector2Int};
+    commons::get_world_position, engine::asset_loaders::GraphicsAssets, 
+    game::{tileboard::components::BoardPosition, visibility::components::Marker}, 
+    globals::{ORDER_MARKER, SPRITE_MARKER}, vectors::Vector2Int};
 
-use super::components::{GameElement, NavigationNode};
-
-
-#[derive(Component, Serialize, Deserialize, PartialEq, Clone, Copy, Debug)]
-pub enum Kind {
-    Dwarf,
-    Elf,
-    Human,
-    Orc,
-    Troll,
-    Ghoul,
-    GhoulRanged
-}
-
-
-
-pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){
-    let mut exit = world.spawn_empty();
-    exit 
-    .insert(Name::new(format!("Exit")))
-    .insert(ExitMapTile)
-    .insert(BoardPosition{ v:exit_position});
-info!("Exit map created");
-}
-
+use super::character_creation::components::GameElement;
 
 pub fn spawn_npc_marker(
     commands: &mut Commands,
@@ -69,20 +44,4 @@ pub fn spawn_npc_marker(
     commands.entity(marker).insert(BoardPosition {v: position});
 
     return marker
- }
-
- pub fn create_nodes(
-    world: &mut World, 
-    nodes_list: Option<Vec<Vector2Int>>,
- ) {
-    match nodes_list {
-        Some(nodes) => {
-            for node in nodes {        
-                let mut nod = world.spawn_empty();
-                nod.insert(NavigationNode);
-                nod.insert(BoardPosition { v: node });
-            }
-        },
-        None => {},
-    }
  }

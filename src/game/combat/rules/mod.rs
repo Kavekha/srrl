@@ -7,7 +7,8 @@ L'idée est aussi qu'il soit possible de les configurer.
 
 use rand::prelude::*;
 
-use crate::game::pieces::components::Stats;
+
+use crate::game::game_generation::character_creation::components::Stats;
 
 use super::combat_system::components::{ActionPoints, AttackType};
 

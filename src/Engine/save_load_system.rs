@@ -10,7 +10,8 @@ use bevy::prelude::*;
 
 //pub struct SaveLoadPlugin;
 
-use crate::game::pieces::components::{Walk, Piece, Health, Melee, Occupier, Stats, Npc};   //Actor
+
+use crate::game::game_generation::character_creation::components::{Health, Melee, Npc, Occupier, Piece, Stats, Walk};
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
 use crate::globals::SCENE_FILE_PATH;

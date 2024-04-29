@@ -5,10 +5,10 @@ use bevy::{prelude::*, utils::HashSet};
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, 
-    game::{gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, 
-    pieces::{components::{Npc, Occupier}, spawners::spawn_npc_marker}, 
-    player::Player, 
-    tileboard::components::{BoardPosition, Tile}, visibility::components::Marked}, 
+    game::{
+        game_generation::{character_creation::components::{Npc, Occupier}, spawn_npc_marker::spawn_npc_marker}, 
+        gamelog::LogEvent, movements::components::{CancelMoveEvent, MoveEvent}, 
+        player::Player, tileboard::components::{BoardPosition, Tile}, visibility::components::Marked}, 
     map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, HasBeenSeenEvent, Marker, OutOfSightEvent, View};
