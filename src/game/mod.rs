@@ -21,11 +21,12 @@ pub mod menus;
 pub mod states;
 pub mod gamelog;
 pub mod visibility;
+pub mod game_generation;
 
 mod commons;
 mod manager;
 mod movements;
-mod game_generation;
+
  
 
 use crate::commons::despawn_component;

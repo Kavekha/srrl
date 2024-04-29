@@ -2,45 +2,10 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 
-use super::spawners::Kind;
-
-
-/* 
-#[derive(Bundle)]
-pub struct CharacterBundle {    
-    pub piece: Piece,
-    pub name: Name,
-    pub stats: Stats,
-    pub health: Health,
-    pub position: BoardPosition,
-    pub occupier: Occupier
-}
-impl Default for CharacterBundle {
-    fn default() -> Self {
-        Self {
-            piece: Piece { kind: Kind::Human },
-            name: Name::new("Nobody"), 
-            stats: Stats {
-                strength: 3,
-                agility: 3,
-                logic: 2,
-                melee: 1,
-                firearms: 1,
-            },
-            health: Health { max: 10, current: 10 },
-            position: BoardPosition { v: Vector2Int { x:0, y: 0 } },
-            occupier: Occupier            
-        }
-    }
-}
-*/
-
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Piece {
-    pub kind: Kind,
     pub model: String,
 }
-
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
@@ -88,3 +53,9 @@ pub struct GameElement;
 
 #[derive(Component)]
 pub struct NavigationNode;
+
+
+#[derive(Component)]
+pub struct Vision {
+    pub range_view: u32
+}

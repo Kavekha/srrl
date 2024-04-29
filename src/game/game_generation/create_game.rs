@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{game::{game_generation::spawners::{create_npc, create_player}, pieces::spawners::{create_exit_map, create_nodes}, tileboard::system_map::create_map}, raws::load_raws};
+use crate::{game::{
+    game_generation::{create_player::create_player, spawners::spawn_room}, 
+    pieces::spawners::{create_exit_map, create_nodes}, 
+    tileboard::system_map::create_map}, 
+    map_builders::{Rectangle, MAPHEIGHT, MAPWIDTH}, raws::load_raws};
 
 
 // Return true après avoir réussi.    // Return OK TODO
@@ -18,9 +22,8 @@ pub fn create_new_game(
     create_exit_map(world, map_infos.exit_position);
     create_nodes(world, map_infos.rooms);
 
-    for spawn_position in map_infos.spawn_list {
-        create_npc(world, spawn_position);
-    }
+    let room = &Rectangle::new(0, 0, MAPWIDTH as i32, MAPHEIGHT as i32); // Rectangle::new(0,0, MAPWIDTH, MAPHEIGHT);
+    spawn_room(world, room);
     
     return true
 }

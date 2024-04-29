@@ -1,0 +1,17 @@
+{
+    "spawn_tables": [
+        {
+            "reference": "spawn_ghoul",
+            "spawn": [
+                {
+                    "reference":"ghoul",
+                    "weight":30
+                },
+                {
+                    "reference":"ghoul_ranged",
+                    "weight":10
+                }
+            ]
+        }
+    ]
+}

@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use crate::{
     commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
         tileboard::components::{BoardPosition, ExitMapTile}, visibility::components::Marker
-    }, globals::{ORDER_MARKER, SPRITE_PLAYER_HUMAN}, vectors::Vector2Int};
+    }, globals::{ORDER_MARKER, SPRITE_MARKER}, vectors::Vector2Int};
 
 use super::components::{GameElement, NavigationNode};
 
@@ -20,171 +20,6 @@ pub enum Kind {
     GhoulRanged
 }
 
-
-
-/* Move in game_generation 0.21
-// 0.19 adds Abilities there.
-pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
-    println!("Player: Starting position = {:?}", player_starting_position);
-    let kind = get_random_kind();
-    let piece = Piece{kind: kind};
-    println!("Player kind i {:?}", kind);
-
-    // Stats base on Kind.
-    let stats:Stats;
-    let health:Health;
-    match kind {
-        Kind::Human => {
-            stats = Stats {
-                strength: 3,
-                agility: 3,
-                logic: 3,
-                melee: 3,
-                firearms: 3,
-            };
-            health = Health { max: 10, current: 10 };
-        },
-        Kind::Dwarf => {
-            stats = Stats {
-                strength: 4,
-                agility: 3,
-                logic: 3,
-                melee: 3,
-                firearms: 2,
-            };
-            health = Health { max: 10, current: 10 };
-        },
-        Kind::Elf => {
-            stats = Stats {
-                strength: 2,
-                agility: 4,
-                logic: 3,
-                melee: 2,
-                firearms: 4,
-            };
-            health = Health { max: 9, current: 9 };
-        },
-        Kind::Orc => {
-            stats = Stats {
-                strength: 4,
-                agility: 2,
-                logic: 2,
-                melee: 4,
-                firearms: 3,
-            };
-            health = Health { max: 10, current: 10 };
-        },
-        Kind::Troll => {
-            stats = Stats {
-                strength: 6,
-                agility: 2,
-                logic: 1,
-                melee: 5,
-                firearms: 1,
-            };
-            health = Health { max: 11, current: 11 };
-        },
-        Kind::Ghoul => {
-            stats = Stats {
-                strength: 2,
-                agility: 4,
-                logic: 1,
-                melee: 3,
-                firearms: 0,
-            };
-            health = Health { max: 9, current: 9 };
-        },
-        Kind::GhoulRanged => {
-            stats = Stats {
-                strength: 1,
-                agility: 5,
-                logic: 2,
-                melee: 0,
-                firearms: 2,
-            };
-            health = Health { max: 9, current: 9 };
-        },
-    };
-
-    let player = world.spawn(CharacterBundle{
-            piece: piece, 
-            position: BoardPosition{ v:player_starting_position },
-            name: Name::new("the ShadowRunner"),
-            stats: stats,
-            health: health,
-            ..default()
-        }).id();
-    //player.insert(Player);
-    world.entity_mut(player)
-    .insert(Player)
-    .insert(Melee)
-    .insert(Ranged)
-    .insert(View { 
-        visible_tiles: Vec::new(),
-        range: VISIBILITY_RANGE_PLAYER
-    })
-    ;
-}
-*/
-
-
-/* 
-
-pub fn spawn_npcs(world: &mut World, entities_pos: Vec<Vector2Int>){
-    for entity_position in entities_pos {
-        println!("NPC: Starting position = {:?}", entity_position);
-        spawn_npc(world, entity_position);
-    }
-}
-
-fn spawn_npc(world: &mut World, npc_spawning_position: Vector2Int
-){
-    let mut rng = rand::thread_rng();
-    let rand = rng.gen_range(0..100);
-
-    let piece:Piece;
-    let stats: Stats;
-    if rand <= NPC_CHANCE_TO_BE_RANGED {
-        //ranged
-        piece = Piece{kind: Kind::GhoulRanged};
-        stats = Stats {
-            strength: 1,
-            agility: 5,
-            logic: 2,
-            melee: 0,
-            firearms: 2,
-        };
-    } else {
-        piece = Piece{kind: Kind::Ghoul};
-        stats = Stats {
-            strength: 2,
-            agility: 4,
-            logic: 1,
-            melee: 3,
-            firearms: 0,
-        };
-    };
-    let mut npc = world.spawn(CharacterBundle {
-        piece: piece,
-        name: Name::new(format!("Ghoul")),
-        stats: stats,
-        health: Health { max: 10, current: 10 },
-        position: BoardPosition{ v:npc_spawning_position },
-        occupier: Occupier,
-    });
-
-    npc
-    .insert(Npc)
-    .insert(Walk)
-    .insert(Melee)
-    ;
-    if rand <= NPC_CHANCE_TO_BE_RANGED { 
-        npc.insert(Ranged);
-    }
-
-    println!("Npc created");
-}
-*/
 
 
 pub fn create_exit_map(world: &mut World, exit_position: Vector2Int){
@@ -206,7 +41,7 @@ pub fn spawn_npc_marker(
     position: Vector2Int
 ) -> Entity {
  //for event in ev_spawn_marker.read() {
-    let texture = graph_assets.textures[SPRITE_PLAYER_HUMAN].clone();
+    let texture = graph_assets.textures[SPRITE_MARKER].clone();
     let translation= get_world_position(&position); 
     let order_z = ORDER_MARKER;
     let visibility = Visibility::Visible;

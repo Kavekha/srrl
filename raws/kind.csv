@@ -1,7 +1,0 @@
-name;model;playable;can_melee;can_ranged;can_walk;range_view;strength;agility;logic
-human;human;true;true;true;true;10;3;3;3
-dwarf;dwarf;true;true;true;true;10;4;2;3
-elf;elf;true;true;true;true;12;1;5;3
-orc;orc;true;true;true;true;10;4;3;2
-troll;troll;true;true;true;true;10;6;2;1
-ghoul;ghoul;false;true;false;true;7;2;3;1

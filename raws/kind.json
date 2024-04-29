@@ -1,0 +1,64 @@
+{
+    "kinds": [
+        {
+            "reference":"human",
+            "name":"human",
+            "renderable":{
+                "model":"human"
+            },            
+            "is_playable": true,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 10
+            },            
+            "stats": {
+                "strength": 3,
+                "agility": 3,
+                "logic": 3
+            }
+        },
+        {
+            "reference":"ghoul",
+            "name":"ghoul",
+            "renderable":{
+                "model":"ghoul"
+            },            
+            "is_playable": false,
+            "can_melee": true,
+            "can_ranged": false,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 8
+            },            
+            "stats": {
+                "strength": 2,
+                "agility": 3,
+                "logic": 1
+            }
+        },
+        {
+            "reference":"ghoul_ranged",
+            "name":"ghoul",
+            "renderable":{
+                "model":"ghoul_ranged"
+            },            
+            "is_playable": false,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 8
+            },            
+            "stats": {
+                "strength": 1,
+                "agility": 3,
+                "logic": 2
+            }
+        }
+    ]
+}
