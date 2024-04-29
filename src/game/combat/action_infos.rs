@@ -23,7 +23,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{game::{
-    game_generation::character_creation::components::{Health, Occupier, Stats}, 
+    game_generation::character_creation::components::{Health, Occupier, Attributes}, 
     player::{Cursor, Player}, 
     tileboard::components::BoardPosition, ui::events::ReloadUiEvent, 
     visibility::components::View, 
@@ -65,7 +65,7 @@ pub fn update_action_infos(
     entity_player_q: Query<Entity,With<Player>>,
     //turn_q: Query<&Turn>,
     view_q: Query<&View, With<Player>>,
-    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>, Without<Player>)>,
+    piece_position: Query<&BoardPosition, (With<Health>, With<Attributes>, Without<IsDead>, Without<Player>)>,
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,

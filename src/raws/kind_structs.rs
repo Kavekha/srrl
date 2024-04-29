@@ -20,8 +20,15 @@ pub struct Kind {
     pub can_walk: bool, 
     pub is_occupier: bool,
     pub vision: RawVision,
-    pub stats: RawStats,
+    pub attributes: RawAttributes,
 
+}
+
+#[derive(Deserialize, Debug)]
+pub struct RawAttributes {
+    pub strength_max: i32,
+    pub agility_max: i32,
+    pub logic_max: i32
 }
 
 #[derive(Deserialize, Debug)]

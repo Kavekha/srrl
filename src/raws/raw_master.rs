@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Health, Melee, Occupier, Ranged, Stats, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
+use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
 use super::kind_structs::{RawRenderable, Raws};
 
@@ -90,6 +90,7 @@ fn spawn_referenced_kind(
 
         world.entity_mut(entity).insert(Vision { range_view : kind_template.vision.range_view} );
 
+        /* 
         world.entity_mut(entity).insert( Stats {
             strength: kind_template.stats.strength,
             agility: kind_template.stats.agility,
@@ -97,8 +98,27 @@ fn spawn_referenced_kind(
             melee: 0,
             firearms: 0,
         });
+        */
+        let base_str = kind_template.attributes.strength_max / 3;
+        world.entity_mut(entity).insert( Attributes {
+            strength: Attribute {
+                base: base_str,
+                modifiers: 0,
+                max: kind_template.attributes.strength_max,
+            },
+            agility: Attribute {
+                base: kind_template.attributes.agility_max / 3,
+                modifiers: 0,
+                max: kind_template.attributes.agility_max,
+            },
+            logic: Attribute {
+                base: kind_template.attributes.logic_max  / 3,
+                modifiers: 0,
+                max: kind_template.attributes.logic_max,
+            },
+        });
 
-        let health = (kind_template.stats.strength / 2) + 8;
+        let health = (base_str / 2) + 8;
         world.entity_mut(entity).insert( Health { current: health, max: health});
 
 

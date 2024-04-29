@@ -59,9 +59,10 @@ impl Message for LoadGameMessage {
             if entity.npc {
                 e.insert(Npc);
             }
-            if let Some(stats) = entity.stats {
+            /*
+            if let Some(stats) = entity.attributes {
                 e.insert(stats);
-            }
+            }*/
             /* 
             if let Some(piece) = entity.piece {
                 e.insert(piece);

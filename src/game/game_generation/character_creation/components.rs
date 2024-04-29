@@ -17,8 +17,8 @@ pub struct Occupier;
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)] 
 pub struct Health {
-    pub max: u32,
-    pub current: u32
+    pub max: i32,
+    pub current: i32
 }
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
@@ -27,6 +27,7 @@ pub struct Melee;
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
 pub struct Ranged;
 
+/* 0.21c : Remplacé par Attributes 
 //TODO : Adapter à Shadowrun: Skill & Ability.
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Stats {
@@ -37,6 +38,7 @@ pub struct Stats {
     pub melee:u32,
     pub firearms:u32
 } 
+*/
 
 #[derive(Component)]
 pub struct Vision {
@@ -48,4 +50,16 @@ pub struct Vision {
 pub struct GameElement;
 
 
+#[derive(Component)]
+pub struct Attribute {
+    pub base: i32,
+    pub modifiers: i32,
+    pub max: i32
+}
 
+#[derive(Component)]
+pub struct Attributes {
+    pub strength: Attribute,
+    pub agility: Attribute,
+    pub logic: Attribute 
+}

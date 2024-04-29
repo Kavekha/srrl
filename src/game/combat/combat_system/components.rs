@@ -41,7 +41,7 @@ pub struct MissHit{
 pub struct GetHit{
     pub attacker: Entity, 
     pub mode: AttackType,
-    pub dmg: u32,
+    pub dmg: i32,
 }
 
 #[derive(Component)]

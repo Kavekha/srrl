@@ -78,7 +78,7 @@ use self::{
     components::CurrentEntityTurnQueue, 
     events::{CombatEndEvent, CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
 };
-use super::{game_generation::character_creation::components::{Health, Npc, Stats}, ia::components::Frozen, manager::MessageEvent, player::Player};
+use super::{game_generation::character_creation::components::{Health, Npc, Attributes}, ia::components::Frozen, manager::MessageEvent, player::Player};
 
 
 pub struct CombatPlugin;
@@ -142,7 +142,7 @@ fn tick(
 pub fn combat_start(    
     mut commands: Commands,
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
-    fighters: Query<(Entity, &Health, &Stats, Option<&Player>), Without<IsDead>>,
+    fighters: Query<(Entity, &Health, &Attributes, Option<&Player>), Without<IsDead>>,
     mut action_infos: ResMut<ActionInfos>,
 ) {    
     // TODO: Adds this by default?

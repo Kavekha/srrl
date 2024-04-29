@@ -14,10 +14,90 @@
             "vision": {
                 "range_view": 10
             },            
-            "stats": {
-                "strength": 3,
-                "agility": 3,
-                "logic": 3
+            "attributes": {
+                "strength_max": 6,
+                "agility_max": 6,
+                "logic_max": 6
+            }
+        },
+        {
+            "reference":"elf",
+            "name":"elf",
+            "renderable":{
+                "model":"elf"
+            },            
+            "is_playable": true,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 12
+            },            
+            "attributes": {
+                "strength_max": 6,
+                "agility_max": 7,
+                "logic_max": 6
+            }
+        },
+        {
+            "reference":"dwarf",
+            "name":"dwarf",
+            "renderable":{
+                "model":"dwarf"
+            },            
+            "is_playable": true,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 10
+            },            
+            "attributes": {
+                "strength_max": 8,
+                "agility_max": 6,
+                "logic_max": 6
+            }
+        },
+        {
+            "reference":"orc",
+            "name":"orc",
+            "renderable":{
+                "model":"orc"
+            },            
+            "is_playable": true,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 10
+            },            
+            "attributes": {
+                "strength_max": 8,
+                "agility_max": 6,
+                "logic_max": 5
+            }
+        },
+        {
+            "reference":"troll",
+            "name":"troll",
+            "renderable":{
+                "model":"troll"
+            },            
+            "is_playable": true,
+            "can_melee": true,
+            "can_ranged": true,
+            "can_walk": true,
+            "is_occupier": true,
+            "vision": {
+                "range_view": 10
+            },            
+            "attributes": {
+                "strength_max": 10,
+                "agility_max": 5,
+                "logic_max": 4
             }
         },
         {
@@ -34,10 +114,10 @@
             "vision": {
                 "range_view": 8
             },            
-            "stats": {
-                "strength": 2,
-                "agility": 3,
-                "logic": 1
+            "attributes": {
+                "strength_max": 6,
+                "agility_max": 6,
+                "logic_max": 2
             }
         },
         {
@@ -54,10 +134,10 @@
             "vision": {
                 "range_view": 8
             },            
-            "stats": {
-                "strength": 1,
-                "agility": 3,
-                "logic": 2
+            "attributes": {
+                "strength_max": 6,
+                "agility_max": 6,
+                "logic_max": 2
             }
         }
     ]
