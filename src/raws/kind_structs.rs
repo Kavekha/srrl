@@ -14,8 +14,7 @@ pub struct Kind {
     pub can_walk: bool, 
     pub is_occupier: bool,
     pub vision: RawVision,
-    pub attributes: RawAttributes,
-    pub skills: Option<HashMap<String, i32>>,  // Test
+    pub attributes: RawAttributes
 }
 
 #[derive(Deserialize, Debug)]

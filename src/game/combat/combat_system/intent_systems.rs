@@ -134,7 +134,7 @@ pub fn entity_want_hit(
 pub fn entity_try_hit(
     mut commands: Commands,
     try_hit_q: Query<(Entity, &TryHit), Without<IsDead>>,
-    attributes_n_skills_q: Query<(&Attributes, &Skills)>,       
+    attributes_n_skills_q: Query<(&Attributes, Option<&Skills>)>,       
     //mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,      

@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
-use super::{base_attributes_structs::BaseAttributes, kind_structs::{Kind, RawRenderable}, spawn_table_structs::SpawnTable};
+use super::{base_attributes_structs::BaseAttributes, jobs_structs::RawJobs, kind_structs::{Kind, RawRenderable}, spawn_table_structs::SpawnTable};
 
 
 
@@ -12,7 +12,8 @@ use super::{base_attributes_structs::BaseAttributes, kind_structs::{Kind, RawRen
 pub struct Raws {
     pub kinds : Vec<Kind>,
     pub spawn_tables: Vec<SpawnTable>,
-    pub base_attributes: Vec<BaseAttributes>
+    pub base_attributes: Vec<BaseAttributes>,
+    pub jobs: Vec<RawJobs>
 }
 
 
@@ -20,7 +21,8 @@ pub struct RawMaster {
     pub raws : Raws,
     pub kind_index : HashMap<String, usize>,
     pub spawn_table_index: HashMap<String, usize>,
-    pub base_attributes_index: HashMap<String, usize>
+    pub base_attributes_index: HashMap<String, usize>,
+    pub job_index: HashMap<String, usize>,
 }
 
 impl RawMaster {
@@ -30,10 +32,12 @@ impl RawMaster {
                 kinds: Vec::new(), 
                 spawn_tables: Vec::new(),
                 base_attributes: Vec::new(),
+                jobs: Vec::new(),
             },
             kind_index : HashMap::new(),
             spawn_table_index: HashMap::new(),
             base_attributes_index: HashMap::new(),
+            job_index: HashMap::new(),
         }
     }
 
@@ -63,7 +67,13 @@ impl RawMaster {
         for (i,base_attributes) in self.raws.base_attributes.iter().enumerate() {
             // Le base_attributes enrichie un profil existant, on ne verifie pas la duplication car on ne fait pas des appels directs à la base.
             self.base_attributes_index.insert(base_attributes.reference.clone(), i);
-
+        }
+        for (i,job) in self.raws.jobs.iter().enumerate() {
+            if used_references.contains(&job.reference) {
+                println!("WARNING : duplicate JOB reference in raw [{}]", job.reference);
+            }
+            self.job_index.insert(job.reference.clone(), i);
+            used_references.insert(job.reference.clone());
         }
     }    
 }
@@ -113,9 +123,9 @@ fn spawn_referenced_kind(
         let mut logic = 1;
         if raws.base_attributes_index.contains_key(key) {
             let base_attributes_template = &raws.raws.base_attributes[raws.base_attributes_index[key]];
-            strength += base_attributes_template.strength;
-            agility += base_attributes_template.agility;
-            logic += base_attributes_template.logic;
+            if let Some(str) = base_attributes_template.strength {strength += str };
+            if let Some(agi) = base_attributes_template.agility {agility += agi };
+            if let Some(log) = base_attributes_template.logic {logic += log };
         }
         
         world.entity_mut(entity).insert( Attributes {
@@ -139,7 +149,8 @@ fn spawn_referenced_kind(
         let health = (strength / 2) + 8;
         world.entity_mut(entity).insert( Health { current: health, max: health});
 
-        // Skills 0.21c, TEMP
+        // Skills 0.21d : moved to Jobs.
+        /* 
         let mut skills = Skills{ skills: HashMap::new() }; 
         if let Some(rawskills) = &kind_template.skills {
             for skill in rawskills.iter() {
@@ -151,7 +162,7 @@ fn spawn_referenced_kind(
             }
         }
         world.entity_mut(entity).insert( skills);
-
+        */
 
     return Some(entity)
     } else {

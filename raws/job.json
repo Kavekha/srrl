@@ -1,0 +1,31 @@
+{
+    "jobs": [
+        {
+            "reference":"adept",
+            "strength": -1,
+            "agility": 1,
+            "logic": 1,
+            "skills": {
+                "UnarmedCombat": 2
+            }
+        },
+        {
+            "reference":"gunslinger",
+            "strength": -1,
+            "agility": 2,
+            "skills": {
+                "FireArms": 2
+            }
+        },
+        {
+            "reference":"street_samourai",
+            "strength": 1,
+            "agility": 1,
+            "logic": -1,
+            "skills": {
+                "FireArms": 1,
+                "UnarmedCombat": 1
+            }
+        }
+    ]
+}
