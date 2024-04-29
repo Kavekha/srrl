@@ -1,11 +1,7 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Piece {
-    pub model: String,
-}
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Npc;
@@ -21,8 +17,8 @@ pub struct Occupier;
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)] 
 pub struct Health {
-    pub max: u32,
-    pub current: u32
+    pub max: i32,
+    pub current: i32
 }
 
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
@@ -31,14 +27,10 @@ pub struct Melee;
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]  
 pub struct Ranged;
 
+/* 0.21c : Remplacé par Attributes 
 //TODO : Adapter à Shadowrun: Skill & Ability.
 #[derive(Component, Default, Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Stats {
-    //pub power: u32,         
-    //pub attack: u32,
-    //pub dodge: u32,
-    //pub resilience: u32
-    //Stats
     pub strength: u32,  // melee dmg & resistance. HP = Str / 2 + 8.
     pub agility: u32,   // accuracy
     pub logic: u32,     // Logic + agility = dodge
@@ -46,16 +38,39 @@ pub struct Stats {
     pub melee:u32,
     pub firearms:u32
 } 
+*/
+
+#[derive(Component)]
+pub struct Vision {
+    pub range_view: u32
+}
 
 
 #[derive(Component)]
 pub struct GameElement;
 
-#[derive(Component)]
-pub struct NavigationNode;
-
 
 #[derive(Component)]
-pub struct Vision {
-    pub range_view: u32
+pub struct Attribute {
+    pub base: i32,
+    pub modifiers: i32,
+    pub max: i32
+}
+
+#[derive(Component)]
+pub struct Attributes {
+    pub strength: Attribute,
+    pub agility: Attribute,
+    pub logic: Attribute 
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum Skill {
+    UnarmedCombat,
+    FireArms,
+}
+
+#[derive(Component)]
+pub struct Skills {
+    pub skills: HashMap<Skill, i32>
 }

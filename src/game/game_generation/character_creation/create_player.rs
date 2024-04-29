@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{combat::rules::VISIBILITY_RANGE_PLAYER, player::Player, visibility::components::View}, raws::{spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+use crate::{game::{rules::VISIBILITY_RANGE_PLAYER, player::Player, visibility::components::View}, raws::{spawn_referenced_entity, RAWS}, vectors::Vector2Int};
 
 
 

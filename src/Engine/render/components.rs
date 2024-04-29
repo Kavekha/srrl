@@ -1,7 +1,12 @@
 use bevy::{prelude::*, utils::HashMap};
+use serde::{Deserialize, Serialize};
 
 use crate::vectors::Vector2Int;
 
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Renderable {
+    pub model: String,
+}
 
 #[derive(Component)]
 pub struct GameCursorRender;

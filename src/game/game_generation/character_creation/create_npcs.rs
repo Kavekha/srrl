@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{game::pieces::components::Npc, raws::{spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+use crate::{raws::{spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+
+use super::components::Npc;
 
 
 

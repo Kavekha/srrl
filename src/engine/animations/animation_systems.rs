@@ -6,7 +6,7 @@ use bevy::{prelude::*, utils::HashMap};
 use crate::{
     commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, 
     asset_loaders::GraphicsAssets, render::components::GameCursorRender}, 
-    game::{pieces::components::GameElement, player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, BASE_TIME_FRAME_EFFECT, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals::{ ORDER_CURSOR, ORDER_EFFECT}};
+    game::{game_generation::character_creation::components::GameElement, player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, BASE_TIME_FRAME_EFFECT, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals::{ ORDER_CURSOR, ORDER_EFFECT}};
 
 use super::events::{AnimateEvent, EffectEvent, GraphicsWaitEvent, PathAnimator};
 

@@ -22,9 +22,16 @@ use std::collections::VecDeque;
 
 use bevy::prelude::*;
 
-use crate::{game::{ pieces::components::{Health, Occupier, Stats}, player::{Cursor, Player}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent, visibility::components::View}, map_builders::map::Map, vectors::{find_path, Vector2Int}};
+use crate::{game::{
+    game_generation::character_creation::components::{Health, Occupier, Attributes}, 
+    player::{Cursor, Player}, 
+    tileboard::components::BoardPosition, ui::events::ReloadUiEvent, 
+    visibility::components::View, 
+    rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}},
+    map_builders::map::Map, vectors::{find_path, Vector2Int}};
 
-use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, components::CombatInfos, events::RefreshActionCostEvent, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED}};
+use super::{ combat_system::components::{ActionPoints, AttackType, IsDead}, 
+    components::CombatInfos, events::RefreshActionCostEvent};
 
 
 
@@ -58,7 +65,7 @@ pub fn update_action_infos(
     entity_player_q: Query<Entity,With<Player>>,
     //turn_q: Query<&Turn>,
     view_q: Query<&View, With<Player>>,
-    piece_position: Query<&BoardPosition, (With<Health>, With<Stats>, Without<IsDead>, Without<Player>)>,
+    piece_position: Query<&BoardPosition, (With<Health>, With<Attributes>, Without<IsDead>, Without<Player>)>,
     board: Res<Map>,
     mut action_infos: ResMut<ActionInfos>,
     cursor: Res<Cursor>,

@@ -5,10 +5,8 @@ use bevy::prelude::*;
 use crate::{
     commons::get_world_position, engine::{animations::events::{AnimateEvent, EffectEvent}, 
     asset_loaders::GraphicsAssets, audios::SoundEvent}, 
-    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent},
-     rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}}, 
-     commons::is_in_sight, gamelog::LogEvent, pieces::components::{Health, Occupier, Stats}, player::Player, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
-     globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
+    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}}, commons::is_in_sight, game_generation::character_creation::components::{Attributes, Health, Occupier, Skills}, gamelog::LogEvent, player::Player, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
+    globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ActionPoints, AttackType, Die, IsDead, TryHit, WantToForfeit, WantToHit};
 
@@ -60,12 +58,12 @@ pub fn entity_want_forfeit(
 // 0.20a : Review Query OK
 pub fn entity_want_hit(
     mut commands: Commands,
-    mut want_hit_q: Query<(Entity, &WantToHit, &mut ActionPoints, &BoardPosition, Option<&Player>), (With<Stats>, Without<IsDead>)>,
+    mut want_hit_q: Query<(Entity, &WantToHit, &mut ActionPoints, &BoardPosition, Option<&Player>), (With<Attributes>, Without<IsDead>)>,
     //player_q: Query<&Player>,    
     //mut action_q: Query<&mut ActionPoints>,    
     mut ev_interface: EventWriter<ReloadUiEvent>,    
     mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,    
-    available_targets: Query<(Entity, &BoardPosition, &Stats), (With<Health>, Without<IsDead>)>,
+    available_targets: Query<(Entity, &BoardPosition, &Attributes), (With<Health>, Without<IsDead>)>,
     //position_q: Query<&BoardPosition>,
     //stats_q: Query<&Stats>,        
     mut ev_log: EventWriter<LogEvent>,
@@ -136,7 +134,7 @@ pub fn entity_want_hit(
 pub fn entity_try_hit(
     mut commands: Commands,
     try_hit_q: Query<(Entity, &TryHit), Without<IsDead>>,
-    stats_q: Query<&Stats>,       
+    attributes_n_skills_q: Query<(&Attributes, &Skills)>,       
     //mut ev_gethit: EventWriter<EntityGetHitEvent>,
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,      
@@ -149,10 +147,10 @@ pub fn entity_try_hit(
         println!("{:?} try to attack {:?}.", entity, attack.defender);
         //done.
   
-        let Ok(attacker_stats) = stats_q.get(entity) else { 
+        let Ok(attacker_infos) = attributes_n_skills_q.get(entity) else { 
             // DEBUG: println!("Pas de stats pour l'attaquant");
             continue };   
-        let Ok(defender_stats) = stats_q.get(attack.defender) else { 
+        let Ok(defender_infos) = attributes_n_skills_q.get(attack.defender) else { 
             // DEBUG: println!("Pas de stats pour le defender");
             continue };     
 
@@ -162,10 +160,10 @@ pub fn entity_try_hit(
         //let dmg:u32;
         match attack.mode {
             AttackType::MELEE => {
-                combat_result = combat_test(&AttackType::MELEE, attacker_stats, defender_stats);
+                combat_result = combat_test(&AttackType::MELEE, attacker_infos, defender_infos);
             },
             AttackType::RANGED => {
-                combat_result = combat_test(&AttackType::RANGED, attacker_stats, defender_stats);
+                combat_result = combat_test(&AttackType::RANGED, attacker_infos, defender_infos);
             }
         }
 
@@ -254,7 +252,7 @@ pub fn entity_get_hit(
     get_hit_q: Query<(Entity, &GetHit), Without<IsDead>>,     
     name_q: Query<&Name>,
     position_q: Query<&BoardPosition>,      
-    mut stats_health_q: Query<(&Stats, &mut Health, Option<&Player>)>,      
+    mut stats_health_q: Query<(&Attributes, &mut Health, Option<&Player>)>,      
     mut ev_effect: EventWriter<EffectEvent>,
     mut ev_log: EventWriter<LogEvent>,    
 ){
@@ -269,12 +267,12 @@ pub fn entity_get_hit(
 
         // Roll resist.
         let test_resist = dmg_resist_test(&get_hit.mode, &defender_stats);
-        let final_dmg = get_hit.dmg.saturating_sub(test_resist.dmg_reduction); 
+        let final_dmg = get_hit.dmg.saturating_sub(test_resist.dmg_reduction) as u32; 
 
         // Reducing health.
-        defender_health.current = defender_health.current.saturating_sub(final_dmg);
+        defender_health.current = defender_health.current - final_dmg as i32;
         //println!("Dmg on health for {:?} is now {:?}/{:?}", final_dmg, defender_health.current, defender_health.max);
-        if defender_health.current == 0 {            
+        if defender_health.current <= 0 {            
             //ev_die.send(EntityDeathEvent { entity: entity, attacker: get_hit.attacker });
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
         }

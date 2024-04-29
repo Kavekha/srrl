@@ -41,3 +41,7 @@ pub struct PlanInformAllies{
 
 #[derive(Component)]
 pub struct HasShareInfos;
+
+
+#[derive(Component)]
+pub struct NavigationNode;

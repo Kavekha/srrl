@@ -2,10 +2,13 @@ use bevy::prelude::*;
 
 use crate::{game::{
     combat::{combat_system::components::{ActionPoints, AttackType, IsDead, WantToForfeit, WantToHit}, 
-    events::Turn, ia::components::{PlanFlee, PlanMove, PlanSearch}, rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}}, commons::is_in_sight, movements::components::HasMoved, pieces::components::{Health, Melee, Npc, Ranged, Walk}, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
+    events::Turn,},
+    rules::{AP_COST_MELEE, AP_COST_MOVE, AP_COST_RANGED, LOW_HP_THRESHOLD, VISIBILITY_RANGE_NPC}, 
+    commons::is_in_sight, game_generation::character_creation::components::{Health, Melee, Npc, Ranged, Walk},
+    movements::components::HasMoved, player::Player, tileboard::components::BoardPosition}, map_builders::map::Map
 };
 
-use super::{components::{CheckGoal, HasShareInfos, Knowledge, PlanInformAllies}, Planning};
+use super::{components::{CheckGoal, HasShareInfos, Knowledge, PlanFlee, PlanInformAllies, PlanMove, PlanSearch}, Planning};
 
  
 

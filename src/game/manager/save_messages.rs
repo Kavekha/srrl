@@ -1,7 +1,7 @@
 use bevy::{core::Name, ecs::world::World, tasks::IoTaskPool};
 use std::{fs::{self, File}, io::Write};
 
-use crate::{engine::save_load_system::SaveState, game::{pieces::components::{Npc, Occupier, Walk}, player::Player}, globals::SCENE_FILE_PATH};
+use crate::{engine::save_load_system::SaveState, game::{game_generation::character_creation::components::{Npc, Occupier, Walk}, player::Player}, globals::SCENE_FILE_PATH};
 
 use super::{
     change_state_messages::{ChangeGameStateInitialiseRequestMessage, ChangeGameStateProcessingMessage, ChangeGameStateRunningMessage},
@@ -59,9 +59,10 @@ impl Message for LoadGameMessage {
             if entity.npc {
                 e.insert(Npc);
             }
-            if let Some(stats) = entity.stats {
+            /*
+            if let Some(stats) = entity.attributes {
                 e.insert(stats);
-            }
+            }*/
             /* 
             if let Some(piece) = entity.piece {
                 e.insert(piece);

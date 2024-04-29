@@ -2,10 +2,12 @@ use bevy::prelude::*;
 
 use crate::{
         commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
-        pieces::components::Piece, player::Player, tileboard::components::{BoardPosition, ExitMapTile}
+        player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, globals::{
         MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER}
 };
+
+use super::components::Renderable;
 
 
 
@@ -37,7 +39,7 @@ pub fn spawn_exit_render(
 
 pub fn spawn_piece_renderer(
     mut commands: Commands,
-    query: Query<(Entity, &BoardPosition, &mut Piece, Option<&Player>)>,
+    query: Query<(Entity, &BoardPosition, &mut Renderable, Option<&Player>)>,
     assets: Res<GraphicsAssets>,
 ) {
     println!("Rendering Pieces begins..."); 

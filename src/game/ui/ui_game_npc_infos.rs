@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::{combat::combat_system::components::IsDead, despawn_component, pieces::components::{Health, Npc}, player::Player, tileboard::components::BoardPosition, visibility::components::View}, 
+use crate::{game::{combat::combat_system::components::IsDead, despawn_component, game_generation::character_creation::components::{Health, Npc}, player::Player, tileboard::components::BoardPosition, visibility::components::View}, 
     globals::STANDARD_TILE_SIZE
 };
 

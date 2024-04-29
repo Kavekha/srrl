@@ -4,7 +4,7 @@ use rand::Rng;
 
 use crate::{globals::{SPAWN_MAX_ELEMENTS, SPAWN_SUBSTRACT_ELEMENT}, map_builders::{map::Map, Rectangle, TileType}, raws::{get_spawn_table, RAWS}, vectors::Vector2Int};
 
-use super::{create_npcs::create_npc, random_table::RandomTable};
+use super::{character_creation::create_npcs::create_npc, random_table::RandomTable};
 
 
 

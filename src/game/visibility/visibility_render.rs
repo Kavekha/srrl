@@ -11,7 +11,7 @@
 
 use bevy::prelude::*;
 
-use crate::{engine::render::components::GameMapRender, game::{pieces::components::Npc, tileboard::components::{BoardPosition, Tile}}, vectors::Vector2Int};
+use crate::{engine::render::components::GameMapRender, game::{game_generation::character_creation::components::Npc, tileboard::components::{BoardPosition, Tile}}, vectors::Vector2Int};
 
 use super::components::{ChangeVisibility, ChangeVisibilityStatus, RenderVisibilityTile, View};
 

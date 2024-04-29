@@ -1,8 +1,14 @@
 use bevy::prelude::*;
 
-use crate::{game::{combat::{combat_system::components::{IsDead, WantToForfeit}, events::Turn, rules::VISIBILITY_RANGE_NPC}, commons::is_in_sight, movements::components::WantToMove, pieces::components::{NavigationNode, Npc, Occupier, Walk}, tileboard::components::BoardPosition}, map_builders::map::Map, vectors::find_path};
+use crate::{
+    game::{combat::{combat_system::components::{IsDead, WantToForfeit}, events::Turn,},
+    rules::VISIBILITY_RANGE_NPC, commons::is_in_sight, game_generation::character_creation::components::{Npc, Occupier, Walk}, 
+    ia::components::HasShareInfos, movements::components::WantToMove, tileboard::components::BoardPosition}, 
+    map_builders::map::Map, vectors::find_path};
 
-use super::components::{HasShareInfos, Knowledge, PlanFlee, PlanInformAllies, PlanMove, PlanSearch};
+use super::components::{Knowledge, NavigationNode, PlanFlee, PlanInformAllies, PlanMove, PlanSearch};
+
+
 
 
 pub fn planning_inform_allies(

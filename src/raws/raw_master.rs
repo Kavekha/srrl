@@ -1,10 +1,9 @@
-use std::collections::HashMap;
 
-use bevy::utils::HashSet;
+use bevy::{prelude::*, utils::{HashMap, HashSet}};
 
-use crate::game::game_generation::random_table::RandomTable;
+use crate::{engine::render::components::Renderable, game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
-use super::kind_structs::Raws;
+use super::kind_structs::{RawRenderable, Raws};
 
 
 pub struct RawMaster {
@@ -49,6 +48,96 @@ impl RawMaster {
             used_references.insert(spawn_table.reference.clone());
         }
     }    
+}
+
+
+
+pub fn spawn_referenced_entity(
+    raws: &RawMaster,
+    world: &mut World, 
+    key: &str,
+    position: Vector2Int,
+) -> Option<Entity> {
+    if raws.kind_index.contains_key(key) {
+        return spawn_referenced_kind(raws, world, key, position)
+    }
+    None
+}
+
+fn spawn_referenced_kind(
+    raws: &RawMaster,
+    world: &mut World, 
+    key: &str,
+    position: Vector2Int,
+) -> Option<Entity> {
+    if raws.kind_index.contains_key(key) {
+        let kind_template = &raws.raws.kinds[raws.kind_index[key]];
+
+        let entity = world.spawn_empty().id();
+        world.entity_mut(entity).insert(BoardPosition {v: position});
+
+        if let Some(renderable) = &kind_template.renderable {
+            world.entity_mut(entity).insert(get_renderable_component(renderable));
+        }
+
+        world.entity_mut(entity).insert(Name::new(kind_template.name.clone()));
+
+        if kind_template.is_occupier { world.entity_mut(entity).insert(Occupier); }
+        if kind_template.can_melee { world.entity_mut(entity).insert(Melee); }
+        if kind_template.can_ranged { world.entity_mut(entity).insert(Ranged); }
+        if kind_template.can_walk { world.entity_mut(entity).insert(Walk); }
+
+        world.entity_mut(entity).insert(Vision { range_view : kind_template.vision.range_view} );
+
+        let base_str = kind_template.attributes.strength_max / 3;
+        world.entity_mut(entity).insert( Attributes {
+            strength: Attribute {
+                base: base_str,
+                modifiers: 0,
+                max: kind_template.attributes.strength_max,
+            },
+            agility: Attribute {
+                base: kind_template.attributes.agility_max / 3,
+                modifiers: 0,
+                max: kind_template.attributes.agility_max,
+            },
+            logic: Attribute {
+                base: kind_template.attributes.logic_max  / 3,
+                modifiers: 0,
+                max: kind_template.attributes.logic_max,
+            },
+        });
+
+        let health = (base_str / 2) + 8;
+        world.entity_mut(entity).insert( Health { current: health, max: health});
+
+        // Skills 0.21c, TEMP
+        let mut skills = Skills{ skills: HashMap::new() }; 
+        if let Some(rawskills) = &kind_template.skills {
+            for skill in rawskills.iter() {
+                match skill.0.as_str() { 
+                    "UnarmedCombat" => { skills.skills.insert(Skill::UnarmedCombat, *skill.1); },
+                    "FireArms" => { skills.skills.insert(Skill::FireArms, *skill.1); },
+                    _ => { println!("WARNING : Unkwnown skill referenced : [{}]", skill.0)}
+                }
+            }
+        }
+        world.entity_mut(entity).insert( skills);
+
+
+    return Some(entity)
+    } else {
+        info!("No reference for key {:?}", key);
+        return None
+    }    
+}
+
+fn get_renderable_component(
+    renderable: &RawRenderable
+) -> Renderable {
+    Renderable {
+        model: renderable.model.clone()
+    }
 }
 
 

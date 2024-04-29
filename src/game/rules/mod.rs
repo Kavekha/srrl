@@ -7,9 +7,11 @@ L'idée est aussi qu'il soit possible de les configurer.
 
 use rand::prelude::*;
 
-use crate::game::pieces::components::Stats;
 
-use super::combat_system::components::{ActionPoints, AttackType};
+use crate::game::game_generation::character_creation::components::Attributes;
+
+use super::{combat::combat_system::components::{ActionPoints, AttackType}, game_generation::character_creation::components::{Skill, Skills}};
+
 
 /// ============================================================================
 /// Action Point COST
@@ -30,56 +32,76 @@ pub const VISIBILITY_RANGE_PLAYER:i32 =  10; //10;
 pub const VISIBILITY_RANGE_NPC:i32 = 10;
 
 // Low HP Threshold
-pub const LOW_HP_THRESHOLD:u32 = 4;
+pub const LOW_HP_THRESHOLD:i32 = 4;
 ///==============================================================================
 
 
 pub struct RuleCombatResult{
     pub success: bool,
-    pub dmg: u32    
+    pub dmg: i32    
 }
 pub struct RuleDamageResist{
     pub success: bool,
-    pub dmg_reduction: u32
+    pub dmg_reduction: i32
 }
 
 pub fn dmg_resist_test(
     attack_type:&AttackType,
-    defender_stats: &Stats,
+    defender_attributes: &Attributes,
 ) -> RuleDamageResist {
     let dice_roll :DiceRollResult;
     match attack_type {
-        AttackType::MELEE => dice_roll = roll_dices_against(defender_stats.strength, 0),
-        AttackType::RANGED => dice_roll = roll_dices_against(defender_stats.logic, 0)        // Pas d'opposant ni difficulté : On encaisse X dmg.
+        AttackType::MELEE => dice_roll = roll_dices_against(defender_attributes.strength.base, 0),
+        AttackType::RANGED => dice_roll = roll_dices_against(defender_attributes.logic.base, 0)        // Pas d'opposant ni difficulté : On encaisse X dmg.
     }
     
     //let dmg = get_hit.dmg.saturating_sub(dice_roll.success); 
-    let (success, nb_success) = dice_roll.result();
+    let (success, mut nb_success) = dice_roll.result();
+    if nb_success < 0 {
+        nb_success = 0;
+    }
     RuleDamageResist { success: success, dmg_reduction: nb_success}
 }
 
 pub fn combat_test(
     attack_type:&AttackType, 
-    attacker_stats: &Stats,
-    defender_stats: &Stats
+    attacker_infos: (&Attributes, &Skills),
+    defender_infos: (&Attributes, &Skills),
 ) -> RuleCombatResult {
     let dice_roll:DiceRollResult;
     let mut dmg=0;
     let success:bool;
-    let nb_success:u32;
+    let nb_success:i32;
+
+    let (attacker_attributes, attacker_skills) = attacker_infos;
+    let (defender_attributes, _defender_skills) = defender_infos;
+
     match attack_type {
         AttackType::MELEE => {
-            dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
+            // TODO : fonction generique?
+            let mut attacker_unarmed_skill = -1;
+            if attacker_skills.skills.contains_key(&Skill::UnarmedCombat) {
+                attacker_unarmed_skill = attacker_skills.skills[&Skill::UnarmedCombat];
+            }
+            //dice_roll = roll_dices_against(defender_attributes.agility.base + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
+            dice_roll = roll_dices_against(attacker_attributes.agility.base + attacker_unarmed_skill, defender_attributes.logic.base + defender_attributes.agility.base);  
             (success, nb_success) = dice_roll.result();
             if success {
-                dmg = nb_success.saturating_add(attacker_stats.strength as u32);
+                //dmg = nb_success.saturating_add(attacker_attributes.strength.base);
+                dmg = nb_success + attacker_attributes.strength.base;
             }            
         },
         AttackType::RANGED => {
-            dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);   
+            let mut attacker_firearms_skill = -1;
+            if attacker_skills.skills.contains_key(&Skill::FireArms) {
+                attacker_firearms_skill = attacker_skills.skills[&Skill::FireArms];
+            }
+            //dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);
+            dice_roll = roll_dices_against(attacker_attributes.agility.base + attacker_firearms_skill, defender_attributes.logic.base + defender_attributes.agility.base);     
             (success, nb_success) = dice_roll.result();
             if success {
-                dmg = nb_success.saturating_add(attacker_stats.logic as u32);
+                //dmg = nb_success.saturating_add(attacker_attributes.logic.base);
+                dmg = nb_success + attacker_attributes.logic.base;
             }              
         }
     }
@@ -91,12 +113,12 @@ pub fn combat_test(
 // Retourne True + nb de success si réussite, sinon False et 0.
 // Fail & Glitch ne servent pas pour le moment.
 pub struct DiceRollResult{
-    pub success: u32,
-    pub fail: u32,
-    pub glitch: u32 
+    pub success: i32,
+    pub fail: i32,
+    pub glitch: i32 
 }
 impl DiceRollResult{
-    pub fn result(&self) -> (bool, u32) {        
+    pub fn result(&self) -> (bool, i32) {        
         if self.success > 0 {
             return (true, self.success)
         } else {
@@ -108,15 +130,16 @@ impl DiceRollResult{
 
 /// On jette des dés pour l'Attaquant & le Defendeur. On fait Succes - Succes.
 pub fn roll_dices_against(
-    user: u32,
-    against: u32
+    user: i32,
+    against: i32
 ) -> DiceRollResult {
     let mut user_result = roll_dices(user);
     let against_result = roll_dices(against);
     //println!("roll_dices_against: User: {:?}", (user_result.success, user_result.fail, user_result.glitch));
     //println!("roll_dices_against: Against: {:?}", (against_result.success, against_result.fail, against_result.glitch));
 
-    user_result.success = user_result.success.saturating_sub(against_result.success);   //on retire les succès du Defendeur / difficulté. REMEMBER: saturating_sub => Ne depasse pas la limite, qui est de 0 en u32.
+    //user_result.success = user_result.success.saturating_sub(against_result.success);   //on retire les succès du Defendeur / difficulté. REMEMBER: saturating_sub => Ne depasse pas la limite, qui est de 0 en u32.
+    user_result.success -= against_result.success; 
     //user_result.fail = user_result.fail.saturating_add(against_result.success);   // On s'en fout des fails.
     //println!("roll_dices_against: Final User Result: {:?}", user_result.success);
     user_result
@@ -127,7 +150,7 @@ pub fn roll_dices_against(
 // Succes si 5+, glitch si 1. Sinon Fail.
 // Fail & glitch n'ont pas d'impact: ce sont juste des "non succès".
 pub fn roll_dices(
-    nb_dices : u32
+    nb_dices : i32
 ) -> DiceRollResult {
     let mut result = DiceRollResult {success: 0, fail: 0, glitch : 0};
     for _roll in 0..nb_dices {
@@ -144,9 +167,9 @@ pub fn roll_dices(
 }
 
 // On jete un dé à 6 faces.
-pub fn roll_dice() -> u32 {
+pub fn roll_dice() -> i32 {
     let mut rng = thread_rng();
-    let dice_roll: u32 = rng.gen_range(0..=6);
+    let dice_roll: i32 = rng.gen_range(0..=6);
     dice_roll
 
 }

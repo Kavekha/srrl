@@ -64,15 +64,12 @@ use bevy::prelude::*;
 pub mod components;
 pub mod events;
 pub mod action_infos;
-pub mod rules;
 pub mod combat_system;
-mod ia;
-
 
 
 
 use crate::{engine::animations::events::GraphicsWaitEvent, game::{
-        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, movements::components::HasMoved, states::GameState 
+        combat::{combat_system::components::ActionPoints, components:: CombatInfos}, ia::components::CheckGoal, manager::{change_state_messages::QuitGameMessage, game_messages::GameOverMessage}, movements::components::HasMoved, states::GameState 
     }};
 
 use self::{
@@ -80,9 +77,8 @@ use self::{
     combat_system::{components::{AttackType, IsDead}, CombatSystemPlugin}, 
     components::CurrentEntityTurnQueue, 
     events::{CombatEndEvent, CombatTurnEndEvent, CombatTurnNextEntityEvent, CombatTurnQueue, CombatTurnStartEvent, RefreshActionCostEvent, TickEvent, Turn}, 
-    ia::{components::{CheckGoal, Frozen}, IaPlugin}, 
 };
-use super::{manager::MessageEvent, pieces::components::{Health, Npc, Stats}, player::Player};
+use super::{game_generation::character_creation::components::{Health, Npc, Attributes}, ia::components::Frozen, manager::MessageEvent, player::Player};
 
 
 pub struct CombatPlugin;
@@ -91,7 +87,6 @@ pub struct CombatPlugin;
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
         app
-            .add_plugins(IaPlugin)
             .add_plugins(CombatSystemPlugin)
 
             .init_resource::<CombatTurnQueue>()             // Les personnages qui vont agir pendant ce tour.
@@ -147,7 +142,7 @@ fn tick(
 pub fn combat_start(    
     mut commands: Commands,
     mut ev_newturn: EventWriter<CombatTurnStartEvent>,
-    fighters: Query<(Entity, &Health, &Stats, Option<&Player>), Without<IsDead>>,
+    fighters: Query<(Entity, &Health, &Attributes, Option<&Player>), Without<IsDead>>,
     mut action_infos: ResMut<ActionInfos>,
 ) {    
     // TODO: Adds this by default?
