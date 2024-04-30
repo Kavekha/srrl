@@ -1,6 +1,7 @@
 use bevy::prelude::*;
+use rand::Rng;
 
-use crate::{game::{rules::VISIBILITY_RANGE_PLAYER, player::Player, visibility::components::View}, raws::{spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+use crate::{game::{player::Player, rules::VISIBILITY_RANGE_PLAYER, visibility::components::View}, raws::{apply_referenced_job, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
 
 
 
@@ -18,6 +19,17 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
             let mut entity_ref = world.entity_mut(player_entity);
             let mut name = entity_ref.get_mut::<Name>().unwrap();       // REMEMBER : C'est comme ca qu'on GET un component depuis WORLD.
             name.set("The Shadowrunner");
+
+            // TODO : Pouvoir choisir.
+            let mut rng = rand::thread_rng();
+            let rand = rng.gen_range(1..4); // Exclusif 
+            println!("rand is {:?}", rand);
+            match rand {
+                1 => { apply_referenced_job(&RAWS.lock().unwrap(), world, "adept", player_entity);},
+                2 => { apply_referenced_job(&RAWS.lock().unwrap(), world, "gunslinger", player_entity);},
+                3 => { apply_referenced_job(&RAWS.lock().unwrap(), world, "street_samourai", player_entity);},
+                _ => { println!("No Job apply to PLAYER.");}
+            }
  
             world.entity_mut(player_entity)
             .insert(Player)

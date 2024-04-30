@@ -1,0 +1,44 @@
+{
+    "jobs": [
+        {
+            "reference":"adept",
+            "is_playable": true,
+            "strength": -1,
+            "agility": 1,
+            "logic": 1,
+            "skills": {
+                "UnarmedCombat": 2
+            }
+        },
+        {
+            "reference":"gunslinger",
+            "is_playable": true,
+            "is_ranged": true,
+            "strength": -1,
+            "agility": 2,
+            "skills": {
+                "FireArms": 2
+            }
+        },
+        {
+            "reference":"street_samourai",
+            "is_playable": true,
+            "strength": 1,
+            "agility": 1,
+            "logic": -1,
+            "skills": {
+                "FireArms": 1,
+                "UnarmedCombat": 1
+            }
+        },
+        {
+            "reference":"feral",
+            "is_playable": false,
+            "prefix": "feral",
+            "logic": -1,
+            "skills": {
+                "UnarmedCombat": 3
+            }
+        }
+    ]
+}

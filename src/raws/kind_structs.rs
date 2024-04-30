@@ -1,13 +1,5 @@
-use bevy::utils::HashMap;
 use serde::Deserialize;
 
-use super::spawn_table_structs::SpawnTable;
-
-#[derive(Deserialize, Debug)]
-pub struct Raws {
-    pub kinds : Vec<Kind>,
-    pub spawn_tables: Vec<SpawnTable>
-}
 
 
 #[derive(Deserialize, Debug)]
@@ -21,8 +13,7 @@ pub struct Kind {
     pub can_walk: bool, 
     pub is_occupier: bool,
     pub vision: RawVision,
-    pub attributes: RawAttributes,
-    pub skills: Option<HashMap<String, i32>>,  // Test
+    pub attributes: RawAttributes
 }
 
 #[derive(Deserialize, Debug)]

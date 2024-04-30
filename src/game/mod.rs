@@ -14,7 +14,6 @@ use self::visibility::ViewPlugin;
 use self::ia::IaPlugin;
 
 pub mod combat;
-pub mod pieces;
 pub mod player;
 pub mod tileboard;
 pub mod ui;

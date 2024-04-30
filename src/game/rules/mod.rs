@@ -65,23 +65,25 @@ pub fn dmg_resist_test(
 
 pub fn combat_test(
     attack_type:&AttackType, 
-    attacker_infos: (&Attributes, &Skills),
-    defender_infos: (&Attributes, &Skills),
+    attacker_infos: (&Attributes, Option<&Skills>),
+    defender_infos: (&Attributes, Option<&Skills>),
 ) -> RuleCombatResult {
     let dice_roll:DiceRollResult;
     let mut dmg=0;
     let success:bool;
     let nb_success:i32;
 
-    let (attacker_attributes, attacker_skills) = attacker_infos;
-    let (defender_attributes, _defender_skills) = defender_infos;
+    let (attacker_attributes, attacker_has_skills) = attacker_infos;
+    let (defender_attributes, _defender_has_skills) = defender_infos;
 
     match attack_type {
         AttackType::MELEE => {
             // TODO : fonction generique?
             let mut attacker_unarmed_skill = -1;
-            if attacker_skills.skills.contains_key(&Skill::UnarmedCombat) {
-                attacker_unarmed_skill = attacker_skills.skills[&Skill::UnarmedCombat];
+            if let Some(attacker_skills) = attacker_has_skills {
+                if attacker_skills.skills.contains_key(&Skill::UnarmedCombat) {
+                    attacker_unarmed_skill = attacker_skills.skills[&Skill::UnarmedCombat];
+                }
             }
             //dice_roll = roll_dices_against(defender_attributes.agility.base + attacker_stats.melee, defender_stats.logic + defender_stats.agility);   
             dice_roll = roll_dices_against(attacker_attributes.agility.base + attacker_unarmed_skill, defender_attributes.logic.base + defender_attributes.agility.base);  
@@ -93,8 +95,10 @@ pub fn combat_test(
         },
         AttackType::RANGED => {
             let mut attacker_firearms_skill = -1;
-            if attacker_skills.skills.contains_key(&Skill::FireArms) {
-                attacker_firearms_skill = attacker_skills.skills[&Skill::FireArms];
+            if let Some(attacker_skills) = attacker_has_skills {
+                if attacker_skills.skills.contains_key(&Skill::FireArms) {
+                    attacker_firearms_skill = attacker_skills.skills[&Skill::FireArms];
+                }
             }
             //dice_roll = roll_dices_against(attacker_stats.agility + attacker_stats.firearms, defender_stats.logic + defender_stats.agility);
             dice_roll = roll_dices_against(attacker_attributes.agility.base + attacker_firearms_skill, defender_attributes.logic.base + defender_attributes.agility.base);     

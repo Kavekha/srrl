@@ -13,11 +13,14 @@ use std::fs;
 mod spawn_table_structs;
 mod raw_master;
 mod kind_structs;
+mod base_attributes_structs;
+mod jobs_structs;
+mod job_table_structs;
 
 pub use raw_master::*;
 use std::sync::Mutex;
 
-use crate::raws::kind_structs::Raws;
+
 
 
 lazy_static! {
@@ -47,29 +50,29 @@ pub fn load_raws(){
                     if final_file.len() > 0 {
                         final_file.pop();   // Remove last }
                         final_file.push_str(",");   
-                        println!("final_file : {:?}", final_file);
+                        //println!("final_file : {:?}", final_file);
                         // On le fait à la suite sinon on retire le tout premier { du fichier.
                         if file.len() > 0 {
                             file.remove(0);  // remove first { ==> Cela permets d'avoir un json valide.
-                            println!("file is : {:?}", file);
+                            //println!("file is : {:?}", file);
                         }
                     }
                     final_file.push_str(&file);
-                    println!("final file in this iteration is {:?}", final_file);
+                    //println!("final file in this iteration is {:?}", final_file);
                 }
             }
         }
     }
-    println!("final file is :");
-    println!("-----");
-    println!("{:?}", final_file);
-    println!("---------");
+    //println!("final file is :");
+    //println!("-----");
+    //println!("{:?}", final_file);
+    //println!("---------");
     let raws:Raws = serde_json::from_str(&final_file).expect("Unable to parse JSON");
     RAWS.lock().unwrap().load(raws);
 
     println!("Loaded.");
-    println!("Rawmaster:");
-    println!("{:?}", RAWS.lock().unwrap().kind_index);
+    //println!("Rawmaster:");
+    //println!("{:?}", RAWS.lock().unwrap().kind_index);
 }
 
 /*
