@@ -14,6 +14,7 @@ mod vectors;
 mod menu_builders;
 mod commons;
 mod raws;
+mod camera;
 
 use game::GamePlugin;
 use engine::EnginePlugin;

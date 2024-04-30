@@ -32,13 +32,13 @@ mod player_inputs;
 pub mod components;
 pub mod cursor;
 
-pub use camera_exit::camera_center_on_player;
 pub use components::Player;
 pub use cursor::Cursor;
 pub use cursor::cursor_position;
 
-use self::{camera_exit::{camera_smooth_follow, exit_step_check}, components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, debug_info_on_click, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}};
+use self::{camera_exit::exit_step_check, components::{OnClickEvent, WantToMoveEvent}, player_inputs::{combat_input, debug_info_on_click, ig_call_menu_input, ig_inside_menu_input, mouse_scroll, player_choose_action_input, player_mouse_input}};
 
+use crate::camera::camera_smooth_follow;
 use crate::game::states::GameState;
 
 use super::combat::{events::WantToHitEvent, CombatSet};

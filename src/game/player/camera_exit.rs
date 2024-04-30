@@ -1,44 +1,12 @@
 use bevy::prelude::*;
 
 use crate::game::{
-        gamelog::LogEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile}, BASE_SPEED_CAMERA_SMOOTH_FOLLOW, SPEED_MULTIPLIER
+        gamelog::LogEvent, manager::{game_messages::VictoryMessage, MessageEvent}, tileboard::components::{BoardPosition, ExitMapTile},
     };
 
 
 use super::components::Player;
 
-
-pub fn camera_center_on_player(
-    player_query: Query<&Transform, With<Player>>,
-    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
-) {
-    let Ok(player_transform) = player_query.get_single() else {return};
-    let mut camera_transform = camera_query.single_mut();
-    camera_transform.translation.x = player_transform.translation.x;
-    camera_transform.translation.y = player_transform.translation.y;
-    info!("Camera centered on player.");
-}
-
-
-pub fn camera_smooth_follow(
-    player_query: Query<&Transform, With<Player>>,
-    mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
-    time: Res<Time>,
-) {
-    let Ok(player_transform) = player_query.get_single() else {return};
-    let mut camera_transform = camera_query.single_mut();
-
-    if player_transform.translation.x != camera_transform.translation.x {
-        camera_transform.translation.x = camera_transform.translation.x.lerp(
-            player_transform.translation.x, 
-            BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
-    }
-    if player_transform.translation.y != camera_transform.translation.y {
-        camera_transform.translation.y = camera_transform.translation.y.lerp(
-            player_transform.translation.y, 
-            BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
-    }
-}
 
 //Le log est envoyé 3 fois car 3 check?
 pub fn exit_step_check(

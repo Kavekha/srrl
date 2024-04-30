@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{raws::{apply_referenced_job, get_job_table, get_spawn_table, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+use crate::{raws::{apply_referenced_job, get_job_table, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
 
 use super::components::Npc;
 
