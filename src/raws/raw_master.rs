@@ -9,7 +9,7 @@ use crate::{
     game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, 
     random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
-use super::{base_attributes_structs::BaseAttributes, jobs_structs::RawJobs, kind_structs::{Kind, RawRenderable}, spawn_table_structs::SpawnTable};
+use super::{base_attributes_structs::BaseAttributes, job_table_structs::JobTable, jobs_structs::RawJobs, kind_structs::{Kind, RawRenderable}, spawn_table_structs::SpawnTable};
 
 
 
@@ -18,7 +18,8 @@ pub struct Raws {
     pub kinds : Vec<Kind>,
     pub spawn_tables: Vec<SpawnTable>,
     pub base_attributes: Vec<BaseAttributes>,
-    pub jobs: Vec<RawJobs>
+    pub jobs: Vec<RawJobs>,
+    pub job_tables: Vec<JobTable>
 }
 
 
@@ -28,6 +29,7 @@ pub struct RawMaster {
     pub spawn_table_index: HashMap<String, usize>,
     pub base_attributes_index: HashMap<String, usize>,
     pub job_index: HashMap<String, usize>,
+    pub job_table_index: HashMap<String, usize>,
 }
 
 impl RawMaster {
@@ -38,11 +40,13 @@ impl RawMaster {
                 spawn_tables: Vec::new(),
                 base_attributes: Vec::new(),
                 jobs: Vec::new(),
+                job_tables: Vec::new(),
             },
             kind_index : HashMap::new(),
             spawn_table_index: HashMap::new(),
             base_attributes_index: HashMap::new(),
             job_index: HashMap::new(),
+            job_table_index: HashMap::new(),
         }
     }
 
@@ -52,6 +56,9 @@ impl RawMaster {
         self.raws = raws;
         self.kind_index = HashMap::new();
         self.spawn_table_index = HashMap::new();
+        self.base_attributes_index = HashMap::new();
+        self.job_index = HashMap::new();
+        self.job_table_index = HashMap::new();
 
         let mut used_references : HashSet<String> = HashSet::new();
         
@@ -79,6 +86,10 @@ impl RawMaster {
             }
             self.job_index.insert(job.reference.clone(), i);
             used_references.insert(job.reference.clone());
+        }
+        for (i,job_table) in self.raws.job_tables.iter().enumerate() {
+            // Le base_attributes enrichie un profil existant, on ne verifie pas la duplication car on utilise le meme referent que le npc que l'on veut créer.
+            self.job_table_index.insert(job_table.reference.clone(), i);
         }
     }    
 }
@@ -182,13 +193,25 @@ pub fn get_spawn_table(raws: &RawMaster, key: &str) -> RandomTable {
     random_table
 }
 
+pub fn get_job_table(raws: &RawMaster, key: &str) -> RandomTable {
+    let mut random_table = RandomTable::new();
+    if raws.job_table_index.contains_key(key) {
+        let st_template = &raws.raws.job_tables[raws.job_table_index[key]].job;  
+
+        for entry in st_template {
+            random_table = random_table.add(entry.reference.clone(), entry.weight);
+        }
+    }
+    random_table
+}
+
 pub fn apply_referenced_job(
     raws: &RawMaster,
     world: &mut World, 
     key: &str,
     entity: Entity
 ){
-    println!("apply referenced job : {:?}", key);
+    println!("apply referenced job : {:?} for {:?}", key, entity);
     if raws.job_index.contains_key(key) {
         let job_template =  &raws.raws.jobs[raws.job_index[key]];
         let mut entity_ref = world.entity_mut(entity);

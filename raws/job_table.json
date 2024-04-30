@@ -1,0 +1,38 @@
+{
+    "job_tables": [
+        {
+            "reference": "ghoul",
+            "job": [
+                {
+                    "reference":"NONE",
+                    "weight":40
+                },
+                {
+                    "reference":"feral",
+                    "weight":40
+                },
+                {
+                    "reference":"gunslinger",
+                    "weight":20
+                }
+            ]
+        },
+        {
+            "reference": "ghoul_ranged",
+            "job": [
+                {
+                    "reference":"NONE",
+                    "weight":40
+                },
+                {
+                    "reference":"feral",
+                    "weight":40
+                },
+                {
+                    "reference":"gunslinger",
+                    "weight":20
+                }
+            ]
+        }
+    ]
+}

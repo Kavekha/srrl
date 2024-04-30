@@ -15,7 +15,7 @@ impl RandomEntry {
 
 #[derive(Default)]
 pub struct RandomTable {
-    entries : Vec<RandomEntry>,
+    pub entries : Vec<RandomEntry>,
     total_weight : i32
 }
 impl RandomTable {
@@ -38,6 +38,7 @@ impl RandomTable {
 
         while roll > 0 {
             if roll < self.entries[index].weight {
+                println!("random table: roll is {:?}, reference returned is {:?}", roll, self.entries[index].reference.clone());
                 return self.entries[index].reference.clone();
             }
 
