@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{engine::render::components::GameCursorRender, game::{player::{Cursor, Player}, SPEED_MULTIPLIER}, globals::CHAR_SIZE};
+use crate::{game::{player::{Cursor, Player}, SPEED_MULTIPLIER}, globals::CHAR_SIZE};
 
 pub const BASE_SPEED_CAMERA_SMOOTH_FOLLOW: f32 = 1.0;
 pub const BORDER_TOLERANCE: f32 = CHAR_SIZE * 14.0;     // A partir de cette distance, on est considéré comme "dans le coin" de l'ecran et on peut bouger la camera.
@@ -19,7 +19,7 @@ pub fn camera_center_on_player(
 }
 
 // TODO : do better...
-pub fn is_in_screen(
+pub fn _is_in_screen(
     screen_size: Vec2,  //let (camera, camera_transform) = camera_q.single(); let Some(screen_size) = camera.logical_viewport_size()
     screen_position: Vec2,  //let Some(mut screen_position) = camera.world_to_viewport(camera_transform, transform.translation) 
 ) -> bool {
@@ -62,7 +62,7 @@ pub fn camera_smooth_follow(
 
 
 
-pub fn camera_smooth_follow_v1(
+pub fn _camera_smooth_follow_v1(
     player_query: Query<&Transform, With<Player>>,
     mut camera_query: Query<&mut Transform, (Without<Player>, With<Camera>)>,
     time: Res<Time>,
