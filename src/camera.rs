@@ -3,7 +3,8 @@ use bevy::prelude::*;
 use crate::{engine::render::components::GameCursorRender, game::{player::{Cursor, Player}, SPEED_MULTIPLIER}, globals::CHAR_SIZE};
 
 pub const BASE_SPEED_CAMERA_SMOOTH_FOLLOW: f32 = 1.0;
-pub const BORDER_TOLERANCE: f32 = CHAR_SIZE * 10.0;  
+pub const BORDER_TOLERANCE: f32 = CHAR_SIZE * 14.0;     // A partir de cette distance, on est considéré comme "dans le coin" de l'ecran et on peut bouger la camera.
+pub const BORDER_NOT_TOLERATED: f32 = CHAR_SIZE * 3.0;  // A partir d'ici, on arrive dans le contour de l'ecran et c'est chiant que la camera se deplace.
 
 
 pub fn camera_center_on_player(
@@ -37,24 +38,22 @@ pub fn camera_smooth_follow(
     let Some(screen_size) = camera.logical_viewport_size() else { return };
     let Some(screen_position) = camera.world_to_viewport(camera_gtransform, res_cursor.world_position) else { return };
 
-    println!("Screen size is {:?}. Cursor is at {:?}", screen_size, screen_position);
-
-    if screen_position.x > (screen_size.x - BORDER_TOLERANCE) {
+    if screen_position.x > (screen_size.x - BORDER_TOLERANCE) && screen_position.x < (screen_size.x - BORDER_NOT_TOLERATED) {
         camera_transform.translation.x = camera_transform.translation.x.lerp(
             res_cursor.world_position.x * 0.1 + camera_transform.translation.x + 0.9, 
             BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
     }
-    if screen_position.x < (0.0 + BORDER_TOLERANCE) {
+    if screen_position.x < (0.0 + BORDER_TOLERANCE) && screen_position.x > (0.0 + BORDER_NOT_TOLERATED) {
         camera_transform.translation.x = camera_transform.translation.x.lerp(
             0.0 + camera_transform.translation.x * 0.9, 
             BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
     }
-    if screen_position.y > (screen_size.y - BORDER_TOLERANCE) {
+    if screen_position.y > (screen_size.y - BORDER_TOLERANCE) && screen_position.y < (screen_size.y - BORDER_NOT_TOLERATED) {
         camera_transform.translation.y = camera_transform.translation.y.lerp(
             res_cursor.world_position.y * 0.1 + camera_transform.translation.y + 0.9, 
             BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
     }
-    if screen_position.y < (0.0 + BORDER_TOLERANCE) {
+    if screen_position.y < (0.0 + BORDER_TOLERANCE) && screen_position.y > (0.0 + BORDER_NOT_TOLERATED) {
         camera_transform.translation.y = camera_transform.translation.y.lerp(
             0.0 + camera_transform.translation.y * 0.9, 
             BASE_SPEED_CAMERA_SMOOTH_FOLLOW * SPEED_MULTIPLIER * time.delta_seconds())
