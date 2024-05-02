@@ -45,7 +45,7 @@ pub const POSITION_TOLERANCE: f32 = 0.01;
 pub const SPEED_MULTIPLIER: f32 = 2.5;                  // FAST debug / balance on speed movement.
 pub const CURSOR_SPEED: f32 = 20.0;                     // Cursor.
 pub const BASE_SPEED_PATH_ANIMATOR_UPDATE: f32 = 10.0;   // Vitesse de base d'une animation de deplacement.
-pub const BASE_SPEED_CAMERA_SMOOTH_FOLLOW: f32 = 8.0;
+
 
 // Anim
 pub const BASE_TIME_FRAME_EFFECT: f32 = 0.1;        // Vitesse de defilement des etapes de l'animation d'un sprite / FX.
