@@ -10,7 +10,6 @@ use bevy::prelude::*;
 
 //pub struct SaveLoadPlugin;
 
-
 use crate::game::game_generation::character_creation::components::{Health, Melee, Npc, Occupier, Walk};
 use crate::game::player::Player;
 use crate::game::tileboard::components::BoardPosition;
