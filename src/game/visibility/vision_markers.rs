@@ -1,9 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    commons::get_world_position, engine::asset_loaders::GraphicsAssets, 
-    game::{game_generation::character_creation::components::GameElement, tileboard::components::BoardPosition, visibility::components::{Marked, Marker}}, 
-    globals::{ORDER_MARKER, SPRITE_MARKER}, vectors::Vector2Int};
+    commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{game_generation::character_creation::components::GameElement, tileboard::components::BoardPosition, visibility::components::{Marked, Marker}}, globals::{ORDER_MARKER, SPRITE_MARKER}, vectors::Vector2Int};
 
 use super::components::{HasBeenSeenEvent, OutOfSightEvent, View};
 

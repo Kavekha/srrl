@@ -28,6 +28,7 @@ mod rules;
 mod commons;
 mod manager;
 mod movements;
+mod effects;
 
  
 
