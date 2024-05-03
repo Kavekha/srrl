@@ -263,9 +263,10 @@ pub fn entity_get_hit(
             EffectType::Damage{ amount: final_dmg as i32 },
             Targets::Single{ target: entity }
         );
+        /* Deprecated 0.21g
         if defender_health.current <= 0 {            
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
-        }              
+        }*/              
         //logs 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(get_hit.attacker) else { continue;};
@@ -283,7 +284,7 @@ pub fn entity_get_hit(
     }
 }
 
-
+// Deprecated 0.21g
 pub fn entity_dies(
     mut commands: Commands,    
     mut die_q: Query<(Entity, &Die, &mut Transform)>,   
@@ -315,9 +316,11 @@ pub fn entity_dies(
         ev_refresh_action.send(RefreshActionCostEvent);
 
         //Logs.. 
+        /* 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(death.killer) else { continue;};        
         ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0
+        */
     }
     for entity in to_remove {
         commands.entity(entity).remove::<Die>();

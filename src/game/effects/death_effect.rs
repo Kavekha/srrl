@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{engine::{asset_loaders::GraphicsAssets, audios::SoundEvent}, game::{combat::{combat_system::components::{ActionPoints, Die, IsDead}, events::RefreshActionCostEvent}, game_generation::character_creation::components::Occupier, gamelog::LogEvent}};
+use crate::{engine::{asset_loaders::GraphicsAssets, audios::SoundEvent}, game::{combat::{combat_system::components::{ActionPoints, Die, IsDead}, events::RefreshActionCostEvent}, game_generation::character_creation::components::Occupier, gamelog::LogEvent}, globals::ORDER_CORPSE};
 
 use super::EffectSpawner;
 
@@ -10,6 +10,7 @@ pub fn inflict_death(
     target: Entity
 ){
     world.entity_mut(target).insert(IsDead);
+    world.entity_mut(target).insert(Die);   // Necessaire pour gerer la transformation du corps... contournement du borrow world.
 
     // transformation en corps.
 
@@ -32,18 +33,33 @@ pub fn inflict_death(
         }
     }  
 
-    world.entity_mut(target).remove::<Die>();
-    world.entity_mut(target).remove::<ActionPoints>();
-    world.entity_mut(target).remove::<Occupier>();
+    // Trop galere de faire ça avec world a cause de borrowing.
+    let transform_body = world.register_system(transform_dead_body);
+        let _result = world.run_system(transform_body);
+    
+}
 
-    let mut entity_mut = world.entity_mut(target);
 
-    /*  TODO : Comment je change ca moi?! J'ecrase?
-    {
-        if let Some(graph_assets) = world.get_resource::<GraphicsAssets>() {        
-            if let Some(mut body) = entity_mut.get_mut::<Handle<Image>>(){
-                *body = graph_assets.textures["blood"].clone();
-            }        
-        }
-    } */
+pub fn transform_dead_body(
+    mut commands: Commands,    
+    mut die_q: Query<(Entity, &mut Transform), With<Die>>,   
+    mut body_q: Query<&mut Handle<Image>>,
+    graph_assets: Res<GraphicsAssets>,    
+) {
+    let mut to_remove=Vec::new();
+    for (entity, mut transform) in die_q.iter_mut() {
+        to_remove.push(entity);        
+
+        // Transformation en Corps.        
+        if let Ok(mut body) = body_q.get_mut(entity) {
+            *body = graph_assets.textures["blood"].clone();     //TODO : A ajouter aux data.
+        };
+        transform.translation.z = ORDER_CORPSE;
+        
+    }
+    for entity in to_remove {
+        commands.entity(entity).remove::<Die>();
+        commands.entity(entity).remove::<ActionPoints>();
+        commands.entity(entity).remove::<Occupier>();
+    }
 }
