@@ -2,6 +2,7 @@
 use bevy::prelude::*;
 
 use self::combat::CombatPlugin;
+use self::effects::EffectPlugin;
 use self::game_generation::character_creation::components::{GameElement, Npc};
 use self::movements::MovementPlugin;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
@@ -71,6 +72,7 @@ impl Plugin for GamePlugin {
             .add_plugins(GameLogsPlugin)
             .add_plugins(MovementPlugin)
             .add_plugins(ViewPlugin)
+            .add_plugins(EffectPlugin)
 
             .add_systems(OnEnter(GameState::Disabled), clean_game_screen)
             ;

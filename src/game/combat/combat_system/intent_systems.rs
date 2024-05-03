@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use crate::{
     commons::get_world_position, engine::{animations::events::{AnimateEvent, EffectEvent}, 
     asset_loaders::GraphicsAssets, audios::SoundEvent}, 
-    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}}, commons::is_in_sight, game_generation::character_creation::components::{Attributes, Health, Occupier, Skills}, gamelog::LogEvent, player::Player, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
+    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}}, commons::is_in_sight, effects::{add_effect, components::{EffectType, Targets}}, game_generation::character_creation::components::{Attributes, Health, Occupier, Skills}, gamelog::LogEvent, player::Player, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
     globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
 
 use super::components::{ActionPoints, AttackType, Die, IsDead, TryHit, WantToForfeit, WantToHit};
@@ -171,6 +171,11 @@ pub fn entity_try_hit(
             commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: combat_result.dmg});
             match attack.mode {
                 AttackType::MELEE => {
+                    add_effect(
+                        Some(entity),
+                        EffectType::Damage{ amount: combat_result.dmg },
+                        Targets::Single{ target: attack.defender }
+                    );
                     ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
                 },
                 AttackType::RANGED => {

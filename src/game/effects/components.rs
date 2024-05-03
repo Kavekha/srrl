@@ -3,7 +3,8 @@ use bevy::prelude::*;
 use crate::vectors::Vector2Int;
 
 pub enum EffectType { 
-    Damage { amount : i32 }
+    Damage { amount : i32 },
+    Bloodstain,
 }
 
 #[derive(Clone)]
@@ -13,9 +14,3 @@ pub enum Targets {
     Tile { target: Vector2Int }
 }
 
-#[derive(Event)]
-pub struct NewEffectEvent {
-    pub creator : Option<Entity>,
-    pub effect_type : EffectType,
-    pub targets : Targets
-}
