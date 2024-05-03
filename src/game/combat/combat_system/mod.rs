@@ -19,7 +19,7 @@ impl Plugin for CombatSystemPlugin {
             .add_systems(Update, entity_try_hit.in_set(ActionSet::Execute).after(entity_want_hit))
             .add_systems(Update, entity_miss_attack.in_set(ActionSet::Execute).after(entity_try_hit))
             .add_systems(Update, entity_get_hit.in_set(ActionSet::Execute).after(entity_try_hit))
-            .add_systems(Update, entity_dies.in_set(ActionSet::Execute).after(entity_get_hit))               
+            //.add_systems(Update, entity_dies.in_set(ActionSet::Execute).after(entity_get_hit))               
             ;
     }
 }

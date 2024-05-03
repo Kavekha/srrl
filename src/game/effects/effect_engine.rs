@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
 
-use super::{components::{EffectType, Targets}, damage_effect::inflict_damage, particle_effect::particle_to_tile, targeting::entity_position, EffectSpawner, EFFECT_QUEUE};
+use super::{components::{EffectType, Targets}, damage_effect::inflict_damage, death_effect::inflict_death, particle_effect::particle_to_tile, targeting::entity_position, EffectSpawner, EFFECT_QUEUE};
 
 
 pub fn run_effects_queue(world : &mut World) {
@@ -37,7 +37,8 @@ fn affect_entity(
     match effect.effect_type {
         EffectType::Damage { .. } => inflict_damage(world, effect, target), 
         EffectType::Bloodstain => if let Some(position) = entity_position(world, target) { },   // TODO : Bloodstain.
-        EffectType::Particle { .. } => if let Some(position) = entity_position(world, target) { particle_to_tile(world, position, &effect) }
+        EffectType::Particle { .. } => if let Some(position) = entity_position(world, target) { particle_to_tile(world, position, &effect) },
+        EffectType::EntityDeath => inflict_death(world, effect, target),
         _ => {},
     }
 }

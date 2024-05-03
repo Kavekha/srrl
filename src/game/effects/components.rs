@@ -5,7 +5,8 @@ use crate::vectors::Vector2Int;
 pub enum EffectType { 
     Damage { amount : i32 },
     Bloodstain,
-    Particle { id: String, duration: f32}
+    Particle { id: String, duration: f32},
+    EntityDeath
 }
 
 #[derive(Clone)]
