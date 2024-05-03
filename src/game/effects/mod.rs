@@ -2,13 +2,17 @@ use std::{collections::VecDeque, sync::Mutex};
 
 use bevy::prelude::*;
 
-use self::{components::{EffectType, Targets}, effect_systems::run_effects_queue};
+use self::{components::{EffectType, Targets}, effect_engine::run_effects_queue, particle_builder::{particle_spawning, ParticleBuilder}};
 
 use super::states::GameState;
 
 
 pub mod components;
-mod effect_systems;
+mod effect_engine;
+pub mod damage_effect;
+mod particle_builder;
+mod particle_effect;
+mod targeting;
 
 
 
@@ -20,7 +24,10 @@ impl Plugin for EffectPlugin {
     fn build(&self, app: &mut App) {
         app
 
+        .insert_resource(ParticleBuilder::new())
+
         .add_systems(Update, run_effects_queue.run_if(not(in_state(GameState::Unavailable))))
+        .add_systems(Update, particle_spawning)
         ;
     }
 }

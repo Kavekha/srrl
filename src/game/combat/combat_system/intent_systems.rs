@@ -171,11 +171,6 @@ pub fn entity_try_hit(
             commands.entity(attack.defender).insert(GetHit{ attacker: entity, mode: attack.mode.clone(), dmg: combat_result.dmg});
             match attack.mode {
                 AttackType::MELEE => {
-                    add_effect(
-                        Some(entity),
-                        EffectType::Damage{ amount: combat_result.dmg },
-                        Targets::Single{ target: attack.defender }
-                    );
                     ev_sound.send(SoundEvent{id:"hit_punch_1".to_string()});
                 },
                 AttackType::RANGED => {
@@ -268,17 +263,19 @@ pub fn entity_get_hit(
         let Ok(defender_infos) = stats_health_q.get_mut(entity) else { 
             //println!("Pas de stats / health pour le defender");
             continue };
-        let (defender_stats, mut defender_health, _is_player) = defender_infos;
+        let (defender_stats, defender_health, _is_player) = defender_infos;
 
         // Roll resist.
         let test_resist = dmg_resist_test(&get_hit.mode, &defender_stats);
         let final_dmg = get_hit.dmg.saturating_sub(test_resist.dmg_reduction) as u32; 
 
-        // Reducing health.
-        defender_health.current = defender_health.current - final_dmg as i32;
-        //println!("Dmg on health for {:?} is now {:?}/{:?}", final_dmg, defender_health.current, defender_health.max);
+        // Reducing health. Effect in 0.20g
+        add_effect(
+            Some(get_hit.attacker),
+            EffectType::Damage{ amount: final_dmg as i32 },
+            Targets::Single{ target: entity }
+        );
         if defender_health.current <= 0 {            
-            //ev_die.send(EntityDeathEvent { entity: entity, attacker: get_hit.attacker });
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
         }
         // effect
