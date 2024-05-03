@@ -14,7 +14,7 @@ use crate::{
     game::combat::CombatSet,
 };
 
-use self::animation_systems::{path_animator_update, spawn_hit_effect, update_game_cursor, walk_animation};
+use self::animation_systems::{path_animator_update, update_game_cursor, walk_animation};
 
 
 pub mod events;
@@ -35,7 +35,7 @@ impl Plugin for AnimationsPlugin {
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))  
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))     
             .add_systems(Update, animate_sprite.in_set(CombatSet::Animation))
-            .add_systems(Update, spawn_hit_effect.run_if(on_event::<EffectEvent>()))
+            //.add_systems(Update, spawn_hit_effect.run_if(on_event::<EffectEvent>()))
             .add_systems(Update, clean_animations)
             ;
     }

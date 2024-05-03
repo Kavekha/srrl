@@ -11,7 +11,7 @@ use crate::{
 use super::events::{AnimateEvent, EffectEvent, GraphicsWaitEvent, PathAnimator};
 
 
-
+/* déprécié 0.21g
 // Ne fonctionne que pour un cas pour le moment. Rendre configurable via l'Event à l'origine du spawn effect
 pub fn spawn_hit_effect(
     mut commands: Commands,
@@ -47,7 +47,7 @@ pub fn spawn_hit_effect(
         ));
     }
 }
-
+ */
 
 // Declenché par AnimateEvent
 pub fn walk_animation(    

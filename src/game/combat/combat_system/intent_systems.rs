@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use bevy::prelude::*;
 
 use crate::{
-    commons::get_world_position, engine::{animations::events::{AnimateEvent, EffectEvent}, 
+    engine::{animations::events::AnimateEvent, 
     asset_loaders::GraphicsAssets, audios::SoundEvent}, 
     game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}}, commons::is_in_sight, effects::{add_effect, components::{EffectType, Targets}}, game_generation::character_creation::components::{Attributes, Health, Occupier, Skills}, gamelog::LogEvent, player::Player, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
     globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
@@ -139,7 +139,6 @@ pub fn entity_try_hit(
     mut ev_sound: EventWriter<SoundEvent>,
     mut ev_animate: EventWriter<AnimateEvent>,      
     position_q: Query<&BoardPosition>,   
-    mut ev_effect: EventWriter<EffectEvent>,
 ){
     let mut to_remove = Vec::new();
     for (entity, attack) in try_hit_q.iter() {
@@ -194,10 +193,7 @@ pub fn entity_try_hit(
                 }
             },
             AttackType::RANGED => { 
-                if let Ok(position) = position_q.get(entity) {
-                    let transform = get_world_position(&position.v);
-                    ev_effect.send(EffectEvent { id: "hit_muzzle_1".to_string(), x: transform.0, y: transform.1 });
-                };
+                add_effect(None, EffectType::Particle { id: "hit_muzzle_1".to_string(), duration: 1.0 }, Targets::Single{ target:entity });
             },
         };  
     }
@@ -210,11 +206,9 @@ pub fn entity_try_hit(
 // Refacto 0.19b
 pub fn entity_miss_attack(
     mut commands: Commands,
-    miss_hit_q: Query<(Entity, &MissHit), Without<IsDead>>, 
-    position_q: Query<&BoardPosition>,       
+    miss_hit_q: Query<(Entity, &MissHit), Without<IsDead>>,     
     name_q: Query<&Name>,
     mut ev_sound: EventWriter<SoundEvent>,    
-     mut ev_effect: EventWriter<EffectEvent>,
     mut ev_log: EventWriter<LogEvent>,
 ){
     let mut to_remove = Vec::new();
@@ -231,11 +225,7 @@ pub fn entity_miss_attack(
             }
         }    
 
-        // fx.
-        if let Ok(position) = position_q.get(miss.defender) {
-            let transform = get_world_position(&position.v);
-            ev_effect.send(EffectEvent { id: "hit_punch_miss".to_string(), x: transform.0, y: transform.1 });
-        };
+        add_effect(None, EffectType::Particle { id: "hit_punch_miss".to_string(), duration: 1.0 }, Targets::Single{ target:miss.defender });
 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(defender_entity_name) = name_q.get(miss.defender) else { continue;};
@@ -250,10 +240,8 @@ pub fn entity_miss_attack(
 pub fn entity_get_hit(    
     mut commands: Commands,
     get_hit_q: Query<(Entity, &GetHit), Without<IsDead>>,     
-    name_q: Query<&Name>,
-    position_q: Query<&BoardPosition>,      
-    mut stats_health_q: Query<(&Attributes, &mut Health, Option<&Player>)>,      
-    mut ev_effect: EventWriter<EffectEvent>,
+    name_q: Query<&Name>,     
+    mut stats_health_q: Query<(&Attributes, &mut Health, Option<&Player>)>, 
     mut ev_log: EventWriter<LogEvent>,    
 ){
     let mut to_remove = Vec::new();
@@ -277,12 +265,7 @@ pub fn entity_get_hit(
         );
         if defender_health.current <= 0 {            
             commands.entity(entity).insert(Die { killer: get_hit.attacker});
-        }
-        // effect
-        if let Ok(position) = position_q.get(entity) {
-            let transform = get_world_position(&position.v);
-            ev_effect.send(EffectEvent { id: "hit_punch_blood".to_string(), x: transform.0, y: transform.1 });
-        };        
+        }              
         //logs 
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(get_hit.attacker) else { continue;};
