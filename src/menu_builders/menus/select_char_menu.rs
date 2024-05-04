@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{input::keyboard::KeyboardInput, prelude::*};
 
 use super::{components::{MenuButtonAction, OnScreenMenu}, NORMAL_BUTTON, TEXT_COLOR};
 
@@ -84,7 +84,7 @@ fn item_rect_triple(builder: &mut ChildBuilder, color: Color) {
 
 //https://bevyengine.org/examples/UI%20(User%20Interface)/grid/
 pub fn spawn_selection_menu(
-    mut commands: Commands, asset_server: Res<AssetServer>
+    mut commands: Commands, asset_server: Res<AssetServer>, player_creation: Res<PlayerCreation>
 ) {
     let font = asset_server.load("fonts/PressStart2P-vaV7.ttf"); 
 
@@ -172,7 +172,7 @@ pub fn spawn_selection_menu(
                         // grid cell. The order in which this is performed can be controlled using the grid_auto_flow
                         // style property.
 
-                        item_rect(builder, Color::GRAY);   // Ici il y aura le choix du nom.
+                        item_rect_choose_name(builder, Color::GRAY, font.clone(), &player_creation);   // Ici il y aura le choix du nom.
 
                         item_rect_triple(builder, Color::BLACK);     // Choix Kind
                         item_rect(builder, Color::GRAY);     // Description Kind.
@@ -251,4 +251,176 @@ pub fn spawn_selection_menu(
             });
         });
 
+}
+
+
+fn item_rect_choose_name(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, player_creation: &PlayerCreation) {
+    builder
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,                
+                grid_column: GridPlacement::span(8),
+                padding: UiRect::all(Val::Px(3.0)),
+                ..default()
+            },
+            background_color: BackgroundColor(Color::BLACK),
+            ..default()
+        })
+        .with_children(|builder| {
+            builder.spawn(NodeBundle {
+                background_color: BackgroundColor(color),
+                ..default()
+            });
+            builder.spawn(NodeBundle {
+                style: Style {
+                    display: Display::Grid,                
+                    grid_template_rows: vec![
+                        GridTrack::auto(),  // title
+                        GridTrack::flex(1.0),   // grids
+                    ],
+                    padding: UiRect::all(Val::Px(3.0)),
+                    ..default()
+                },
+                background_color: BackgroundColor(color),
+                ..default()
+            })
+            .with_children(|builder| {
+                builder.spawn(TextBundle::from_section(
+                    "Name:",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 10.0,
+                        color: Color::WHITE,                        
+                        ..default()
+                    },
+                ))
+                .with_children(|builder| {
+                    builder.spawn((
+                        ButtonBundle {
+                            //style: button_style.clone(),
+                            background_color: NORMAL_BUTTON.into(),
+                            ..default()
+                        },
+                        NameInput,
+                        Focalisation { active: false}
+                    ))
+                    .with_children(|builder| {
+                        builder.spawn(TextBundle::from_section(
+                            "The ShadowRunner|",    //player_creation.name.clone(), 
+                            TextStyle {
+                                font: font.clone(),
+                                color: Color::ANTIQUE_WHITE,
+                                font_size: 20.0,
+                                ..default()
+                            }
+                        ));
+                        //.insert(NameInput);
+                    });
+                });
+            });
+        });
+}
+                
+
+              
+        
+#[derive(Component)]
+pub struct Focalisation {
+    pub active: bool
+}
+
+#[derive(Component)]
+pub struct NameInput;
+
+#[derive(Resource)]
+pub struct PlayerCreation {
+    pub name: String,
+    pub previous_name: String,
+    pub can_write: bool
+}
+impl PlayerCreation {
+    pub fn new() -> PlayerCreation {
+        PlayerCreation { name: "".to_string(), previous_name: "".to_string(), can_write: false}
+    }
+}
+
+
+// Saisir le nom.
+pub fn menu_input_name(
+    mut interaction_query: Query<(&Interaction, &NameInput, &mut Focalisation), (Changed<Interaction>, With<Button>),>,
+    //player_input: ResMut<PlayerCreation>,
+    //keys: Res<ButtonInput<KeyCode>>,
+    mut player_creation: ResMut<PlayerCreation>
+) {
+    for (interaction, name_input, mut focus) in &mut interaction_query {
+        if *interaction == Interaction::Pressed {
+            println!("JE VEUX SAISIR MON NOM !");
+            player_creation.can_write = true;
+            player_creation.previous_name = player_creation.name.clone();
+            focus.active = true;
+        }
+    }
+}
+
+pub fn text_input(
+    //keys: Res<ButtonInput<KeyCode>>,    
+    button: Res<ButtonInput<KeyCode>>,
+    mouse_button: Res<ButtonInput<MouseButton>>,
+    mut evr_char: EventReader<ReceivedCharacter>,
+    mut player_creation: ResMut<PlayerCreation>,
+    mut focus_q: Query<&mut Focalisation>
+) {
+    // TODO : Escape dans les autres Input ferme tous les menus, y compris celui-ci. On se contente de F10 temporairement le temps de resoudre le probleme.
+    // A noter que faire ça au clic provoque un truc chiant: a la selection du champ via clic, on desactive aussitot -_-
+    // Sans compter bien sûr qu'on ne peut pas choisir où le curseur se mets....
+    if player_creation.can_write {
+        if button.just_pressed(KeyCode::Escape) || button.just_pressed(KeyCode::F10)   {
+            if let Ok(mut focus) = focus_q.get_single_mut() {
+                focus.active = false;
+                player_creation.name = player_creation.previous_name.clone();
+                player_creation.can_write = false;
+                return
+            }
+        }
+        if button.just_pressed(KeyCode::Enter) {
+            if let Ok(mut focus) = focus_q.get_single_mut() {
+                focus.active = false;
+                player_creation.can_write = false;
+                return
+            }
+        }
+        if button.just_pressed(KeyCode::Backspace) {
+            player_creation.name.pop();
+        }
+        for event in evr_char.read() {            
+            player_creation.name = player_creation.name.clone() + &event.char;
+            println!("{:?}", player_creation.name);
+        }
+   }
+}
+
+
+pub fn text_input_deprecated(
+    mut evr_char: EventReader<ReceivedCharacter>,
+    kbd: Res<ButtonInput<KeyCode>>,
+    mut string: Local<String>,
+) {
+    if kbd.just_pressed(KeyCode::Enter) {
+        println!("Text input: {}", &*string);
+        string.clear();
+    }
+    if kbd.just_pressed(KeyCode::Backspace) {
+        string.pop();
+    }
+    for ev in evr_char.read() {
+        println!("ev char is {:?}", ev.char);        
+        //string.push(ev.char);
+        println!("String is {:?}", string);
+        /*
+        // ignore control (special) characters
+        if !ev.char.is_control() {
+            string.push(ev.char);
+        }
+         */
+    }
 }
