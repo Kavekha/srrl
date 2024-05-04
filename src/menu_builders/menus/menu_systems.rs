@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 
 
-use crate::{engine::{audios::AudioType, save_load_system::has_save_file}, game::{manager::{audio_messages::{ChangeMusicVolumeMessage, ChangeSoundVolumeMessage}, change_state_messages::{ChangeGameStateRunningMessage, QuitGameMessage}, game_messages::{ClearGameMessage, StartGameMessage}, menu_messages::{ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsAudioMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, states::GameState}};
+use crate::{engine::{audios::AudioType, save_load_system::has_save_file}, game::{manager::{audio_messages::{ChangeMusicVolumeMessage, ChangeSoundVolumeMessage}, change_state_messages::{ChangeGameStateRunningMessage, QuitGameMessage}, game_messages::{CharacterSelectionMessage, ClearGameMessage, StartGameMessage}, menu_messages::{CharSelectionMenuMessage, ClearMenuMessage, CloseMenuMessage, InGameMenuQuitMessage, InGameMenuSettingsOpenMessage, InGameSettingsAudioMessage, InGameSettingsDisplayMessage, MainMenuOpenMessage, MainMenuQuitMessage, MainMenuSettingsAudioMessage, MainMenuSettingsDisplayMessage, MainMenuSettingsMessage, OpenInGameMenuOpenMessage}, save_messages::{LoadGameRequestMessage, SaveGameRequestMessage}, ExitAppMessage, MessageEvent}, states::GameState}};
 
 use super::components::{MenuButtonAction, ResolutionSettings};
 
@@ -33,7 +33,9 @@ pub fn common_menu_action(
                 MenuButtonAction::Play => {
                     println!("Go to game !");
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));   
-                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));              
+                    //ev_message.send(MessageEvent(Box::new(StartGameMessage)));              
+                    //ev_message.send(MessageEvent(Box::new(CharacterSelectionMessage))); //0.21h CUSTOM char selection
+                    ev_message.send(MessageEvent(Box::new(CharSelectionMenuMessage))); // 0.21h MenuBuilderV2 char selection.
                 }
                 MenuButtonAction::Load => {
                     if has_save_file() {
@@ -141,6 +143,11 @@ pub fn common_menu_action(
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage))); 
                     ev_message.send(MessageEvent(Box::new(InGameSettingsAudioMessage))); 
                 }
+                MenuButtonAction::StartGame => {
+                    println!("Start Game after Character selection");   // 0.21h    TODO : transmettre le personnage choisi.
+                    ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));   
+                    ev_message.send(MessageEvent(Box::new(StartGameMessage)));            
+                },
             }
         }
     }

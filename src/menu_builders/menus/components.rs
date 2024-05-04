@@ -11,6 +11,7 @@ pub struct OnSettingsMenuScreen;
 #[derive(Component, Clone)]
 pub enum MenuButtonAction {
     Play,
+    StartGame,
     Load,
     MainMenuSettings,
     BackToMainMenu,

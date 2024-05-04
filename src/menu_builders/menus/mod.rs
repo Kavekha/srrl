@@ -27,6 +27,7 @@ use super::Menu;
 
 pub mod components;
 pub mod menu_systems;
+pub mod select_char_menu;
 
 
 // Menu colors
