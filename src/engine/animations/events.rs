@@ -22,7 +22,6 @@ pub struct PathAnimator {
     pub wait_anim: bool
 }
 
-
 #[derive(Component)]
 pub struct AnimationIndices {
     pub first: usize,

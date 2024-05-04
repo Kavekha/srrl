@@ -1,5 +1,6 @@
 // => DOCUMENTATION
 /*
+
 0.21g : Les effets graphiques dit "particles" commencent à être générées dans Effects.
 On fait un add_effect particle avec id. La position est determiné selon le type de target.
 
@@ -10,6 +11,7 @@ Reste en dur pour le moment:
 - Se termine à la fin de l'animation.
 
 On va devoir rendre ca configurable.
+
  */
 
 use bevy::prelude::*;
@@ -17,6 +19,7 @@ use crate::commons::despawn_component;
 
 
 use crate::{
+
     engine::animations::events::{AnimateEvent,GraphicsWaitEvent, AnimationIndices, RemoveEntity, AnimationTimer},
     game::combat::CombatSet,
 };
@@ -41,7 +44,6 @@ impl Plugin for AnimationsPlugin {
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))  
             .add_systems(Update, update_game_cursor.in_set(CombatSet::Animation))     
             .add_systems(Update, animate_sprite.in_set(CombatSet::Animation))
-            //.add_systems(Update, spawn_hit_effect.run_if(on_event::<EffectEvent>()))
             .add_systems(Update, clean_animations)
             ;
     }
