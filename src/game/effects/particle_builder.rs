@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, asset_loaders::GraphicsAssets}, game::{game_generation::character_creation::components::GameElement, BASE_TIME_FRAME_EFFECT}, globals::ORDER_EFFECT, vectors::Vector2Int};
+use crate::{
+    commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, asset_loaders::GraphicsAssets},
+    game::{game_generation::character_creation::components::GameElement, BASE_TIME_FRAME_EFFECT}, globals::ORDER_EFFECT, vectors::Vector2Int
+};
 
 struct ParticleRequest {
     id: String,

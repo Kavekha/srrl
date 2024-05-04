@@ -2,7 +2,10 @@ use bevy::prelude::*;
 
 use crate::{game::tileboard::components::BoardPosition, vectors::Vector2Int};
 
-use super::{components::{EffectType, Targets}, damage_effect::inflict_damage, death_effect::inflict_death, particle_effect::particle_to_tile, targeting::entity_position, EffectSpawner, EFFECT_QUEUE};
+use super::{
+    components::{EffectType, Targets}, damage_effect::inflict_damage, death_effect::inflict_death, 
+    particle_effect::particle_to_tile, targeting::entity_position, EffectSpawner, EFFECT_QUEUE
+};
 
 
 pub fn run_effects_queue(world : &mut World) {

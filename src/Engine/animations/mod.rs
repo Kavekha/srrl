@@ -1,8 +1,15 @@
 // => DOCUMENTATION
 /*
-Pour le moment, on envoit un event EffectEvent, avec l'id de l'effet + les positions où il doit apparaitre.
-On ne fait que du 32x32 en 3 images, en 0.1 sec.
-spawn_hit_effect contient les infos necessaires de base, avec le timing, le nb d'images et la taille si ce doit être rendu configurable.
+0.21g : Les effets graphiques dit "particles" commencent à être générées dans Effects.
+On fait un add_effect particle avec id. La position est determiné selon le type de target.
+
+Reste en dur pour le moment:
+- la taille 32x32
+- Le nombre d'images d'animation (3)
+- La boucle de 0.1 sec
+- Se termine à la fin de l'animation.
+
+On va devoir rendre ca configurable.
  */
 
 use bevy::prelude::*;
@@ -10,7 +17,7 @@ use crate::commons::despawn_component;
 
 
 use crate::{
-    engine::animations::events::{AnimateEvent,GraphicsWaitEvent, EffectEvent, AnimationIndices, RemoveEntity, AnimationTimer},
+    engine::animations::events::{AnimateEvent,GraphicsWaitEvent, AnimationIndices, RemoveEntity, AnimationTimer},
     game::combat::CombatSet,
 };
 
@@ -27,8 +34,7 @@ impl Plugin for AnimationsPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_event::<AnimateEvent>() 
-            .add_event::<GraphicsWaitEvent>() 
-            .add_event::<EffectEvent>()
+            .add_event::<GraphicsWaitEvent>()
 
             .add_systems(Update, walk_animation)
             .add_systems(Update, path_animator_update.in_set(CombatSet::Animation))   // 3 fois le system => 3 fois plus vite. lol.

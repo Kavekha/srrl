@@ -4,11 +4,16 @@ use bevy::prelude::*;
 
 use crate::{
     engine::{animations::events::AnimateEvent, 
-    asset_loaders::GraphicsAssets, audios::SoundEvent}, 
-    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}}, commons::is_in_sight, effects::{add_effect, components::{EffectType, Targets}}, game_generation::character_creation::components::{Attributes, Health, Occupier, Skills}, gamelog::LogEvent, player::Player, rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
-    globals::ORDER_CORPSE, map_builders::map::Map, vectors::Vector2Int};
+     audios::SoundEvent}, 
+    game::{combat::{combat_system::components::{GetHit, MissHit}, events::{RefreshActionCostEvent, Turn, WantToHitEvent}},
+    commons::is_in_sight, effects::{add_effect, components::{EffectType, Targets}},
+    game_generation::character_creation::components::{Attributes, Health, Skills}, 
+    gamelog::LogEvent, player::Player, 
+    rules::{combat_test, consume_actionpoints, dmg_resist_test, enough_ap_for_action, RuleCombatResult, AP_COST_MELEE, AP_COST_RANGED, RANGED_ATTACK_RANGE_MAX}, 
+    tileboard::components::BoardPosition, ui::events::ReloadUiEvent},
+    map_builders::map::Map, vectors::Vector2Int};
 
-use super::components::{ActionPoints, AttackType, Die, IsDead, TryHit, WantToForfeit, WantToHit};
+use super::components::{ActionPoints, AttackType, IsDead, TryHit, WantToForfeit, WantToHit};
 
 
 
@@ -251,7 +256,7 @@ pub fn entity_get_hit(
         let Ok(defender_infos) = stats_health_q.get_mut(entity) else { 
             //println!("Pas de stats / health pour le defender");
             continue };
-        let (defender_stats, defender_health, _is_player) = defender_infos;
+        let (defender_stats, _defender_health, _is_player) = defender_infos;
 
         // Roll resist.
         let test_resist = dmg_resist_test(&get_hit.mode, &defender_stats);
@@ -263,11 +268,7 @@ pub fn entity_get_hit(
             EffectType::Damage{ amount: final_dmg as i32 },
             Targets::Single{ target: entity }
         );
-        /* Deprecated 0.21g
-        if defender_health.current <= 0 {            
-            commands.entity(entity).insert(Die { killer: get_hit.attacker});
-        }*/              
-        //logs 
+
         let Ok(entity_name) = name_q.get(entity) else { continue; };
         let Ok(attacker_entity_name) = name_q.get(get_hit.attacker) else { continue;};
         if test_resist.success == false {     // No dmg reduction.
@@ -284,49 +285,5 @@ pub fn entity_get_hit(
     }
 }
 
-// Deprecated 0.21g
-pub fn entity_dies(
-    mut commands: Commands,    
-    mut die_q: Query<(Entity, &Die, &mut Transform)>,   
-    mut body_q: Query<&mut Handle<Image>>,
-    graph_assets: Res<GraphicsAssets>,    
-    //mut transform_q: Query<&mut Transform>,
-    mut ev_refresh_action: EventWriter<RefreshActionCostEvent>,
-    mut ev_sound: EventWriter<SoundEvent>,
-    mut ev_log: EventWriter<LogEvent>,
-    name_q: Query<&Name>,
-){
-    let mut to_remove=Vec::new();
-    for (entity, death, mut transform) in die_q.iter_mut() {
-        to_remove.push(entity);        
-
-        //println!("Entity {:?} is dead", entity);
-        commands.entity(entity).insert(IsDead);
-
-        // Transformation en Corps.        
-        if let Ok(mut body) = body_q.get_mut(entity) {
-            *body = graph_assets.textures["blood"].clone();
-        };
-        //if let Ok(mut transform) = transform_q.get_mut(entity) {
-            transform.translation.z = ORDER_CORPSE;
-        //}
-        // SOUND
-        ev_sound.send(SoundEvent{id:"death_scream".to_string()});
-
-        ev_refresh_action.send(RefreshActionCostEvent);
-
-        //Logs.. 
-        /* 
-        let Ok(entity_name) = name_q.get(entity) else { continue; };
-        let Ok(attacker_entity_name) = name_q.get(death.killer) else { continue;};        
-        ev_log.send(LogEvent {entry: format!("{:?} has been killed by {:?}!", entity_name, attacker_entity_name)});   // Log v0
-        */
-    }
-    for entity in to_remove {
-        commands.entity(entity).remove::<Die>();
-        commands.entity(entity).remove::<ActionPoints>();
-        commands.entity(entity).remove::<Occupier>();
-    }
-}
 
 
