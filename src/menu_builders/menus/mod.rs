@@ -19,21 +19,14 @@
 
 use bevy::prelude::*;
 
-use crate::{
-    game::despawn_component, 
-    globals::{HEIGHT, 
-        //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, 
-        RESOLUTION}, 
-    menu_builders::{spawn_menu, Menu}};
-use crate::engine::asset_loaders::GraphicsAssets;
+use crate::{commons::despawn_component, engine::asset_loaders::GraphicsAssets, game::states::MenuState, globals::{HEIGHT, RESOLUTION}, menu_builders::spawn_menu};
 
 use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}};
 
-use super::states::MenuState;
- 
+use super::Menu;
 
 pub mod components;
-mod menu_systems;
+pub mod menu_systems;
 
 
 // Menu colors

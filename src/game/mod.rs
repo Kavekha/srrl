@@ -8,7 +8,6 @@ use self::movements::MovementPlugin;
 use self::player::{PlayerPlugin, Player, cursor::CursorPlugin};
 use self::tileboard::components::GameMap;
 use self::ui::UiPlugin;
-use self::menus::MenuPlugin;
 use self::manager::ManagerPlugin;
 use self::gamelog::GameLogsPlugin;
 use self::visibility::ViewPlugin;
@@ -18,16 +17,15 @@ pub mod combat;
 pub mod player;
 pub mod tileboard;
 pub mod ui;
-pub mod menus;
 pub mod states;
 pub mod gamelog;
 pub mod visibility;
 pub mod game_generation;
 pub mod ia;
+pub mod manager;
 
 mod rules;
 mod commons;
-mod manager;
 mod movements;
 mod effects;
 
@@ -65,7 +63,6 @@ impl Plugin for GamePlugin {
             .add_plugins(IaPlugin)
             .add_plugins(PlayerPlugin)            
             .add_plugins(CursorPlugin)
-            .add_plugins(MenuPlugin)
             .add_plugins(UiPlugin)     
             .add_plugins(CombatPlugin)
             .add_plugins(ManagerPlugin)

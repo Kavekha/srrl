@@ -25,12 +25,13 @@ use bevy::a11y::AccessibilityNode;
 use bevy::{audio::Volume, prelude::*};
 
 use crate::engine::asset_loaders::GraphicsAssets;
-use crate::game::menus::components::{MenuButtonAction, OnScreenMenu};
 use crate::engine::audios::AudioType;
-use crate::game::menus::{NORMAL_BUTTON, TEXT_COLOR};
-//use crate::globals::{NORMAL_BUTTON, TEXT_COLOR};
 use crate::menu_builders::MenuButtonAction::SettingsAudioChange;
 
+use self::menus::components::{MenuButtonAction, OnScreenMenu};
+use self::menus::{NORMAL_BUTTON, TEXT_COLOR};
+
+pub mod menus;
 
 
 
