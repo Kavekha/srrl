@@ -4,7 +4,7 @@ use crate::{
     engine::{audios::{AudioConfig, AudioType}, save_load_system::has_save_file},
     game::{
         gamelog::Gamelog, manager::{MessageEvent, PlayMusicMessage}, states::MenuState}, globals::{ RELEASE, VERSION},
-    menu_builders::{menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, Menu, MenuItem}, 
+    menu_builders::{components::MenuItem, menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, Menu}, 
 };
 
 use super::Message;
@@ -49,7 +49,7 @@ pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = Menu::new(Vec::new());   //"main_menu", 
-        menu.add(MenuItem::image("shadowrun_title_alone"));
+        menu.add(MenuItem::illustration("shadowrun_title_alone"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         if has_save_file() {
             menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
