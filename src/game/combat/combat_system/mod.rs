@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use self::intent_systems::{entity_dies, entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_forfeit, entity_want_hit, on_event_entity_want_hit};
+use self::intent_systems::{entity_get_hit, entity_miss_attack, entity_try_hit, entity_want_forfeit, entity_want_hit, on_event_entity_want_hit};
 
 use super::ActionSet;
 
@@ -18,8 +18,7 @@ impl Plugin for CombatSystemPlugin {
             .add_systems(Update, entity_want_forfeit.in_set(ActionSet::Planning))
             .add_systems(Update, entity_try_hit.in_set(ActionSet::Execute).after(entity_want_hit))
             .add_systems(Update, entity_miss_attack.in_set(ActionSet::Execute).after(entity_try_hit))
-            .add_systems(Update, entity_get_hit.in_set(ActionSet::Execute).after(entity_try_hit))
-            .add_systems(Update, entity_dies.in_set(ActionSet::Execute).after(entity_get_hit))               
+            .add_systems(Update, entity_get_hit.in_set(ActionSet::Execute).after(entity_try_hit))      
             ;
     }
 }

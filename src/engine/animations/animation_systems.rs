@@ -4,49 +4,10 @@ use std::collections::VecDeque;
 use bevy::{prelude::*, utils::HashMap};
 
 use crate::{
-    commons::get_world_position, engine::{animations::events::{AnimationIndices, AnimationTimer}, 
-    asset_loaders::GraphicsAssets, render::components::GameCursorRender}, 
-    game::{game_generation::character_creation::components::GameElement, player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, BASE_TIME_FRAME_EFFECT, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals::{ ORDER_CURSOR, ORDER_EFFECT}};
+    commons::get_world_position, engine::render::components::GameCursorRender, game::{player::Cursor, BASE_SPEED_PATH_ANIMATOR_UPDATE, CURSOR_SPEED, POSITION_TOLERANCE, SPEED_MULTIPLIER}, globals:: ORDER_CURSOR};
 
-use super::events::{AnimateEvent, EffectEvent, GraphicsWaitEvent, PathAnimator};
+use super::events::{AnimateEvent, GraphicsWaitEvent, PathAnimator};
 
-
-
-// Ne fonctionne que pour un cas pour le moment. Rendre configurable via l'Event à l'origine du spawn effect
-pub fn spawn_hit_effect(
-    mut commands: Commands,
-    mut ev_spawn_effect: EventReader<EffectEvent>,
-    graph_assets: ResMut<GraphicsAssets>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-) {
-    for event in ev_spawn_effect.read() {
-        //println!("Creating effect");
-        let texture = graph_assets.effects[event.id.as_str()].clone();
-        let layout = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 3, 1, None, None);
-        let texture_atlas_layout = texture_atlas_layouts.add(layout);
-        // Use only the subset of sprites in the sheet that make up the run animation
-        let animation_indices = AnimationIndices { first: 0, last: 2 };
-        commands.spawn((
-            SpriteBundle {
-                //transform: Transform::from_scale(Vec3::splat(1.0)),
-                transform: Transform {
-                    translation: Vec3::new(event.x, event.y, ORDER_EFFECT),
-                    scale: Vec3::splat(1.0),
-                    ..default()
-                },
-                texture,
-                ..default()
-            },
-            TextureAtlas {
-                layout: texture_atlas_layout,
-                index: animation_indices.first,
-            },
-            animation_indices,
-            AnimationTimer(Timer::from_seconds(BASE_TIME_FRAME_EFFECT, TimerMode::Repeating)), // Repeating car on passe par autant d'etapes que d'images.
-            GameElement
-        ));
-    }
-}
 
 
 // Declenché par AnimateEvent

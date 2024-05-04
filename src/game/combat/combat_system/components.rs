@@ -45,9 +45,7 @@ pub struct GetHit{
 }
 
 #[derive(Component)]
-pub struct Die{
-    pub killer: Entity
-}
+pub struct Die;
 
 #[derive(Component)]
 pub struct WantToForfeit;

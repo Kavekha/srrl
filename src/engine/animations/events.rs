@@ -22,14 +22,6 @@ pub struct PathAnimator {
     pub wait_anim: bool
 }
 
-#[derive(Event)]
-pub struct EffectEvent {
-    pub id: String,
-    pub x: f32,
-    pub y: f32,
-
-}
-
 #[derive(Component)]
 pub struct AnimationIndices {
     pub first: usize,
