@@ -34,8 +34,8 @@ pub fn common_menu_action(
                     println!("Go to game !");
                     ev_message.send(MessageEvent(Box::new(ClearMenuMessage)));   
                     //ev_message.send(MessageEvent(Box::new(StartGameMessage)));              
-                    //ev_message.send(MessageEvent(Box::new(CharacterSelectionMessage))); //0.21h CUSTOM char selection
-                    ev_message.send(MessageEvent(Box::new(CharSelectionMenuMessage))); // 0.21h MenuBuilderV2 char selection.
+                    ev_message.send(MessageEvent(Box::new(CharacterSelectionMessage))); //0.21h CUSTOM char selection
+                    //ev_message.send(MessageEvent(Box::new(CharSelectionMenuMessage))); // 0.21h MenuBuilderV2 char selection.
                 }
                 MenuButtonAction::Load => {
                     if has_save_file() {
