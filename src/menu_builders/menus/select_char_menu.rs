@@ -4,10 +4,12 @@ use super::{components::{MenuButtonAction, OnScreenMenu, SelectedOption}, NORMAL
 
 
 #[derive(Resource, Debug, Component, PartialEq, Eq, Clone)]
-pub struct PlayerCreation ;
+pub struct PlayerCreation {
+    pub kind: String,
+}
 impl PlayerCreation {
     pub fn new() -> PlayerCreation {
-        PlayerCreation 
+        PlayerCreation { kind : "".to_string() }
     }
 }
 
@@ -362,13 +364,19 @@ pub fn selecting_kind(
     interaction_q: Query<(&Interaction, &KindProposition, Entity), (Changed<Interaction>, With<Button>)>,
     mut selected_q: Query<(Entity, &mut Text), With<SelectedOption>>,       // Ici on récupère l'element déjà selectionné s'il existe.
     mut commands: Commands,
+    mut player_creation: ResMut<PlayerCreation>,
 ) {
     for (interaction, kind_proposal, entity) in &interaction_q {
-        if *interaction == Interaction::Pressed {
-            println!("Interaction {:?}, entity : {:?} : proposal = {:?}", interaction, entity, kind_proposal.kind);
+        if *interaction == Interaction::Pressed && player_creation.kind != kind_proposal.kind {
+            println!("J'interagis avec l'entité {:?} dont la proposal {:?} est differente de l'actuelle {:?}", entity, kind_proposal.kind, player_creation.kind);
             //Si je presse un bouton qui concerne un Kind different de celui que j'ia deja selectionné =>
-                // Je deselectionne l'element abandonné
-                // Je selectionne le nouvel element
+            /* 
+                let (previous_entity, mut previous_text) = selected_q.single_mut();
+                previous_text.sections[0].style.color = NORMAL_BUTTON;
+                commands.entity(previous_entity).remove::<SelectedOption>();
+            */
+                commands.entity(entity).insert(SelectedOption);
+                player_creation.kind = kind_proposal.kind.clone();
         }        
     }
 }
@@ -388,155 +396,16 @@ pub fn setting_button<T: Resource + Component + PartialEq + Copy>(
         println!("setting button : entity is {:?}", entity);
         if *interaction == Interaction::Pressed && *player_creation != *button_setting {
             println!("Interaction pressed et setting = button setting");
-            let (previous_button, mut previous_image) = selected_query.single_mut();
-            previous_image.sections[0].style.color = NORMAL_BUTTON;
-            commands.entity(previous_button).remove::<SelectedOption>();
-            commands.entity(entity).insert(SelectedOption);
-            *player_creation = *button_setting;
+            /*
+            if let Ok(previous_button, mut previous_image) = selected_query.single_mut() {
+                previous_image.sections[0].style.color = NORMAL_BUTTON;
+                commands.entity(previous_button).remove::<SelectedOption>();
+             */
+                commands.entity(entity).insert(SelectedOption);
+                *player_creation = *button_setting;
         } else if *interaction == Interaction::Pressed {
             println!("Interaction pressed mais setting = button_setting.");
         }
     }
 }
 
-
-
-
-// Naming - Deprecated 0.21h
-
-/* 
-fn item_rect_choose_name(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, player_creation: &PlayerCreation) {
-    builder
-        .spawn(NodeBundle {
-            style: Style {
-                display: Display::Grid,                
-                grid_column: GridPlacement::span(8),
-                padding: UiRect::all(Val::Px(3.0)),
-                ..default()
-            },
-            background_color: BackgroundColor(Color::BLACK),
-            ..default()
-        })
-        .with_children(|builder| {
-            builder.spawn(NodeBundle {
-                background_color: BackgroundColor(color),
-                ..default()
-            });
-            builder.spawn(NodeBundle {
-                style: Style {
-                    display: Display::Grid,                
-                    grid_template_rows: vec![
-                        GridTrack::auto(),  // title
-                        GridTrack::flex(1.0),   // grids
-                    ],
-                    padding: UiRect::all(Val::Px(3.0)),
-                    ..default()
-                },
-                background_color: BackgroundColor(color),
-                ..default()
-            })
-            .with_children(|builder| {
-                builder.spawn(TextBundle::from_section(
-                    "Name:",
-                    TextStyle {
-                        font: font.clone(),
-                        font_size: 10.0,
-                        color: Color::WHITE,                        
-                        ..default()
-                    },
-                ))
-                .with_children(|builder| {
-                    builder.spawn((
-                        ButtonBundle {
-                            //style: button_style.clone(),
-                            background_color: NORMAL_BUTTON.into(),
-                            ..default()
-                        },
-                        NameInput,
-                        Focalisation { active: false}
-                    ))
-                    .with_children(|builder| {
-                        builder.spawn(TextBundle::from_section(
-                            "The ShadowRunner|",    //player_creation.name.clone(), 
-                            TextStyle {
-                                font: font.clone(),
-                                color: Color::ANTIQUE_WHITE,
-                                font_size: 20.0,
-                                ..default()
-                            }
-                        ));
-                        //.insert(NameInput);
-                    });
-                });
-            });
-        });
-}
-                
-
-              
-        
-#[derive(Component)]
-pub struct Focalisation {
-    pub active: bool
-}
-
-#[derive(Component)]
-pub struct NameInput;
-
-
-
-
-// Saisir le nom.
-pub fn menu_input_name(
-    mut interaction_query: Query<(&Interaction, &NameInput, &mut Focalisation), (Changed<Interaction>, With<Button>),>,
-    //player_input: ResMut<PlayerCreation>,
-    //keys: Res<ButtonInput<KeyCode>>,
-    mut player_creation: ResMut<PlayerCreation>
-) {
-    for (interaction, name_input, mut focus) in &mut interaction_query {
-        if *interaction == Interaction::Pressed {
-            println!("JE VEUX SAISIR MON NOM !");
-            player_creation.can_write = true;
-            player_creation.previous_name = player_creation.name.clone();
-            focus.active = true;
-        }
-    }
-}
-
-pub fn text_input(
-    //keys: Res<ButtonInput<KeyCode>>,    
-    button: Res<ButtonInput<KeyCode>>,
-    mouse_button: Res<ButtonInput<MouseButton>>,
-    mut evr_char: EventReader<ReceivedCharacter>,
-    mut player_creation: ResMut<PlayerCreation>,
-    mut focus_q: Query<&mut Focalisation>
-) {
-    // TODO : Escape dans les autres Input ferme tous les menus, y compris celui-ci. On se contente de F10 temporairement le temps de resoudre le probleme.
-    // A noter que faire ça au clic provoque un truc chiant: a la selection du champ via clic, on desactive aussitot -_-
-    // Sans compter bien sûr qu'on ne peut pas choisir où le curseur se mets....
-    if player_creation.can_write {
-        if button.just_pressed(KeyCode::Escape) || button.just_pressed(KeyCode::F10)   {
-            if let Ok(mut focus) = focus_q.get_single_mut() {
-                focus.active = false;
-                player_creation.name = player_creation.previous_name.clone();
-                player_creation.can_write = false;
-                return
-            }
-        }
-        if button.just_pressed(KeyCode::Enter) {
-            if let Ok(mut focus) = focus_q.get_single_mut() {
-                focus.active = false;
-                player_creation.can_write = false;
-                return
-            }
-        }
-        if button.just_pressed(KeyCode::Backspace) {
-            player_creation.name.pop();
-        }
-        for event in evr_char.read() {            
-            player_creation.name = player_creation.name.clone() + &event.char;
-            println!("{:?}", player_creation.name);
-        }
-   }
-}
-*/
