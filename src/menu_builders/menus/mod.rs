@@ -21,13 +21,14 @@ use bevy::prelude::*;
 
 use crate::{commons::despawn_component, engine::asset_loaders::GraphicsAssets, game::states::MenuState, globals::{HEIGHT, RESOLUTION}, menu_builders::spawn_menu};
 
-use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}, select_char_menu::{selecting_kind, PlayerCreation}};
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_char_selection::{components::PlayerCreation, select_char_menu::selecting_kind}, menu_systems::{common_menu_action, splashscreen}};
 
 use super::Menu;
 
 pub mod components;
 pub mod menu_systems;
-pub mod select_char_menu;
+pub mod menu_char_selection;
+
 
 
 // Menu colors

@@ -3,7 +3,8 @@ use bevy::{ecs::world::World, log::info};
 use crate::{
     camera::camera_center_on_player, game::{clean_game_screen, combat::combat_start, game_generation::create_game::create_new_game, gamelog::Gamelog, manager::{
         change_state_messages::{ChangeGameStateInitialiseRequestMessage, QuitGameMessage}, menu_messages::{EndGameRecapMessage, RecapType}, MessageEvent, PlayMusicMessage
-    }, player:: cursor_position, tileboard::system_map::spawning_map, ui::events::ReloadUiEvent}, map_builders::map::Map, menu_builders::menus::select_char_menu::spawn_selection_menu};
+    }, player:: cursor_position, tileboard::system_map::spawning_map, ui::events::ReloadUiEvent}, map_builders::map::Map, menu_builders::menus::menu_char_selection::spawn_selection_menu, 
+    };
 
 use super::Message;
  
