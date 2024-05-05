@@ -362,50 +362,20 @@ pub struct KindProposition {
 
 pub fn selecting_kind(
     interaction_q: Query<(&Interaction, &KindProposition, Entity), (Changed<Interaction>, With<Button>)>,
-    mut selected_q: Query<(Entity, &mut Text), With<SelectedOption>>,       // Ici on récupère l'element déjà selectionné s'il existe.
+    mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOption>>,       // Ici on récupère l'element déjà selectionné s'il existe.
     mut commands: Commands,
     mut player_creation: ResMut<PlayerCreation>,
 ) {
     for (interaction, kind_proposal, entity) in &interaction_q {
         if *interaction == Interaction::Pressed && player_creation.kind != kind_proposal.kind {
-            println!("J'interagis avec l'entité {:?} dont la proposal {:?} est differente de l'actuelle {:?}", entity, kind_proposal.kind, player_creation.kind);
             //Si je presse un bouton qui concerne un Kind different de celui que j'ia deja selectionné =>
-            /* 
-                let (previous_entity, mut previous_text) = selected_q.single_mut();
-                previous_text.sections[0].style.color = NORMAL_BUTTON;
+            if !selected_q.is_empty() {            
+                let (previous_entity, mut previous_bg) = selected_q.single_mut();
+                previous_bg.0 = NORMAL_BUTTON.into();
                 commands.entity(previous_entity).remove::<SelectedOption>();
-            */
-                commands.entity(entity).insert(SelectedOption);
-                player_creation.kind = kind_proposal.kind.clone();
+            }
+            commands.entity(entity).insert(SelectedOption);
+            player_creation.kind = kind_proposal.kind.clone();
         }        
     }
 }
-
-
-
-// This system updates the settings when a new value for a setting is selected, and marks
-    // the button as the one currently selected
-pub fn setting_button<T: Resource + Component + PartialEq + Copy>(
-    interaction_query: Query<(&Interaction, &T, Entity), (Changed<Interaction>, With<Button>)>,
-    mut selected_query: Query<(Entity, &mut Text), With<SelectedOption>>,
-    mut commands: Commands,
-    mut player_creation: ResMut<T>,
-) {
-    println!("setting button ---");
-    for (interaction, button_setting, entity) in &interaction_query {
-        println!("setting button : entity is {:?}", entity);
-        if *interaction == Interaction::Pressed && *player_creation != *button_setting {
-            println!("Interaction pressed et setting = button setting");
-            /*
-            if let Ok(previous_button, mut previous_image) = selected_query.single_mut() {
-                previous_image.sections[0].style.color = NORMAL_BUTTON;
-                commands.entity(previous_button).remove::<SelectedOption>();
-             */
-                commands.entity(entity).insert(SelectedOption);
-                *player_creation = *button_setting;
-        } else if *interaction == Interaction::Pressed {
-            println!("Interaction pressed mais setting = button_setting.");
-        }
-    }
-}
-
