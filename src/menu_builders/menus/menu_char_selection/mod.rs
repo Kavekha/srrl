@@ -4,10 +4,9 @@ pub mod select_char_menu;
 pub mod components;
 
 use crate::{
-    menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu}, 
-    menu_char_selection::select_char_menu::{item_rect, item_rect_double, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
-    NORMAL_BUTTON, TEXT_COLOR}, 
-    raws::{get_playable_kinds, load_raws, RAWS}};
+    engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu}, 
+    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_double, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
+    NORMAL_BUTTON, TEXT_COLOR}, raws::{get_kind, get_playable_kinds, load_raws, RAWS}};
 
 use self::components::PlayerCreation;
 
@@ -17,10 +16,20 @@ pub fn spawn_selection_menu(
     mut commands: Commands, 
     asset_server: Res<AssetServer>, 
     player_creation: Res<PlayerCreation>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+    assets: Res<GraphicsAssets>,
 ) {
     load_raws();
     let playable_kinds = get_playable_kinds(&RAWS.lock().unwrap());
     println!("Playable kinds are : {:?}", playable_kinds);
+    let mut names_n_models = Vec::new();
+    for kind in playable_kinds {
+        if let Some(raw) = get_kind(&RAWS.lock().unwrap(), &kind) {
+            if let Some(renderable) = &raw.renderable {
+                names_n_models.push((raw.name.clone(),renderable.model.clone()));
+            }
+        }
+    }
 
     let font = asset_server.load("fonts/PressStart2P-vaV7.ttf"); 
 
@@ -113,9 +122,10 @@ pub fn spawn_selection_menu(
                         item_rect(builder, Color::GRAY);     // title : choose your gender. 
                         item_rect(builder, Color::BLACK);     // gender chosen. 
 
-                        item_rect_metatype_selection_title(builder, Color::GRAY, font.clone());     // title: choose your meta-type.                        
-                        for name in playable_kinds {
-                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string());     // Liste de meta type.
+                        item_rect_metatype_selection_title(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
+                        // Liste de meta type.                        
+                        for (name, model) in names_n_models {
+                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string(), model.to_string());     
                         }                        
 
                         item_rect(builder, Color::GRAY);     // title : choose your archetype.                        
@@ -161,6 +171,8 @@ pub fn spawn_selection_menu(
                             ..default()
                         },
                     ));
+                    // Illustration de la Kind choisie.
+                    item_kind_illustration(builder, texture_atlases, assets, player_creation.model.clone());      
             });
             // Footer
             //builder.spawn(NodeBundle::default());    

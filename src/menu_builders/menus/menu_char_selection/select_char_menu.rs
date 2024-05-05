@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON};
+use crate::{engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
 
 use super::components::{KindProposition, PlayerCreation};
 
@@ -115,7 +115,34 @@ pub fn item_rect_metatype_selection_title(builder: &mut ChildBuilder, color: Col
 }
 
 
-pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, name: String) {
+pub fn item_kind_illustration(
+    builder: &mut ChildBuilder,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+    //asset_server: Res<AssetServer>,
+    assets: Res<GraphicsAssets>,
+    model: String
+) {
+    // TODO : Passer en mode Option pour que ce soit plus propre.
+    println!("Model is {:?}", model);
+    if model == "" { return };
+    println!("Illustration !");
+    let texture_handle = assets.textures[&model as &str].clone(); //asset_server.load("characters/{}.png", model);
+    let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 1, 1, None, None);
+    let texture_atlas_handle = texture_atlases.add(texture_atlas);
+
+    builder.spawn(AtlasImageBundle {
+        style: Style {
+            width: Val::Px(128.),
+            height: Val::Px(128.),
+            ..default()
+        },
+        texture_atlas: texture_atlas_handle.into(),
+        image: UiImage::new(texture_handle),
+        ..default()
+    });
+}
+
+pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, name: String, model: String) {
     let button_style = Style {
         //width: Val::Px(125.0),
         //height: Val::Px(32.5),
@@ -151,7 +178,10 @@ pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Co
                     ..default()
                 },
                 //MenuButtonAction::StartGame                
-                KindProposition { kind : name.clone() }
+                KindProposition { 
+                    kind : name.clone(),
+                    model : model.clone()
+                }
             ))
             .with_children(|builder| {
                 builder.spawn(TextBundle::from_section(
@@ -184,6 +214,8 @@ pub fn selecting_kind(
             }
             commands.entity(entity).insert(SelectedOption);
             player_creation.kind = kind_proposal.kind.clone();
+            player_creation.kind = kind_proposal.model.clone();
         }        
     }
 }
+

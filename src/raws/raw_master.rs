@@ -180,6 +180,16 @@ fn get_renderable_component(
     }
 }
 
+pub fn get_kind<'a>(
+    raws: &'a RawMaster,
+    key: &'a str
+) -> Option<&'a Kind> {
+    if raws.kind_index.contains_key(key) {
+        return Some(&raws.raws.kinds[raws.kind_index[key]])
+    }
+    None
+}
+
 pub fn get_playable_kinds(
     raws: &RawMaster
 ) -> Vec<String> {
