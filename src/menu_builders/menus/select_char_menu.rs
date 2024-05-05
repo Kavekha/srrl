@@ -1,7 +1,15 @@
-use bevy::{input::keyboard::KeyboardInput, prelude::*};
+use bevy::prelude::*;
 
 use super::{components::{MenuButtonAction, OnScreenMenu}, NORMAL_BUTTON, TEXT_COLOR};
 
+
+#[derive(Resource)]
+pub struct PlayerCreation;
+impl PlayerCreation {
+    pub fn new() -> PlayerCreation {
+        PlayerCreation 
+    }
+}
 
 
 fn spawn_nested_text_bundle(builder: &mut ChildBuilder, font: Handle<Font>, text: &str) {
@@ -45,7 +53,7 @@ fn item_rect_double(builder: &mut ChildBuilder, color: Color) {
             style: Style {
                 display: Display::Grid,
                 grid_column: GridPlacement::span(8),                
-                grid_row: GridPlacement::span(2),
+                grid_row: GridPlacement::span(5),
                 padding: UiRect::all(Val::Px(3.0)),
                 ..default()
             },
@@ -66,7 +74,7 @@ fn item_rect_triple(builder: &mut ChildBuilder, color: Color) {
             style: Style {
                 display: Display::Grid,
                 grid_column: GridPlacement::span(8),
-                grid_row: GridPlacement::span(3),
+                grid_row: GridPlacement::span(10),
                 padding: UiRect::all(Val::Px(3.0)),
                 ..default()
             },
@@ -158,7 +166,7 @@ pub fn spawn_selection_menu(
                             display: Display::Grid,
                             padding: UiRect::all(Val::Px(8.0)),
                             grid_template_columns: RepeatedGridTrack::flex(8, 1.0),
-                            grid_template_rows: RepeatedGridTrack::flex(8, 1.0),
+                            grid_template_rows: RepeatedGridTrack::flex(24, 1.0),
                             row_gap: Val::Px(4.0),
                             column_gap: Val::Px(4.0),
                             ..default()
@@ -171,14 +179,17 @@ pub fn spawn_selection_menu(
                         // not given an explicit position will be automatically positioned into the next available
                         // grid cell. The order in which this is performed can be controlled using the grid_auto_flow
                         // style property.
+                        item_rect(builder, Color::GRAY);     // title : choose your name. 
+                        item_rect(builder, Color::BLACK);     // name chosen. 
 
-                        item_rect_choose_name(builder, Color::GRAY, font.clone(), &player_creation);   // Ici il y aura le choix du nom.
+                        item_rect(builder, Color::GRAY);     // title : choose your gender. 
+                        item_rect(builder, Color::BLACK);     // gender chosen. 
 
-                        item_rect_triple(builder, Color::BLACK);     // Choix Kind
-                        item_rect(builder, Color::GRAY);     // Description Kind.
-                        
-                        item_rect_double(builder, Color::BLACK);   // Choix Job
-                        item_rect(builder, Color::GRAY);     // Description Job.
+                        item_rect_metatype_selection(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
+                        item_rect_triple(builder, Color::BLACK);     // Liste de meta type.
+
+                        item_rect(builder, Color::GRAY);     // title : choose your archetype.                        
+                        item_rect_double(builder, Color::BLACK);  
                     });
 
                 // Right side bar (auto placed in row 2, column 2)
@@ -254,6 +265,43 @@ pub fn spawn_selection_menu(
 }
 
 
+fn item_rect_metatype_selection(builder: &mut ChildBuilder, color: Color, font: Handle<Font>) {
+    builder
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,                
+                grid_column: GridPlacement::span(8),
+                padding: UiRect::all(Val::Px(3.0)),
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            background_color: BackgroundColor(Color::BLACK),
+            ..default()
+        })
+        .with_children(|builder| {            
+            builder.spawn(NodeBundle {
+                background_color: BackgroundColor(color),
+                ..default()
+            })
+            .with_children(|builder| {
+                builder.spawn(TextBundle::from_section(
+                    "Choose your Meta-type:",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 10.0,
+                        color: Color::WHITE,                                            
+                        ..default()
+                    }
+                ));
+            });               
+        });
+}
+
+
+
+// Naming - Deprecated 0.21h
+
+/* 
 fn item_rect_choose_name(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, player_creation: &PlayerCreation) {
     builder
         .spawn(NodeBundle {
@@ -332,17 +380,7 @@ pub struct Focalisation {
 #[derive(Component)]
 pub struct NameInput;
 
-#[derive(Resource)]
-pub struct PlayerCreation {
-    pub name: String,
-    pub previous_name: String,
-    pub can_write: bool
-}
-impl PlayerCreation {
-    pub fn new() -> PlayerCreation {
-        PlayerCreation { name: "".to_string(), previous_name: "".to_string(), can_write: false}
-    }
-}
+
 
 
 // Saisir le nom.
@@ -398,29 +436,4 @@ pub fn text_input(
         }
    }
 }
-
-
-pub fn text_input_deprecated(
-    mut evr_char: EventReader<ReceivedCharacter>,
-    kbd: Res<ButtonInput<KeyCode>>,
-    mut string: Local<String>,
-) {
-    if kbd.just_pressed(KeyCode::Enter) {
-        println!("Text input: {}", &*string);
-        string.clear();
-    }
-    if kbd.just_pressed(KeyCode::Backspace) {
-        string.pop();
-    }
-    for ev in evr_char.read() {
-        println!("ev char is {:?}", ev.char);        
-        //string.push(ev.char);
-        println!("String is {:?}", string);
-        /*
-        // ignore control (special) characters
-        if !ev.char.is_control() {
-            string.push(ev.char);
-        }
-         */
-    }
-}
+*/

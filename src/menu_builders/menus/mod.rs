@@ -21,7 +21,7 @@ use bevy::prelude::*;
 
 use crate::{commons::despawn_component, engine::asset_loaders::GraphicsAssets, game::states::MenuState, globals::{HEIGHT, RESOLUTION}, menu_builders::spawn_menu};
 
-use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}, select_char_menu::{menu_input_name, text_input, PlayerCreation}};
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}, select_char_menu:: PlayerCreation};
 
 use super::Menu;
 
@@ -63,10 +63,7 @@ impl Plugin for MenuPlugin {
         //.add_systems(OnEnter(MenuState::Open), menu_camera)
         .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
         .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
-
-        .add_systems(Update, menu_input_name.run_if(not(in_state(MenuState::Disabled))))    // 0.21h : saisir son nom. Menu creation.
-        .add_systems(Update, text_input.run_if(not(in_state(MenuState::Disabled))))    // 0.21h : saisir son nom. Menu creation.
-        
+       
              
         //Specific IG Menu            
 
