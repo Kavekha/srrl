@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::raws::{get_playable_kinds, load_raws, RAWS};
+
 use super::{components::{MenuButtonAction, OnScreenMenu, SelectedOption}, NORMAL_BUTTON, TEXT_COLOR};
 
 
@@ -94,8 +96,14 @@ fn item_rect_triple(builder: &mut ChildBuilder, color: Color) {
 
 //https://bevyengine.org/examples/UI%20(User%20Interface)/grid/
 pub fn spawn_selection_menu(
-    mut commands: Commands, asset_server: Res<AssetServer>, player_creation: Res<PlayerCreation>
+    mut commands: Commands, 
+    asset_server: Res<AssetServer>, 
+    player_creation: Res<PlayerCreation>,
 ) {
+    load_raws();
+    let playable_kinds = get_playable_kinds(&RAWS.lock().unwrap());
+    println!("Playable kinds are : {:?}", playable_kinds);
+
     let font = asset_server.load("fonts/PressStart2P-vaV7.ttf"); 
 
     let button_style = Style {
@@ -188,7 +196,8 @@ pub fn spawn_selection_menu(
                         item_rect(builder, Color::BLACK);     // gender chosen. 
 
                         item_rect_metatype_selection_title(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
-                        for name in ["human", "elf", "dwarf", "orc", "troll"] {
+                        //for name in ["human", "elf", "dwarf", "orc", "troll"] {
+                        for name in playable_kinds {
                             item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string());     // Liste de meta type.
                         }                        
 

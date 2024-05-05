@@ -10,7 +10,7 @@ pub fn create_new_game(
     world: &mut World
 ) -> bool {
     info!("==== creating new game ===");
-    load_raws();
+    //load_raws(); // Au screen Char Select now.
 
     let map_infos = create_map(world);
 

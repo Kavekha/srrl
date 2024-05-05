@@ -4,7 +4,7 @@ use crate::{
     engine::{audios::{AudioConfig, AudioType}, save_load_system::has_save_file},
     game::{
         gamelog::Gamelog, manager::{MessageEvent, PlayMusicMessage}, states::MenuState}, globals::{ RELEASE, VERSION},
-    menu_builders::{components::MenuItem, menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, Menu}, 
+    menu_builders::{components::MenuItem, menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, Menu}, raws::load_raws, 
 };
 
 use super::Message;
@@ -65,10 +65,11 @@ impl Message for MainMenuOpenMessage {
     }
 }
 
-// 0.21h avec MenuBuilder v2.
+// 0.21h avec MenuBuilder v2.   // Won't be used.
 pub struct CharSelectionMenuMessage;
 impl Message for CharSelectionMenuMessage {
     fn execute(&self, world: &mut World) {
+        load_raws();
         let mut menu = Menu::new(Vec::new());   
         menu.add(MenuItem::header("Character selection."));
         menu.add(MenuItem::action(MenuButtonAction::StartGame, "Start Game"));

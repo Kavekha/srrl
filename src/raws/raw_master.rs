@@ -180,6 +180,20 @@ fn get_renderable_component(
     }
 }
 
+pub fn get_playable_kinds(
+    raws: &RawMaster
+) -> Vec<String> {
+    println!("Getting playable kinds.");
+    let mut playable_kinds = Vec::new();
+    for (key, index) in raws.kind_index.iter() {
+        println!("Key is {:?}", key);        
+        let template = &raws.raws.kinds[*index];
+        if template.is_playable {
+            playable_kinds.push(key.clone());
+        }        
+    }
+    return playable_kinds
+}
 
 pub fn get_spawn_table(raws: &RawMaster, key: &str) -> RandomTable {
     let mut random_table = RandomTable::new();
