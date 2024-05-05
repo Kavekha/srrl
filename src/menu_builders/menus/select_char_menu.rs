@@ -185,8 +185,10 @@ pub fn spawn_selection_menu(
                         item_rect(builder, Color::GRAY);     // title : choose your gender. 
                         item_rect(builder, Color::BLACK);     // gender chosen. 
 
-                        item_rect_metatype_selection(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
-                        item_rect_triple(builder, Color::BLACK);     // Liste de meta type.
+                        item_rect_metatype_selection_title(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
+                        for name in ["human", "elf", "dwarf", "orc", "troll"] {
+                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string());     // Liste de meta type.
+                        }                        
 
                         item_rect(builder, Color::GRAY);     // title : choose your archetype.                        
                         item_rect_double(builder, Color::BLACK);  
@@ -265,7 +267,7 @@ pub fn spawn_selection_menu(
 }
 
 
-fn item_rect_metatype_selection(builder: &mut ChildBuilder, color: Color, font: Handle<Font>) {
+fn item_rect_metatype_selection_title(builder: &mut ChildBuilder, color: Color, font: Handle<Font>) {
     builder
         .spawn(NodeBundle {
             style: Style {
@@ -289,7 +291,7 @@ fn item_rect_metatype_selection(builder: &mut ChildBuilder, color: Color, font: 
                     TextStyle {
                         font: font.clone(),
                         font_size: 10.0,
-                        color: Color::WHITE,                                            
+                        color: Color::WHITE,                                                                    
                         ..default()
                     }
                 ));
@@ -298,6 +300,38 @@ fn item_rect_metatype_selection(builder: &mut ChildBuilder, color: Color, font: 
 }
 
 
+fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, name: String) {
+    builder
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,                
+                grid_column: GridPlacement::span(8),
+                grid_row: GridPlacement::span(1),
+                padding: UiRect::all(Val::Px(3.0)),
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            background_color: BackgroundColor(Color::BLACK),
+            ..default()
+        })
+        .with_children(|builder| {            
+            builder.spawn(NodeBundle {
+                background_color: BackgroundColor(Color::BLACK),
+                ..default()
+            })
+            .with_children(|builder| {
+                builder.spawn(TextBundle::from_section(
+                    name.clone(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 15.0,
+                        color: Color::WHITE,                                            
+                        ..default()
+                    }
+                ));
+            });               
+        });
+}
 
 // Naming - Deprecated 0.21h
 
