@@ -21,7 +21,7 @@ use bevy::prelude::*;
 
 use crate::{commons::despawn_component, engine::asset_loaders::GraphicsAssets, game::states::MenuState, globals::{HEIGHT, RESOLUTION}, menu_builders::spawn_menu};
 
-use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}, select_char_menu:: PlayerCreation};
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}, select_char_menu::{selecting_kind, PlayerCreation}};
 
 use super::Menu;
 
@@ -64,6 +64,7 @@ impl Plugin for MenuPlugin {
         .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
         .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
        
+       .add_systems(Update, selecting_kind.run_if(not(in_state(MenuState::Disabled))))
              
         //Specific IG Menu            
 

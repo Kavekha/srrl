@@ -1,10 +1,10 @@
 use bevy::prelude::*;
 
-use super::{components::{MenuButtonAction, OnScreenMenu}, NORMAL_BUTTON, TEXT_COLOR};
+use super::{components::{MenuButtonAction, OnScreenMenu, SelectedOption}, NORMAL_BUTTON, TEXT_COLOR};
 
 
-#[derive(Resource)]
-pub struct PlayerCreation;
+#[derive(Resource, Debug, Component, PartialEq, Eq, Clone)]
+pub struct PlayerCreation ;
 impl PlayerCreation {
     pub fn new() -> PlayerCreation {
         PlayerCreation 
@@ -301,6 +301,15 @@ fn item_rect_metatype_selection_title(builder: &mut ChildBuilder, color: Color, 
 
 
 fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, name: String) {
+    let button_style = Style {
+        //width: Val::Px(125.0),
+        //height: Val::Px(32.5),
+        //margin: UiRect::all(Val::Px(5.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
     builder
         .spawn(NodeBundle {
             style: Style {
@@ -315,10 +324,20 @@ fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color,
             ..default()
         })
         .with_children(|builder| {            
+            /* 
             builder.spawn(NodeBundle {
                 background_color: BackgroundColor(Color::BLACK),
                 ..default()
-            })
+            });*/
+            builder.spawn((
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },
+                //MenuButtonAction::StartGame                
+                KindProposition { kind : name.clone() }
+            ))
             .with_children(|builder| {
                 builder.spawn(TextBundle::from_section(
                     name.clone(),
@@ -332,6 +351,56 @@ fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color,
             });               
         });
 }
+
+#[derive(Component)]
+pub struct KindProposition {
+    kind: String
+}
+
+
+pub fn selecting_kind(
+    interaction_q: Query<(&Interaction, &KindProposition, Entity), (Changed<Interaction>, With<Button>)>,
+    mut selected_q: Query<(Entity, &mut Text), With<SelectedOption>>,       // Ici on récupère l'element déjà selectionné s'il existe.
+    mut commands: Commands,
+) {
+    for (interaction, kind_proposal, entity) in &interaction_q {
+        if *interaction == Interaction::Pressed {
+            println!("Interaction {:?}, entity : {:?} : proposal = {:?}", interaction, entity, kind_proposal.kind);
+            //Si je presse un bouton qui concerne un Kind different de celui que j'ia deja selectionné =>
+                // Je deselectionne l'element abandonné
+                // Je selectionne le nouvel element
+        }        
+    }
+}
+
+
+
+// This system updates the settings when a new value for a setting is selected, and marks
+    // the button as the one currently selected
+pub fn setting_button<T: Resource + Component + PartialEq + Copy>(
+    interaction_query: Query<(&Interaction, &T, Entity), (Changed<Interaction>, With<Button>)>,
+    mut selected_query: Query<(Entity, &mut Text), With<SelectedOption>>,
+    mut commands: Commands,
+    mut player_creation: ResMut<T>,
+) {
+    println!("setting button ---");
+    for (interaction, button_setting, entity) in &interaction_query {
+        println!("setting button : entity is {:?}", entity);
+        if *interaction == Interaction::Pressed && *player_creation != *button_setting {
+            println!("Interaction pressed et setting = button setting");
+            let (previous_button, mut previous_image) = selected_query.single_mut();
+            previous_image.sections[0].style.color = NORMAL_BUTTON;
+            commands.entity(previous_button).remove::<SelectedOption>();
+            commands.entity(entity).insert(SelectedOption);
+            *player_creation = *button_setting;
+        } else if *interaction == Interaction::Pressed {
+            println!("Interaction pressed mais setting = button_setting.");
+        }
+    }
+}
+
+
+
 
 // Naming - Deprecated 0.21h
 
