@@ -12,7 +12,7 @@ pub use audio_resources::AudioAssets;
 
 const IMAGES: [&str; 3] = ["shadowrun_title_alone", "button_attack_melee", "button_attack_ranged"];
 const FONT_PATH: &str = "fonts/PressStart2P-vaV7.ttf";
-const TEXTURES: [&str; 4] = ["human", "ghoul", "blood", "ghoul_ranged"];
+const TEXTURES: [&str; 8] = ["human", "ghoul", "blood", "ghoul_ranged", "elf", "dwarf", "orc", "troll"];
 const SEWERS_TILES_TEXTURES: [&str; 17] = [
     "floor", "wall_0","wall_1","wall_2","wall_3","wall_4","wall_5","wall_6","wall_7","wall_8",
     "wall_9","wall_10","wall_11","wall_12","wall_13","wall_14","wall_15"];

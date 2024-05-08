@@ -8,9 +8,21 @@ use crate::{game::{player::Player, rules::VISIBILITY_RANGE_PLAYER, visibility::c
 pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     println!("Player: Starting position = {:?}", player_starting_position);
 
-    //let kind = get_random_kind();    
+    //let kind = get_random_kind();  
+    let mut kind:String;  
+    let mut rng = rand::thread_rng();
+    let rand = rng.gen_range(1..6); // Exclusif 
+    println!("rand is {:?}", rand);
+    kind = match rand {
+        1 => "human".to_string(),
+        2 => "elf".to_string(),
+        3 => "dwarf".to_string(),
+        4 => "orc".to_string(),
+        5 => "troll".to_string(),
+        _ => "human".to_string()
+    };
     
-    let playable_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, "human", player_starting_position);
+    let playable_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, &kind, player_starting_position);
     
     match playable_entity {
         None => { panic!("Can't create player.")},         
