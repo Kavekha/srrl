@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{game::{
     game_generation::{character_creation::create_player::create_player, create_exit_map::create_exit_map, spawners::spawn_room}, ia::create_nodes::create_nodes, tileboard::system_map::create_map}, 
-    map_builders::{Rectangle, MAPHEIGHT, MAPWIDTH}, raws::load_raws};
+    map_builders::{Rectangle, MAPHEIGHT, MAPWIDTH}};
 
 
 // Return true après avoir réussi.    // Return OK TODO
@@ -10,7 +10,7 @@ pub fn create_new_game(
     world: &mut World
 ) -> bool {
     info!("==== creating new game ===");
-    load_raws();
+    //load_raws(); // Au screen Char Select now.
 
     let map_infos = create_map(world);
 

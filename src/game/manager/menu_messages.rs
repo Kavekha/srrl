@@ -3,8 +3,8 @@ use bevy::ecs::{schedule::NextState, world::World};
 use crate::{
     engine::{audios::{AudioConfig, AudioType}, save_load_system::has_save_file},
     game::{
-        gamelog::Gamelog, manager::{MessageEvent, PlayMusicMessage}, menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, states::MenuState}, globals::{ RELEASE, VERSION},
-    menu_builders::{Menu, MenuItem}, 
+        gamelog::Gamelog, manager::{MessageEvent, PlayMusicMessage}, states::MenuState}, globals::{ RELEASE, VERSION},
+    menu_builders::{components::MenuItem, menus::{clean_menu, components::MenuButtonAction, MenuEvent, MenuType}, Menu}, raws::load_raws, 
 };
 
 use super::Message;
@@ -49,7 +49,7 @@ pub struct MainMenuOpenMessage;
 impl Message for MainMenuOpenMessage {
     fn execute(&self, world: &mut World) {
         let mut menu = Menu::new(Vec::new());   //"main_menu", 
-        menu.add(MenuItem::image("shadowrun_title_alone"));
+        menu.add(MenuItem::illustration("shadowrun_title_alone"));
         menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
         if has_save_file() {
             menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
@@ -64,6 +64,38 @@ impl Message for MainMenuOpenMessage {
         world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()})));  
     }
 }
+
+// 0.21h avec MenuBuilder v2.   // Won't be used.
+pub struct CharSelectionMenuMessage;
+impl Message for CharSelectionMenuMessage {
+    fn execute(&self, world: &mut World) {
+        load_raws();
+        let mut menu = Menu::new(Vec::new());   
+        menu.add(MenuItem::header("Character selection."));
+        menu.add(MenuItem::action(MenuButtonAction::StartGame, "Start Game"));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("Char Selection Menu open.");
+
+        /* 
+        menu.add(MenuItem::illustration("shadowrun_title_alone"));
+        menu.add(MenuItem::action(MenuButtonAction::Play, "Play"));
+        if has_save_file() {
+            menu.add(MenuItem::action(MenuButtonAction::Load, "Load game"));
+        }
+        menu.add(MenuItem::action(MenuButtonAction::MainMenuSettings, "Settings"));
+        menu.add(MenuItem::action(MenuButtonAction::Quit, "Quit"));
+        menu.add(MenuItem::footer( &format!("{RELEASE} - {VERSION}")));
+
+        world.send_event(MenuEvent{menu:menu, menu_type:MenuType::MAINMENU});
+        world.send_event(MessageEvent(Box::new(OpenMenuMessage)));
+        println!("MainMenu generated and send for opening.");        
+        world.send_event(MessageEvent(Box::new(PlayMusicMessage{source:"main_menu".to_string()})));
+        */  
+    }
+}
+
 
 pub struct MainMenuSettingsMessage;
 impl Message for MainMenuSettingsMessage {

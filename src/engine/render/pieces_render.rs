@@ -4,7 +4,7 @@ use crate::{
         commons::get_world_position, engine::asset_loaders::GraphicsAssets, game::{
         player::Player, tileboard::components::{BoardPosition, ExitMapTile}
     }, globals::{
-        MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER}
+        CHAR_SIZE, MAP_EXIT, ORDER_EXIT, ORDER_NPC, ORDER_PLAYER}
 };
 
 use super::components::Renderable;
@@ -62,7 +62,7 @@ pub fn spawn_piece_renderer(
             .insert(SpriteBundle {
                 texture: texture, //asset_server.load(texture),    
                 transform: Transform {
-                    translation: Vec3::new(translation.0, translation.1, order_z),
+                    translation: Vec3::new(translation.0, translation.1 + CHAR_SIZE, order_z),
                     scale: Vec3::splat(1.0),
                     ..default()
                 },

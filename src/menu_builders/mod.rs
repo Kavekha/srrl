@@ -22,83 +22,19 @@ crate   | app       | Contenu
 
 use bevy::a11y::accesskit::{NodeBuilder, Role};
 use bevy::a11y::AccessibilityNode;
-use bevy::{audio::Volume, prelude::*};
+use bevy::prelude::*;
 
 use crate::engine::asset_loaders::GraphicsAssets;
-use crate::game::menus::components::{MenuButtonAction, OnScreenMenu};
-use crate::engine::audios::AudioType;
-use crate::game::menus::{NORMAL_BUTTON, TEXT_COLOR};
-//use crate::globals::{NORMAL_BUTTON, TEXT_COLOR};
 use crate::menu_builders::MenuButtonAction::SettingsAudioChange;
 
+use self::components::{Action, Description, Footer, Header, Illustration, MenuItem, ScrollingList, ScrollingText, Slider};
+use self::menus::components::{MenuButtonAction, OnScreenMenu};
+use self::menus::{NORMAL_BUTTON, TEXT_COLOR};
+
+pub mod menus;
+pub mod components;
 
 
-
-//MenuBuilder v2
-
-// 0.20a : utilisé par game\player
-#[derive(Component, Default)]
-pub struct ScrollingList {
-    pub position: f32,
-}
-
-//0.20a Techniquement possible de les avoir en private, mais elles sont utilisés par MenuItem qui doit être public. Les attributs peuvent être privés.
-#[derive(Clone)]
-pub struct Action {action: MenuButtonAction, text:String}
-#[derive(Clone)]
-pub struct Header {text: String}
-#[derive(Clone)]
-pub struct Description {text: String}
-#[derive(Clone)]
-pub struct Image { name: String}
-#[derive(Clone)]
-pub struct Footer { text: String}
-#[derive(Clone)]
-pub struct Slider { original_value:Volume, text:String, audio_type:AudioType}
-#[derive(Clone)]
-pub struct ScrollingText {text: String}
-
-#[derive(Clone)]
-pub enum MenuItem{
-    Action(Action),
-    Header(Header),
-    Description(Description),
-    Image(Image),
-    Footer(Footer),
-    Slider(Slider),
-    ScrollingText(ScrollingText),
-}
-
-impl MenuItem{
-    pub fn action(action:MenuButtonAction, text:&str
-    ) -> MenuItem {
-        MenuItem::Action(Action{action: action, text:text.to_string()})
-    }
-    pub fn header(text:&str
-    ) -> MenuItem {
-        MenuItem::Header(Header{text:text.to_string()})
-    }
-    pub fn description(text:&str
-    ) -> MenuItem {
-        MenuItem::Description(Description{text:text.to_string()})
-    }
-    pub fn image(name:&str
-    ) -> MenuItem {
-        MenuItem::Image(Image{name: name.to_string()})
-    }
-    pub fn footer(text: &str
-    ) -> MenuItem {
-        MenuItem::Footer(Footer{text: text.to_string()})
-    } 
-    pub fn slider( original_value:Volume, text:&str, audio_type:AudioType    // AMELIORATION : Supporter autre chose pour le type. Transmettre la resource?
-    ) -> MenuItem {
-        MenuItem::Slider(Slider{ original_value:original_value, text:text.to_string(), audio_type:audio_type})
-    }
-    pub fn scrolling_text(text: &str
-    ) -> MenuItem {
-        MenuItem::ScrollingText(ScrollingText{text: text.to_string()})
-    }
-}
 
 pub struct Menu{
     //id: String,
@@ -124,7 +60,7 @@ pub fn spawn_menu(
     graph_assets: Res<GraphicsAssets>,
     menu: &Menu,
 ) {
-    let mut images:Vec<Image> = Vec::new();
+    let mut illustrations:Vec<Illustration> = Vec::new();
     let mut headers:Vec<Header>= Vec::new();
     let mut descriptions:Vec<Description> = Vec::new();
     let mut actions:Vec<Action> = Vec::new();
@@ -137,7 +73,7 @@ pub fn spawn_menu(
             MenuItem::Header(header) => headers.push(header.clone()),
             MenuItem::Description(description) => descriptions.push(description.clone()),
             MenuItem::Action(action) => actions.push(action.clone()),
-            MenuItem::Image(image) => images.push(image.clone()),
+            MenuItem::Illustration(illustration) => illustrations.push(illustration.clone()),
             MenuItem::Footer(footer) => footers.push(footer.clone()),
             MenuItem::Slider(slider) => sliders.push(slider.clone()),
             MenuItem::ScrollingText(scrolling_text) => scrolling_texts.push(scrolling_text.clone()),
@@ -188,9 +124,9 @@ pub fn spawn_menu(
         )).id();
     
     // Illustration.
-    for image in images.iter() {
-        println!("Image name is {}", image.name);   //DEBUG
-        let image = graph_assets.images[image.name.as_str()].clone().into(); // graph_assets.images[image.name.as_str()].clone().into().expect("something bad happened");
+    for illustration in illustrations.iter() {
+        println!("Image name is {}", illustration.name);   //DEBUG
+        let image = graph_assets.images[illustration.name.as_str()].clone().into(); // graph_assets.images[image.name.as_str()].clone().into().expect("something bad happened");
         let logo = commands.spawn(ImageBundle {
                             image: image,   //image: graph_assets.logo.clone().into(),
                             ..default()

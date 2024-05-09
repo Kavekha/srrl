@@ -19,21 +19,16 @@
 
 use bevy::prelude::*;
 
-use crate::{
-    game::despawn_component, 
-    globals::{HEIGHT, 
-        //HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON, 
-        RESOLUTION}, 
-    menu_builders::{spawn_menu, Menu}};
-use crate::engine::asset_loaders::GraphicsAssets;
+use crate::{commons::despawn_component, engine::asset_loaders::GraphicsAssets, game::states::MenuState, globals::{HEIGHT, RESOLUTION}, menu_builders::spawn_menu};
 
-use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_systems::{common_menu_action, splashscreen}};
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_char_selection::{components::PlayerCreation, select_char_menu::{selecting_kind, updated_kind_display}}, menu_systems::{common_menu_action, splashscreen}};
 
-use super::states::MenuState;
- 
+use super::Menu;
 
 pub mod components;
-mod menu_systems;
+pub mod menu_systems;
+pub mod menu_char_selection;
+
 
 
 // Menu colors
@@ -55,7 +50,7 @@ impl Plugin for MenuPlugin {
             medium:Vec2::new(HEIGHT * RESOLUTION, HEIGHT),
             high:Vec2::new(1920.0, 1080.0)
         })
-
+        .insert_resource(PlayerCreation::new())
         .add_event::<MenuEvent>()
         .add_systems(Update, menu_event_reader.run_if(on_event::<MenuEvent>()))   
 
@@ -69,7 +64,10 @@ impl Plugin for MenuPlugin {
         //.add_systems(OnEnter(MenuState::Open), menu_camera)
         .add_systems(Update, button_system.run_if(not(in_state(MenuState::Disabled))))
         .add_systems(Update, common_menu_action.run_if(not(in_state(MenuState::Disabled))))  // La gestion des actions IG Menu.
-             
+       
+       .add_systems(Update, selecting_kind.run_if(not(in_state(MenuState::Disabled))))
+       .add_systems(Update, updated_kind_display.run_if(not(in_state(MenuState::Disabled))))
+           
         //Specific IG Menu            
 
         ;        
