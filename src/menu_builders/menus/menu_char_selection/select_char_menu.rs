@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::{engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
 
-use super::components::{KindProposition, PlayerCreation};
+use super::components::{KindProposition, MenuKindDisplay, PlayerCreation};
 
 
 pub fn spawn_nested_text_bundle(builder: &mut ChildBuilder, font: Handle<Font>, text: &str) {
@@ -139,7 +139,7 @@ pub fn item_kind_illustration(
         texture_atlas: texture_atlas_handle.into(),
         image: UiImage::new(texture_handle),
         ..default()
-    });
+    }).insert(MenuKindDisplay { model: model});
 }
 
 pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, name: String, model: String) {
@@ -176,12 +176,11 @@ pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Co
                     style: button_style.clone(),
                     background_color: NORMAL_BUTTON.into(),
                     ..default()
-                },
-                //MenuButtonAction::StartGame                
+                },            
                 KindProposition { 
                     kind : name.clone(),
                     model : model.clone()
-                }
+                },                
             ))
             .with_children(|builder| {
                 builder.spawn(TextBundle::from_section(
@@ -201,21 +200,55 @@ pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Co
 pub fn selecting_kind(
     interaction_q: Query<(&Interaction, &KindProposition, Entity), (Changed<Interaction>, With<Button>)>,
     mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOption>>,       // Ici on récupère l'element déjà selectionné s'il existe.
+    mut display_q: Query<&mut MenuKindDisplay>,
     mut commands: Commands,
-    mut player_creation: ResMut<PlayerCreation>,
+    mut player_creation: ResMut<PlayerCreation>,   
 ) {
     for (interaction, kind_proposal, entity) in &interaction_q {
         if *interaction == Interaction::Pressed && player_creation.kind != kind_proposal.kind {
             //Si je presse un bouton qui concerne un Kind different de celui que j'ia deja selectionné =>
             if !selected_q.is_empty() {            
+                println!("Selecting kind");
                 let (previous_entity, mut previous_bg) = selected_q.single_mut();
                 previous_bg.0 = NORMAL_BUTTON.into();
                 commands.entity(previous_entity).remove::<SelectedOption>();
             }
             commands.entity(entity).insert(SelectedOption);
             player_creation.kind = kind_proposal.kind.clone();
-            player_creation.kind = kind_proposal.model.clone();
-        }        
+            player_creation.model = kind_proposal.model.clone();
+
+            if let Ok(mut display) = display_q.get_single_mut() {
+                display.model = kind_proposal.model.clone();
+            }
+        }            
     }
 }
+
+// 0.20h : Pour être honnête, c'est bien degueulasse. Mais ca marche.
+pub fn updated_kind_display(   
+    display_q: Query<(&Parent, &MenuKindDisplay), Changed<MenuKindDisplay>>,  
+    mut img_q: Query<(&Parent, &mut UiImage)>,
+    mut texture_q: Query<(&Parent, &mut TextureAtlas)>,
+    assets: Res<GraphicsAssets>,    
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>
+) {
+    for (parent, display) in display_q.iter() {
+        for (img_parent, mut img) in img_q.iter_mut() {
+            if img_parent == parent {
+                let texture_handle = assets.textures[&display.model as &str].clone(); 
+                img.texture = texture_handle;
+                break;
+            }            
+        }
+        for (tex_parent, mut texture) in texture_q.iter_mut() {
+            if tex_parent == parent {
+                let texture_atlas = TextureAtlasLayout::from_grid(Vec2::new(32.0, 32.0), 1, 1, None, None);
+                let texture_atlas_handle = texture_atlases.add(texture_atlas);
+                texture.layout = texture_atlas_handle;
+                break;
+            }
+        }
+    }
+}
+
 

@@ -62,7 +62,7 @@ pub fn spawn_piece_renderer(
             .insert(SpriteBundle {
                 texture: texture, //asset_server.load(texture),    
                 transform: Transform {
-                    translation: Vec3::new(translation.0, (translation.1 + CHAR_SIZE), order_z),
+                    translation: Vec3::new(translation.0, translation.1 + CHAR_SIZE, order_z),
                     scale: Vec3::splat(1.0),
                     ..default()
                 },

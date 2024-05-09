@@ -19,3 +19,8 @@ pub struct KindProposition {
     pub kind: String,
     pub model: String,
 }
+
+#[derive(Component)]
+pub struct MenuKindDisplay {
+    pub model: String
+}

@@ -9,7 +9,7 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     println!("Player: Starting position = {:?}", player_starting_position);
 
     //let kind = get_random_kind();  
-    let mut kind:String;  
+    let kind:String;  
     let mut rng = rand::thread_rng();
     let rand = rng.gen_range(1..6); // Exclusif 
     println!("rand is {:?}", rand);
