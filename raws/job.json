@@ -2,6 +2,7 @@
     "jobs": [
         {
             "reference":"adept",
+            "name": "Adept",
             "is_playable": true,
             "strength": -1,
             "agility": 1,
@@ -12,6 +13,7 @@
         },
         {
             "reference":"gunslinger",
+            "name":"Gunslinger",
             "is_playable": true,
             "is_ranged": true,
             "strength": -1,
@@ -22,6 +24,7 @@
         },
         {
             "reference":"street_samourai",
+            "name":"Street Samourai",
             "is_playable": true,
             "strength": 1,
             "agility": 1,
@@ -33,6 +36,7 @@
         },
         {
             "reference":"feral",
+            "name":"Feral",
             "is_playable": false,
             "prefix": "feral",
             "logic": -1,

@@ -9,16 +9,16 @@ use crate::{
     game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, 
     random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
-use super::{base_attributes_structs::BaseAttributes, job_table_structs::JobTable, jobs_structs::RawJobs, kind_structs::{Kind, RawRenderable}, spawn_table_structs::SpawnTable};
+use super::{base_attributes_structs::BaseAttributes, job_table_structs::JobTable, jobs_structs::{RawJob}, kind_structs::{RawKind, RawRenderable}, spawn_table_structs::SpawnTable};
 
 
 
 #[derive(Deserialize, Debug)]
 pub struct Raws {
-    pub kinds : Vec<Kind>,
+    pub kinds : Vec<RawKind>,
     pub spawn_tables: Vec<SpawnTable>,
     pub base_attributes: Vec<BaseAttributes>,
-    pub jobs: Vec<RawJobs>,
+    pub jobs: Vec<RawJob>,
     pub job_tables: Vec<JobTable>
 }
 
@@ -183,11 +183,36 @@ fn get_renderable_component(
 pub fn get_kind<'a>(
     raws: &'a RawMaster,
     key: &'a str
-) -> Option<&'a Kind> {
+) -> Option<&'a RawKind> {
     if raws.kind_index.contains_key(key) {
         return Some(&raws.raws.kinds[raws.kind_index[key]])
     }
     None
+}
+
+pub fn get_job<'a>(
+    raws: &'a RawMaster,
+    key: &'a str
+) -> Option<&'a RawJob> {
+    if raws.job_index.contains_key(key) {
+        return Some(&raws.raws.jobs[raws.job_index[key]])
+    }
+    None
+}
+
+pub fn get_playable_jobs(
+    raws: &RawMaster
+) -> Vec<String> {   
+    println!("Getting playable jobs.");
+    let mut playable_jobs = Vec::new();
+    for (key, index) in raws.job_index.iter() {
+        println!("Key is {:?}", key);        
+        let template = &raws.raws.jobs[*index];
+        if template.is_playable {
+            playable_jobs.push(key.clone());
+        }        
+    }
+    return playable_jobs
 }
 
 pub fn get_playable_kinds(

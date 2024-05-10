@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 
 #[derive(Deserialize, Debug)]
-pub struct Kind {
+pub struct RawKind {
     pub reference : String,
     pub name : String,
     pub renderable: Option<RawRenderable>,

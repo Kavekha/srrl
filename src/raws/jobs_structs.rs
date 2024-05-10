@@ -2,8 +2,9 @@ use bevy::utils::HashMap;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
-pub struct RawJobs {
+pub struct RawJob {
     pub reference : String,
+    pub name: String,
     pub is_playable: bool,
     pub suffix: Option<String>,
     pub prefix: Option<String>,

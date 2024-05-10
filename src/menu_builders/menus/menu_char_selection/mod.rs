@@ -1,12 +1,12 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 pub mod select_char_menu;
 pub mod components;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu, SelectedOption}, 
-    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_double, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
-    NORMAL_BUTTON, TEXT_COLOR}, raws::{get_kind, get_playable_kinds, load_raws, RAWS}};
+    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_archetype_selection_choice, item_rect_double, item_rect_job_selection_title, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
+    NORMAL_BUTTON, TEXT_COLOR}, raws::{get_job, get_kind, get_playable_jobs, get_playable_kinds, load_raws, RAWS}};
 
 use self::components::PlayerCreation;
 
@@ -34,6 +34,17 @@ pub fn spawn_selection_menu(
     }
     player_creation.kind = names_n_models[0].0.clone();
     player_creation.model = names_n_models[0].1.clone();
+
+    let playable_jobs = get_playable_jobs(&RAWS.lock().unwrap());
+    if playable_jobs.is_empty() { panic!("No playable job available.")};
+    println!("Playable jobs are : {:?}", playable_jobs);
+    let mut jobs = Vec::new();
+    for job in playable_jobs {
+        if let Some(raw) = get_job(&RAWS.lock().unwrap(), &job) {
+            jobs.push((raw.reference.clone(), raw.name.clone()));
+        }
+    }
+    player_creation.job.insert(jobs[0].0.clone(), jobs[0].1.clone());   // reference:name
 
     let font = asset_server.load("fonts/PressStart2P-vaV7.ttf"); 
 
@@ -133,8 +144,12 @@ pub fn spawn_selection_menu(
                             item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string(), model.to_string());                               
                         }                        
 
-                        item_rect(builder, Color::GRAY);     // title : choose your archetype.                        
-                        item_rect_double(builder, Color::BLACK);  
+                        item_rect_job_selection_title(builder, Color::GRAY, font.clone());     // title : choose your archetype.                        
+                        for (job_reference, job_name) in jobs {
+                            println!("Job reference added for {:?}, {:?}", job_reference, job_name);
+                            // TODO : Ajouter la selection par défaut. Pas simple d'inserer un SelectedOption...
+                            item_rect_archetype_selection_choice(builder, Color::BLACK, font.clone(), job_reference.to_string(), job_name.to_string());                               
+                        }  
                     });
 
                 // Right side bar (auto placed in row 2, column 2)

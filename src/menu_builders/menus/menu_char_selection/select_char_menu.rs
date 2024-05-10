@@ -1,8 +1,8 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashMap};
 
 use crate::{engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
 
-use super::components::{KindProposition, MenuKindDisplay, PlayerCreation};
+use super::components::{JobProposition, KindProposition, MenuKindDisplay, PlayerCreation, SelectedOptionJob};
 
 
 pub fn spawn_nested_text_bundle(builder: &mut ChildBuilder, font: Handle<Font>, text: &str) {
@@ -114,6 +114,37 @@ pub fn item_rect_metatype_selection_title(builder: &mut ChildBuilder, color: Col
         });
 }
 
+pub fn item_rect_job_selection_title(builder: &mut ChildBuilder, color: Color, font: Handle<Font>) {
+    builder
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,                
+                grid_column: GridPlacement::span(8),
+                padding: UiRect::all(Val::Px(3.0)),
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            background_color: BackgroundColor(Color::BLACK),
+            ..default()
+        })
+        .with_children(|builder| {            
+            builder.spawn(NodeBundle {
+                background_color: BackgroundColor(color),
+                ..default()
+            })
+            .with_children(|builder| {
+                builder.spawn(TextBundle::from_section(
+                    "Choose your Archetype:",
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 10.0,
+                        color: Color::WHITE,                                                                    
+                        ..default()
+                    }
+                ));
+            });               
+        });
+}
 
 pub fn item_kind_illustration(
     builder: &mut ChildBuilder,
@@ -252,3 +283,94 @@ pub fn updated_kind_display(
 }
 
 
+
+pub fn item_rect_archetype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, job_reference: String, job_name: String) {
+    let button_style = Style {
+        //width: Val::Px(125.0),
+        //height: Val::Px(32.5),
+        //margin: UiRect::all(Val::Px(5.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
+    builder
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,                
+                grid_column: GridPlacement::span(8),
+                grid_row: GridPlacement::span(1),
+                padding: UiRect::all(Val::Px(3.0)),
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            background_color: BackgroundColor(Color::BLACK),
+            ..default()
+        })
+        .with_children(|builder| {            
+            /* 
+            builder.spawn(NodeBundle {
+                background_color: BackgroundColor(Color::BLACK),
+                ..default()
+            });*/
+            builder.spawn((
+                ButtonBundle {
+                    style: button_style.clone(),
+                    background_color: NORMAL_BUTTON.into(),
+                    ..default()
+                },            
+                JobProposition { job: job_name.clone(), reference: job_reference.clone()},
+            ))
+            .with_children(|builder| {
+                builder.spawn(TextBundle::from_section(
+                    job_name.clone(),
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 15.0,
+                        color: Color::WHITE,                                            
+                        ..default()
+                    }
+                ));
+            });               
+        });
+}
+
+
+pub fn selecting_job_test(
+    interaction_q: Query<(&Interaction, &JobProposition), (Changed<Interaction>, With<Button>)>,
+    mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOptionJob>>,       // Ici on récupère l'element déjà selectionné s'il existe.
+    mut commands: Commands,
+    mut player_creation: ResMut<PlayerCreation>,   
+) {
+    for (interaction, job_proposal) in &interaction_q {
+        println!("interaction for job proposal");
+        if *interaction == Interaction::Pressed {
+            println!("Job: Pressed : {:?}",  player_creation.job.get(&job_proposal.reference));   
+            println!("Job: Pressed : {:?}",  player_creation.job.get(&job_proposal.job));             
+        }            
+    }
+}
+
+pub fn selecting_job(
+    interaction_q: Query<(&Interaction, &JobProposition, Entity), (Changed<Interaction>, With<Button>)>,
+    mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOptionJob>>,       // Ici on récupère l'element déjà selectionné s'il existe.
+    mut commands: Commands,
+    mut player_creation: ResMut<PlayerCreation>,   
+) {
+    for (interaction, job_proposal, entity) in &interaction_q {
+        println!("interaction for job proposal");
+        if *interaction == Interaction::Pressed && player_creation.job.get(&job_proposal.reference) != Some(&job_proposal.job) {
+            println!("Job: Pressed");
+            if !selected_q.is_empty() {            
+                println!("Selecting job");
+                let (previous_entity, mut previous_bg) = selected_q.single_mut();
+                previous_bg.0 = NORMAL_BUTTON.into();
+                commands.entity(previous_entity).remove::<SelectedOptionJob>();
+                player_creation.job = HashMap::new();
+            }
+            commands.entity(entity).insert(SelectedOptionJob);
+            player_creation.job.insert(job_proposal.reference.clone(), job_proposal.job.clone());
+            println!("Player job is now : {:?}", player_creation.job);
+        }       
+    }
+}
