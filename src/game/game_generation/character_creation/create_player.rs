@@ -1,14 +1,18 @@
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::{game::{player::Player, rules::VISIBILITY_RANGE_PLAYER, visibility::components::View}, raws::{apply_referenced_job, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
+use crate::{game::{player::Player, rules::VISIBILITY_RANGE_PLAYER, visibility::components::View}, menu_builders::menus::menu_char_selection::components::PlayerCreation, raws::{apply_referenced_job, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
 
 
 
 pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
     println!("Player: Starting position = {:?}", player_starting_position);
 
+    let Some(player_creation) = world.get_resource::<PlayerCreation>() else { panic!("No player to create.") };
+    let player_kind = player_creation.kind.clone();
+
     //let kind = get_random_kind();  
+    /* 
     let kind:String;  
     let mut rng = rand::thread_rng();
     let rand = rng.gen_range(1..6); // Exclusif 
@@ -21,8 +25,9 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
         5 => "troll".to_string(),
         _ => "human".to_string()
     };
+    */
     
-    let playable_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, &kind, player_starting_position);
+    let playable_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, &player_kind, player_starting_position);
     
     match playable_entity {
         None => { panic!("Can't create player.")},         
