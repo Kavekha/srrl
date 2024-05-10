@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use rand::Rng;
 
 use crate::{game::{player::Player, rules::VISIBILITY_RANGE_PLAYER, visibility::components::View}, menu_builders::menus::menu_char_selection::components::PlayerCreation, raws::{apply_referenced_job, spawn_referenced_entity, RAWS}, vectors::Vector2Int};
 
@@ -10,6 +9,7 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
 
     let Some(player_creation) = world.get_resource::<PlayerCreation>() else { panic!("No player to create.") };
     let player_kind = player_creation.kind.clone();
+    let player_job = player_creation.job.0.clone(); //Reference job
 
     //let kind = get_random_kind();  
     /* 
@@ -26,7 +26,7 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
         _ => "human".to_string()
     };
     */
-    
+
     let playable_entity = spawn_referenced_entity(&RAWS.lock().unwrap(), world, &player_kind, player_starting_position);
     
     match playable_entity {
@@ -37,7 +37,10 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
             let mut name = entity_ref.get_mut::<Name>().unwrap();       // REMEMBER : C'est comme ca qu'on GET un component depuis WORLD.
             name.set("The Shadowrunner");
 
-            // TODO : Pouvoir choisir.
+            // 0.21i : can be selected.
+            println!("Job reference for player is : {:?}", player_job);
+            apply_referenced_job(&RAWS.lock().unwrap(), world, &player_job, player_entity);
+            /* 
             let mut rng = rand::thread_rng();
             let rand = rng.gen_range(1..4); // Exclusif 
             println!("rand is {:?}", rand);
@@ -46,7 +49,7 @@ pub fn create_player(world: &mut World, player_starting_position: Vector2Int){
                 2 => { apply_referenced_job(&RAWS.lock().unwrap(), world, "gunslinger", player_entity);},
                 3 => { apply_referenced_job(&RAWS.lock().unwrap(), world, "street_samourai", player_entity);},
                 _ => { println!("No Job apply to PLAYER.");}
-            }
+            }*/
  
             world.entity_mut(player_entity)
             .insert(Player)

@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 
 use crate::{engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
 
@@ -40,6 +40,7 @@ pub fn item_rect(builder: &mut ChildBuilder, color: Color) {
         });
 }
 
+/* 
 pub fn item_rect_double(builder: &mut ChildBuilder, color: Color) {
     builder
         .spawn(NodeBundle {
@@ -81,6 +82,7 @@ pub fn item_rect_triple(builder: &mut ChildBuilder, color: Color) {
             });
         });
 }
+*/
 
 pub fn item_rect_metatype_selection_title(builder: &mut ChildBuilder, color: Color, font: Handle<Font>) {
     builder
@@ -173,7 +175,7 @@ pub fn item_kind_illustration(
     }).insert(MenuKindDisplay { model: model});
 }
 
-pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, name: String, model: String) {
+pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, _color: Color, font: Handle<Font>, name: String, model: String) {
     let button_style = Style {
         //width: Val::Px(125.0),
         //height: Val::Px(32.5),
@@ -284,7 +286,7 @@ pub fn updated_kind_display(
 
 
 
-pub fn item_rect_archetype_selection_choice(builder: &mut ChildBuilder, color: Color, font: Handle<Font>, job_reference: String, job_name: String) {
+pub fn item_rect_archetype_selection_choice(builder: &mut ChildBuilder, _color: Color, font: Handle<Font>, job_reference: String, job_name: String) {
     let button_style = Style {
         //width: Val::Px(125.0),
         //height: Val::Px(32.5),
@@ -336,20 +338,6 @@ pub fn item_rect_archetype_selection_choice(builder: &mut ChildBuilder, color: C
 }
 
 
-pub fn selecting_job_test(
-    interaction_q: Query<(&Interaction, &JobProposition), (Changed<Interaction>, With<Button>)>,
-    mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOptionJob>>,       // Ici on récupère l'element déjà selectionné s'il existe.
-    mut commands: Commands,
-    mut player_creation: ResMut<PlayerCreation>,   
-) {
-    for (interaction, job_proposal) in &interaction_q {
-        println!("interaction for job proposal");
-        if *interaction == Interaction::Pressed {
-            println!("Job: Pressed : {:?}",  player_creation.job.get(&job_proposal.reference));   
-            println!("Job: Pressed : {:?}",  player_creation.job.get(&job_proposal.job));             
-        }            
-    }
-}
 
 pub fn selecting_job(
     interaction_q: Query<(&Interaction, &JobProposition, Entity), (Changed<Interaction>, With<Button>)>,
@@ -359,17 +347,16 @@ pub fn selecting_job(
 ) {
     for (interaction, job_proposal, entity) in &interaction_q {
         println!("interaction for job proposal");
-        if *interaction == Interaction::Pressed && player_creation.job.get(&job_proposal.reference) != Some(&job_proposal.job) {
+        if *interaction == Interaction::Pressed && &player_creation.job.0 != &job_proposal.job {
             println!("Job: Pressed");
             if !selected_q.is_empty() {            
                 println!("Selecting job");
                 let (previous_entity, mut previous_bg) = selected_q.single_mut();
                 previous_bg.0 = NORMAL_BUTTON.into();
                 commands.entity(previous_entity).remove::<SelectedOptionJob>();
-                player_creation.job = HashMap::new();
             }
             commands.entity(entity).insert(SelectedOptionJob);
-            player_creation.job.insert(job_proposal.reference.clone(), job_proposal.job.clone());
+            player_creation.job = (job_proposal.reference.clone(), job_proposal.job.clone());
             println!("Player job is now : {:?}", player_creation.job);
         }       
     }

@@ -1,11 +1,11 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 
 pub mod select_char_menu;
 pub mod components;
 
 use crate::{
-    engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu, SelectedOption}, 
-    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_archetype_selection_choice, item_rect_double, item_rect_job_selection_title, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
+    engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu}, 
+    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_archetype_selection_choice, item_rect_job_selection_title, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
     NORMAL_BUTTON, TEXT_COLOR}, raws::{get_job, get_kind, get_playable_jobs, get_playable_kinds, load_raws, RAWS}};
 
 use self::components::PlayerCreation;
@@ -44,7 +44,7 @@ pub fn spawn_selection_menu(
             jobs.push((raw.reference.clone(), raw.name.clone()));
         }
     }
-    player_creation.job.insert(jobs[0].0.clone(), jobs[0].1.clone());   // reference:name
+    player_creation.job = (jobs[0].0.clone(), jobs[0].1.clone());   // reference:name
 
     let font = asset_server.load("fonts/PressStart2P-vaV7.ttf"); 
 

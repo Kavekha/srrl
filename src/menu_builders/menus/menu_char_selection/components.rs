@@ -1,17 +1,17 @@
-use bevy::{prelude::*, utils::HashMap};
+use bevy::prelude::*;
 
 #[derive(Resource, Debug, Component, PartialEq, Eq, Clone)]
 pub struct PlayerCreation {
     pub kind: String,
     pub model: String,
-    pub job: HashMap<String, String>,
+    pub job: (String, String),  // reference, string.
 }
 impl PlayerCreation {
     pub fn new() -> PlayerCreation {
         PlayerCreation { 
             kind : "".to_string(),
             model : "".to_string(),
-            job: HashMap::new(),
+            job: ("".to_string(), "".to_string()),
         }
     }
 }
