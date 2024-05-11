@@ -28,11 +28,12 @@ pub fn spawn_selection_menu(
     for kind in playable_kinds {
         if let Some(raw) = get_kind(&RAWS.lock().unwrap(), &kind) {
             if let Some(renderable) = &raw.renderable {
-                names_n_models.push((raw.name.clone(),renderable.model.clone()));
+                names_n_models.push(((raw.reference.clone(), raw.name.clone()),renderable.model.clone()));
             }
         }
     }
-    player_creation.kind = names_n_models[0].0.clone();
+    let ref_name = &names_n_models[0].0;
+    player_creation.kind = (ref_name.0.clone(), ref_name.1.clone());
     player_creation.model = names_n_models[0].1.clone();
 
     let playable_jobs = get_playable_jobs(&RAWS.lock().unwrap());
@@ -139,9 +140,10 @@ pub fn spawn_selection_menu(
 
                         item_rect_metatype_selection_title(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
                         // Liste de meta type.                                    
-                        for (name, model) in names_n_models {
+                        for (refname, model) in names_n_models {
                             // TODO : Ajouter la selection par défaut. Pas simple d'inserer un SelectedOption...
-                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string(), model.to_string());                               
+                            let (reference, name) = refname;
+                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), reference.to_string(), name.to_string(), model.to_string());                               
                         }                        
 
                         item_rect_job_selection_title(builder, Color::GRAY, font.clone());     // title : choose your archetype.                        

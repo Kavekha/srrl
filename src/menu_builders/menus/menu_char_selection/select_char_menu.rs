@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
+use crate::{engine::asset_loaders::GraphicsAssets, game::ui::components::UiGameInterface, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
 
 use super::components::{JobProposition, KindProposition, MenuKindDisplay, PlayerCreation, SelectedOptionJob};
 
@@ -175,7 +175,14 @@ pub fn item_kind_illustration(
     }).insert(MenuKindDisplay { model: model});
 }
 
-pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, _color: Color, font: Handle<Font>, name: String, model: String) {
+pub fn item_rect_metatype_selection_choice(
+    builder: &mut ChildBuilder,
+     _color: Color, 
+     font: Handle<Font>, 
+     reference: String,
+     name: String, 
+     model: String
+    ) {
     let button_style = Style {
         //width: Val::Px(125.0),
         //height: Val::Px(32.5),
@@ -212,7 +219,8 @@ pub fn item_rect_metatype_selection_choice(builder: &mut ChildBuilder, _color: C
                 },            
                 KindProposition { 
                     kind : name.clone(),
-                    model : model.clone()
+                    model : model.clone(),
+                    reference: reference.clone()
                 },                
             ))
             .with_children(|builder| {
@@ -238,7 +246,7 @@ pub fn selecting_kind(
     mut player_creation: ResMut<PlayerCreation>,   
 ) {
     for (interaction, kind_proposal, entity) in &interaction_q {
-        if *interaction == Interaction::Pressed && player_creation.kind != kind_proposal.kind {
+        if *interaction == Interaction::Pressed && player_creation.kind.1 != kind_proposal.kind {
             //Si je presse un bouton qui concerne un Kind different de celui que j'ia deja selectionné =>
             if !selected_q.is_empty() {            
                 println!("Selecting kind");
@@ -247,13 +255,13 @@ pub fn selecting_kind(
                 commands.entity(previous_entity).remove::<SelectedOption>();
             }
             commands.entity(entity).insert(SelectedOption);
-            player_creation.kind = kind_proposal.kind.clone();
+            player_creation.kind = (kind_proposal.reference.clone(), kind_proposal.kind.clone());
             player_creation.model = kind_proposal.model.clone();
 
             if let Ok(mut display) = display_q.get_single_mut() {
                 display.model = kind_proposal.model.clone();
             }
-        }            
+        }        
     }
 }
 
@@ -283,8 +291,6 @@ pub fn updated_kind_display(
         }
     }
 }
-
-
 
 pub fn item_rect_archetype_selection_choice(builder: &mut ChildBuilder, _color: Color, font: Handle<Font>, job_reference: String, job_name: String) {
     let button_style = Style {
@@ -346,11 +352,8 @@ pub fn selecting_job(
     mut player_creation: ResMut<PlayerCreation>,   
 ) {
     for (interaction, job_proposal, entity) in &interaction_q {
-        println!("interaction for job proposal");
         if *interaction == Interaction::Pressed && &player_creation.job.0 != &job_proposal.job {
-            println!("Job: Pressed");
-            if !selected_q.is_empty() {            
-                println!("Selecting job");
+            if !selected_q.is_empty() {       
                 let (previous_entity, mut previous_bg) = selected_q.single_mut();
                 previous_bg.0 = NORMAL_BUTTON.into();
                 commands.entity(previous_entity).remove::<SelectedOptionJob>();
@@ -358,6 +361,6 @@ pub fn selecting_job(
             commands.entity(entity).insert(SelectedOptionJob);
             player_creation.job = (job_proposal.reference.clone(), job_proposal.job.clone());
             println!("Player job is now : {:?}", player_creation.job);
-        }       
+        }  
     }
 }

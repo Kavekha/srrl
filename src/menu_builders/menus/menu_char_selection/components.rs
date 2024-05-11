@@ -2,16 +2,16 @@ use bevy::prelude::*;
 
 #[derive(Resource, Debug, Component, PartialEq, Eq, Clone)]
 pub struct PlayerCreation {
-    pub kind: String,
+    pub kind: (String, String),
     pub model: String,
     pub job: (String, String),  // reference, string.
 }
 impl PlayerCreation {
     pub fn new() -> PlayerCreation {
         PlayerCreation { 
-            kind : "".to_string(),
+            kind : ("".to_string(), "".to_string()),    // Ref, Name.
             model : "".to_string(),
-            job: ("".to_string(), "".to_string()),
+            job: ("".to_string(), "".to_string()),  // Ref, Name.
         }
     }
 }
@@ -19,6 +19,7 @@ impl PlayerCreation {
 #[derive(Component)]
 pub struct KindProposition {
     pub kind: String,
+    pub reference: String,
     pub model: String,
 }
 
