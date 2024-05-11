@@ -21,7 +21,7 @@ use bevy::prelude::*;
 
 use crate::{commons::despawn_component, engine::asset_loaders::GraphicsAssets, game::states::MenuState, globals::{HEIGHT, RESOLUTION}, menu_builders::spawn_menu};
 
-use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_char_selection::{components::PlayerCreation, select_char_menu::{selecting_kind, updated_kind_display}}, menu_systems::{common_menu_action, splashscreen}};
+use self::{components::{OnScreenMenu, ResolutionSettings, SelectedOption}, menu_char_selection::{components::{PlayerCreation, SelectedOptionJob}, select_char_menu::{selecting_job, selecting_kind, updated_kind_display}}, menu_systems::{common_menu_action, splashscreen}};
 
 use super::Menu;
 
@@ -67,6 +67,8 @@ impl Plugin for MenuPlugin {
        
        .add_systems(Update, selecting_kind.run_if(not(in_state(MenuState::Disabled))))
        .add_systems(Update, updated_kind_display.run_if(not(in_state(MenuState::Disabled))))
+       .add_systems(Update, selecting_job.run_if(not(in_state(MenuState::Disabled))))
+       
            
         //Specific IG Menu            
 
@@ -128,16 +130,21 @@ pub fn menu_camera(
 // This system handles changing all buttons color based on mouse interaction
 pub fn button_system(
     mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
+        (&Interaction, &mut BackgroundColor, Option<&SelectedOption>, Option<&SelectedOptionJob>),
         (Changed<Interaction>, With<Button>),
     >,
 ) {
-    for (interaction, mut color, selected) in &mut interaction_query {
+    for (interaction, mut color, selected_global, selected_job) in &mut interaction_query {
+        //0.21i : on ajoute selected job. Selected est pas fou pour le moment, car on ne peut en avoir qu'un à la fois. D'où le fait d'en rajouter d'autres. TODO
+        let mut selected = false;
+        if selected_global.is_some() || selected_job.is_some() {
+            selected = true;
+        }
         *color = match (*interaction, selected) {
-            (Interaction::Pressed, _) | (Interaction::None, Some(_)) => PRESSED_BUTTON.into(),
-            (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
-            (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
-            (Interaction::None, None) => NORMAL_BUTTON.into(),
+            (Interaction::Pressed, _) | (Interaction::None, true) => PRESSED_BUTTON.into(),
+            (Interaction::Hovered, true) => HOVERED_PRESSED_BUTTON.into(),
+            (Interaction::Hovered, false) => HOVERED_BUTTON.into(),
+            (Interaction::None, false) => NORMAL_BUTTON.into(),
         }
     }
 }

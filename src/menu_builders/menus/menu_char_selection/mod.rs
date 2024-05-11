@@ -4,9 +4,9 @@ pub mod select_char_menu;
 pub mod components;
 
 use crate::{
-    engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu, SelectedOption}, 
-    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_double, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
-    NORMAL_BUTTON, TEXT_COLOR}, raws::{get_kind, get_playable_kinds, load_raws, RAWS}};
+    engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu}, 
+    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_archetype_selection_choice, item_rect_job_selection_title, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, spawn_nested_text_bundle}, 
+    NORMAL_BUTTON, TEXT_COLOR}, raws::{get_job, get_kind, get_playable_jobs, get_playable_kinds, load_raws, RAWS}};
 
 use self::components::PlayerCreation;
 
@@ -28,12 +28,24 @@ pub fn spawn_selection_menu(
     for kind in playable_kinds {
         if let Some(raw) = get_kind(&RAWS.lock().unwrap(), &kind) {
             if let Some(renderable) = &raw.renderable {
-                names_n_models.push((raw.name.clone(),renderable.model.clone()));
+                names_n_models.push(((raw.reference.clone(), raw.name.clone()),renderable.model.clone()));
             }
         }
     }
-    player_creation.kind = names_n_models[0].0.clone();
+    let ref_name = &names_n_models[0].0;
+    player_creation.kind = (ref_name.0.clone(), ref_name.1.clone());
     player_creation.model = names_n_models[0].1.clone();
+
+    let playable_jobs = get_playable_jobs(&RAWS.lock().unwrap());
+    if playable_jobs.is_empty() { panic!("No playable job available.")};
+    println!("Playable jobs are : {:?}", playable_jobs);
+    let mut jobs = Vec::new();
+    for job in playable_jobs {
+        if let Some(raw) = get_job(&RAWS.lock().unwrap(), &job) {
+            jobs.push((raw.reference.clone(), raw.name.clone()));
+        }
+    }
+    player_creation.job = (jobs[0].0.clone(), jobs[0].1.clone());   // reference:name
 
     let font = asset_server.load("fonts/PressStart2P-vaV7.ttf"); 
 
@@ -128,13 +140,18 @@ pub fn spawn_selection_menu(
 
                         item_rect_metatype_selection_title(builder, Color::GRAY, font.clone());     // title: choose your meta-type.
                         // Liste de meta type.                                    
-                        for (name, model) in names_n_models {
+                        for (refname, model) in names_n_models {
                             // TODO : Ajouter la selection par défaut. Pas simple d'inserer un SelectedOption...
-                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), name.to_string(), model.to_string());                               
+                            let (reference, name) = refname;
+                            item_rect_metatype_selection_choice(builder, Color::BLACK, font.clone(), reference.to_string(), name.to_string(), model.to_string());                               
                         }                        
 
-                        item_rect(builder, Color::GRAY);     // title : choose your archetype.                        
-                        item_rect_double(builder, Color::BLACK);  
+                        item_rect_job_selection_title(builder, Color::GRAY, font.clone());     // title : choose your archetype.                        
+                        for (job_reference, job_name) in jobs {
+                            println!("Job reference added for {:?}, {:?}", job_reference, job_name);
+                            // TODO : Ajouter la selection par défaut. Pas simple d'inserer un SelectedOption...
+                            item_rect_archetype_selection_choice(builder, Color::BLACK, font.clone(), job_reference.to_string(), job_name.to_string());                               
+                        }  
                     });
 
                 // Right side bar (auto placed in row 2, column 2)
