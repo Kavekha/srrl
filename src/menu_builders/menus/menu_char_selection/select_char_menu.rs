@@ -104,8 +104,7 @@ pub fn item_skills_display(
                 font_size: 16.0,
                 ..default()
             },
-        ));   
-
+        ));
         for skill in skills {
             builder.spawn(TextBundle::from_section(
                 format!("{:?}:{:?} \n", skill.0, skill.1),        

@@ -167,7 +167,7 @@ pub fn spawn_selection_menu(
                         padding: UiRect::all(Val::Px(10.)),
                         // Add an fr track to take up all the available space at the bottom of the column so that the text nodes
                         // can be top-aligned. Normally you'd use flexbox for this, but this is the CSS Grid example so we're using grid.
-                        grid_template_rows: vec![GridTrack::auto(), GridTrack::auto(),GridTrack::auto(),GridTrack::auto(), GridTrack::auto(), GridTrack::fr(1.0)],
+                        grid_template_rows: vec![GridTrack::auto(), GridTrack::auto(),GridTrack::auto(),GridTrack::auto(), GridTrack::auto(), GridTrack::auto(),GridTrack::auto(),GridTrack::fr(1.0)],
                         // Add a 10px gap between rows
                         row_gap: Val::Px(10.),
                         ..default()
