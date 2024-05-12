@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::{engine::asset_loaders::GraphicsAssets, game::ui::components::UiGameInterface, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}, raws::{get_base_attributes, get_job, get_kind, RAWS}};
 
-use super::components::{JobProposition, KindProposition, MenuKindDisplay, PlayerCreation, SelectedOptionJob};
+use super::components::{JobProposition, KindProposition, MenuKindDisplay, MenuSkills, MenuStats, PlayerCreation, SelectedOptionJob};
 
 
 pub fn spawn_nested_text_bundle(builder: &mut ChildBuilder, font: Handle<Font>, text: &str) {
@@ -86,38 +86,83 @@ pub fn item_rect_triple(builder: &mut ChildBuilder, color: Color) {
 }
 */
 
+pub fn get_skills_text(
+    job_ref: &str
+) -> String {
+    let raw_lock = &RAWS.lock().unwrap();
+    let Some(raw_job) = get_job(raw_lock, &job_ref) else { return "".to_string() };
+    
+    // Skills
+    if let Some(skills) = &raw_job.skills {
+        let mut final_text = format!("- Skills - \n").to_owned();
+        for skill in skills {
+            let skill_text = format!("{}:{} \n", skill.0, skill.1);
+            final_text.push_str(&skill_text);
+        }
+        println!("Final text is : {:?}", final_text);
+        return final_text
+    }
+    return "".to_string()
+}
+
+pub fn get_attributes_text(
+    kind_ref: &str,
+    job_ref: &str
+) -> String {
+    println!("kind ref : {:?}, job ref : {:?}", kind_ref, job_ref); 
+    let raw_lock = &RAWS.lock().unwrap();
+    let Some(raw_job) = get_job(raw_lock, &job_ref) else { return "".to_string() };
+    let Some(raw_kind) = get_kind(raw_lock, &kind_ref) else { return "".to_string() };
+    let Some(raw_base_attributes) =  get_base_attributes(raw_lock, &kind_ref) else { return "".to_string() };
+
+    // Stats
+   let mut strength = 0;
+   if let Some(base_str) = raw_base_attributes.strength {
+       strength += max(base_str, 1);
+   }
+   if let Some(job_strength) = raw_job.strength {
+       strength += max(job_strength, 1);
+   }
+   let mut agility = 0;
+   if let Some(base_agility) = raw_base_attributes.agility {
+       agility += max(base_agility, 1);
+   }
+   if let Some(job_agility) = raw_job.agility {
+       agility += max(job_agility, 1);
+   }
+   let mut logic = 0;
+   if let Some(base_logic) = raw_base_attributes.logic {
+       logic += max(base_logic, 1);
+   }
+   if let Some(job_logic) = raw_job.logic {
+       logic += max(job_logic, 1);
+   }
+
+   return format!(
+    "- Attributes - \n Strength : {}/{} \n Agility : {}/{} \n Logic : {}/{}",
+    strength, raw_kind.attributes.strength_max,
+    agility, raw_kind.attributes.agility_max,
+    logic, raw_kind.attributes.logic_max
+    )
+}
+
+
+
 pub fn item_skills_display(
     builder: &mut ChildBuilder, 
     color: Color, 
     font: Handle<Font>,
     job_ref: &str
 ) {
-    let raw_lock = &RAWS.lock().unwrap();
-    let Some(raw_job) = get_job(raw_lock, &job_ref) else { return };
-    
-    // Skills
-    if let Some(skills) = &raw_job.skills {
-        builder.spawn(TextBundle::from_section(
-            format!("- Skills - \n"),        
-            TextStyle {
-                font: font.clone(),
-                font_size: 16.0,
-                ..default()
-            },
-        ));
-        for skill in skills {
-            builder.spawn(TextBundle::from_section(
-                format!("{:?}:{:?} \n", skill.0, skill.1),        
-                TextStyle {
-                    font: font.clone(),
-                    font_size: 16.0,
-                    ..default()
-                },
-            )); 
-        }
-    }
+    builder.spawn(TextBundle::from_section(
+        get_skills_text(job_ref),        
+        TextStyle {
+            font: font.clone(),
+            font_size: 16.0,
+            ..default()
+        },
+    )).insert(MenuSkills { dirty : false });  
 }
-
 
 pub fn item_stat_display(
     builder: &mut ChildBuilder, 
@@ -126,47 +171,24 @@ pub fn item_stat_display(
     kind_ref: &str,
     job_ref: &str
 ) {
-    // TODO : Utiliser dans la creation de perso?
-     println!("kind ref : {:?}, job ref : {:?}", kind_ref, job_ref); 
-     let raw_lock = &RAWS.lock().unwrap();
-     let Some(raw_job) = get_job(raw_lock, &job_ref) else { return };
-     let Some(raw_kind) = get_kind(raw_lock, &kind_ref) else { return };
-     let Some(raw_base_attributes) =  get_base_attributes(raw_lock, &kind_ref) else { return };
-
-     // Stats
-    let mut strength = 0;
-    if let Some(base_str) = raw_base_attributes.strength {
-        strength += max(base_str, 1);
-    }
-    if let Some(job_strength) = raw_job.strength {
-        strength += max(job_strength, 1);
-    }
-    let mut agility = 0;
-    if let Some(base_agility) = raw_base_attributes.agility {
-        agility += max(base_agility, 1);
-    }
-    if let Some(job_agility) = raw_job.agility {
-        agility += max(job_agility, 1);
-    }
-    let mut logic = 0;
-    if let Some(base_logic) = raw_base_attributes.logic {
-        logic += max(base_logic, 1);
-    }
-    if let Some(job_logic) = raw_job.logic {
-        logic += max(job_logic, 1);
-    }
+    
     builder.spawn(TextBundle::from_section(
-        format!("- Attributes - \n Strength : {:?}/{:?} \n Agility : {:?}/{:?} \n Logic : {:?}/{:?}",
-        strength, raw_kind.attributes.strength_max,
-        agility, raw_kind.attributes.agility_max,
-        logic, raw_kind.attributes.logic_max
-    ), //format!("{:?} \n {:?}", final_attributes_text, final_skills_text),        
+        "Statistics",
+        TextStyle {
+            font: font.clone(),
+            font_size: 24.0,
+            ..default()
+        },
+    ));
+
+    builder.spawn(TextBundle::from_section(
+        get_attributes_text(kind_ref, job_ref),        
         TextStyle {
             font: font.clone(),
             font_size: 16.0,
             ..default()
         },
-    ));  
+    )).insert(MenuStats { dirty : false });  
 
 }
 
@@ -328,6 +350,7 @@ pub fn selecting_kind(
     interaction_q: Query<(&Interaction, &KindProposition, Entity), (Changed<Interaction>, With<Button>)>,
     mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOption>>,       // Ici on récupère l'element déjà selectionné s'il existe.
     mut display_q: Query<&mut MenuKindDisplay>,
+    mut stats_q: Query<&mut MenuStats>,
     mut commands: Commands,
     mut player_creation: ResMut<PlayerCreation>,   
 ) {
@@ -347,11 +370,17 @@ pub fn selecting_kind(
             if let Ok(mut display) = display_q.get_single_mut() {
                 display.model = kind_proposal.model.clone();
             }
+            if let Ok(mut stats) = stats_q.get_single_mut() {
+                println!("skill menu obtenu et modifié.");
+                stats.dirty = true;
+            }
         }        
     }
 }
 
-// 0.20h : Pour être honnête, c'est bien degueulasse. Mais ca marche.
+
+
+// 0.21h : Pour être honnête, c'est bien degueulasse. Mais ca marche.
 pub fn updated_kind_display(   
     display_q: Query<(&Parent, &MenuKindDisplay), Changed<MenuKindDisplay>>,  
     mut img_q: Query<(&Parent, &mut UiImage)>,
@@ -374,6 +403,35 @@ pub fn updated_kind_display(
                 texture.layout = texture_atlas_handle;
                 break;
             }
+        }
+    }
+}
+
+// 0.21j : Degueu aussi.
+pub fn update_stats_display(
+    mut display_stats_q: Query<(&mut Text, &mut MenuStats), Changed<MenuStats>>,
+    player_creation: Res<PlayerCreation>,
+) {
+    for (mut text, mut menu_stats) in display_stats_q.iter_mut() {
+        println!("checking a change menu stats");
+        if menu_stats.dirty {
+            text.sections[0].value = get_attributes_text(&player_creation.kind.0, &player_creation.job.0);
+            menu_stats.dirty = false;
+        }
+    }
+}
+
+// 0.21j : Degueu aussi.
+pub fn update_skills_display(
+    mut display_skill_q: Query<(&mut Text, &mut MenuSkills), Changed<MenuSkills>>,
+    //display_attributes_q: Query<(&mut Text, &MenuStats), Changed<MenuStats>>,
+    player_creation: Res<PlayerCreation>,
+) {
+    for (mut text, mut menu_skill) in display_skill_q.iter_mut() {
+        println!("checking a change menu skills");
+        if menu_skill.dirty {
+            text.sections[0].value = get_skills_text(&player_creation.job.0);
+            menu_skill.dirty = false;
         }
     }
 }
@@ -436,6 +494,8 @@ pub fn selecting_job(
     mut selected_q: Query<(Entity, &mut BackgroundColor), With<SelectedOptionJob>>,       // Ici on récupère l'element déjà selectionné s'il existe.
     mut commands: Commands,
     mut player_creation: ResMut<PlayerCreation>,   
+    mut skills_q: Query<&mut MenuSkills>,
+    mut stats_q: Query<&mut MenuStats>,
 ) {
     for (interaction, job_proposal, entity) in &interaction_q {
         if *interaction == Interaction::Pressed && &player_creation.job.0 != &job_proposal.job {
@@ -447,6 +507,13 @@ pub fn selecting_job(
             commands.entity(entity).insert(SelectedOptionJob);
             player_creation.job = (job_proposal.reference.clone(), job_proposal.job.clone());
             println!("Player job is now : {:?}", player_creation.job);
+
+            if let Ok(mut skills) = skills_q.get_single_mut() {
+                skills.dirty = true;
+            }
+            if let Ok(mut stats) = stats_q.get_single_mut() {
+                stats.dirty = true;
+            }
         }  
     }
 }

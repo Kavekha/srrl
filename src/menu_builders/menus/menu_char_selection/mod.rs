@@ -5,7 +5,7 @@ pub mod components;
 
 use crate::{
     engine::asset_loaders::GraphicsAssets, menu_builders::menus::{components::{MenuButtonAction, OnScreenMenu}, 
-    menu_char_selection::select_char_menu::{item_kind_illustration, item_rect, item_rect_archetype_selection_choice, item_rect_job_selection_title, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, item_skills_display, item_stat_display, spawn_nested_text_bundle}, 
+    menu_char_selection::{components::MenuStats, select_char_menu::{item_kind_illustration, item_rect, item_rect_archetype_selection_choice, item_rect_job_selection_title, item_rect_metatype_selection_choice, item_rect_metatype_selection_title, item_skills_display, item_stat_display, spawn_nested_text_bundle}}, 
     NORMAL_BUTTON, TEXT_COLOR}, raws::{get_job, get_kind, get_playable_jobs, get_playable_kinds, load_raws, RAWS}};
 
 use self::components::PlayerCreation;
@@ -173,10 +173,11 @@ pub fn spawn_selection_menu(
                         ..default()
                     },
                     background_color: BackgroundColor(Color::BLACK),
-                    ..default()
+                    ..default()                    
                 })
 
                 .with_children(|builder| {
+                    /* 
                     builder.spawn(TextBundle::from_section(
                         "Statistics",
                         TextStyle {
@@ -184,7 +185,7 @@ pub fn spawn_selection_menu(
                             font_size: 24.0,
                             ..default()
                         },
-                    ));
+                    ));*/
                     item_stat_display(builder, Color::BLUE, font.clone(), &player_creation.kind.0, &player_creation.job.0);
 
                     item_skills_display(builder, Color::BLUE, font.clone(), &player_creation.job.0);
