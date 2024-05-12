@@ -9,7 +9,7 @@ use crate::{
     game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, 
     random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
-use super::{base_attributes_structs::BaseAttributes, job_table_structs::JobTable, jobs_structs::{RawJob}, kind_structs::{RawKind, RawRenderable}, spawn_table_structs::SpawnTable};
+use super::{base_attributes_structs::BaseAttributes, job_table_structs::JobTable, jobs_structs::RawJob, kind_structs::{RawAttributes, RawKind, RawRenderable}, spawn_table_structs::SpawnTable};
 
 
 
@@ -196,6 +196,16 @@ pub fn get_job<'a>(
 ) -> Option<&'a RawJob> {
     if raws.job_index.contains_key(key) {
         return Some(&raws.raws.jobs[raws.job_index[key]])
+    }
+    None
+}
+
+pub fn get_base_attributes<'a>(
+    raws: &'a RawMaster,
+    key: &'a str
+) -> Option<&'a BaseAttributes> {
+    if raws.base_attributes_index.contains_key(key) {
+        return Some(&raws.raws.base_attributes[raws.base_attributes_index[key]])
     }
     None
 }

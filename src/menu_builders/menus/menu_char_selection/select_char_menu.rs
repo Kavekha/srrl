@@ -1,6 +1,8 @@
+use std::cmp::max;
+
 use bevy::prelude::*;
 
-use crate::{engine::asset_loaders::GraphicsAssets, game::ui::components::UiGameInterface, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}};
+use crate::{engine::asset_loaders::GraphicsAssets, game::ui::components::UiGameInterface, menu_builders::menus::{components::SelectedOption, NORMAL_BUTTON}, raws::{get_base_attributes, get_job, get_kind, RAWS}};
 
 use super::components::{JobProposition, KindProposition, MenuKindDisplay, PlayerCreation, SelectedOptionJob};
 
@@ -83,6 +85,91 @@ pub fn item_rect_triple(builder: &mut ChildBuilder, color: Color) {
         });
 }
 */
+
+pub fn item_skills_display(
+    builder: &mut ChildBuilder, 
+    color: Color, 
+    font: Handle<Font>,
+    job_ref: &str
+) {
+    let raw_lock = &RAWS.lock().unwrap();
+    let Some(raw_job) = get_job(raw_lock, &job_ref) else { return };
+    
+    // Skills
+    if let Some(skills) = &raw_job.skills {
+        builder.spawn(TextBundle::from_section(
+            format!("- Skills - \n"),        
+            TextStyle {
+                font: font.clone(),
+                font_size: 16.0,
+                ..default()
+            },
+        ));   
+
+        for skill in skills {
+            builder.spawn(TextBundle::from_section(
+                format!("{:?}:{:?} \n", skill.0, skill.1),        
+                TextStyle {
+                    font: font.clone(),
+                    font_size: 16.0,
+                    ..default()
+                },
+            )); 
+        }
+    }
+}
+
+
+pub fn item_stat_display(
+    builder: &mut ChildBuilder, 
+    color: Color, 
+    font: Handle<Font>,
+    kind_ref: &str,
+    job_ref: &str
+) {
+    // TODO : Utiliser dans la creation de perso?
+     println!("kind ref : {:?}, job ref : {:?}", kind_ref, job_ref); 
+     let raw_lock = &RAWS.lock().unwrap();
+     let Some(raw_job) = get_job(raw_lock, &job_ref) else { return };
+     let Some(raw_kind) = get_kind(raw_lock, &kind_ref) else { return };
+     let Some(raw_base_attributes) =  get_base_attributes(raw_lock, &kind_ref) else { return };
+
+     // Stats
+    let mut strength = 0;
+    if let Some(base_str) = raw_base_attributes.strength {
+        strength += max(base_str, 1);
+    }
+    if let Some(job_strength) = raw_job.strength {
+        strength += max(job_strength, 1);
+    }
+    let mut agility = 0;
+    if let Some(base_agility) = raw_base_attributes.agility {
+        agility += max(base_agility, 1);
+    }
+    if let Some(job_agility) = raw_job.agility {
+        agility += max(job_agility, 1);
+    }
+    let mut logic = 0;
+    if let Some(base_logic) = raw_base_attributes.logic {
+        logic += max(base_logic, 1);
+    }
+    if let Some(job_logic) = raw_job.logic {
+        logic += max(job_logic, 1);
+    }
+    builder.spawn(TextBundle::from_section(
+        format!("- Attributes - \n Strength : {:?}/{:?} \n Agility : {:?}/{:?} \n Logic : {:?}/{:?}",
+        strength, raw_kind.attributes.strength_max,
+        agility, raw_kind.attributes.agility_max,
+        logic, raw_kind.attributes.logic_max
+    ), //format!("{:?} \n {:?}", final_attributes_text, final_skills_text),        
+        TextStyle {
+            font: font.clone(),
+            font_size: 16.0,
+            ..default()
+        },
+    ));  
+
+}
 
 pub fn item_rect_metatype_selection_title(builder: &mut ChildBuilder, color: Color, font: Handle<Font>) {
     builder
