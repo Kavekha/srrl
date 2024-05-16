@@ -36,3 +36,13 @@ pub struct MenuKindDisplay {
 
 #[derive(Component)]
 pub struct SelectedOptionJob;
+
+#[derive(Component)]
+pub struct MenuStats {
+    pub dirty: bool
+}
+
+#[derive(Component)]
+pub struct MenuSkills {
+    pub dirty: bool
+}
