@@ -1,0 +1,23 @@
+{
+    "items": [
+        {
+            "reference":"katana",
+            "name":"Katana",
+            "weapon": {
+                "range":"medium",
+                "offensive_score": 3
+            }
+        },
+        {
+            "reference":"kevlar_vest",
+            "name":"Kevlar Vest",
+            "armor": {
+                "defensive_score": 2
+            }
+        },
+        {
+            "reference":"bottle",
+            "name":"Bottle"
+        }
+    ]
+}

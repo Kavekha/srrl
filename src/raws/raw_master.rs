@@ -1,7 +1,7 @@
 
 use std::cmp::{max, min};
 
-use bevy::{prelude::*, utils::{HashMap, HashSet}};
+use bevy::{prelude::*, utils::{hashbrown::HashMap, HashSet}};
 use serde::Deserialize;
 
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
     game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, 
     random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
-use super::{base_attributes_structs::BaseAttributes, job_table_structs::JobTable, jobs_structs::RawJob, kind_structs::{RawAttributes, RawKind, RawRenderable}, spawn_table_structs::SpawnTable};
+use super::{base_attributes_structs::BaseAttributes, item_structs::RawItem, job_table_structs::JobTable, jobs_structs::RawJob, kind_structs::{RawKind, RawRenderable}, spawn_table_structs::SpawnTable};
 
 
 
@@ -19,7 +19,8 @@ pub struct Raws {
     pub spawn_tables: Vec<SpawnTable>,
     pub base_attributes: Vec<BaseAttributes>,
     pub jobs: Vec<RawJob>,
-    pub job_tables: Vec<JobTable>
+    pub job_tables: Vec<JobTable>,
+    pub items: Vec<RawItem>
 }
 
 
@@ -30,6 +31,7 @@ pub struct RawMaster {
     pub base_attributes_index: HashMap<String, usize>,
     pub job_index: HashMap<String, usize>,
     pub job_table_index: HashMap<String, usize>,
+    pub item_index: HashMap<String, usize>
 }
 
 impl RawMaster {
@@ -41,12 +43,14 @@ impl RawMaster {
                 base_attributes: Vec::new(),
                 jobs: Vec::new(),
                 job_tables: Vec::new(),
+                items: Vec::new(),
             },
             kind_index : HashMap::new(),
             spawn_table_index: HashMap::new(),
             base_attributes_index: HashMap::new(),
             job_index: HashMap::new(),
             job_table_index: HashMap::new(),
+            item_index: HashMap::new(),
         }
     }
 
@@ -59,6 +63,7 @@ impl RawMaster {
         self.base_attributes_index = HashMap::new();
         self.job_index = HashMap::new();
         self.job_table_index = HashMap::new();
+        self.item_index = HashMap::new();
 
         let mut used_references : HashSet<String> = HashSet::new();
         
@@ -90,6 +95,13 @@ impl RawMaster {
         for (i,job_table) in self.raws.job_tables.iter().enumerate() {
             // Le base_attributes enrichie un profil existant, on ne verifie pas la duplication car on utilise le meme referent que le npc que l'on veut créer.
             self.job_table_index.insert(job_table.reference.clone(), i);
+        }
+        for (i,item) in self.raws.items.iter().enumerate() {
+            if used_references.contains(&item.reference) {
+                println!("WARNING : duplicate ITEM reference in raw [{}]", item.reference);
+            }
+            self.item_index.insert(item.reference.clone(), i);
+            used_references.insert(item.reference.clone());
         }
     }    
 }
