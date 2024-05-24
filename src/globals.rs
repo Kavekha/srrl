@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 // Versions
-pub const VERSION: &str = "0.21.j";
+pub const VERSION: &str = "0.22.a";
 pub const RELEASE: &str = "R0.5";
 
 // Min - Max VOLUME
@@ -16,7 +16,6 @@ pub const HEIGHT: f32 = 800.0;
 //pub const BASE_SCREEN_SCALE: f32 = 1.0; //DEBUG: Scaling multiplier
 
 
-// TODO : En attente de la R0.5 et du Loader
 // RENDERING
 pub const CHAR_SIZE: f32 = 16.0; 
 pub const STANDARD_TILE_SIZE:i32 = 32;  //64;
@@ -60,3 +59,6 @@ pub const SPAWN_SUBSTRACT_ELEMENT: i32 = -3;    // On fait 1 to MAX, et on retir
 
 //SAVE
 pub const SCENE_FILE_PATH: &str = "assets/saves/save.srrl";
+
+//RAWS
+pub const RAWS_FILE_PATH: &str = "assets/raws";
