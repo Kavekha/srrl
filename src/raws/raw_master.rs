@@ -6,8 +6,7 @@ use serde::Deserialize;
 
 use crate::{
     engine::render::components::Renderable, 
-    game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, 
-    random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
+    game::{game_generation::{character_creation::components::{Attribute, Attributes, Health, Melee, Occupier, Ranged, Skill, Skills, Vision, Walk}, item_creation::components::{Armor, AttributeType, Weapon, WeaponRange}, random_table::RandomTable}, tileboard::components::BoardPosition}, vectors::Vector2Int};
 
 use super::{base_attributes_structs::BaseAttributes, item_structs::RawItem, job_table_structs::JobTable, jobs_structs::RawJob, kind_structs::{RawKind, RawRenderable}, spawn_table_structs::SpawnTable};
 
@@ -119,6 +118,57 @@ pub fn spawn_referenced_entity(
     }
     None
 }
+
+fn spawn_referenced_item(
+    raws: &RawMaster,
+    world: &mut World, 
+    key: &str,
+    position: Vector2Int,
+) -> Option<Entity> {
+        if raws.item_index.contains_key(key) {
+            let item_template = &raws.raws.items[raws.item_index[key]];
+            let entity = world.spawn_empty().id();
+
+            world.entity_mut(entity).insert(Name::new(item_template.name.clone()));
+
+            if let Some(weapon) = &item_template.weapon {
+                // basic weapon
+                let mut wpn = Weapon { 
+                    range : WeaponRange::Melee,
+                    skill : Skill::CloseCombat,
+                    attack_attribute: AttributeType::Agility,
+                    damage_attribute: AttributeType::Strength,
+                    damage_attribute_modifier: weapon.damage_attribute_modifier,
+                    offensive_score: weapon.offensive_score
+                };
+                match weapon.range.as_str() {
+                    "Melee" => wpn.range = WeaponRange::Melee,
+                    _ => wpn.range = WeaponRange::Melee,
+                }
+                match weapon.attack_attribute.as_str() {
+                    "Strength" => wpn.attack_attribute = AttributeType::Strength,
+                    _ => wpn.attack_attribute = AttributeType::Agility
+                }
+                match weapon.damage_attribute.as_str() {
+                    "Strength" => wpn.damage_attribute = AttributeType::Agility,
+                    _ => wpn.damage_attribute = AttributeType::Strength
+                }
+                world.entity_mut(entity).insert(wpn);
+            }    
+
+            if let Some(armor) = &item_template.armor {
+                // basic armor 
+                let item_armor = Armor {
+                    defensive_score: armor.defensive_score
+                };
+                world.entity_mut(entity).insert(item_armor);
+            }
+
+            return Some(entity)
+        }
+        None
+}
+
 
 fn spawn_referenced_kind(
     raws: &RawMaster,

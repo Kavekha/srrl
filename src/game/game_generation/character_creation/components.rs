@@ -68,6 +68,7 @@ pub struct Attributes {
 pub enum Skill {
     UnarmedCombat,
     FireArms,
+    CloseCombat
 }
 
 #[derive(Component)]

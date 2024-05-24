@@ -8,7 +8,8 @@
             "agility": 1,
             "logic": 1,
             "skills": {
-                "UnarmedCombat": 2
+                "UnarmedCombat": 2,
+                "CloseCombat": 2
             }
         },
         {
@@ -19,7 +20,8 @@
             "strength": -1,
             "agility": 2,
             "skills": {
-                "FireArms": 2
+                "FireArms": 3,
+                "CloseCombat": 1
             }
         },
         {
@@ -31,7 +33,7 @@
             "logic": -1,
             "skills": {
                 "FireArms": 1,
-                "UnarmedCombat": 1
+                "CloseCombat":3
             }
         },
         {
@@ -41,7 +43,7 @@
             "prefix": "feral",
             "logic": -1,
             "skills": {
-                "UnarmedCombat": 3
+                "UnarmedCombat": 4
             }
         }
     ]

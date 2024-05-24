@@ -4,7 +4,11 @@
             "reference":"katana",
             "name":"Katana",
             "weapon": {
-                "range":"medium",
+                "range":"melee",
+                "skill":"CloseCombat",
+                "attack_attribute": "agility",
+                "damage_attribute": "strength",
+                "damage_attribute_modifier":0,
                 "offensive_score": 3
             }
         },

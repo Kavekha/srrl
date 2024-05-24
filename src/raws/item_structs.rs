@@ -13,7 +13,11 @@ pub struct RawItem {
 #[derive(Deserialize, Debug)]
 pub struct RawWeapon {
     pub range: String,
-    pub offensive_score: i32
+    pub offensive_score: i32,
+    pub skill: String,
+    pub attack_attribute: String, 
+    pub damage_attribute: String, 
+    pub damage_attribute_modifier: i32
 }
 
 #[derive(Deserialize, Debug)]
