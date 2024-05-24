@@ -42,7 +42,7 @@ use crate::map_builders::map::Map;
 // Movement
 pub const POSITION_TOLERANCE: f32 = 0.01;
 
-pub const SPEED_MULTIPLIER: f32 = 2.5;                  // FAST debug / balance on speed movement.
+pub const SPEED_MULTIPLIER: f32 = 2.0; //2.5;                  // FAST debug / balance on speed movement.
 pub const CURSOR_SPEED: f32 = 20.0;                     // Cursor.
 pub const BASE_SPEED_PATH_ANIMATOR_UPDATE: f32 = 10.0;   // Vitesse de base d'une animation de deplacement.
 

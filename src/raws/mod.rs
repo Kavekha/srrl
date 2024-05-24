@@ -20,6 +20,8 @@ mod job_table_structs;
 pub use raw_master::*;
 use std::sync::Mutex;
 
+use crate::globals::RAWS_FILE_PATH;
+
 
 
 
@@ -36,7 +38,8 @@ lazy_static! {
 ==> Il faut que chaque json contienne un Type sinon cela provoque un duplicate. 
 */
 pub fn load_raws(){
-    let paths = fs::read_dir("./raws/").unwrap();
+    //let paths = fs::read_dir("./raws/").unwrap();
+    let paths = fs::read_dir(RAWS_FILE_PATH).unwrap();
     let mut final_file:String = "".to_string();
     
     for path in paths {
